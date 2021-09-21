@@ -1,0 +1,14 @@
+# files-js:
+#   filter: rjsmin
+#   output: ckanext-files/%(version)s-files.js
+#   contents:
+#     - js/files.js
+#   extra:
+#     preload:
+#       - base/main
+
+# files-css:
+#   filter: cssrewrite
+#   output: ckanext-files/%(version)s-files.css
+#   contents:
+#     - css/files.css

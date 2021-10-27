@@ -2,7 +2,7 @@ import ckan.plugins.toolkit as tk
 from ckan.logic.schema import validator_args
 
 
-CONFIG_KIND = "ckanext.files.kind.default"
+CONFIG_KIND = "ckanext.files.default.kind"
 DEFAULT_KIND = "ckanext_files_file"
 
 

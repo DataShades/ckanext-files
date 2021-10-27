@@ -13,7 +13,7 @@ from . import schema
 
 action, get_actions = Collector("files").split()
 
-CONFIG_SIZE = "ckanext.files.upload.max_size"
+CONFIG_SIZE = "ckanext.files.kind.{kind}.max_size"
 DEFAULT_SIZE = 2
 
 
@@ -29,7 +29,7 @@ def file_create(context, data_dict):
     uploader = files_uploader(data_dict["kind"])
     uploader.update_data_dict(data_dict, "url", "upload", None)
 
-    max_size = tk.asint(tk.config.get(CONFIG_SIZE, DEFAULT_SIZE))
+    max_size = tk.asint(tk.config.get(CONFIG_SIZE.format(kind=data_dict["kind"]), DEFAULT_SIZE))
     uploader.upload(max_size)
 
     root = Path("uploads")

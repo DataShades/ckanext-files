@@ -24,8 +24,8 @@ def upgrade():
             sa.UnicodeText,
             primary_key=True,
         ),
-        sa.Column("name", sa.UnicodeText, nullable=False, unique=True),
-        sa.Column("url", sa.UnicodeText, nullable=False),
+        sa.Column("name", sa.UnicodeText, nullable=False),
+        sa.Column("path", sa.UnicodeText, nullable=False),
         sa.Column("kind", sa.UnicodeText, nullable=False),
         sa.Column(
             "uploaded_at",

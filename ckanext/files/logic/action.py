@@ -1,10 +1,9 @@
 from __future__ import annotations
-
-from pathlib import Path
+import os
 from typing import Optional
 import ckan.plugins.toolkit as tk
 from ckan.logic import validate
-from ckan.lib.uploader import get_uploader
+from ckan.lib.uploader import get_uploader, get_storage_path
 
 from ckanext.toolbelt.decorators import Collector
 
@@ -27,13 +26,13 @@ def file_create(context, data_dict):
     tk.check_access("files_file_create", context, data_dict)
 
     uploader = files_uploader(data_dict["kind"])
-    uploader.update_data_dict(data_dict, "url", "upload", None)
+    uploader.update_data_dict(data_dict, "path", "upload", None)
 
     max_size = tk.asint(tk.config.get(CONFIG_SIZE.format(kind=data_dict["kind"]), DEFAULT_SIZE))
     uploader.upload(max_size)
 
-    root = Path("uploads")
-    data_dict["url"] = str(root / data_dict["kind"] / data_dict["url"])
+    # TODO: try not to rely on hardcoded segments
+    data_dict["path"] = os.path.relpath(uploader.filepath, os.path.join(get_storage_path(), "storage"))
 
     file = File(**data_dict)
     context["session"].add(file)

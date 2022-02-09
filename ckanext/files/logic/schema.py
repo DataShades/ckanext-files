@@ -8,12 +8,12 @@ DEFAULT_KIND = "ckanext_files_file"
 
 @validator_args
 def file_create(
-    ignore_empty, dict_only, not_empty, unicode_safe, default, ignore
+        ignore_empty, dict_only, not_empty, unicode_safe, default, ignore, not_missing
 ):
     default_kind = tk.config.get(CONFIG_KIND, DEFAULT_KIND)
     return {
         "name": [not_empty, unicode_safe],
-        "upload": [not_empty],
+        "upload": [not_missing],
         "kind": [default(default_kind), unicode_safe],
         "extras": [ignore_empty, dict_only],
         "__extras": [ignore],

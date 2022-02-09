@@ -15,8 +15,8 @@ from .base import Base
 class File(Base):
     __tablename__ = "files_file"
     id = Column(UnicodeText, primary_key=True, default=make_uuid)
-    name = Column(UnicodeText, nullable=False, unique=True)
-    url = Column(UnicodeText, nullable=False)
+    name = Column(UnicodeText, nullable=False)
+    path = Column(UnicodeText, nullable=False)
     kind = Column(UnicodeText, nullable=False)
     uploaded_at = Column(
         DateTime, nullable=False, default=datetime.datetime.utcnow
@@ -25,5 +25,5 @@ class File(Base):
 
     def dictize(self, context):
         result = table_dictize(self, context)
-        result["url"] = tk.h.url_for_static(result["url"])
+        result["url"] = tk.h.url_for_static(result["path"], qualified=True)
         return result

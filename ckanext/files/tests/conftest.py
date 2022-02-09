@@ -1,13 +1,10 @@
+from __future__ import annotations
+
 import pytest
 
-import ckan.model as model
-from ckan.cli.db import _resolve_alembic_config
 
 
 @pytest.fixture
-def clean_db(reset_db, monkeypatch):
+def clean_db(reset_db, migrate_db_for):
     reset_db()
-    monkeypatch.setattr(
-        model.repo, "_alembic_ini", _resolve_alembic_config("files")
-    )
-    model.repo.upgrade_db()
+    migrate_db_for("files")

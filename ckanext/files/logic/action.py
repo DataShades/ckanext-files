@@ -1,6 +1,6 @@
 from __future__ import annotations
 import os
-from typing import Optional
+from typing import Any, Optional
 import ckan.plugins.toolkit as tk
 from ckan.logic import validate
 from ckan.lib.uploader import get_uploader, get_storage_path
@@ -25,14 +25,7 @@ def files_uploader(kind: str, old_filename: Optional[str] = None):
 def file_create(context, data_dict):
     tk.check_access("files_file_create", context, data_dict)
 
-    uploader = files_uploader(data_dict["kind"])
-    uploader.update_data_dict(data_dict, "path", "upload", None)
-
-    max_size = tk.asint(tk.config.get(CONFIG_SIZE.format(kind=data_dict["kind"]), DEFAULT_SIZE))
-    uploader.upload(max_size)
-
-    # TODO: try not to rely on hardcoded segments
-    data_dict["path"] = os.path.relpath(uploader.filepath, os.path.join(get_storage_path(), "storage"))
+    _upload(data_dict, data_dict["kind"])
 
     file = File(**data_dict)
     context["session"].add(file)
@@ -40,11 +33,26 @@ def file_create(context, data_dict):
     return file.dictize(context)
 
 
+def _upload(data_dict: dict[str, Any], kind: str):
+    uploader = files_uploader(kind)
+    uploader.update_data_dict(data_dict, "path", "upload", None)
+
+    max_size = tk.asint(
+        tk.config.get(CONFIG_SIZE.format(kind=kind), DEFAULT_SIZE)
+    )
+    uploader.upload(max_size)
+
+    # TODO: try not to rely on hardcoded segments
+    data_dict["path"] = os.path.relpath(
+        uploader.filepath, os.path.join(get_storage_path(), "storage")
+    )
+
+
 @action
 @validate(schema.file_update)
 def file_update(context, data_dict):
     tk.check_access("files_file_delete", context, data_dict)
-    file = (
+    file: File = (
         context["session"]
         .query(File)
         .filter_by(id=data_dict["id"])
@@ -52,6 +60,10 @@ def file_update(context, data_dict):
     )
     if not file:
         raise tk.ObjectNotFound("File not found")
+
+    # TODO: remove old file
+    if "upload" in data_dict:
+        _upload(data_dict, file.kind)
 
     for attr, value in data_dict.items():
         setattr(file, attr, value)
@@ -67,6 +79,7 @@ def file_delete(context, data_dict):
     if not file:
         raise tk.ObjectNotFound("File not found")
 
+    # TODO: remove file
     context["session"].delete(file)
     context["session"].commit()
     return True

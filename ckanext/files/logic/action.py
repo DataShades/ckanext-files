@@ -79,9 +79,11 @@ def file_delete(context, data_dict):
     if not file:
         raise tk.ObjectNotFound("File not found")
 
-    # TODO: remove file
     context["session"].delete(file)
     context["session"].commit()
+
+    _remove_file_from_filesystem(file.path)
+
     return True
 
 
@@ -98,3 +100,22 @@ def file_show(context, data_dict):
         raise tk.ObjectNotFound("File not found")
 
     return file.dictize(context)
+
+
+def _remove_file_from_filesystem(file_path: str) -> bool:
+    """Remove a file from the file system"""
+    storage_path = get_storage_path()
+    file_path = os.path.join(storage_path, 'storage', file_path)
+
+    if not os.path.exists(file_path):
+        # TODO: What are we going to do then? Probably, skip silently
+        return True
+
+    try:
+        os.remove(file_path)
+    except OSError:
+        # TODO: in future, we are going to rewrite code a bit, so we could
+        # track files that are hanging by themselves and clear em
+        return False
+
+    return True

@@ -92,4 +92,4 @@ the file, which config options will be applied, etc. Default value is
 
 	# Allowed size for uploaded file in MB.
 	# (optional, default: 2).
-	ckanext.files.<KIND>.max_size = 2
+	ckanext.files.kind.<KIND>.max_size = 2

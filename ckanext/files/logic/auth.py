@@ -24,5 +24,5 @@ def file_show(context, data_dict):
 
 
 @auth
-def file_get_unused_files(context, data_dict):
+def get_unused_files(context, data_dict):
     {"success": False}

@@ -67,8 +67,8 @@ class TestFileShow:
 @pytest.mark.usefixtures("with_plugins")
 class TestGetUnusedFiles:
     def test_no_unused_files(self, random_file):
-        assert not call_action("files_file_get_unused_files")
+        assert not call_action("files_get_unused_files")
 
     @pytest.mark.ckan_config("ckanext.files.unused_threshold", 0)
     def test_configure_default_threshold(self, random_file, ckan_config):
-        assert call_action("files_file_get_unused_files")
+        assert call_action("files_get_unused_files")

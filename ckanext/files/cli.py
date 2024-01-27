@@ -26,7 +26,7 @@ def remove_unused_files(delete: bool, threshold: int):
         else files_conf.get_unused_threshold()
     )
 
-    files = tk.get_action("files_file_get_unused_files")(
+    files = tk.get_action("files_get_unused_files")(
         {"ignore_auth": True}, {"threshold": threshold}
     )
 

@@ -129,9 +129,9 @@ def _remove_file_from_filesystem(file_path: str) -> bool:
 @action
 @tk.side_effect_free
 @validate(schema.file_get_unused_files)
-def file_get_unused_files(context, data_dict):
+def get_unused_files(context, data_dict):
     """Return a list of unused file based on a configured threshold"""
-    tk.check_access("files_file_get_unused_files", context, data_dict)
+    tk.check_access("files_get_unused_files", context, data_dict)
 
     threshold = datetime.datetime.utcnow() - datetime.timedelta(
         days=data_dict["threshold"]

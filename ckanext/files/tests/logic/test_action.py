@@ -1,6 +1,8 @@
 import pytest
+
 import ckan.model as model
 from ckan.tests.helpers import call_action
+
 from ckanext.files.model import File
 
 
@@ -26,7 +28,7 @@ class TestFileCreate:
         )
 
         assert result["name"] == "test file"
-        assert result["url"].endswith(filename)
+        assert result["url"] == f"/files/get_url/{result['id']}"
 
 
 @pytest.mark.usefixtures("with_plugins")
@@ -49,10 +51,24 @@ class TestFileDelete:
 
 
 @pytest.mark.usefixtures("with_plugins")
-class TestFileDelete:
+class TestFileShow:
     def test_basic_show(self, random_file):
         result = call_action("files_file_show", id=random_file["id"])
-        assert result == random_file
+        assert result["id"] == random_file["id"]
 
         result = call_action("files_file_show", id=random_file["name"])
-        assert result == random_file
+        assert result["id"] == random_file["id"]
+
+    def test_show_updates_last_access(self, random_file):
+        result = call_action("files_file_show", id=random_file["id"])
+        assert result["last_access"] != random_file["last_access"]
+
+
+@pytest.mark.usefixtures("with_plugins")
+class TestGetUnusedFiles:
+    def test_no_unused_files(self, random_file):
+        assert not call_action("files_file_get_unused_files")
+
+    @pytest.mark.ckan_config("ckanext.files.unused_threshold", 0)
+    def test_configure_default_threshold(self, random_file, ckan_config):
+        assert call_action("files_file_get_unused_files")

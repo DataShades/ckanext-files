@@ -1,0 +1,13 @@
+version: 1
+groups:
+  - annotation: ckanext-admin_panel
+    options:
+      - key: ckanext.files.<KIND>.max_size
+        type: dynamic
+        description: File max size in MB for a specific file type
+        default: 2
+
+      - key: ckanext.files.unused_threshold
+        type: int
+        description: Сonsider the file unused if there was no request for access within N days
+        default: 180

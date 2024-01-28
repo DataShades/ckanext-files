@@ -27,3 +27,7 @@ class File(Base):
         result = table_dictize(self, context)
         result["url"] = tk.h.url_for_static(result["path"], qualified=True)
         return result
+
+    @property
+    def url(self):
+        return tk.h.url_for_static(self.path, qualified=True)

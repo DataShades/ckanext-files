@@ -1,0 +1,22 @@
+{% import 'macros/form.html' as form %}
+
+<!-- Modal -->
+<div class="modal fade" id="upload-file" tabindex="-1" class="upload-file-modal" aria-labelledby="upload-file-label" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="upload-file-label">{{ _("Upload file")}}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div> <!-- .modal-header -->
+
+            <div class="modal-body">
+                {% snippet 'file_manager/upload_file_modal_form.html', data={} %}
+            </div> <!-- .modal-body -->
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ _("Cancel") }}</button>
+                <button type="submit" class="btn btn-primary">{{ _("Upload") }}</button>
+            </div> <!-- .modal-footer -->
+        </div> <!-- .modal-content -->
+    </div> <!-- .modal-dialog -->
+</div> <!-- .modal -->

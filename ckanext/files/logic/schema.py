@@ -35,3 +35,13 @@ def file_update(not_empty, ignore_missing, unicode_safe, dict_only, ignore):
         "extras": [ignore_missing, dict_only],
         "__extras": [ignore],
     }
+
+
+@validator_args
+def file_get_unused_files(int_validator, default):
+    return {
+        "threshold": [
+            default(tk.config["ckanext.files.unused_threshold"]),
+            int_validator,
+        ],
+    }

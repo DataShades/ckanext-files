@@ -20,9 +20,13 @@ class FilesGetFileView(MethodView):
     def get(self, file_id: str):
         try:
             file_data = tk.get_action("files_file_show")(
-                {"ignore_auth": True}, {"id": file_id}
+                {
+                    "user": tk.current_user.name,
+                    "auth_user_obj": tk.current_user,
+                },
+                {"id": file_id},
             )
-        except (tk.ValidationError, OSError) as e:
+        except (tk.ValidationError, OSError):
             return
 
         return tk.redirect_to(

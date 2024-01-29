@@ -30,9 +30,5 @@ class File(Base):
 
     def dictize(self, context):
         result = table_dictize(self, context)
-        result["url"] = tk.h.url_for("files.get_file", file_id=self.id)
+        result["url"] = tk.h.url_for("files.get_file", file_id=self.id, qualified=True)
         return result
-
-    @property
-    def url(self):
-        return tk.h.url_for_static(self.path, qualified=True)

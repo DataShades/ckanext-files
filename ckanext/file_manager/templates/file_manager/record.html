@@ -3,19 +3,21 @@
 {% block value %}
     {% if column == "row_actions" %}
         <a
-            data-module="ap-tooltip fm-copy-url"
+            data-module="ap-tooltip ap-copy-to-clipboard"
+            data-module-content="{{ data.url }}"
             title="{{ _('Copy file URL')}}"
             class="btn btn-black">
             <i class="fas fa-copy"></i>
         </a>
 
         <a
-            data-module="ap-tooltip fm-copy-url"
+            href="{{ data.url }}"
+            download
+            data-module="ap-tooltip"
             title="{{ _('Download file')}}"
             class="btn btn-primary">
             <i class="fas fa-download"></i>
         </a>
-
 
         <a
             data-module="ap-tooltip" title="{{ _('Remove a file') }}"

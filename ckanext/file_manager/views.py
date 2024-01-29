@@ -3,7 +3,7 @@ from __future__ import annotations
 import logging
 from typing import Union, Callable
 
-from flask import Blueprint, Response, jsonify
+from flask import Blueprint, Response
 from flask.views import MethodView
 
 import ckan.plugins.toolkit as tk
@@ -22,16 +22,6 @@ file_manager = Blueprint(
 file_manager.before_request(ap_before_request)
 
 
-# file_manager.add_url_rule(
-#     "/file_manager",
-#     view_func=ApConfigurationPageView.as_view(
-#         "list",
-#         "file_manager_config",
-#         page_title=tk._("File manager"),
-#     ),
-# )
-
-
 class FileManagerView(MethodView):
     def get(self) -> Union[str, Response]:
         return tk.render(
@@ -45,7 +35,7 @@ class FileManagerView(MethodView):
 
     def post(self) -> Response:
         bulk_action = tk.request.form.get("bulk-action")
-        file_ids = tk.request.form.getlist("file_id")
+        file_ids = tk.request.form.getlist("entity_id")
 
         action_func = (
             self._get_bulk_action(bulk_action) if bulk_action else None

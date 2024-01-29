@@ -1,0 +1,9 @@
+file-manager-js:
+  filter: rjsmin
+  output: ckanext-admin_panel/%(version)s-file-manager.js
+  contents:
+    - js/fm-htmx.js
+  extra:
+    preload:
+      - base/main
+      - base/ckan

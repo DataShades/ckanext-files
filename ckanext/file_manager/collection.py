@@ -1,14 +1,14 @@
 from __future__ import annotations
 
 from typing import Any
+from ckanext.collection.utils.data.model import ModelData
 
 from dominate import tags
 
 import ckan.plugins.toolkit as tk
-import sqlalchemy as sa
 
-from ckanext.collection.types import InputFilter, LinkFilter
-from ckanext.collection.utils import Filters, StatementSaData
+from ckanext.collection.types import InputFilter, LinkFilter, ButtonFilter
+from ckanext.collection.utils import Filters
 
 from ckanext.ap_main.collection.base import (
     ApCollection,
@@ -21,9 +21,17 @@ from ckanext.ap_main.collection.base import (
 from ckanext.files.model import File
 
 
+def file_row_dictizer(serializer: ApHtmxTableSerializer, row: File):
+    data = row.dictize({})
+    data["bulk-action"] = data["id"]
+
+    return data
+
+
 class FileManagerCollection(ApCollection[Any]):
     SerializerFactory = ApHtmxTableSerializer.with_attributes(
-        record_template="file_manager/record.html"
+        record_template="file_manager/record.html",
+        row_dictizer=file_row_dictizer,
     )
 
     ColumnsFactory = ApColumns.with_attributes(
@@ -33,10 +41,11 @@ class FileManagerCollection(ApCollection[Any]):
             "path",
             "kind",
             "uploaded_at",
+            "last_access",
             "extras",
             "row_actions",
         ],
-        sortable={"name", "kind", "uploaded_at"},
+        sortable={"name", "kind", "uploaded_at", "last_access"},
         searchable={"name"},
         labels={
             "bulk-action": tk.literal(
@@ -45,13 +54,14 @@ class FileManagerCollection(ApCollection[Any]):
                     name="bulk_check",
                     id="bulk_check",
                     data_module="ap-bulk-check",
-                    data_module_selector='input[name="id"]',
+                    data_module_selector='input[name="entity_id"]',
                 )
             ),
             "name": "Name",
             "path": "Path",
             "kind": "Type",
             "uploaded_at": "Uploaded At",
+            "last_access": "Last Access",
             "extras": "Extras",
             "row_actions": "Actions",
         },
@@ -59,22 +69,15 @@ class FileManagerCollection(ApCollection[Any]):
         serializers={
             "uploaded_at": [("date", {})],
             "extras": [("json_display", {})],
+            "last_access": [("day_passed", {})],
         },
     )
 
-    DataFactory = StatementSaData.with_attributes(
+    DataFactory = ModelData.with_attributes(
         model=File,
-        use_naive_filters=True,
+        is_scalar=True,
         use_naive_search=True,
-        statement=sa.select(
-            File.id.label("bulk-action"),
-            File.id.label("id"),
-            File.name.label("name"),
-            File.path.label("path"),
-            File.kind.label("kind"),
-            File.uploaded_at.label("uploaded_at"),
-            File.extras.label("extras"),
-        ),
+        use_naive_filters=True,
     )
 
     FiltersFactory = Filters.with_attributes(
@@ -98,7 +101,6 @@ class FileManagerCollection(ApCollection[Any]):
                     "icon": "fa fa-pencil",
                     "params": {
                         "data-module-path": "$id",
-                        "entity_type": "$type",
                         "view": "edit",
                     },
                 },
@@ -126,13 +128,15 @@ class FileManagerCollection(ApCollection[Any]):
                     "placeholder": "Search",
                 },
             ),
-            LinkFilter(
-                name="clear",
-                type="link",
+            ButtonFilter(
+                name="type",
+                type="button",
                 options={
                     "label": "Clear",
-                    "endpoint": "file_manager.list",
-                    "kwargs": {},
+                    "type": "button",
+                    "attrs": {
+                        "onclick": "$(this).closest('form').find('input,select').val('').prevObject[0].requestSubmit()"
+                    },
                 },
             ),
         ],

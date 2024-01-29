@@ -1,17 +1,13 @@
 {% extends 'admin_panel/base.html' %}
 
-{% import 'macros/autoform.html' as autoform %}
-{% import 'macros/form.html' as form %}
-{% import 'admin_panel/macros/form.html' as ap_form %}
-
-{% block ap_main_class %} ap-log-list {% endblock %}
+{% block ap_main_class %} file-manager-list {% endblock %}
 
 {% block breadcrumb_content %}
     <li>{% link_for _("File manager"), request.endpoint %}</li>
 {% endblock breadcrumb_content %}
 
 {% block ap_content %}
-    <div class="file-manager--manage mb-2">
+    <div class="file-manager--manage mb-2" data-module="fm-htmx" data-module-form-id="{{ collection.serializer.form_id }}">
         <button
             type="button"
             class="btn btn-success"
@@ -36,3 +32,9 @@
         {% endif %}
     </div> <!-- row -->
 {% endblock ap_content %}
+
+
+{% block scripts %}
+    {% asset 'file_manager/file-manager-js' %}
+    {{ super() }}
+{% endblock %}

@@ -5,10 +5,12 @@ import ckan.plugins.toolkit as tk
 
 import ckanext.ap_main.types as ap_types
 from ckanext.ap_main.interfaces import IAdminPanel
+from ckanext.ap_main.types import ColRenderer
 
 from ckanext.collection.interfaces import ICollection, CollectionFactory
 
 from ckanext.file_manager.collection import FileManagerCollection
+from ckanext.file_manager.col_renderers import get_renderers
 
 
 @tk.blanket.blueprints
@@ -42,6 +44,9 @@ class FileManagerPlugin(p.SingletonPlugin):
             )
         )
         return config_list
+
+    def get_col_renderers(self) -> dict[str, ColRenderer]:
+        return get_renderers()
 
     # ICollection
 

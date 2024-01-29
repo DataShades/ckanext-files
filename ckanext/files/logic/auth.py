@@ -21,3 +21,8 @@ def file_delete(context, data_dict):
 @auth
 def file_show(context, data_dict):
     {"success": False}
+
+
+@auth
+def get_unused_files(context, data_dict):
+    {"success": False}

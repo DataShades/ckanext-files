@@ -4,6 +4,9 @@ import ckan.plugins.toolkit as tk
 from .logic import action, auth, schema
 
 
+@tk.blanket.blueprints
+@tk.blanket.config_declarations
+@tk.blanket.cli
 class FilesPlugin(p.SingletonPlugin):
     p.implements(p.IActions)
     p.implements(p.IAuthFunctions)

@@ -88,6 +88,16 @@ the file, which config options will be applied, etc. Default value is
 
   Returns: `True`
 
+
+* `files_get_unused_files`
+
+  List of all `file`s, that are not used for N days.
+
+  Parameters:
+  * `threshold: Optional[int]`: threshold in days, default `180`.
+
+  Returns: `True`
+
 ## Config settings
 
 	# Allowed size for uploaded file in MB.

@@ -1,6 +1,8 @@
 from __future__ import annotations
+import datetime
 import os
 from typing import Any, Optional
+
 import ckan.plugins.toolkit as tk
 from ckan.logic import validate
 from ckan.lib.uploader import get_uploader, get_storage_path
@@ -99,13 +101,16 @@ def file_show(context, data_dict):
     if not file:
         raise tk.ObjectNotFound("File not found")
 
+    file.last_access = datetime.datetime.utcnow()
+    context["session"].commit()
+
     return file.dictize(context)
 
 
 def _remove_file_from_filesystem(file_path: str) -> bool:
     """Remove a file from the file system"""
     storage_path = get_storage_path()
-    file_path = os.path.join(storage_path, 'storage', file_path)
+    file_path = os.path.join(storage_path, "storage", file_path)
 
     if not os.path.exists(file_path):
         # TODO: What are we going to do then? Probably, skip silently
@@ -119,3 +124,24 @@ def _remove_file_from_filesystem(file_path: str) -> bool:
         return False
 
     return True
+
+
+@action
+@tk.side_effect_free
+@validate(schema.file_get_unused_files)
+def get_unused_files(context, data_dict):
+    """Return a list of unused file based on a configured threshold"""
+    tk.check_access("files_get_unused_files", context, data_dict)
+
+    threshold = datetime.datetime.utcnow() - datetime.timedelta(
+        days=data_dict["threshold"]
+    )
+
+    files: list[File] = (
+        context["session"]
+        .query(File)
+        .filter(File.last_access < threshold)
+        .order_by(File.last_access.desc())
+    ).all()
+
+    return [file.dictize(context) for file in files]

@@ -28,7 +28,7 @@ def file_row_dictizer(serializer: ApHtmxTableSerializer, row: File):
     return data
 
 
-class FileManagerCollection(ApCollection[Any]):
+class FileManagerCollection(ApCollection):
     SerializerFactory = ApHtmxTableSerializer.with_attributes(
         record_template="file_manager/record.html",
         row_dictizer=file_row_dictizer,

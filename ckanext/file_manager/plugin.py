@@ -1,10 +1,8 @@
 from __future__ import annotations
 
+import ckan.types as types
 import ckan.plugins as p
 import ckan.plugins.toolkit as tk
-
-import ckanext.ap_main.types as ap_types
-from ckanext.ap_main.interfaces import IAdminPanel
 
 from ckanext.collection.interfaces import ICollection, CollectionFactory
 
@@ -14,7 +12,7 @@ from ckanext.file_manager.collection import FileManagerCollection
 @tk.blanket.blueprints
 class FileManagerPlugin(p.SingletonPlugin):
     p.implements(p.IConfigurer)
-    p.implements(IAdminPanel, inherit=True)
+    p.implements(p.ISignal)
     p.implements(ICollection, inherit=True)
 
     # IConfigurer
@@ -24,26 +22,29 @@ class FileManagerPlugin(p.SingletonPlugin):
         tk.add_public_directory(config_, "public")
         tk.add_resource("assets", "file_manager")
 
-    # IAdminPanel
+    # ISignal
 
-    def register_config_sections(
-        self, config_list: list[ap_types.SectionConfig]
-    ) -> list[ap_types.SectionConfig]:
-        config_list.append(
-            ap_types.SectionConfig(
-                name="Files",
-                configs=[
-                    ap_types.ConfigurationItem(
-                        name="File manager",
-                        blueprint="file_manager.list",
-                        info="Manage uploaded files",
-                    )
-                ],
-            )
-        )
-        return config_list
+    def get_signal_subscriptions(self) -> types.SignalMapping:
+        return {
+            tk.signals.ckanext.signal("ap_main:collect_config_sections"): [
+                collect_config_sections_subs
+            ],
+        }
 
     # ICollection
 
     def get_collection_factories(self) -> dict[str, CollectionFactory]:
         return {"file-manager": FileManagerCollection}
+
+
+def collect_config_sections_subs(sender: None):
+    return {
+        "name": "Files",
+        "configs": [
+            {
+                "name": "File manager",
+                "blueprint": "file_manager.list",
+                "info": "Manage uploaded files",
+            }
+        ],
+    }

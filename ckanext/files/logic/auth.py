@@ -1,28 +1,32 @@
-from ckanext.toolbelt.decorators import Collector
+from ckanext.files.shared import make_collector
 
-auth, get_auth_functions = Collector("files").split()
+_auth_functions, auth = make_collector()
+
+
+def get_auth_functions():
+    return dict(_auth_functions)
 
 
 @auth
-def file_create(context, data_dict):
+def files_file_create(context, data_dict):
     return {"success": False}
 
 
 @auth
-def file_update(context, data_dict):
+def files_file_update(context, data_dict):
     return {"success": False}
 
 
 @auth
-def file_delete(context, data_dict):
+def files_file_delete(context, data_dict):
     return {"success": False}
 
 
 @auth
-def file_show(context, data_dict):
+def files_file_show(context, data_dict):
     return {"success": True}
 
 
 @auth
-def get_unused_files(context, data_dict):
+def files_get_unused_files(context, data_dict):
     return {"success": False}

@@ -18,7 +18,7 @@ def random_file(create_with_upload, faker):
 
 @pytest.mark.usefixtures("with_plugins")
 class TestFileCreate:
-    def test_basic_file(self, create_with_upload):
+    def test_basic_file(self, create_with_upload, ckan_config):
         filename = "file.txt"
         result = create_with_upload(
             "hello",
@@ -28,7 +28,7 @@ class TestFileCreate:
         )
 
         assert result["name"] == "test file"
-        assert result["url"] == f"/files/get_url/{result['id']}"
+        assert result["url"] == f"{ckan_config['ckan.site_url']}/files/get_url/{result['id']}"
 
 
 @pytest.mark.usefixtures("with_plugins")

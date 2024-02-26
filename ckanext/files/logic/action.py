@@ -7,15 +7,18 @@ import ckan.plugins.toolkit as tk
 from ckan.logic import validate
 from ckan.lib.uploader import get_uploader, get_storage_path
 
-from ckanext.toolbelt.decorators import Collector
-
+from ckanext.files.shared import make_collector
 from ckanext.files.model import File
 from . import schema
 
-action, get_actions = Collector("files").split()
+_actions, action = make_collector()
 
 CONFIG_SIZE = "ckanext.files.kind.{kind}.max_size"
 DEFAULT_SIZE = 2
+
+
+def get_actions():
+    return dict(_actions)
 
 
 def files_uploader(kind: str, old_filename: Optional[str] = None):
@@ -24,7 +27,8 @@ def files_uploader(kind: str, old_filename: Optional[str] = None):
 
 @action
 @validate(schema.file_create)
-def file_create(context, data_dict):
+def files_file_create(context, data_dict):
+    # type: (Context, dict[str, Any]) -> dict[str, Any]
     tk.check_access("files_file_create", context, data_dict)
 
     _upload(data_dict, data_dict["kind"])
@@ -52,7 +56,7 @@ def _upload(data_dict: dict[str, Any], kind: str):
 
 @action
 @validate(schema.file_update)
-def file_update(context, data_dict):
+def files_file_update(context, data_dict):
     tk.check_access("files_file_delete", context, data_dict)
     file: File = (
         context["session"]
@@ -74,7 +78,7 @@ def file_update(context, data_dict):
 
 
 @action
-def file_delete(context, data_dict):
+def files_file_delete(context, data_dict):
     id_ = tk.get_or_bust(data_dict, "id")
     tk.check_access("files_file_delete", context, data_dict)
     file = context["session"].query(File).filter_by(id=id_).one_or_none()
@@ -90,7 +94,7 @@ def file_delete(context, data_dict):
 
 
 @action
-def file_show(context, data_dict):
+def files_file_show(context, data_dict):
     id_ = tk.get_or_bust(data_dict, "id")
     tk.check_access("files_file_show", context, data_dict)
 
@@ -129,7 +133,7 @@ def _remove_file_from_filesystem(file_path: str) -> bool:
 @action
 @tk.side_effect_free
 @validate(schema.file_get_unused_files)
-def get_unused_files(context, data_dict):
+def files_get_unused_files(context, data_dict):
     """Return a list of unused file based on a configured threshold"""
     tk.check_access("files_get_unused_files", context, data_dict)
 

@@ -1,7 +1,6 @@
-from __future__ import annotations
+import six
 import datetime
 import os
-from typing import Any, Optional
 
 import ckan.plugins.toolkit as tk
 from ckan.logic import validate
@@ -10,6 +9,9 @@ from ckan.lib.uploader import get_uploader, get_storage_path
 from ckanext.files.shared import make_collector
 from ckanext.files.model import File
 from . import schema
+
+if six.PY3:
+    from typing import Any
 
 _actions, action = make_collector()
 
@@ -21,14 +23,15 @@ def get_actions():
     return dict(_actions)
 
 
-def files_uploader(kind: str, old_filename: Optional[str] = None):
+def files_uploader(kind, old_filename=None):
+    # type: (str, str | None) -> Any
     return get_uploader(kind, old_filename)
 
 
 @action
 @validate(schema.file_create)
 def files_file_create(context, data_dict):
-    # type: (Context, dict[str, Any]) -> dict[str, Any]
+    # type: (Any, dict[str, Any]) -> dict[str, Any]
     tk.check_access("files_file_create", context, data_dict)
 
     _upload(data_dict, data_dict["kind"])
@@ -39,13 +42,13 @@ def files_file_create(context, data_dict):
     return file.dictize(context)
 
 
-def _upload(data_dict: dict[str, Any], kind: str):
+def _upload(data_dict, kind):
+    # type: (dict[str, Any], str) -> None
+
     uploader = files_uploader(kind)
     uploader.update_data_dict(data_dict, "path", "upload", None)
 
-    max_size = tk.asint(
-        tk.config.get(CONFIG_SIZE.format(kind=kind), DEFAULT_SIZE)
-    )
+    max_size = tk.asint(tk.config.get(CONFIG_SIZE.format(kind=kind), DEFAULT_SIZE))
     uploader.upload(max_size)
 
     # TODO: try not to rely on hardcoded segments
@@ -57,12 +60,11 @@ def _upload(data_dict: dict[str, Any], kind: str):
 @action
 @validate(schema.file_update)
 def files_file_update(context, data_dict):
+    # type: (Any, dict[str, Any]) -> dict[str, Any]
+
     tk.check_access("files_file_delete", context, data_dict)
     file: File = (
-        context["session"]
-        .query(File)
-        .filter_by(id=data_dict["id"])
-        .one_or_none()
+        context["session"].query(File).filter_by(id=data_dict["id"]).one_or_none()
     )
     if not file:
         raise tk.ObjectNotFound("File not found")
@@ -79,6 +81,7 @@ def files_file_update(context, data_dict):
 
 @action
 def files_file_delete(context, data_dict):
+    # type: (Any, dict[str, Any]) -> bool
     id_ = tk.get_or_bust(data_dict, "id")
     tk.check_access("files_file_delete", context, data_dict)
     file = context["session"].query(File).filter_by(id=id_).one_or_none()
@@ -95,6 +98,7 @@ def files_file_delete(context, data_dict):
 
 @action
 def files_file_show(context, data_dict):
+    # type: (Any, dict[str, Any]) -> dict[str, Any]
     id_ = tk.get_or_bust(data_dict, "id")
     tk.check_access("files_file_show", context, data_dict)
 
@@ -111,7 +115,8 @@ def files_file_show(context, data_dict):
     return file.dictize(context)
 
 
-def _remove_file_from_filesystem(file_path: str) -> bool:
+def _remove_file_from_filesystem(file_path):
+    # type: (str) -> bool
     """Remove a file from the file system"""
     storage_path = get_storage_path()
     file_path = os.path.join(storage_path, "storage", file_path)
@@ -134,6 +139,7 @@ def _remove_file_from_filesystem(file_path: str) -> bool:
 @tk.side_effect_free
 @validate(schema.file_get_unused_files)
 def files_get_unused_files(context, data_dict):
+    # type: (Any, dict[str, Any]) -> list[dict[str, Any]]
     """Return a list of unused file based on a configured threshold"""
     tk.check_access("files_get_unused_files", context, data_dict)
 

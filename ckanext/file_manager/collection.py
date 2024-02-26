@@ -1,13 +1,12 @@
 from __future__ import annotations
 
-from typing import Any
 from ckanext.collection.utils.data.model import ModelData
 
 from dominate import tags
 
 import ckan.plugins.toolkit as tk
 
-from ckanext.collection.types import InputFilter, LinkFilter, ButtonFilter
+from ckanext.collection.types import InputFilter, ButtonFilter
 from ckanext.collection.utils import Filters
 
 from ckanext.ap_main.collection.base import (

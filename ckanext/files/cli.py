@@ -17,13 +17,12 @@ def files():
 @files.command()
 @click.option("--delete", "-d", is_flag=True, help="Delete orphaned datasets.")
 @click.argument("threshold", required=False, type=int)
-def remove_unused_files(delete: bool, threshold: int):
+def remove_unused_files(delete, threshold):
+    # type: (bool, int | None) -> None
     """Remove files that are not used for N days. The unused threshold is specified
     in a config"""
     threshold = (
-        threshold
-        if threshold is not None
-        else files_conf.get_unused_threshold()
+        threshold if threshold is not None else files_conf.get_unused_threshold()
     )
 
     files = tk.get_action("files_get_unused_files")(

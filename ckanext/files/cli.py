@@ -9,6 +9,10 @@ __all__ = [
 ]
 
 
+def get_commands():
+    return [files]
+
+
 @click.group(short_help="ckanext-files CLI commands")
 def files():
     pass

@@ -10,6 +10,10 @@ log = logging.getLogger(__name__)
 files = Blueprint("files", __name__)
 
 
+def get_blueprints():
+    return [files]
+
+
 class FilesGetFileView(MethodView):
     """This view is designed for serving files while also updating
     the 'last_access' field in the database for the corresponding file object.
@@ -29,9 +33,7 @@ class FilesGetFileView(MethodView):
         except (tk.ValidationError, OSError):
             return
 
-        return tk.redirect_to(
-            tk.h.url_for_static(file_data["path"], qualified=True)
-        )
+        return tk.redirect_to(tk.h.url_for_static(file_data["path"], qualified=True))
 
 
 files.add_url_rule(

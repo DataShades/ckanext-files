@@ -2,11 +2,15 @@ import six
 import datetime
 import os
 
+
+from werkzeug.utils import secure_filename
 import ckan.plugins.toolkit as tk
 from ckan.logic import validate
 from ckan.lib.uploader import get_uploader, get_storage_path
 
-from ckanext.files.shared import make_collector
+from ckanext.files import shared, exceptions
+from ckanext.files.storage import Capability
+from ckanext.files.utils import make_collector
 from ckanext.files.model import File
 from . import schema
 
@@ -14,9 +18,6 @@ if six.PY3:
     from typing import Any
 
 _actions, action = make_collector()
-
-CONFIG_SIZE = "ckanext.files.kind.{kind}.max_size"
-DEFAULT_SIZE = 2
 
 
 def get_actions():
@@ -34,105 +35,67 @@ def files_file_create(context, data_dict):
     # type: (Any, dict[str, Any]) -> dict[str, Any]
     tk.check_access("files_file_create", context, data_dict)
 
-    _upload(data_dict, data_dict["kind"])
-
-    file = File(**data_dict)
-    context["session"].add(file)
-    context["session"].commit()
-    return file.dictize(context)
-
-
-def _upload(data_dict, kind):
-    # type: (dict[str, Any], str) -> None
-
-    uploader = files_uploader(kind)
-    uploader.update_data_dict(data_dict, "path", "upload", None)
-
-    max_size = tk.asint(tk.config.get(CONFIG_SIZE.format(kind=kind), DEFAULT_SIZE))
-    uploader.upload(max_size)
-
-    # TODO: try not to rely on hardcoded segments
-    data_dict["path"] = os.path.relpath(
-        uploader.filepath, os.path.join(get_storage_path(), "storage")
-    )
-
-
-@action
-@validate(schema.file_update)
-def files_file_update(context, data_dict):
-    # type: (Any, dict[str, Any]) -> dict[str, Any]
-
-    tk.check_access("files_file_delete", context, data_dict)
-    file: File = (
-        context["session"].query(File).filter_by(id=data_dict["id"]).one_or_none()
-    )
-    if not file:
-        raise tk.ObjectNotFound("File not found")
-
-    # TODO: remove old file
-    if "upload" in data_dict:
-        _upload(data_dict, file.kind)
-
-    for attr, value in data_dict.items():
-        setattr(file, attr, value)
-    context["session"].commit()
-    return file.dictize(context)
-
-
-@action
-def files_file_delete(context, data_dict):
-    # type: (Any, dict[str, Any]) -> bool
-    id_ = tk.get_or_bust(data_dict, "id")
-    tk.check_access("files_file_delete", context, data_dict)
-    file = context["session"].query(File).filter_by(id=id_).one_or_none()
-    if not file:
-        raise tk.ObjectNotFound("File not found")
-
-    context["session"].delete(file)
-    context["session"].commit()
-
-    _remove_file_from_filesystem(file.path)
-
-    return True
-
-
-@action
-def files_file_show(context, data_dict):
-    # type: (Any, dict[str, Any]) -> dict[str, Any]
-    id_ = tk.get_or_bust(data_dict, "id")
-    tk.check_access("files_file_show", context, data_dict)
-
-    query = context["session"].query(File)
-    file = query.filter_by(id=id_).one_or_none()
-    if not file:
-        file = query.filter_by(name=id_).one_or_none()
-    if not file:
-        raise tk.ObjectNotFound("File not found")
-
-    file.last_access = datetime.datetime.utcnow()
-    context["session"].commit()
-
-    return file.dictize(context)
-
-
-def _remove_file_from_filesystem(file_path):
-    # type: (str) -> bool
-    """Remove a file from the file system"""
-    storage_path = get_storage_path()
-    file_path = os.path.join(storage_path, "storage", file_path)
-
-    if not os.path.exists(file_path):
-        # TODO: What are we going to do then? Probably, skip silently
-        return True
+    extras = data_dict.get("__extras", {})
+    name = secure_filename(data_dict["name"])
 
     try:
-        os.remove(file_path)
-    except OSError:
-        # TODO: in future, we are going to rewrite code a bit, so we could
-        # track files that are hanging by themselves and clear em
-        return False
+        storage = shared.get_storage(data_dict["storage"])
+    except exceptions.UnknownStorageError as err:
+        raise tk.ValidationError({"storage": [str(err)]})
 
-    return True
+    if not storage.supports(Capability.CREATE):
+        raise tk.ValidationError({"storage": ["Operation is not supported"]})
+
+    storage_data = storage.upload(name, data_dict["upload"], extras)
+    fileobj = File(name=name, storage=data_dict["storage"], storage_data=storage_data)
+
+    context["session"].add(fileobj)
+    if not context.get("defer_commit"):
+        context["session"].commit()
+
+    return fileobj.dictize(context)
+
+
+@action
+@validate(schema.file_delete)
+def files_file_delete(context, data_dict):
+    # type: (Any, dict[str, Any]) -> bool
+    tk.check_access("files_file_delete", context, data_dict)
+
+    data_dict["id"]
+    fileobj = context["session"].get(File, data_dict["id"])
+    if not fileobj:
+        raise tk.ObjectNotFound("file")
+
+    storage = shared.get_storage(fileobj.storage)
+    if not storage.supports(Capability.REMOVE):
+        raise tk.ValidationError({"storage": ["Operation is not supported"]})
+
+    storage.remove(fileobj.storage_data)
+    context["session"].delete(fileobj)
+    if not context.get("defer_commit"):
+        context["session"].commit()
+
+    return fileobj.dictize(context)
+
+
+@action
+@validate(schema.file_show)
+def files_file_show(context, data_dict):
+    # type: (Any, dict[str, Any]) -> dict[str, Any]
+    tk.check_access("files_file_show", context, data_dict)
+
+    data_dict["id"]
+    fileobj = context["session"].get(File, data_dict["id"])
+    if not fileobj:
+        raise tk.ObjectNotFound("file")
+
+    if context.get("update_access_time"):
+        fileobj.access()
+        if not context.get("defer_commit"):
+            context["session"].commit()
+
+    return fileobj.dictize(context)
 
 
 @action
@@ -147,11 +110,11 @@ def files_get_unused_files(context, data_dict):
         days=data_dict["threshold"]
     )
 
-    files: list[File] = (
+    files = (
         context["session"]
         .query(File)
-        .filter(File.last_access < threshold)
-        .order_by(File.last_access.desc())
+        .filter(File.atime < threshold)
+        .order_by(File.atime.desc())
     ).all()
 
     return [file.dictize(context) for file in files]

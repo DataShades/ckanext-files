@@ -66,29 +66,6 @@ the file, which config options will be applied, etc. Default value is
 
   Returns: same as `files_file_create`
 
-* `files_file_update`
-
-  Update `file` entity.
-
-  Parameters:
-  * `id: str`
-  * `name: Optional[str]` Name for the `file` file.
-  * `upload: Optional[werkzeug.datastructures.FileStorage]` File itself
-  * `kind: Optional[str]` Type of uploaded file.
-  * `extras: Optional[dict[str, Any]]` Dictionary with any details that can be used for your needs.
-
-  Returns: same as `files_file_create`
-
-* `files_file_delete`
-
-  Remove `file` entity.
-
-  Parameters:
-  * `id: str`: ID of file entity
-
-  Returns: `True`
-
-
 * `files_get_unused_files`
 
   List of all `file`s, that are not used for N days.

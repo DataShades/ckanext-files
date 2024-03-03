@@ -37,17 +37,17 @@ def remove_unused_files(delete, threshold):
         return click.secho("No unused files", fg="blue")
 
     click.secho(
-        f"Found unused files that were unused more than {threshold} days:", fg="green"
+        "Found unused files that were unused more than {} days:".format(threshold), fg="green"
     )
 
     for file in files:
-        click.echo(f"File path={file['path']}")
+        click.echo("File path={}".format(file['path']))
 
         if delete:
             tk.get_action("files_file_delete")(
                 {"ignore_auth": True}, {"id": file["id"]}
             )
-            click.echo(f"File was deleted", fg="red")
+            click.echo("File was deleted", fg="red")
 
     if not delete:
         click.secho(

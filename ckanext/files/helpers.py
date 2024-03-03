@@ -1,5 +1,5 @@
 import ckanext.files.config as files_conf
-from ckanext.files.shared import make_collector
+from ckanext.files.utils import make_collector
 
 
 _helpers, helper = make_collector()

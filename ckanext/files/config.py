@@ -1,8 +1,40 @@
+import six
+
+from collections import defaultdict
 import ckan.plugins.toolkit as tk
 
+if six.PY3:  # pragma: no cover
+    from typing import Any
+
+
 CONF_UNUSED_THRESHOLD = "ckanext.files.unused_threshold"
+DEFAULT_STORAGE = "ckanext.files.default_storage"
+
+STORAGE_PREFIX = "ckanext.files.storage."
 
 
 def get_unused_threshold():
     # type: () -> int
     return tk.asint(tk.config.get(CONF_UNUSED_THRESHOLD))
+
+
+def default_storage():
+    # type: () -> str
+    return tk.config.get(DEFAULT_STORAGE, "default")
+
+
+def storages():
+    # type: () -> dict[str, dict[str, Any]]
+    storages = defaultdict(lambda: defaultdict(dict))  # type: dict[str, dict[str, Any]]
+    prefix_len = len(STORAGE_PREFIX)
+    for k, v in tk.config.items():
+        if not k.startswith(STORAGE_PREFIX):
+            continue
+
+        try:
+            type, option = k[prefix_len:].split(".", 1)
+        except ValueError:
+            continue
+
+        storages[type][option] = v
+    return storages

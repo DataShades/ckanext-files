@@ -21,7 +21,8 @@ class FilesGetFileView(MethodView):
     The `last_access` field is updated inside `files_file_show` action.
     """
 
-    def get(self, file_id: str):
+    def get(self, file_id):
+        # type: (str) -> Any
         try:
             file_data = tk.get_action("files_file_show")(
                 {

@@ -1,44 +1,39 @@
+import six
 import ckan.plugins.toolkit as tk
 from ckan.logic.schema import validator_args
+from ckanext.files import config
 
-
-CONFIG_KIND = "ckanext.files.default.kind"
-DEFAULT_KIND = "ckanext_files_file"
+if six.PY3:
+    from typing import Any
 
 
 @validator_args
-def file_create(
-    ignore_empty,
-    dict_only,
-    not_empty,
-    unicode_safe,
-    default,
-    ignore,
-    not_missing,
-):
-    default_kind = tk.config.get(CONFIG_KIND, DEFAULT_KIND)
+def file_create(not_empty, unicode_safe, default, files_into_upload, not_missing):
+    # type: (Any, Any, Any, Any, Any) -> Any
     return {
         "name": [not_empty, unicode_safe],
-        "upload": [not_missing],
-        "kind": [default(default_kind), unicode_safe],
-        "extras": [ignore_empty, dict_only],
-        "__extras": [ignore],
+        "storage": [default(config.default_storage()), unicode_safe],
+        "upload": [not_missing, files_into_upload],
     }
 
 
 @validator_args
-def file_update(not_empty, ignore_missing, unicode_safe, dict_only, ignore):
+def file_delete(not_empty, unicode_safe):
+    # type: (Any, Any) -> Any
     return {
-        "id": [not_empty],
-        "name": [ignore_missing, unicode_safe],
-        "upload": [ignore_missing],
-        "extras": [ignore_missing, dict_only],
-        "__extras": [ignore],
+        "id": [not_empty, unicode_safe],
     }
 
+@validator_args
+def file_show(not_empty, unicode_safe):
+    # type: (Any, Any) -> Any
+    return {
+        "id": [not_empty, unicode_safe],
+    }
 
 @validator_args
 def file_get_unused_files(int_validator, default):
+    # type: (Any, Any) -> Any
     return {
         "threshold": [
             default(tk.config["ckanext.files.unused_threshold"]),

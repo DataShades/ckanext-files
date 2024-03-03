@@ -1,20 +1,30 @@
 # -*- coding: utf-8 -*-
 
 import six
+from ckanext.files.storage import Storage
+from ckanext.files.exceptions import UnknownStorageError
+from ckanext.files.utils import Registry, adapters, combine_capabilities
 
 if six.PY3:  # pragma: no cover
-    from typing import Any, Callable, TypeVar
-
-    T = TypeVar("T")
+    from typing import Any
 
 
-def make_collector():
-    # type: () -> tuple[dict[str, Any], Callable[[Any], Any]]
-    collection = {}
+__all__ = [
+    "get_storage",
+    "UnknownStorageError",
+    "Storage",
+    "adapters",
+    "combine_capabilities",
+]
 
-    def collector(fn):
-        # type: (T) -> T
-        collection[fn.__name__] = fn
-        return fn
+storages = Registry({})
 
-    return collection, collector
+
+def get_storage(name):
+    # type: (str) -> Storage
+    storage = storages.get(name)
+
+    if not storage:
+        raise UnknownStorageError(name)
+
+    return storage

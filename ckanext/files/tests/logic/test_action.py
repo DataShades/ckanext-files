@@ -28,17 +28,10 @@ class TestFileCreate:
         )
 
         assert result["name"] == "test file"
-        assert result["url"] == f"{ckan_config['ckan.site_url']}/files/get_url/{result['id']}"
-
-
-@pytest.mark.usefixtures("with_plugins")
-class TestFileUpdate:
-    def test_basic_update(self, random_file):
-        result = call_action(
-            "files_file_update", name="another name", id=random_file["id"]
+        assert (
+            result["url"]
+            == f"{ckan_config['ckan.site_url']}/files/get_url/{result['id']}"
         )
-        assert result["id"] == random_file["id"]
-        assert result["name"] == "another name"
 
 
 @pytest.mark.usefixtures("with_plugins")

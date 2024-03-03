@@ -41,10 +41,6 @@ class FileSystemManager(Manager):
 
 
 class FileSystemStorage(Storage):
-    capabilities = utils.combine_capabilities(
-        Capability.CREATE, Capability.STREAM, Capability.REMOVE
-    )
-
     def make_uploader(self):
         return FileSystemUploader(self)
 
@@ -61,10 +57,6 @@ class FileSystemStorage(Storage):
 
 
 class PublicFileSystemStorage(FileSystemStorage):
-    capabilities = utils.combine_capabilities(
-        FileSystemStorage.capabilities, Capability.DOWNLOAD
-    )
-
     def __init__(self, **settings):
         # type: (**Any) -> None
         self.ensure_option(settings, "public_root")

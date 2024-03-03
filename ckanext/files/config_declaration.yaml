@@ -2,7 +2,7 @@ version: 1
 groups:
   - annotation: ckanext-admin_panel
     options:
-      - key: ckanext.files.unused_threshold
-        type: int
-        description: Сonsider the file unused if there was no request for access within N days
-        default: 180
+      - key: ckanext.files.default_storage
+        default: default
+        description: |
+          Default storage used for upload when no explicit storage specified

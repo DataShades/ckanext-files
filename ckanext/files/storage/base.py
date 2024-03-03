@@ -78,6 +78,7 @@ class Storage(OptionChecker):
     def __init__(self, **settings):
         # type: (**Any) -> None
         self.settings = settings
+
         self.uploader = self.make_uploader()
         self.manager = self.make_manager()
         self.reader = self.make_reader()

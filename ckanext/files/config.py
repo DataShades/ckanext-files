@@ -7,15 +7,9 @@ if six.PY3:  # pragma: no cover
     from typing import Any
 
 
-CONF_UNUSED_THRESHOLD = "ckanext.files.unused_threshold"
 DEFAULT_STORAGE = "ckanext.files.default_storage"
 
 STORAGE_PREFIX = "ckanext.files.storage."
-
-
-def get_unused_threshold():
-    # type: () -> int
-    return tk.asint(tk.config.get(CONF_UNUSED_THRESHOLD))
 
 
 def default_storage():

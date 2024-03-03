@@ -96,25 +96,3 @@ def files_file_show(context, data_dict):
             context["session"].commit()
 
     return fileobj.dictize(context)
-
-
-@action
-@tk.side_effect_free
-@validate(schema.file_get_unused_files)
-def files_get_unused_files(context, data_dict):
-    # type: (Any, dict[str, Any]) -> list[dict[str, Any]]
-    """Return a list of unused file based on a configured threshold"""
-    tk.check_access("files_get_unused_files", context, data_dict)
-
-    threshold = datetime.datetime.utcnow() - datetime.timedelta(
-        days=data_dict["threshold"]
-    )
-
-    files = (
-        context["session"]
-        .query(File)
-        .filter(File.atime < threshold)
-        .order_by(File.atime.desc())
-    ).all()
-
-    return [file.dictize(context) for file in files]

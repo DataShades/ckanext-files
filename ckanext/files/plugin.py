@@ -34,10 +34,16 @@ class FilesPlugin(p.SingletonPlugin):
     # IFiles
     def files_get_storage_adapters(self):
         # type: () -> dict[str, Any]
-        return {
+        adapters = {}  # type: dict[str, Any]
+        adapters = {
             "files:fs": storage.FileSystemStorage,
-            "files:public_fs": storage.FileSystemStorage,
+            "files:public_fs": storage.PublicFileSystemStorage,
         }
+
+        if hasattr(storage, "GoogleCloudStorage"):
+            adapters.update({"files:google_cloud_storage": storage.GoogleCloudStorage})
+
+        return adapters
 
     # IConfigurable
     def configure(self, config_):

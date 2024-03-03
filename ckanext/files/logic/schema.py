@@ -1,5 +1,5 @@
 import six
-import ckan.plugins.toolkit as tk
+
 from ckan.logic.schema import validator_args
 from ckanext.files import config
 
@@ -29,14 +29,4 @@ def file_show(not_empty, unicode_safe):
     # type: (Any, Any) -> Any
     return {
         "id": [not_empty, unicode_safe],
-    }
-
-@validator_args
-def file_get_unused_files(int_validator, default):
-    # type: (Any, Any) -> Any
-    return {
-        "threshold": [
-            default(tk.config["ckanext.files.unused_threshold"]),
-            int_validator,
-        ],
     }

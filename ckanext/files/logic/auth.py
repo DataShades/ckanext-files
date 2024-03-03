@@ -27,9 +27,3 @@ def files_file_delete(context, data_dict):
 def files_file_show(context, data_dict):
     # type: (Any, dict[str, Any]) -> Any
     return {"success": True}
-
-
-@auth
-def files_get_unused_files(context, data_dict):
-    # type: (Any, dict[str, Any]) -> Any
-    return {"success": False}

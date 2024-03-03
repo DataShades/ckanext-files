@@ -1,6 +1,5 @@
 from ckanext.files.utils import make_collector
 
-
 _helpers, helper = make_collector()
 
 

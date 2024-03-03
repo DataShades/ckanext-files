@@ -6,11 +6,11 @@ Create Date: 2024-02-28 20:11:11.274864
 
 """
 import os
-from alembic import op
-import sqlalchemy as sa
 from datetime import datetime
-from sqlalchemy.dialects.postgresql import JSONB
 
+import sqlalchemy as sa
+from alembic import op
+from sqlalchemy.dialects.postgresql import JSONB
 
 # revision identifiers, used by Alembic.
 revision = "5851e09b7ca3"
@@ -47,7 +47,9 @@ def upgrade():
             .where(table.c.id == id)
         )
 
-    op.alter_column("files_file", "extras", server_default="{}", new_column_name="storage_data")
+    op.alter_column(
+        "files_file", "extras", server_default="{}", new_column_name="storage_data"
+    )
     op.drop_column("files_file", "last_access")
     op.drop_column("files_file", "path")
 
@@ -69,7 +71,9 @@ def downgrade():
     )
     op.alter_column("files_file", "storage", new_column_name="kind")
     op.alter_column("files_file", "ctime", new_column_name="uploaded_at")
-    op.alter_column("files_file", "storage_data", server_default=None, new_column_name="extras")
+    op.alter_column(
+        "files_file", "storage_data", server_default=None, new_column_name="extras"
+    )
 
     stmt = sa.select(table.c.id, table.c.atime, table.c.extras)
     for id, atime, extras in bind.execute(stmt):

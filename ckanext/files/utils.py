@@ -1,16 +1,17 @@
 # -*- coding: utf-8 -*-
 
 import six
+
 from ckanext.files import exceptions
-from werkzeug.datastructures import FileStorage
 
 if six.PY3:  # pragma: no cover
-    from typing import Any, Callable, TypeVar, TYPE_CHECKING, Iterable
+    from typing import TYPE_CHECKING, TypeVar
+    from typing import Callable, Any  # isort: skip
 
     T = TypeVar("T")
     if TYPE_CHECKING:
-        from ckanext.files.storage import Storage
-        from ckanext.files.storage.base import CapabilityCluster, CapabilityUnit
+        from ckanext.files.storage.base import Storage, CapabilityUnit, CapabilityCluster  # isort: skip
+        from werkzeug.datastructures import FileStorage  # isort: skip
 
 
 class Registry(object):
@@ -43,6 +44,7 @@ def make_collector():
 
 
 adapters = Registry({})
+storages = Registry({})
 
 
 def storage_from_settings(settings):

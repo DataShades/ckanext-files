@@ -1,6 +1,5 @@
-from .base import Storage, Capability, Uploader, Manager, Reader
-from .fs import FileSystemUploader, FileSystemStorage, PublicFileSystemStorage
-
+from .base import Capability, Storage, Uploader, Manager, Reader
+from .fs import FileSystemStorage, FileSystemUploader, PublicFileSystemStorage
 
 try:
     from .google_cloud import GoogleCloudStorage
@@ -11,6 +10,8 @@ __all__ = [
     "Storage",
     "Capability",
     "Uploader",
+    "Manager",
+    "Reader",
     "FileSystemUploader",
     "FileSystemStorage",
     "PublicFileSystemStorage",

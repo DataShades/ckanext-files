@@ -1,21 +1,22 @@
 import six
+
 import ckan.plugins as p
 import ckan.plugins.toolkit as tk
 
 from ckanext.files import (
-    views,
-    helpers,
     cli,
-    shared,
     config,
-    utils,
+    helpers,
     interfaces,
+    shared,
     storage,
+    utils,
+    views,
 )
 from ckanext.files.logic import action, auth, validators
 
 if six.PY3:  # pragma: no cover
-    from typing import Any
+    from typing import Any  # isort: skip
 
 
 class FilesPlugin(p.SingletonPlugin):

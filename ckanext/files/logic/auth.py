@@ -1,8 +1,10 @@
 import six
+
 from ckanext.files.utils import make_collector
 
 if six.PY3:
-    from typing import Any
+    from typing import Any  # isort: skip
+
 
 _auth_functions, auth = make_collector()
 

@@ -1,15 +1,20 @@
-import six
-import uuid
 import os
-from werkzeug.datastructures import FileStorage
+import uuid
 
+import six
 from google.cloud.storage import Client
 from google.oauth2.service_account import Credentials
-from .base import Storage, Uploader, Manager, Capability
+
 from ckanext.files import utils
 
+from .base import Capability, Manager, Storage, Uploader
+
 if six.PY3:
-    from typing import Any
+    from typing import TYPE_CHECKING
+    from typing import Any  # isort: skip
+
+    if TYPE_CHECKING:
+        from werkzeug.datastructures import FileStorage  # isort: skip
 
 
 class GoogleCloudUploader(Uploader):

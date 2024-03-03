@@ -5,7 +5,6 @@ from flask.views import MethodView
 
 import ckan.plugins.toolkit as tk
 
-
 log = logging.getLogger(__name__)
 files = Blueprint("files", __name__)
 

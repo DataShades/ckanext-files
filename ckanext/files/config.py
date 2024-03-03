@@ -1,10 +1,11 @@
+from collections import defaultdict
+
 import six
 
-from collections import defaultdict
 import ckan.plugins.toolkit as tk
 
 if six.PY3:  # pragma: no cover
-    from typing import Any
+    from typing import Any  # isort: skip
 
 
 DEFAULT_STORAGE = "ckanext.files.default_storage"

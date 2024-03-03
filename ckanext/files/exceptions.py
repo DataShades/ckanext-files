@@ -1,8 +1,9 @@
 import six
+
 from ckan.lib.formatters import localised_filesize
 
 if six.PY3:
-    from typing import Any
+    pass
 
 
 class FilesError(Exception):

@@ -1,11 +1,10 @@
 from __future__ import annotations
 
-import ckan.types as types
 import ckan.plugins as p
 import ckan.plugins.toolkit as tk
+import ckan.types as types
 
-from ckanext.collection.interfaces import ICollection, CollectionFactory
-
+from ckanext.collection.interfaces import CollectionFactory, ICollection
 from ckanext.file_manager.collection import FileManagerCollection
 
 

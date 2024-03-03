@@ -1,21 +1,19 @@
 from __future__ import annotations
 
-from ckanext.collection.utils.data.model import ModelData
-
 from dominate import tags
 
 import ckan.plugins.toolkit as tk
 
-from ckanext.collection.types import InputFilter, ButtonFilter
-from ckanext.collection.utils import Filters
-
 from ckanext.ap_main.collection.base import (
     ApCollection,
     ApColumns,
+    ApHtmxTableSerializer,
     BulkAction,
     RowAction,
-    ApHtmxTableSerializer,
 )
+from ckanext.collection.types import ButtonFilter, InputFilter
+from ckanext.collection.utils import Filters
+from ckanext.collection.utils.data.model import ModelData
 
 from ckanext.files.model import File
 

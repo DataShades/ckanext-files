@@ -1,10 +1,11 @@
 import six
 
 from ckan.logic.schema import validator_args
+
 from ckanext.files import config
 
 if six.PY3:
-    from typing import Any
+    from typing import Any  # isort: skip
 
 
 @validator_args
@@ -23,6 +24,7 @@ def file_delete(not_empty, unicode_safe):
     return {
         "id": [not_empty, unicode_safe],
     }
+
 
 @validator_args
 def file_show(not_empty, unicode_safe):

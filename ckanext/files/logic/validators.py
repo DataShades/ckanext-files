@@ -1,15 +1,17 @@
-import six
-
 import cgi
-import magic
 import mimetypes
 from io import BytesIO
-import ckan.plugins.toolkit as tk
+
+import magic
+import six
 from werkzeug.datastructures import FileStorage
+
+import ckan.plugins.toolkit as tk
+
 from ckanext.files.utils import make_collector
 
 if six.PY3:
-    from typing import Any
+    from typing import Any  # isort: skip
 
 _validators, validator = make_collector()
 

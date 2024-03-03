@@ -1,6 +1,5 @@
 import click
 
-
 __all__ = [
     "files",
 ]

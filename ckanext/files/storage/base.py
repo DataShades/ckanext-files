@@ -1,15 +1,17 @@
-import uuid
-import logging
-import six
-import os
 import abc
-from werkzeug.datastructures import FileStorage
-from ckanext.files import exceptions, utils
+
+import six
+
 import ckan.plugins.toolkit as tk
 
+from ckanext.files import exceptions, utils
+
 if six.PY3:
-    from typing import Any, Iterable, IO
-    from typing_extensions import NewType
+    from typing_extensions import NewType, TYPE_CHECKING
+    from typing import Any, IO  # isort: skip
+
+    if TYPE_CHECKING:
+        from werkzeug.datastructures import FileStorage  # isort: skip
 
     CapabilityCluster = NewType("CapabilityCluster", int)
     CapabilityUnit = NewType("CapabilityUnit", int)

@@ -1,23 +1,16 @@
-# -*- coding: utf-8 -*-
-
-import six
-from ckanext.files.storage import Storage
 from ckanext.files.exceptions import UnknownStorageError
-from ckanext.files.utils import Registry, adapters, combine_capabilities
-
-if six.PY3:  # pragma: no cover
-    from typing import Any
-
+from ckanext.files.storage import Capability, Manager, Storage, Uploader, Reader
+from ckanext.files.utils import combine_capabilities, storages
 
 __all__ = [
-    "get_storage",
-    "UnknownStorageError",
-    "Storage",
-    "adapters",
     "combine_capabilities",
+    "get_storage",
+    "Storage",
+    "Uploader",
+    "Reader",
+    "Manager",
+    "Capability",
 ]
-
-storages = Registry({})
 
 
 def get_storage(name):

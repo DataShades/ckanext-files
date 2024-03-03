@@ -1,19 +1,17 @@
-import six
-
 import copy
 from datetime import datetime
 
-
-from sqlalchemy import Column, UnicodeText, DateTime
+import six
+from sqlalchemy import Column, DateTime, UnicodeText
 from sqlalchemy.dialects.postgresql import JSONB
 
-import ckan.plugins.toolkit as tk
-from ckan.model.types import make_uuid
 from ckan.lib.dictization import table_dictize
+from ckan.model.types import make_uuid
+
 from .base import Base
 
 if six.PY3:
-    from typing import Any
+    pass
 
 
 def now():

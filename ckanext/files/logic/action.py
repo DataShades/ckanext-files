@@ -1,32 +1,24 @@
 import six
-import datetime
-import os
-
-
 from werkzeug.utils import secure_filename
+
 import ckan.plugins.toolkit as tk
 from ckan.logic import validate
-from ckan.lib.uploader import get_uploader, get_storage_path
 
-from ckanext.files import shared, exceptions
+from ckanext.files import exceptions, shared
+from ckanext.files.model import File
 from ckanext.files.storage import Capability
 from ckanext.files.utils import make_collector
-from ckanext.files.model import File
+
 from . import schema
 
 if six.PY3:
-    from typing import Any
+    pass
 
 _actions, action = make_collector()
 
 
 def get_actions():
     return dict(_actions)
-
-
-def files_uploader(kind, old_filename=None):
-    # type: (str, str | None) -> Any
-    return get_uploader(kind, old_filename)
 
 
 @action

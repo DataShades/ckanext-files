@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import logging
-from typing import Union, Callable
+from typing import Callable, Union
 
 from flask import Blueprint, Response
 from flask.views import MethodView
@@ -9,11 +9,8 @@ from flask.views import MethodView
 import ckan.plugins.toolkit as tk
 from ckan.logic import parse_params
 
-from ckanext.collection.shared import get_collection
-
 from ckanext.ap_main.utils import ap_before_request
-from ckanext.ap_main.views.generics import ApConfigurationPageView
-
+from ckanext.collection.shared import get_collection
 
 log = logging.getLogger(__name__)
 file_manager = Blueprint(
@@ -37,9 +34,7 @@ class FileManagerView(MethodView):
         bulk_action = tk.request.form.get("bulk-action")
         file_ids = tk.request.form.getlist("entity_id")
 
-        action_func = (
-            self._get_bulk_action(bulk_action) if bulk_action else None
-        )
+        action_func = self._get_bulk_action(bulk_action) if bulk_action else None
 
         if not action_func:
             tk.h.flash_error(tk._("The bulk action is not implemented"))
@@ -92,9 +87,7 @@ class FileManagerUploadView(MethodView):
 class FileManagerDeleteView(MethodView):
     def post(self, file_id: str):
         try:
-            tk.get_action("files_file_delete")(
-                {"ignore_auth": True}, {"id": file_id}
-            )
+            tk.get_action("files_file_delete")({"ignore_auth": True}, {"id": file_id})
         except (tk.ValidationError, OSError) as e:
             tk.h.flash_error(str(e.error_summary))
             return tk.redirect_to("file_manager.list")
@@ -106,9 +99,7 @@ class FileManagerDeleteView(MethodView):
 file_manager.delete
 
 file_manager.add_url_rule("/manage", view_func=FileManagerView.as_view("list"))
-file_manager.add_url_rule(
-    "/upload", view_func=FileManagerUploadView.as_view("upload")
-)
+file_manager.add_url_rule("/upload", view_func=FileManagerUploadView.as_view("upload"))
 file_manager.add_url_rule(
     "/delete/<file_id>", view_func=FileManagerDeleteView.as_view("delete")
 )

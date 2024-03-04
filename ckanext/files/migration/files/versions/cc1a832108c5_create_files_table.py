@@ -19,11 +19,7 @@ depends_on = None
 def upgrade():
     op.create_table(
         "files_file",
-        sa.Column(
-            "id",
-            sa.UnicodeText,
-            primary_key=True,
-        ),
+        sa.Column("id", sa.UnicodeText, primary_key=True),
         sa.Column("name", sa.UnicodeText, nullable=False),
         sa.Column("path", sa.UnicodeText, nullable=False),
         sa.Column("kind", sa.UnicodeText, nullable=False),

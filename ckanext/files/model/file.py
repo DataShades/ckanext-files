@@ -1,5 +1,4 @@
 import copy
-from datetime import datetime
 
 import six
 from sqlalchemy import Column, DateTime, UnicodeText
@@ -8,14 +7,10 @@ from sqlalchemy.dialects.postgresql import JSONB
 from ckan.lib.dictization import table_dictize
 from ckan.model.types import make_uuid
 
-from .base import Base
+from .base import Base, now
 
 if six.PY3:
-    pass
-
-
-def now():
-    return datetime.utcnow()
+    from typing import Any  # isort: skip
 
 
 class File(Base):  # type: ignore

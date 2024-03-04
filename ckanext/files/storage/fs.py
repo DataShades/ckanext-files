@@ -3,17 +3,17 @@ import os
 import uuid
 
 import six
+from werkzeug.datastructures import FileStorage
 
-from ckanext.files import utils
+import ckan.plugins.toolkit as tk
+
+from ckanext.files import exceptions, utils
+from ckanext.files.model import file
 
 from .base import Capability, Manager, Storage, Uploader
 
 if six.PY3:
-    from typing import TYPE_CHECKING
     from typing import Any  # isort: skip
-
-    if TYPE_CHECKING:
-        from werkzeug.datastructures import FileStorage  # isort: skip
 
 
 log = logging.getLogger(__name__)
@@ -21,16 +21,96 @@ log = logging.getLogger(__name__)
 
 class FileSystemUploader(Uploader):
     required_options = ["path"]
-    capabilities = utils.combine_capabilities(Capability.CREATE)
+    capabilities = utils.combine_capabilities(
+        Capability.CREATE, Capability.MULTIPART_UPLOAD
+    )
 
     def upload(self, name, upload, extras):  # pragma: no cover
         # type: (str, FileStorage, dict[str, Any]) -> dict[str, Any]
         filename = str(uuid.uuid4())
         filepath = os.path.join(self.storage.settings["path"], filename)
 
-        upload.save(filepath)
+        with open(filepath, "wb") as dest:
+            upload.save(dest)
 
-        return {"filename": filename, "content_type": upload.content_type}
+        return {
+            "filename": filename,
+            "content_type": upload.content_type,
+            "size": os.path.getsize(filepath),
+        }
+
+    def initialize_multipart_upload(self, name, extras):
+        # type: (str, dict[str, Any]) -> dict[str, Any]
+        schema = {
+            "size": [
+                tk.get_validator("not_missing"),
+                tk.get_validator("int_validator"),
+            ],
+            "__extras": [tk.get_validator("ignore")],
+        }
+        data, errors = tk.navl_validate(extras, schema)
+
+        if errors:
+            raise tk.ValidationError(errors)
+
+        upload = FileStorage(content_length=data["size"])
+
+        max_size = self.storage.max_size
+        if max_size:
+            utils.ensure_size(upload, max_size)
+
+        result = self.upload(name, upload, data)
+        result["size"] = data["size"]
+
+        return result
+
+    def update_multipart_upload(self, upload_data, extras):
+        # type: (dict[str, Any], dict[str, Any]) -> dict[str, Any]
+        schema = {
+            "position": [
+                tk.get_validator("not_missing"),
+                tk.get_validator("int_validator"),
+            ],
+            "upload": [
+                tk.get_validator("not_missing"),
+                tk.get_validator("files_into_upload"),
+            ],
+            "__extras": [tk.get_validator("ignore")],
+        }
+        data, errors = tk.navl_validate(extras, schema)
+
+        if errors:
+            raise tk.ValidationError(errors)
+
+        upload = data["upload"]  # type: FileStorage
+
+        expected_size = data["position"] + upload.content_length
+        if expected_size > upload_data["size"]:
+            raise exceptions.UploadOutOfBoundError(expected_size, upload_data["size"])
+
+        filepath = os.path.join(self.storage.settings["path"], upload_data["filename"])
+        with open(filepath, "rb+") as dest:
+            dest.seek(data["position"])
+            dest.write(upload.stream.read())
+
+        return upload_data
+
+    def complete_multipart_upload(self, upload_data, extras):
+        # type: (dict[str, Any], dict[str, Any]) -> dict[str, Any]
+        filepath = os.path.join(self.storage.settings["path"], upload_data["filename"])
+        size = os.path.getsize(filepath)
+        if size != upload_data["size"]:
+            raise tk.ValidationError(
+                {
+                    "size": [
+                        "Actual filesize {} does not match expected {}".format(
+                            size, upload_data["size"]
+                        )
+                    ]
+                }
+            )
+
+        return upload_data
 
 
 class FileSystemManager(Manager):

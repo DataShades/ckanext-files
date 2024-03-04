@@ -94,3 +94,12 @@ class LargeUploadError(UploadError):
         return "Upload size {} surpasses max allowed size {}".format(
             localised_filesize(self.actual_size), localised_filesize(self.max_size)
         )
+
+
+class UploadOutOfBoundError(LargeUploadError):
+    """Multipart upload exceeds expected size."""
+
+    def __str__(self):
+        return "Upload size {} exceeds expected size {}".format(
+            localised_filesize(self.actual_size), localised_filesize(self.max_size)
+        )

@@ -1,4 +1,5 @@
 import abc
+import copy
 
 import six
 
@@ -7,7 +8,8 @@ import ckan.plugins.toolkit as tk
 from ckanext.files import exceptions, utils
 
 if six.PY3:
-    from typing_extensions import NewType, TYPE_CHECKING
+    from typing_extensions import TYPE_CHECKING, NewType
+
     from typing import Any, IO  # isort: skip
 
     if TYPE_CHECKING:
@@ -22,6 +24,7 @@ class Capability(object):
     STREAM = 1 << 1  # type: CapabilityUnit
     DOWNLOAD = 1 << 2  # type: CapabilityUnit
     REMOVE = 1 << 3  # type: CapabilityUnit
+    MULTIPART_UPLOAD = 1 << 4  # type: CapabilityUnit
 
 
 class OptionChecker(object):
@@ -53,6 +56,18 @@ class Uploader(StorageService):
     @abc.abstractmethod
     def upload(self, name, upload, extras):
         # type: (str, FileStorage, dict[str, Any]) -> dict[str, Any]
+        raise NotImplementedError
+
+    def initialize_multipart_upload(self, name, extras):
+        # type: (str, dict[str, Any]) -> dict[str, Any]
+        raise NotImplementedError
+
+    def update_multipart_upload(self, upload_data, extras):
+        # type: (dict[str, Any], dict[str, Any]) -> dict[str, Any]
+        raise NotImplementedError
+
+    def complete_multipart_upload(self, upload_data, extras):
+        # type: (dict[str, Any], dict[str, Any]) -> dict[str, Any]
         raise NotImplementedError
 
 
@@ -87,6 +102,10 @@ class Storage(OptionChecker):
 
         self.capabilities = self.compute_capabilities()
 
+    @property
+    def max_size(self):
+        return tk.asint(self.settings.get("max_size", 0))
+
     def compute_capabilities(self):
         # type: () -> CapabilityCluster
         return utils.combine_capabilities(
@@ -113,12 +132,24 @@ class Storage(OptionChecker):
         if not self.supports(Capability.CREATE):
             raise exceptions.UnsupportedOperationError("upload", type(self).__name__)
 
-        max_size = tk.asint(self.settings.get("max_size", 0))
-
-        if max_size:
-            utils.ensure_size(upload, max_size)
+        if self.max_size:
+            utils.ensure_size(upload, self.max_size)
 
         return self.uploader.upload(name, upload, extras)
+
+    def initialize_multipart_upload(self, name, extras):
+        # type: (str, dict[str, Any]) -> dict[str, Any]
+        return self.uploader.initialize_multipart_upload(name, extras)
+
+    def update_multipart_upload(self, upload_data, extras):
+        # type: (dict[str, Any], dict[str, Any]) -> dict[str, Any]
+        return self.uploader.update_multipart_upload(copy.deepcopy(upload_data), extras)
+
+    def complete_multipart_upload(self, upload_data, extras):
+        # type: (dict[str, Any], dict[str, Any]) -> dict[str, Any]
+        return self.uploader.complete_multipart_upload(
+            copy.deepcopy(upload_data), extras
+        )
 
     def remove(self, data):
         # type: (dict[str, Any]) -> bool

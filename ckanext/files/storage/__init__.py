@@ -1,4 +1,4 @@
-from .base import Capability, Storage, Uploader, Manager, Reader
+from .base import Capability, Manager, Reader, Storage, Uploader
 from .fs import FileSystemStorage, FileSystemUploader, PublicFileSystemStorage
 
 try:

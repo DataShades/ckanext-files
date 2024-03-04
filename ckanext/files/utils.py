@@ -6,11 +6,17 @@ from ckanext.files import exceptions
 
 if six.PY3:  # pragma: no cover
     from typing import TYPE_CHECKING, TypeVar
+
     from typing import Callable, Any  # isort: skip
 
     T = TypeVar("T")
     if TYPE_CHECKING:
-        from ckanext.files.storage.base import Storage, CapabilityUnit, CapabilityCluster  # isort: skip
+        from ckanext.files.storage.base import (  # isort: skip
+            CapabilityCluster,
+            CapabilityUnit,
+            Storage,
+        )
+
         from werkzeug.datastructures import FileStorage  # isort: skip
 
 

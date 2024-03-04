@@ -32,3 +32,28 @@ def file_show(not_empty, unicode_safe):
     return {
         "id": [not_empty, unicode_safe],
     }
+
+
+@validator_args
+def upload_initialize(not_empty, unicode_safe, default, int_validator, not_missing):
+    # type: (Any, Any, Any, Any, Any) -> Any
+    return {
+        "name": [not_empty, unicode_safe],
+        "storage": [default(config.default_storage()), unicode_safe],
+    }
+
+
+@validator_args
+def upload_update(not_empty, unicode_safe):
+    # type: (Any, Any) -> Any
+    return {
+        "id": [not_empty, unicode_safe],
+    }
+
+
+@validator_args
+def upload_complete(not_empty, unicode_safe):
+    # type: (Any, Any) -> Any
+    return {
+        "id": [not_empty, unicode_safe],
+    }

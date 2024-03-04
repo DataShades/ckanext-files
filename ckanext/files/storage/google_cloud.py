@@ -1,7 +1,8 @@
+import base64
 import os
 import re
 import uuid
-import base64
+
 import requests
 import six
 from google.cloud.storage import Client
@@ -16,7 +17,16 @@ from .base import Capability, Manager, Storage, Uploader
 if six.PY3:
     from typing import TYPE_CHECKING
 
+    from typing_extensions import TypedDict
+
+    from .base import MinimalStorageData
+
     from typing import Any  # isort: skip
+
+    GCAdditionalData = TypedDict("GCAdditionalData", {"filename": str})
+
+    class GCStorageData(GCAdditionalData, MinimalStorageData):
+        pass
 
     if TYPE_CHECKING:
         from werkzeug.datastructures import FileStorage  # isort: skip
@@ -34,7 +44,7 @@ class GoogleCloudUploader(Uploader):
     )
 
     def upload(self, name, upload, extras):  # pragma: no cover
-        # type: (str, FileStorage, dict[str, Any]) -> dict[str, Any]
+        # type: (str, FileStorage, dict[str, Any]) -> GCStorageData
         filename = str(uuid.uuid4())
         filepath = os.path.join(self.storage.settings["path"], filename)
 
@@ -46,7 +56,7 @@ class GoogleCloudUploader(Uploader):
             "filename": filename,
             "content_type": upload.content_type,
             "hash": filehash,
-            "size": blob.size,
+            "size": blob.size or upload.content_length,
         }
 
     def initialize_multipart_upload(self, name, extras):
@@ -74,7 +84,7 @@ class GoogleCloudUploader(Uploader):
         if max_size and data["size"] > max_size:
             raise exceptions.LargeUploadError(data["size"], max_size)
 
-        url = blob.create_resumable_upload_session(size=data["size"])
+        url = blob.create_resumable_upload_session(size=data["size"])  # type: str
 
         return {"session_url": url, "size": data["size"], "uploaded": 0}
 
@@ -132,7 +142,7 @@ class GoogleCloudUploader(Uploader):
         return upload_data
 
     def complete_multipart_upload(self, upload_data, extras):
-        # type: (dict[str, Any], dict[str, Any]) -> dict[str, Any]
+        # type: (dict[str, Any], dict[str, Any]) -> GCStorageData
         if upload_data["uploaded"] != upload_data["size"]:
             raise tk.ValidationError(
                 {

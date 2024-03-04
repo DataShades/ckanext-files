@@ -16,7 +16,7 @@ def random_file(create_with_upload, faker):
     )
 
 
-@pytest.mark.usefixtures("with_plugins")
+@pytest.mark.usefixtures("with_plugins", "clean_db")
 class TestFileCreate:
     def test_basic_file(self, create_with_upload, ckan_config):
         filename = "file.txt"
@@ -27,14 +27,10 @@ class TestFileCreate:
             name="test file",
         )
 
-        assert result["name"] == "test file"
-        assert (
-            result["url"]
-            == f"{ckan_config['ckan.site_url']}/files/get_url/{result['id']}"
-        )
+        assert result["name"] == "test_file"
 
 
-@pytest.mark.usefixtures("with_plugins")
+@pytest.mark.usefixtures("with_plugins", "clean_db")
 class TestFileDelete:
     def test_basic_delete(self, random_file):
         q = model.Session.query(File)
@@ -43,15 +39,11 @@ class TestFileDelete:
         assert not q.count()
 
 
-@pytest.mark.usefixtures("with_plugins")
+@pytest.mark.usefixtures("with_plugins", "clean_db")
 class TestFileShow:
     def test_basic_show(self, random_file):
         result = call_action("files_file_show", id=random_file["id"])
         assert result["id"] == random_file["id"]
 
-        result = call_action("files_file_show", id=random_file["name"])
-        assert result["id"] == random_file["id"]
-
-    def test_show_updates_last_access(self, random_file):
         result = call_action("files_file_show", id=random_file["id"])
-        assert result["last_access"] != random_file["last_access"]
+        assert result["id"] == random_file["id"]

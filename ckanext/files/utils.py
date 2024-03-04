@@ -1,4 +1,6 @@
-# -*- coding: utf-8 -*-
+from __future__ import annotations
+
+import re
 
 import six
 
@@ -16,8 +18,21 @@ if six.PY3:  # pragma: no cover
             CapabilityUnit,
             Storage,
         )
-
         from werkzeug.datastructures import FileStorage  # isort: skip
+
+RE_FILESIZE = re.compile(r"^(?P<size>\d+(?:\.\d+)?)\s*(?P<unit>\w*)$")
+UNITS: dict[str, int] = {
+    "": 1,
+    "b": 1,
+    "kb": 10**3,
+    "mb": 10**6,
+    "gb": 10**9,
+    "tb": 10**12,
+    "kib": 2**10,
+    "mib": 2**20,
+    "gib": 2**30,
+    "tib": 2**40,
+}
 
 
 class Registry(object):
@@ -96,3 +111,16 @@ def exclude_capabilities(capabilities, *exclude):
         capabilities &= ~capability
 
     return capabilities
+
+
+def parse_filesize(value: str) -> int:
+    result = RE_FILESIZE.match(value.strip())
+    if not result:
+        raise ValueError(value)
+    size, unit = result.groups()
+
+    multiplier = UNITS.get(unit.lower())
+    if not multiplier:
+        raise ValueError(value)
+
+    return int(float(size) * multiplier)

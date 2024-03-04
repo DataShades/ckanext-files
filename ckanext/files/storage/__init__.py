@@ -1,5 +1,6 @@
 from .base import Capability, Manager, Reader, Storage, Uploader
-from .fs import FileSystemStorage, FileSystemUploader, PublicFileSystemStorage
+from .fs import FileSystemStorage, PublicFileSystemStorage
+from .redis import RedisStorage
 
 try:
     from .google_cloud import GoogleCloudStorage
@@ -7,13 +8,13 @@ except ImportError:
     pass
 
 __all__ = [
-    "Storage",
     "Capability",
-    "Uploader",
-    "Manager",
-    "Reader",
-    "FileSystemUploader",
     "FileSystemStorage",
-    "PublicFileSystemStorage",
     "GoogleCloudStorage",
+    "Manager",
+    "PublicFileSystemStorage",
+    "Reader",
+    "RedisStorage",
+    "Storage",
+    "Uploader",
 ]

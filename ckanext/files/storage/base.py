@@ -8,12 +8,21 @@ import ckan.plugins.toolkit as tk
 from ckanext.files import exceptions, utils
 
 if six.PY3:
-    from typing_extensions import TYPE_CHECKING, NewType
+    from typing_extensions import TYPE_CHECKING, NewType, TypedDict
 
     from typing import Any, IO  # isort: skip
 
     if TYPE_CHECKING:
         from werkzeug.datastructures import FileStorage  # isort: skip
+
+    MinimalStorageData = TypedDict(
+        "MinimalStorageData",
+        {
+            "content_type": str,
+            "size": int,
+            "hash": str,
+        },
+    )
 
     CapabilityCluster = NewType("CapabilityCluster", int)
     CapabilityUnit = NewType("CapabilityUnit", int)
@@ -55,7 +64,7 @@ class Uploader(StorageService):
 
     @abc.abstractmethod
     def upload(self, name, upload, extras):
-        # type: (str, FileStorage, dict[str, Any]) -> dict[str, Any]
+        # type: (str, FileStorage, dict[str, Any]) -> MinimalStorageData
         raise NotImplementedError
 
     def initialize_multipart_upload(self, name, extras):
@@ -67,7 +76,7 @@ class Uploader(StorageService):
         raise NotImplementedError
 
     def complete_multipart_upload(self, upload_data, extras):
-        # type: (dict[str, Any], dict[str, Any]) -> dict[str, Any]
+        # type: (dict[str, Any], dict[str, Any]) -> MinimalStorageData
         raise NotImplementedError
 
 

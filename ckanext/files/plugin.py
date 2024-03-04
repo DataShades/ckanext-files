@@ -2,10 +2,12 @@ import six
 
 import ckan.plugins as p
 import ckan.plugins.toolkit as tk
+from ckan.exceptions import CkanConfigurationException
 
 from ckanext.files import (
     cli,
     config,
+    exceptions,
     helpers,
     interfaces,
     shared,
@@ -39,6 +41,7 @@ class FilesPlugin(p.SingletonPlugin):
         adapters = {
             "files:fs": storage.FileSystemStorage,
             "files:public_fs": storage.PublicFileSystemStorage,
+            "files:redis": storage.RedisStorage,
         }
 
         if hasattr(storage, "GoogleCloudStorage"):
@@ -56,7 +59,11 @@ class FilesPlugin(p.SingletonPlugin):
 
         shared.storages.reset()
         for name, settings in config.storages().items():
-            storage = utils.storage_from_settings(settings)
+            try:
+                storage = utils.storage_from_settings(settings)
+            except exceptions.UnknownAdapterError as err:
+                raise CkanConfigurationException(str(err))
+
             shared.storages.register(name, storage)
 
     # IActions

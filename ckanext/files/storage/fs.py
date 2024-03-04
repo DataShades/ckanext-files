@@ -1,8 +1,9 @@
+import hashlib
 import logging
 import os
-import magic
 import uuid
-import hashlib
+
+import magic
 import six
 from werkzeug.datastructures import FileStorage
 
@@ -14,10 +15,18 @@ from .base import Capability, Manager, Storage, Uploader
 
 if six.PY3:
     from typing import Any  # isort: skip
+    from typing_extensions import TypedDict
+
+    from .base import MinimalStorageData
+
+    FsAdditionalData = TypedDict("FsAdditionalData", {"filename": str})
+
+    class FsStorageData(FsAdditionalData, MinimalStorageData):
+        pass
 
 
 log = logging.getLogger(__name__)
-CHUNK_SIZE = 16_384
+CHUNK_SIZE = 16384
 
 
 class FileSystemUploader(Uploader):
@@ -27,7 +36,7 @@ class FileSystemUploader(Uploader):
     )
 
     def upload(self, name, upload, extras):  # pragma: no cover
-        # type: (str, FileStorage, dict[str, Any]) -> dict[str, Any]
+        # type: (str, FileStorage, dict[str, Any]) -> FsStorageData
         filename = str(uuid.uuid4())
         filepath = os.path.join(self.storage.settings["path"], filename)
 
@@ -67,7 +76,7 @@ class FileSystemUploader(Uploader):
         if max_size:
             utils.ensure_size(upload, max_size)
 
-        result = self.upload(name, upload, data)
+        result = dict(self.upload(name, upload, data))
         result["size"] = data["size"]
 
         return result
@@ -104,7 +113,7 @@ class FileSystemUploader(Uploader):
         return upload_data
 
     def complete_multipart_upload(self, upload_data, extras):
-        # type: (dict[str, Any], dict[str, Any]) -> dict[str, Any]
+        # type: (dict[str, Any], dict[str, Any]) -> FsStorageData
         filepath = os.path.join(self.storage.settings["path"], upload_data["filename"])
         size = os.path.getsize(filepath)
         if size != upload_data["size"]:
@@ -127,9 +136,12 @@ class FileSystemUploader(Uploader):
                 md5.update(chunk)
                 chunk = src.read(CHUNK_SIZE)
 
-        upload_data["hash"] = md5.hexdigest()
-        upload_data["content_type"] = content_type
-        return upload_data
+        return {
+            "filename": upload_data["filename"],
+            "content_type": content_type,
+            "size": upload_data["size"],
+            "hash": md5.hexdigest(),
+        }
 
 
 class FileSystemManager(Manager):

@@ -1,7 +1,7 @@
 import os
 import re
 import uuid
-
+import base64
 import requests
 import six
 from google.cloud.storage import Client
@@ -41,7 +41,13 @@ class GoogleCloudUploader(Uploader):
         client = self.storage.client
         blob = client.bucket(self.storage.settings["bucket"]).blob(filepath)
         blob.upload_from_file(upload.stream)
-        return {"filename": filename, "content_type": upload.content_type}
+        filehash = base64.decodebytes(blob.md5_hash.encode()).hex()
+        return {
+            "filename": filename,
+            "content_type": upload.content_type,
+            "hash": filehash,
+            "size": blob.size,
+        }
 
     def initialize_multipart_upload(self, name, extras):
         # type: (str, dict[str, Any]) -> dict[str, Any]
@@ -99,6 +105,9 @@ class GoogleCloudUploader(Uploader):
         if last_byte >= size:
             raise exceptions.UploadOutOfBoundError(last_byte, size)
 
+        if upload.content_length < 256 * 1024 and last_byte < size - 1:
+            raise tk.ValidationError({"upload": ["Cannot be smaller than 256KiB"]})
+
         resp = requests.put(
             upload_data["session_url"],
             data=upload.stream.read(),
@@ -134,10 +143,14 @@ class GoogleCloudUploader(Uploader):
                     ]
                 }
             )
+
+        filehash = base64.decodebytes(upload_data["result"]["md5Hash"].encode()).hex()
+
         return {
             "filename": os.path.relpath(
                 upload_data["result"]["name"], self.storage.settings["path"]
             ),
+            "hash": filehash,
             "content_type": upload_data["result"]["contentType"],
             "size": upload_data["size"],
         }

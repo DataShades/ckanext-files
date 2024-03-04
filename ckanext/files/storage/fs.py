@@ -1,14 +1,14 @@
 import logging
 import os
+import magic
 import uuid
-
+import hashlib
 import six
 from werkzeug.datastructures import FileStorage
 
 import ckan.plugins.toolkit as tk
 
 from ckanext.files import exceptions, utils
-from ckanext.files.model import file
 
 from .base import Capability, Manager, Storage, Uploader
 
@@ -17,6 +17,7 @@ if six.PY3:
 
 
 log = logging.getLogger(__name__)
+CHUNK_SIZE = 16_384
 
 
 class FileSystemUploader(Uploader):
@@ -30,13 +31,20 @@ class FileSystemUploader(Uploader):
         filename = str(uuid.uuid4())
         filepath = os.path.join(self.storage.settings["path"], filename)
 
+        md5 = hashlib.md5()
         with open(filepath, "wb") as dest:
-            upload.save(dest)
+            while True:
+                chunk = upload.stream.read(CHUNK_SIZE)
+                if not chunk:
+                    break
+                md5.update(chunk)
+                dest.write(chunk)
 
         return {
             "filename": filename,
             "content_type": upload.content_type,
             "size": os.path.getsize(filepath),
+            "hash": md5.hexdigest(),
         }
 
     def initialize_multipart_upload(self, name, extras):
@@ -110,6 +118,17 @@ class FileSystemUploader(Uploader):
                 }
             )
 
+        md5 = hashlib.md5()
+        with open(filepath, "rb") as src:
+            chunk = src.read(CHUNK_SIZE)
+            content_type = magic.from_buffer(chunk, True)
+
+            while chunk:
+                md5.update(chunk)
+                chunk = src.read(CHUNK_SIZE)
+
+        upload_data["hash"] = md5.hexdigest()
+        upload_data["content_type"] = content_type
         return upload_data
 
 

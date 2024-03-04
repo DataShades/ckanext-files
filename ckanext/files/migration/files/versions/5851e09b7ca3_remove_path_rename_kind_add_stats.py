@@ -42,7 +42,7 @@ def upgrade():
         op.execute(
             sa.update(table)
             .values(
-                atime=last_access, extras=dict(extras, filename=os.path.basename(path))
+                atime=last_access, extras=dict(extras or {}, filename=os.path.basename(path))
             )
             .where(table.c.id == id)
         )

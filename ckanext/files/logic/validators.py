@@ -11,7 +11,7 @@ import ckan.plugins.toolkit as tk
 from ckanext.files.utils import make_collector
 
 if six.PY3:
-    from typing import Any  # isort: skip
+    from typing import Any  # isort: skip # noqa: F401
 
 _validators, validator = make_collector()
 
@@ -42,7 +42,10 @@ def files_into_upload(value):
         value.file.seek(0)
 
         return FileStorage(
-            value.file, value.filename, content_type=mime, content_length=size
+            value.file,
+            value.filename,
+            content_type=mime,
+            content_length=size,
         )
 
     if isinstance(value, str):

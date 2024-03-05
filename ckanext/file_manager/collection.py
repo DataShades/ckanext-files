@@ -52,7 +52,7 @@ class FileManagerCollection(ApCollection):
                     id="bulk_check",
                     data_module="ap-bulk-check",
                     data_module_selector='input[name="entity_id"]',
-                )
+                ),
             ),
             "name": "Name",
             "path": "Path",
@@ -132,7 +132,10 @@ class FileManagerCollection(ApCollection):
                     "label": "Clear",
                     "type": "button",
                     "attrs": {
-                        "onclick": "$(this).closest('form').find('input,select').val('').prevObject[0].requestSubmit()"
+                        "onclick": (
+                            "$(this).closest('form').find('input,select')"
+                            ".val('').prevObject[0].requestSubmit()"
+                        ),
                     },
                 },
             ),

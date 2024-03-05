@@ -1,7 +1,7 @@
 import six
 
 if six.PY3:  # pragma: no cover
-    from typing import Any  # isort: skip
+    from typing import Any  # isort: skip # noqa: F401
 
 
 from ckan.plugins import Interface

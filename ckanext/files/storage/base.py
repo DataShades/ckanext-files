@@ -1,5 +1,9 @@
 import abc
 import copy
+import hashlib
+import os
+import uuid
+from datetime import datetime
 
 import six
 
@@ -10,10 +14,10 @@ from ckanext.files import exceptions, utils
 if six.PY3:
     from typing_extensions import TYPE_CHECKING, NewType, TypedDict
 
-    from typing import Any, IO  # isort: skip
+    from typing import Any, IO  # isort: skip # noqa: F401
 
     if TYPE_CHECKING:
-        from werkzeug.datastructures import FileStorage  # isort: skip
+        from werkzeug.datastructures import FileStorage  # isort: skip # noqa: F401
 
     MinimalStorageData = TypedDict(
         "MinimalStorageData",
@@ -26,6 +30,35 @@ if six.PY3:
 
     CapabilityCluster = NewType("CapabilityCluster", int)
     CapabilityUnit = NewType("CapabilityUnit", int)
+
+CHUNK_SIZE = 16384
+
+
+class HashingReader:
+    def __init__(self, stream, chunk_size=CHUNK_SIZE, algorithm="md5"):
+        # type: (IO[bytes], int, str) -> None
+        self.stream = stream
+        self.chunk_size = chunk_size
+        self.algorithm = algorithm
+        self.hashsum = hashlib.new(algorithm)
+        self.position = 0
+
+    def __iter__(self):
+        while True:
+            chunk = self.stream.read(self.chunk_size)
+            if not chunk:
+                break
+            self.position += len(chunk)
+            self.hashsum.update(chunk)
+            yield chunk
+
+    def reset(self):
+        self.position = 0
+        self.hashsum = hashlib.new(self.algorithm)
+        self.stream.seek(0)
+
+    def get_hash(self):
+        return self.hashsum.hexdigest()
 
 
 class Capability(object):
@@ -66,6 +99,28 @@ class Uploader(StorageService):
     def upload(self, name, upload, extras):
         # type: (str, FileStorage, dict[str, Any]) -> MinimalStorageData
         raise NotImplementedError
+
+    def compute_name(self, name, extras, upload=None):
+        # type: (str, dict[str, Any], FileStorage|None) -> str
+        strategy = self.storage.settings.get("name_strategy", "uuid")
+        if strategy == "uuid":
+            return str(uuid.uuid4())
+
+        if strategy == "uuid_prefix":
+            return str(uuid.uuid4()) + name
+
+        if strategy == "datetime_prefix":
+            return datetime.utcnow().isoformat() + name
+
+        if strategy == "uuid_with_extension":
+            _path, ext = os.path.splitext(name)
+            return str(uuid.uuid4()) + ext
+
+        if strategy == "datetime_with_extension":
+            _path, ext = os.path.splitext(name)
+            return datetime.utcnow().isoformat() + ext
+
+        raise exceptions.NameStrategyError(strategy)
 
     def initialize_multipart_upload(self, name, extras):
         # type: (str, dict[str, Any]) -> dict[str, Any]
@@ -157,7 +212,8 @@ class Storage(OptionChecker):
     def complete_multipart_upload(self, upload_data, extras):
         # type: (dict[str, Any], dict[str, Any]) -> dict[str, Any]
         return self.uploader.complete_multipart_upload(
-            copy.deepcopy(upload_data), extras
+            copy.deepcopy(upload_data),
+            extras,
         )
 
     def remove(self, data):

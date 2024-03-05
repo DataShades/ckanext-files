@@ -12,7 +12,7 @@ from ckanext.files.utils import make_collector
 from . import schema
 
 if six.PY3:
-    from typing import Any  # isort: skip
+    from typing import Any  # isort: skip # noqa: F401
 
 _actions, action = make_collector()
 
@@ -26,6 +26,7 @@ def get_actions():
 def files_file_create(context, data_dict):
     # type: (Any, dict[str, Any]) -> dict[str, Any]
     tk.check_access("files_file_create", context, data_dict)
+    _ensure_name(data_dict)
 
     extras = data_dict.get("__extras", {})
     name = secure_filename(data_dict["name"])
@@ -33,7 +34,7 @@ def files_file_create(context, data_dict):
     try:
         storage = shared.get_storage(data_dict["storage"])
     except exceptions.UnknownStorageError as err:
-        raise tk.ValidationError({"storage": [str(err)]})
+        raise tk.ValidationError({"storage": [str(err)]})  # noqa: B904
 
     if not storage.supports(Capability.CREATE):
         raise tk.ValidationError({"storage": ["Operation is not supported"]})
@@ -41,7 +42,7 @@ def files_file_create(context, data_dict):
     try:
         storage_data = storage.upload(name, data_dict["upload"], extras)
     except exceptions.LargeUploadError as err:
-        raise tk.ValidationError({"upload": [str(err)]})
+        raise tk.ValidationError({"upload": [str(err)]})  # noqa: B904
 
     fileobj = File(name=name, storage=data_dict["storage"], storage_data=storage_data)
 
@@ -50,6 +51,24 @@ def files_file_create(context, data_dict):
         context["session"].commit()
 
     return fileobj.dictize(context)
+
+
+def _ensure_name(data_dict, name_field="name", upload_field="upload"):
+    # type: (dict[str, Any], str, str) -> None
+    if name_field in data_dict:
+        return
+    name = data_dict[upload_field].filename
+    if not name:
+        raise tk.ValidationError(
+            {
+                name_field: [
+                    "Name is missing and cannot be deduced from {}".format(
+                        upload_field
+                    ),
+                ],
+            },
+        )
+    data_dict[name_field] = name
 
 
 @action
@@ -95,37 +114,18 @@ def files_file_show(context, data_dict):
 
 
 @action
-@validate(schema.file_show)
-def files_file_show(context, data_dict):
-    # type: (Any, dict[str, Any]) -> dict[str, Any]
-    tk.check_access("files_file_show", context, data_dict)
-
-    data_dict["id"]
-    fileobj = context["session"].get(File, data_dict["id"])
-    if not fileobj:
-        raise tk.ObjectNotFound("file")
-
-    if context.get("update_access_time"):
-        fileobj.access()
-        if not context.get("defer_commit"):
-            context["session"].commit()
-
-    return fileobj.dictize(context)
-
-
-@action
 @validate(schema.upload_initialize)
 def files_upload_initialize(context, data_dict):
     # type: (Any, dict[str, Any]) -> dict[str, Any]
     tk.check_access("files_upload_initialize", context, data_dict)
-
+    _ensure_name(data_dict)
     extras = data_dict.get("__extras", {})
     name = secure_filename(data_dict["name"])
 
     try:
         storage = shared.get_storage(data_dict["storage"])
     except exceptions.UnknownStorageError as err:
-        raise tk.ValidationError({"storage": [str(err)]})
+        raise tk.ValidationError({"storage": [str(err)]})  # noqa: B904
 
     if not storage.supports(Capability.MULTIPART_UPLOAD):
         raise tk.ValidationError({"storage": ["Operation is not supported"]})
@@ -133,7 +133,7 @@ def files_upload_initialize(context, data_dict):
     try:
         upload_data = storage.initialize_multipart_upload(name, extras)
     except exceptions.LargeUploadError as err:
-        raise tk.ValidationError({"upload": [str(err)]})
+        raise tk.ValidationError({"upload": [str(err)]})  # noqa: B904
 
     upload = Upload(
         name=name,

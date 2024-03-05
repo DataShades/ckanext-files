@@ -9,16 +9,16 @@ from ckanext.files import exceptions
 if six.PY3:  # pragma: no cover
     from typing import TYPE_CHECKING, TypeVar
 
-    from typing import Callable, Any  # isort: skip
+    from typing import Callable, Any  # isort: skip # noqa: F401
 
     T = TypeVar("T")
     if TYPE_CHECKING:
-        from ckanext.files.storage.base import (  # isort: skip
+        from ckanext.files.storage.base import (  # isort: skip # noqa: F401
             CapabilityCluster,
             CapabilityUnit,
             Storage,
         )
-        from werkzeug.datastructures import FileStorage  # isort: skip
+        from werkzeug.datastructures import FileStorage  # isort: skip # noqa: F401
 
 RE_FILESIZE = re.compile(r"^(?P<size>\d+(?:\.\d+)?)\s*(?P<unit>\w*)$")
 UNITS: dict[str, int] = {
@@ -79,7 +79,7 @@ def storage_from_settings(settings):
     try:
         return adapter(**settings)
     except TypeError as e:
-        raise exceptions.InvalidAdapterConfigurationError(adapter, str(e))
+        raise exceptions.InvalidAdapterConfigurationError(adapter, str(e))  # noqa: B904
 
 
 def ensure_size(upload, max_size):

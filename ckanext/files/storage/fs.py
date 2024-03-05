@@ -1,7 +1,5 @@
-import hashlib
 import logging
 import os
-import uuid
 
 import magic
 import six
@@ -11,10 +9,10 @@ import ckan.plugins.toolkit as tk
 
 from ckanext.files import exceptions, utils
 
-from .base import Capability, Manager, Storage, Uploader
+from .base import Capability, HashingReader, Manager, Storage, Uploader
 
 if six.PY3:
-    from typing import Any  # isort: skip
+    from typing import Any  # isort: skip # noqa: F401
     from typing_extensions import TypedDict
 
     from .base import MinimalStorageData
@@ -32,28 +30,25 @@ CHUNK_SIZE = 16384
 class FileSystemUploader(Uploader):
     required_options = ["path"]
     capabilities = utils.combine_capabilities(
-        Capability.CREATE, Capability.MULTIPART_UPLOAD
+        Capability.CREATE,
+        Capability.MULTIPART_UPLOAD,
     )
 
     def upload(self, name, upload, extras):  # pragma: no cover
         # type: (str, FileStorage, dict[str, Any]) -> FsStorageData
-        filename = str(uuid.uuid4())
+        filename = self.compute_name(name, extras, upload)
         filepath = os.path.join(self.storage.settings["path"], filename)
 
-        md5 = hashlib.md5()
+        reader = HashingReader(upload.stream)
         with open(filepath, "wb") as dest:
-            while True:
-                chunk = upload.stream.read(CHUNK_SIZE)
-                if not chunk:
-                    break
-                md5.update(chunk)
+            for chunk in reader:
                 dest.write(chunk)
 
         return {
             "filename": filename,
             "content_type": upload.content_type,
             "size": os.path.getsize(filepath),
-            "hash": md5.hexdigest(),
+            "hash": reader.get_hash(),
         }
 
     def initialize_multipart_upload(self, name, extras):
@@ -121,26 +116,27 @@ class FileSystemUploader(Uploader):
                 {
                     "size": [
                         "Actual filesize {} does not match expected {}".format(
-                            size, upload_data["size"]
-                        )
-                    ]
-                }
+                            size,
+                            upload_data["size"],
+                        ),
+                    ],
+                },
             )
 
-        md5 = hashlib.md5()
         with open(filepath, "rb") as src:
-            chunk = src.read(CHUNK_SIZE)
-            content_type = magic.from_buffer(chunk, True)
+            reader = HashingReader(src)
+            it = iter(reader)
+            content_type = magic.from_buffer(next(it, b""), True)
 
-            while chunk:
-                md5.update(chunk)
-                chunk = src.read(CHUNK_SIZE)
+            # exhaust reader to get the checksum
+            for _chunk in it:
+                pass
 
         return {
             "filename": upload_data["filename"],
             "content_type": content_type,
-            "size": upload_data["size"],
-            "hash": md5.hexdigest(),
+            "size": size,
+            "hash": reader.get_hash(),
         }
 
 

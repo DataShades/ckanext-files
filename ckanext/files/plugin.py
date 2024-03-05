@@ -18,7 +18,7 @@ from ckanext.files import (
 from ckanext.files.logic import action, auth, validators
 
 if six.PY3:  # pragma: no cover
-    from typing import Any  # isort: skip
+    from typing import Any  # isort: skip # noqa: F401
 
 
 class FilesPlugin(p.SingletonPlugin):
@@ -62,7 +62,7 @@ class FilesPlugin(p.SingletonPlugin):
             try:
                 storage = utils.storage_from_settings(settings)
             except exceptions.UnknownAdapterError as err:
-                raise CkanConfigurationException(str(err))
+                raise CkanConfigurationException(str(err))  # noqa: B904
 
             shared.storages.register(name, storage)
 

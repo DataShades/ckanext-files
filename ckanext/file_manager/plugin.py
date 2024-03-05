@@ -26,7 +26,7 @@ class FileManagerPlugin(p.SingletonPlugin):
     def get_signal_subscriptions(self) -> types.SignalMapping:
         return {
             tk.signals.ckanext.signal("ap_main:collect_config_sections"): [
-                collect_config_sections_subs
+                collect_config_sections_subs,
             ],
         }
 
@@ -44,6 +44,6 @@ def collect_config_sections_subs(sender: None):
                 "name": "File manager",
                 "blueprint": "file_manager.list",
                 "info": "Manage uploaded files",
-            }
+            },
         ],
     }

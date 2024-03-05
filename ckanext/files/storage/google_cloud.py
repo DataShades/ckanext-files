@@ -1,7 +1,6 @@
 import base64
 import os
 import re
-import uuid
 
 import requests
 import six
@@ -21,7 +20,7 @@ if six.PY3:
 
     from .base import MinimalStorageData
 
-    from typing import Any  # isort: skip
+    from typing import Any  # isort: skip # noqa: F401
 
     GCAdditionalData = TypedDict("GCAdditionalData", {"filename": str})
 
@@ -29,7 +28,7 @@ if six.PY3:
         pass
 
     if TYPE_CHECKING:
-        from werkzeug.datastructures import FileStorage  # isort: skip
+        from werkzeug.datastructures import FileStorage  # isort: skip # noqa: F401
 
 
 RE_RANGE = re.compile(r"bytes=(?P<first_byte>\d+)-(?P<last_byte>\d+)")
@@ -40,12 +39,13 @@ class GoogleCloudUploader(Uploader):
 
     required_options = ["bucket"]
     capabilities = utils.combine_capabilities(
-        Capability.CREATE, Capability.MULTIPART_UPLOAD
+        Capability.CREATE,
+        Capability.MULTIPART_UPLOAD,
     )
 
     def upload(self, name, upload, extras):  # pragma: no cover
         # type: (str, FileStorage, dict[str, Any]) -> GCStorageData
-        filename = str(uuid.uuid4())
+        filename = self.compute_name(name, extras, upload)
         filepath = os.path.join(self.storage.settings["path"], filename)
 
         client = self.storage.client
@@ -74,7 +74,7 @@ class GoogleCloudUploader(Uploader):
         if errors:
             raise tk.ValidationError(errors)
 
-        filename = str(uuid.uuid4())
+        filename = self.compute_name(name, extras)
         filepath = os.path.join(self.storage.settings["path"], filename)
 
         client = self.storage.client
@@ -122,7 +122,7 @@ class GoogleCloudUploader(Uploader):
             upload_data["session_url"],
             data=upload.stream.read(),
             headers={
-                "content-range": "bytes {}-{}/{}".format(first_byte, last_byte, size)
+                "content-range": "bytes {}-{}/{}".format(first_byte, last_byte, size),
             },
         )
 
@@ -148,17 +148,19 @@ class GoogleCloudUploader(Uploader):
                 {
                     "size": [
                         "Actual filesize {} does not match expected {}".format(
-                            upload_data["uploaded"], upload_data["size"]
-                        )
-                    ]
-                }
+                            upload_data["uploaded"],
+                            upload_data["size"],
+                        ),
+                    ],
+                },
             )
 
         filehash = base64.decodebytes(upload_data["result"]["md5Hash"].encode()).hex()
 
         return {
             "filename": os.path.relpath(
-                upload_data["result"]["name"], self.storage.settings["path"]
+                upload_data["result"]["name"],
+                self.storage.settings["path"],
             ),
             "hash": filehash,
             "content_type": upload_data["result"]["contentType"],

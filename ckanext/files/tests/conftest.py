@@ -9,7 +9,7 @@ from werkzeug.datastructures import FileStorage
 from ckan.tests.helpers import call_action
 
 if six.PY3:
-    from typing import Any  # isort: skip
+    from typing import Any  # isort: skip # noqa: F401
 
 
 @pytest.fixture

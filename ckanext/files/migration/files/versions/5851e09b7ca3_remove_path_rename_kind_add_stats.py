@@ -42,13 +42,17 @@ def upgrade():
         op.execute(
             sa.update(table)
             .values(
-                atime=last_access, extras=dict(extras or {}, filename=os.path.basename(path))
+                atime=last_access,
+                extras=dict(extras or {}, filename=os.path.basename(path)),
             )
-            .where(table.c.id == id)
+            .where(table.c.id == id),
         )
 
     op.alter_column(
-        "files_file", "extras", server_default="{}", new_column_name="storage_data"
+        "files_file",
+        "extras",
+        server_default="{}",
+        new_column_name="storage_data",
     )
     op.drop_column("files_file", "last_access")
     op.drop_column("files_file", "path")
@@ -60,19 +64,28 @@ def downgrade():
     op.add_column(
         "files_file",
         sa.Column(
-            "path", sa.UnicodeText, nullable=False, server_default="'/empty.data'"
+            "path",
+            sa.UnicodeText,
+            nullable=False,
+            server_default="'/empty.data'",
         ),
     )
     op.add_column(
         "files_file",
         sa.Column(
-            "last_access", sa.DateTime(), nullable=False, server_default=sa.func.now()
+            "last_access",
+            sa.DateTime(),
+            nullable=False,
+            server_default=sa.func.now(),
         ),
     )
     op.alter_column("files_file", "storage", new_column_name="kind")
     op.alter_column("files_file", "ctime", new_column_name="uploaded_at")
     op.alter_column(
-        "files_file", "storage_data", server_default=None, new_column_name="extras"
+        "files_file",
+        "storage_data",
+        server_default=None,
+        new_column_name="extras",
     )
 
     stmt = sa.select(table.c.id, table.c.atime, table.c.extras)
@@ -84,7 +97,7 @@ def downgrade():
         op.execute(
             sa.update(table)
             .values(last_access=atime or datetime.now(), extras=extras, path=path)
-            .where(table.c.id == id)
+            .where(table.c.id == id),
         )
 
     op.drop_column("files_file", "atime")

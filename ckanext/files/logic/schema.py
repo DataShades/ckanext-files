@@ -5,14 +5,16 @@ from ckan.logic.schema import validator_args
 from ckanext.files import config
 
 if six.PY3:
-    from typing import Any  # isort: skip
+    from typing import Any  # isort: skip # noqa: F401
 
 
 @validator_args
-def file_create(not_empty, unicode_safe, default, files_into_upload, not_missing):
+def file_create(ignore_empty, unicode_safe, default, files_into_upload, not_missing):
     # type: (Any, Any, Any, Any, Any) -> Any
+
+    # name is checked inside action, using "upload" as source if empty
     return {
-        "name": [not_empty, unicode_safe],
+        "name": [ignore_empty, unicode_safe],
         "storage": [default(config.default_storage()), unicode_safe],
         "upload": [not_missing, files_into_upload],
     }
@@ -35,10 +37,12 @@ def file_show(not_empty, unicode_safe):
 
 
 @validator_args
-def upload_initialize(not_empty, unicode_safe, default, int_validator, not_missing):
+def upload_initialize(ignore_empty, unicode_safe, default, int_validator, not_missing):
     # type: (Any, Any, Any, Any, Any) -> Any
+
+    # name is checked inside action, using "upload" as source if empty
     return {
-        "name": [not_empty, unicode_safe],
+        "name": [ignore_empty, unicode_safe],
         "storage": [default(config.default_storage()), unicode_safe],
     }
 

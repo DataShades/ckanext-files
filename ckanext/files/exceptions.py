@@ -54,7 +54,8 @@ class UnsupportedOperationError(StorageError):
 
     def __str__(self):
         return "Operation {} is not supported by storage adapter {}".format(
-            self.operation, self.adapter
+            self.operation,
+            self.adapter,
         )
 
 
@@ -68,7 +69,8 @@ class InvalidAdapterConfigurationError(AdapterError):
 
     def __str__(self):
         return "Cannot initialize storage adapter {} due to following error: {}".format(
-            self.adapter.__name__, self.problem
+            self.adapter.__name__,
+            self.problem,
         )
 
 
@@ -78,7 +80,8 @@ class MissingAdapterConfigurationError(InvalidAdapterConfigurationError):
     def __init__(self, adapter, option):
         # type: (type, str) -> None
         return super(InvalidAdapterConfigurationError, self).__init__(
-            adapter, "{} option is required".format(option)
+            adapter,
+            "{} option is required".format(option),
         )
 
 
@@ -92,7 +95,8 @@ class LargeUploadError(UploadError):
 
     def __str__(self):
         return "Upload size {} surpasses max allowed size {}".format(
-            localised_filesize(self.actual_size), localised_filesize(self.max_size)
+            localised_filesize(self.actual_size),
+            localised_filesize(self.max_size),
         )
 
 
@@ -101,5 +105,17 @@ class UploadOutOfBoundError(LargeUploadError):
 
     def __str__(self):
         return "Upload size {} exceeds expected size {}".format(
-            localised_filesize(self.actual_size), localised_filesize(self.max_size)
+            localised_filesize(self.actual_size),
+            localised_filesize(self.max_size),
         )
+
+
+class NameStrategyError(UploadError):
+    """Undefined name strategy."""
+
+    def __init__(self, strategy):
+        # type: (str) -> None
+        self.strategy = strategy
+
+    def __str__(self):
+        return "Unknown name strategy {}".format(self.strategy)

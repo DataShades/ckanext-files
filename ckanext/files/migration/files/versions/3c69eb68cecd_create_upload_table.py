@@ -23,7 +23,10 @@ def upgrade():
         sa.Column("name", sa.Text, nullable=False),
         sa.Column("storage", sa.Text, nullable=False),
         sa.Column(
-            "initialized_at", sa.DateTime, nullable=False, server_default=sa.func.now()
+            "initialized_at",
+            sa.DateTime,
+            nullable=False,
+            server_default=sa.func.now(),
         ),
         sa.Column("upload_data", JSONB, server_default="{}"),
     )

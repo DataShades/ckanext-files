@@ -10,7 +10,7 @@ from ckan.model.types import make_uuid
 from .base import Base, now
 
 if six.PY3:
-    from typing import Any  # isort: skip
+    from typing import Any  # isort: skip # noqa: F401
 
 
 class Upload(Base):  # type: ignore

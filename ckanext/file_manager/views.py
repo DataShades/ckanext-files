@@ -14,7 +14,9 @@ from ckanext.collection.shared import get_collection
 
 log = logging.getLogger(__name__)
 file_manager = Blueprint(
-    "file_manager", __name__, url_prefix="/admin-panel/file_manager"
+    "file_manager",
+    __name__,
+    url_prefix="/admin-panel/file_manager",
 )
 file_manager.before_request(ap_before_request)
 
@@ -25,7 +27,8 @@ class FileManagerView(MethodView):
             "file_manager/list.html",
             extra_vars={
                 "collection": get_collection(
-                    "file-manager", parse_params(tk.request.args)
+                    "file-manager",
+                    parse_params(tk.request.args),
                 ),
             },
         )
@@ -96,12 +99,11 @@ class FileManagerDeleteView(MethodView):
         return tk.redirect_to("file_manager.list")
 
 
-file_manager.delete
-
 file_manager.add_url_rule("/manage", view_func=FileManagerView.as_view("list"))
 file_manager.add_url_rule("/upload", view_func=FileManagerUploadView.as_view("upload"))
 file_manager.add_url_rule(
-    "/delete/<file_id>", view_func=FileManagerDeleteView.as_view("delete")
+    "/delete/<file_id>",
+    view_func=FileManagerDeleteView.as_view("delete"),
 )
 
 blueprints = [file_manager]

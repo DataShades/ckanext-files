@@ -5,7 +5,7 @@ from ckan import authz
 from ckanext.files.utils import make_collector
 
 if six.PY3:
-    from typing import Any  # isort: skip
+    from typing import Any  # isort: skip # noqa: F401
 
 
 _auth_functions, auth = make_collector()

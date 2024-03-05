@@ -1,6 +1,3 @@
-import hashlib
-import uuid
-
 import six
 
 import ckan.plugins.toolkit as tk
@@ -8,11 +5,11 @@ from ckan.lib.redis import connect_to_redis
 
 from ckanext.files import utils
 
-from .base import Capability, Manager, Storage, Uploader
+from .base import Capability, HashingReader, Manager, Storage, Uploader
 
 if six.PY3:
-    from typing import Any  # isort: skip
-    from werkzeug.datastructures import FileStorage  # isort: skip
+    from typing import Any  # isort: skip # noqa: F401
+    from werkzeug.datastructures import FileStorage  # isort: skip # noqa: F401
     from typing_extensions import TypedDict
 
     from .base import MinimalStorageData
@@ -32,20 +29,18 @@ class RedisUploader(Uploader):
     def upload(self, name, upload, extras):  # pragma: no cover
         # type: (str, FileStorage, dict[str, Any]) -> RedisStorageData
 
-        filename = str(uuid.uuid4())
+        filename = self.compute_name(name, extras, upload)
         key = self.storage.settings["prefix"] + filename
 
-        md5 = hashlib.md5()
-        content = upload.stream.read()
-        md5.update(content)
-
-        self.storage.redis.set(key, content)
+        reader = HashingReader(upload.stream)
+        for chunk in reader:
+            self.storage.redis.append(key, chunk)
 
         return {
             "filename": filename,
             "content_type": upload.content_type,
-            "size": len(content),
-            "hash": md5.hexdigest(),
+            "size": reader.position,
+            "hash": reader.get_hash(),
         }
 
 
@@ -73,7 +68,8 @@ class RedisStorage(Storage):
         # type: (**Any) -> None
 
         settings.setdefault(
-            "prefix", "ckanext:files:{}:file_content:".format(tk.config["ckan.site_id"])
+            "prefix",
+            "ckanext:files:{}:file_content:".format(tk.config["ckan.site_id"]),
         )
         super(RedisStorage, self).__init__(**settings)
         self.redis = connect_to_redis()

@@ -5,7 +5,7 @@ import six
 import ckan.plugins.toolkit as tk
 
 if six.PY3:  # pragma: no cover
-    from typing import Any  # isort: skip
+    from typing import Any  # isort: skip # noqa: F401
 
 
 DEFAULT_STORAGE = "ckanext.files.default_storage"

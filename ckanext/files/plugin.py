@@ -1,3 +1,4 @@
+import json
 import os
 
 import ckan.plugins as p
@@ -44,13 +45,25 @@ class FilesPlugin(p.SingletonPlugin):
 
             _register_adapters()
             for name, settings in config.storages().items():
+                storage_key = key.from_string(config.STORAGE_PREFIX + name)
+
+                if tk.check_ckan_version("2.10.3"):
+                    available_adapters = json.dumps(
+                        list(base.adapters),
+                        separators=(",", ":"),
+                    )
+
+                    declaration.declare(storage_key.type).append_validators(
+                        "one_of({})".format(available_adapters),
+                    )
+
                 adapter = base.adapters.get(settings.get("type"))
                 if not adapter:
                     continue
 
                 adapter.declare_config_options(
                     declaration,
-                    key.from_string(config.STORAGE_PREFIX + name),
+                    storage_key,
                 )
 
     # IFiles
@@ -123,7 +136,7 @@ def _initialize_storages():
     base.storages.reset()
     for name, settings in config.storages().items():
         try:
-            storage = base.storage_from_settings(settings)
+            storage = base.storage_from_settings(name, settings)
         except exceptions.UnknownAdapterError as err:
             raise CkanConfigurationException(str(err))  # noqa: B904
 

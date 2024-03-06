@@ -21,7 +21,7 @@ class StorageError(FilesError):
     pass
 
 
-class UploadError(FilesError):
+class UploadError(StorageError):
     pass
 
 
@@ -122,3 +122,18 @@ class NameStrategyError(UploadError):
 
     def __str__(self):
         return "Unknown name strategy {}".format(self.strategy)
+
+
+class MissingFileError(StorageError):
+    """File does not exist."""
+
+    def __init__(self, storage, filename):
+        # type: (str, str) -> None
+        self.storage = storage
+        self.filename = filename
+
+    def __str__(self):
+        return "File {} does not exist inside {} storage".format(
+            self.filename,
+            self.storage,
+        )

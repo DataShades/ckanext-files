@@ -4,6 +4,7 @@ import pytest
 import six
 from werkzeug.datastructures import FileStorage
 
+from ckan.lib.redis import connect_to_redis
 from ckan.tests.helpers import call_action
 
 if six.PY3:
@@ -55,3 +56,38 @@ def create_with_upload(ckan_config, monkeypatch, tmpdir):
         return call_action(action, context, **params)
 
     return factory
+
+
+@pytest.fixture(scope="session")
+def reset_redis():
+    def cleaner(pattern="*"):
+        # type: (str) -> int
+        """Remove keys matching pattern.
+        Return number of removed records.
+        """
+        conn = connect_to_redis()
+        keys = conn.keys(pattern)
+        if keys:
+            return conn.delete(*keys)
+        return 0
+
+    return cleaner
+
+
+@pytest.fixture()
+def clean_redis(reset_redis):
+    """Remove all keys from Redis.
+    This fixture removes all the records from Redis::
+        @pytest.mark.usefixtures("clean_redis")
+        def test_redis_is_empty():
+            assert redis.keys("*") == []
+    If test requires presence of some initial data in redis, make sure that
+    data producer applied **after** ``clean_redis``::
+        @pytest.mark.usefixtures(
+            "clean_redis",
+            "fixture_that_adds_xxx_key_to_redis"
+        )
+        def test_redis_has_one_record():
+            assert redis.keys("*") == [b"xxx"]
+    """
+    reset_redis()

@@ -1,4 +1,3 @@
-import six
 from werkzeug.utils import secure_filename
 
 import ckan.plugins.toolkit as tk
@@ -11,8 +10,8 @@ from ckanext.files.utils import make_collector
 
 from . import schema
 
-if six.PY3:
-    from typing import Any  # isort: skip # noqa: F401
+from ckanext.files import types  # isort: skip # noqa: F401
+
 
 _actions, action = make_collector()
 
@@ -24,7 +23,7 @@ def get_actions():
 @action
 @validate(schema.file_create)
 def files_file_create(context, data_dict):
-    # type: (Any, dict[str, Any]) -> dict[str, Any]
+    # type: (types.Any, dict[str, types.Any]) -> dict[str, types.Any]
     tk.check_access("files_file_create", context, data_dict)
     _ensure_name(data_dict)
 
@@ -54,7 +53,7 @@ def files_file_create(context, data_dict):
 
 
 def _ensure_name(data_dict, name_field="name", upload_field="upload"):
-    # type: (dict[str, Any], str, str) -> None
+    # type: (dict[str, types.Any], str, str) -> None
     if name_field in data_dict:
         return
     name = data_dict[upload_field].filename
@@ -74,7 +73,7 @@ def _ensure_name(data_dict, name_field="name", upload_field="upload"):
 @action
 @validate(schema.file_delete)
 def files_file_delete(context, data_dict):
-    # type: (Any, dict[str, Any]) -> bool
+    # type: (types.Any, dict[str, types.Any]) -> bool
     tk.check_access("files_file_delete", context, data_dict)
 
     data_dict["id"]
@@ -97,7 +96,7 @@ def files_file_delete(context, data_dict):
 @action
 @validate(schema.file_show)
 def files_file_show(context, data_dict):
-    # type: (Any, dict[str, Any]) -> dict[str, Any]
+    # type: (types.Any, dict[str, types.Any]) -> dict[str, types.Any]
     tk.check_access("files_file_show", context, data_dict)
 
     data_dict["id"]
@@ -116,7 +115,7 @@ def files_file_show(context, data_dict):
 @action
 @validate(schema.upload_initialize)
 def files_upload_initialize(context, data_dict):
-    # type: (Any, dict[str, Any]) -> dict[str, Any]
+    # type: (types.Any, dict[str, types.Any]) -> dict[str, types.Any]
     tk.check_access("files_upload_initialize", context, data_dict)
     _ensure_name(data_dict)
     extras = data_dict.get("__extras", {})
@@ -151,7 +150,7 @@ def files_upload_initialize(context, data_dict):
 @action
 @validate(schema.upload_show)
 def files_upload_show(context, data_dict):
-    # type: (Any, dict[str, Any]) -> dict[str, Any]
+    # type: (types.Any, dict[str, types.Any]) -> dict[str, types.Any]
     tk.check_access("files_upload_show", context, data_dict)
 
     upload = context["session"].get(Upload, data_dict["id"])
@@ -168,7 +167,7 @@ def files_upload_show(context, data_dict):
 @action
 @validate(schema.upload_update)
 def files_upload_update(context, data_dict):
-    # type: (Any, dict[str, Any]) -> dict[str, Any]
+    # type: (types.Any, dict[str, types.Any]) -> dict[str, types.Any]
     tk.check_access("files_upload_update", context, data_dict)
 
     extras = data_dict.get("__extras", {})
@@ -189,7 +188,7 @@ def files_upload_update(context, data_dict):
 @action
 @validate(schema.upload_complete)
 def files_upload_complete(context, data_dict):
-    # type: (Any, dict[str, Any]) -> dict[str, Any]
+    # type: (types.Any, dict[str, types.Any]) -> dict[str, types.Any]
     tk.check_access("files_upload_complete", context, data_dict)
 
     extras = data_dict.get("__extras", {})

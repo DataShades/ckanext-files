@@ -1,4 +1,3 @@
-# from .base import Capability, Manager, Reader, Storage, Uploader
 from .fs import FileSystemStorage, PublicFileSystemStorage
 from .redis import RedisStorage
 
@@ -8,13 +7,8 @@ except ImportError:
     pass
 
 __all__ = [
-    # "Capability",
     "FileSystemStorage",
     "GoogleCloudStorage",
-    # "Manager",
     "PublicFileSystemStorage",
-    # "Reader",
     "RedisStorage",
-    # "Storage",
-    # "Uploader",
 ]

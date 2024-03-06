@@ -25,7 +25,7 @@ def get_validators():
 @validator
 def files_into_upload(value):
     # type: (Any) -> types.Upload
-    """Try converting value into werkzeug.FileStorage object"""
+    """Convert value into werkzeug.FileStorage object"""
     if isinstance(value, FileStorage):
         if not value.content_length:
             value.headers["content-length"] = str(value.stream.seek(0, 2))
@@ -68,7 +68,12 @@ def files_into_upload(value):
 @validator
 def files_parse_filesize(value):
     # type: (Any) -> int
+    """Convert human-readable filesize into an integer."""
+
     if isinstance(value, int):
         return value
 
-    return utils.parse_filesize(value)
+    try:
+        return utils.parse_filesize(value)
+    except ValueError:
+        raise tk.Invalid("Wrong filesize string: {}".format(value))  # noqa: B904

@@ -23,14 +23,15 @@ adapters = utils.Registry({})
 storages = utils.Registry({})
 
 
-def storage_from_settings(settings):
-    # type: (dict[str, types.Any]) -> Storage
+def storage_from_settings(name, settings):
+    # type: (str, dict[str, types.Any]) -> Storage
 
     adapter_type = settings.pop("type", None)
     adapter = adapters.get(adapter_type)  # type: type[Storage] | None
     if not adapter:
         raise exceptions.UnknownAdapterError(adapter_type)
 
+    settings.setdefault("name", name)
     return adapter(**settings)
 
 
@@ -57,6 +58,7 @@ class HashingReader:
         while True:
             chunk = self.stream.read(self.chunk_size)
             if not chunk:
+                yield chunk
                 break
             self.position += len(chunk)
             self.hashsum.update(chunk)
@@ -161,6 +163,10 @@ class Reader(StorageService):
         # type: (dict[str, types.Any]) -> types.IO[str] | types.IO[bytes]
         raise NotImplementedError
 
+    def content(self, data):
+        # type: (dict[str, types.Any]) -> bytes | str
+        return self.stream(data).read()
+
 
 class Storage(OptionChecker):
     __metaclass__ = abc.ABCMeta
@@ -194,6 +200,9 @@ class Storage(OptionChecker):
             "The maximum size of a single upload."
             + "\nSupports size suffixes: 42B, 2M, 24KiB, 1GB."
             + " `0` means no restrictions.",
+        )
+        declaration.declare(key.name, key[-1]).set_description(
+            "Descriptive name of the storage used for debugging.",
         )
 
     def compute_capabilities(self):
@@ -252,3 +261,17 @@ class Storage(OptionChecker):
             raise exceptions.UnsupportedOperationError("remove", type(self).__name__)
 
         return self.manager.remove(data)
+
+    def stream(self, data):
+        # type: (dict[str, types.Any]) -> types.IO[bytes] | types.IO[str]
+        if not self.supports(Capability.STREAM):
+            raise exceptions.UnsupportedOperationError("stream", type(self).__name__)
+
+        return self.reader.stream(data)
+
+    def content(self, data):
+        # type: (dict[str, types.Any]) -> bytes | str
+        if not self.supports(Capability.STREAM):
+            raise exceptions.UnsupportedOperationError("content", type(self).__name__)
+
+        return self.reader.content(data)

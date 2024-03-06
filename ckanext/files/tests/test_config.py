@@ -39,7 +39,13 @@ class TestStorages:
         """With no customization we have only storage defined by test.ini"""
 
         assert config.storages() == {
-            "default": self.adapt_to_ckan_version({"type": "files:redis"}),
+            "default": self.adapt_to_ckan_version(
+                {
+                    "type": "files:redis",
+                    "prefix": "ckanext:files:test.ckan.net:file_content:",
+                    "name": "default",
+                },
+            ),
         }
 
     def test_customized(self, monkeypatch, ckan_config):
@@ -58,7 +64,13 @@ class TestStorages:
         storages = config.storages()
 
         assert storages == {
-            "default": self.adapt_to_ckan_version({"type": "files:redis"}),
+            "default": self.adapt_to_ckan_version(
+                {
+                    "type": "files:redis",
+                    "prefix": "ckanext:files:test.ckan.net:file_content:",
+                    "name": "default",
+                },
+            ),
             "test": {"type": "test", "path": "somepath"},
             "another": {"type": "fancy", "name_strategy": "hello"},
         }
@@ -73,5 +85,11 @@ class TestStorages:
         storages = config.storages()
 
         assert storages == {
-            "default": self.adapt_to_ckan_version({"type": "files:redis"}),
+            "default": self.adapt_to_ckan_version(
+                {
+                    "type": "files:redis",
+                    "prefix": "ckanext:files:test.ckan.net:file_content:",
+                    "name": "default",
+                },
+            ),
         }

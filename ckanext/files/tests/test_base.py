@@ -17,18 +17,18 @@ class TestStorageFromSettings:
         """Unknown udapter causes an exception."""
 
         with pytest.raises(exceptions.UnknownAdapterError):
-            base.storage_from_settings({})
+            base.storage_from_settings("", {})
 
     def test_invalid_configuration(self):
         """Wrong configuration causes an exception."""
 
         with pytest.raises(exceptions.InvalidStorageConfigurationError):
-            base.storage_from_settings({"type": "files:fs"})
+            base.storage_from_settings("", {"type": "files:fs"})
 
     def test_normal_configuration(self):
         """Valid configuration produces a storage."""
 
-        storage = base.storage_from_settings({"type": "files:redis"})
+        storage = base.storage_from_settings("", {"type": "files:redis"})
         assert isinstance(storage, RedisStorage)
 
 

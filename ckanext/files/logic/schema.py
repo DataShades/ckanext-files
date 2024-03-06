@@ -1,16 +1,13 @@
-import six
-
 from ckan.logic.schema import validator_args
 
 from ckanext.files import config
 
-if six.PY3:
-    from typing import Any  # isort: skip # noqa: F401
+from ckanext.files import types  # isort: skip # noqa: F401
 
 
 @validator_args
 def file_create(ignore_empty, unicode_safe, default, files_into_upload, not_missing):
-    # type: (Any, Any, Any, Any, Any) -> Any
+    # type: (types.Any, types.Any, types.Any, types.Any, types.Any) -> types.Any
 
     # name is checked inside action, using "upload" as source if empty
     return {
@@ -22,7 +19,7 @@ def file_create(ignore_empty, unicode_safe, default, files_into_upload, not_miss
 
 @validator_args
 def file_delete(not_empty, unicode_safe):
-    # type: (Any, Any) -> Any
+    # type: (types.Any, types.Any) -> types.Any
     return {
         "id": [not_empty, unicode_safe],
     }
@@ -30,7 +27,7 @@ def file_delete(not_empty, unicode_safe):
 
 @validator_args
 def file_show(not_empty, unicode_safe):
-    # type: (Any, Any) -> Any
+    # type: (types.Any, types.Any) -> types.Any
     return {
         "id": [not_empty, unicode_safe],
     }
@@ -38,7 +35,7 @@ def file_show(not_empty, unicode_safe):
 
 @validator_args
 def upload_initialize(ignore_empty, unicode_safe, default, int_validator, not_missing):
-    # type: (Any, Any, Any, Any, Any) -> Any
+    # type: (types.Any, types.Any, types.Any, types.Any, types.Any) -> types.Any
 
     # name is checked inside action, using "upload" as source if empty
     return {
@@ -49,7 +46,7 @@ def upload_initialize(ignore_empty, unicode_safe, default, int_validator, not_mi
 
 @validator_args
 def upload_show(not_empty, unicode_safe):
-    # type: (Any, Any) -> Any
+    # type: (types.Any, types.Any) -> types.Any
     return {
         "id": [not_empty, unicode_safe],
     }
@@ -57,7 +54,7 @@ def upload_show(not_empty, unicode_safe):
 
 @validator_args
 def upload_update(not_empty, unicode_safe):
-    # type: (Any, Any) -> Any
+    # type: (types.Any, types.Any) -> types.Any
     return {
         "id": [not_empty, unicode_safe],
     }
@@ -65,7 +62,7 @@ def upload_update(not_empty, unicode_safe):
 
 @validator_args
 def upload_complete(not_empty, unicode_safe):
-    # type: (Any, Any) -> Any
+    # type: (types.Any, types.Any) -> types.Any
     return {
         "id": [not_empty, unicode_safe],
     }

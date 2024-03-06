@@ -1,6 +1,6 @@
+from ckanext.files.base import Capability, Manager, Reader, Storage, Uploader, storages
 from ckanext.files.exceptions import UnknownStorageError
-from ckanext.files.storage import Capability, Manager, Reader, Storage, Uploader
-from ckanext.files.utils import combine_capabilities, storages
+from ckanext.files.utils import combine_capabilities
 
 __all__ = [
     "combine_capabilities",

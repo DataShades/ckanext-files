@@ -1,8 +1,11 @@
 from __future__ import annotations
 
+from typing import Any
+
 import ckan.plugins as p
 import ckan.plugins.toolkit as tk
 import ckan.types as types
+from ckan.common import CKANConfig
 
 from ckanext.collection.interfaces import CollectionFactory, ICollection
 from ckanext.file_manager.collection import FileManagerCollection
@@ -16,7 +19,7 @@ class FileManagerPlugin(p.SingletonPlugin):
 
     # IConfigurer
 
-    def update_config(self, config_):
+    def update_config(self, config_: CKANConfig):
         tk.add_template_directory(config_, "templates")
         tk.add_public_directory(config_, "public")
         tk.add_resource("assets", "file_manager")
@@ -36,7 +39,7 @@ class FileManagerPlugin(p.SingletonPlugin):
         return {"file-manager": FileManagerCollection}
 
 
-def collect_config_sections_subs(sender: None):
+def collect_config_sections_subs(sender: None) -> dict[str, Any]:
     return {
         "name": "Files",
         "configs": [

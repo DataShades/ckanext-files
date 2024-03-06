@@ -1,4 +1,10 @@
-from __future__ import annotations
+"""Internal utilities of the extension.
+
+Do not use this module outside of the extension and do not import any other
+internal modules except for types and exceptions. Only independent tools are
+stored here, to avoid import cycles.
+
+"""
 
 import re
 
@@ -6,38 +12,40 @@ import six
 
 from ckanext.files import exceptions
 
-if six.PY3:  # pragma: no cover
-    from typing import TYPE_CHECKING, TypeVar
+from ckanext.files import types  # isort: skip # noqa: 401
+
+if six.PY3:
+    from typing import TypeVar
 
     from typing import Callable, Any  # isort: skip # noqa: F401
 
     T = TypeVar("T")
-    if TYPE_CHECKING:
-        from ckanext.files.storage.base import (  # isort: skip # noqa: F401
-            CapabilityCluster,
-            CapabilityUnit,
-            Storage,
-        )
-        from werkzeug.datastructures import FileStorage  # isort: skip # noqa: F401
+
 
 RE_FILESIZE = re.compile(r"^(?P<size>\d+(?:\.\d+)?)\s*(?P<unit>\w*)$")
-UNITS: dict[str, int] = {
+UNITS = {
     "": 1,
     "b": 1,
+    "k": 10**3,
     "kb": 10**3,
+    "m": 10**6,
     "mb": 10**6,
+    "g": 10**9,
     "gb": 10**9,
+    "t": 10**12,
     "tb": 10**12,
     "kib": 2**10,
     "mib": 2**20,
     "gib": 2**30,
     "tib": 2**40,
-}
+}  # type: dict[str, int]
 
 
 class Registry(object):
-    def __init__(self, members):
-        # type: (dict[str, Any]) -> None
+    def __init__(self, members=None):
+        # type: (dict[str, Any] | None) -> None
+        if members is None:
+            members = {}
         self.members = members
 
     def reset(self):
@@ -64,26 +72,8 @@ def make_collector():
     return collection, collector
 
 
-adapters = Registry({})
-storages = Registry({})
-
-
-def storage_from_settings(settings):
-    # type: (dict[str, Any]) -> Storage
-
-    adapter_type = settings.pop("type", None)
-    adapter = adapters.get(adapter_type)  # type: type[Storage] | None
-    if not adapter:
-        raise exceptions.UnknownAdapterError(adapter_type)
-
-    try:
-        return adapter(**settings)
-    except TypeError as e:
-        raise exceptions.InvalidAdapterConfigurationError(adapter, str(e))  # noqa: B904
-
-
 def ensure_size(upload, max_size):
-    # type: (FileStorage, int) -> int
+    # type: (types.Upload, int) -> int
 
     filesize = upload.content_length
     if not filesize:
@@ -97,23 +87,24 @@ def ensure_size(upload, max_size):
 
 
 def combine_capabilities(*capabilities):
-    # type: (*CapabilityCluster | CapabilityUnit) -> CapabilityCluster
+    # type: (*types.CapabilityCluster | types.CapabilityUnit) -> types.CapabilityCluster
     result = 0
     for capability in capabilities:
         result |= capability
 
-    return result
+    return types.CapabilityCluster(result)
 
 
 def exclude_capabilities(capabilities, *exclude):
-    # type: (CapabilityCluster, *CapabilityCluster | CapabilityUnit) -> CapabilityCluster
+    # type: (types.CapabilityCluster, *types.CapabilityCluster | types.CapabilityUnit) -> types.CapabilityCluster
     for capability in exclude:
-        capabilities &= ~capability
+        capabilities = types.CapabilityCluster(capabilities & ~capability)
 
     return capabilities
 
 
-def parse_filesize(value: str) -> int:
+def parse_filesize(value):
+    # type: (str) -> int
     result = RE_FILESIZE.match(value.strip())
     if not result:
         raise ValueError(value)

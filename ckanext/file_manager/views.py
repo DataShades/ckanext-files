@@ -79,8 +79,11 @@ class FileManagerUploadView(MethodView):
                     "upload": file,
                 },
             )
-        except (tk.ValidationError, OSError) as e:
+        except tk.ValidationError as e:
             tk.h.flash_error(str(e.error_summary))
+            return tk.redirect_to("file_manager.list")
+        except OSError as e:
+            tk.h.flash_error(str(e))
             return tk.redirect_to("file_manager.list")
 
         tk.h.flash_success(tk._("File has been uploaded!"))
@@ -91,8 +94,11 @@ class FileManagerDeleteView(MethodView):
     def post(self, file_id: str):
         try:
             tk.get_action("files_file_delete")({"ignore_auth": True}, {"id": file_id})
-        except (tk.ValidationError, OSError) as e:
+        except tk.ValidationError as e:
             tk.h.flash_error(str(e.error_summary))
+            return tk.redirect_to("file_manager.list")
+        except OSError as e:
+            tk.h.flash_error(str(e))
             return tk.redirect_to("file_manager.list")
 
         tk.h.flash_success(tk._("File has been deleted!"))

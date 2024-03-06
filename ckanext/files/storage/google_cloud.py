@@ -9,26 +9,16 @@ from google.oauth2.service_account import Credentials
 
 import ckan.plugins.toolkit as tk
 
-from ckanext.files import exceptions, utils
-
-from .base import Capability, Manager, Storage, Uploader
+from ckanext.files import exceptions, types, utils
+from ckanext.files.base import Capability, Manager, Storage, Uploader
 
 if six.PY3:
-    from typing import TYPE_CHECKING
-
-    from typing_extensions import TypedDict
-
-    from .base import MinimalStorageData
-
     from typing import Any  # isort: skip # noqa: F401
 
-    GCAdditionalData = TypedDict("GCAdditionalData", {"filename": str})
+    GCAdditionalData = types.TypedDict("GCAdditionalData", {"filename": str})
 
-    class GCStorageData(GCAdditionalData, MinimalStorageData):
+    class GCStorageData(GCAdditionalData, types.MinimalStorageData):
         pass
-
-    if TYPE_CHECKING:
-        from werkzeug.datastructures import FileStorage  # isort: skip # noqa: F401
 
 
 RE_RANGE = re.compile(r"bytes=(?P<first_byte>\d+)-(?P<last_byte>\d+)")
@@ -43,8 +33,8 @@ class GoogleCloudUploader(Uploader):
         Capability.MULTIPART_UPLOAD,
     )
 
-    def upload(self, name, upload, extras):  # pragma: no cover
-        # type: (str, FileStorage, dict[str, Any]) -> GCStorageData
+    def upload(self, name, upload, extras):
+        # type: (str, types.Upload, dict[str, Any]) -> GCStorageData
         filename = self.compute_name(name, extras, upload)
         filepath = os.path.join(self.storage.settings["path"], filename)
 
@@ -84,7 +74,10 @@ class GoogleCloudUploader(Uploader):
         if max_size and data["size"] > max_size:
             raise exceptions.LargeUploadError(data["size"], max_size)
 
-        url = blob.create_resumable_upload_session(size=data["size"])  # type: str
+        url = blob.create_resumable_upload_session(size=data["size"])  # type: Any
+
+        if not url:
+            raise exceptions.UploadError("Cannot initialize session URL")
 
         return {"session_url": url, "size": data["size"], "uploaded": 0}
 
@@ -92,10 +85,14 @@ class GoogleCloudUploader(Uploader):
         # type: (dict[str, Any], dict[str, Any]) -> dict[str, Any]
         schema = {
             "upload": [
-                tk.get_validator("not_missing"),
+                tk.get_validator("ignore_missing"),
                 tk.get_validator("files_into_upload"),
             ],
             "position": [
+                tk.get_validator("ignore_missing"),
+                tk.get_validator("int_validator"),
+            ],
+            "uploaded": [
                 tk.get_validator("ignore_missing"),
                 tk.get_validator("int_validator"),
             ],
@@ -106,39 +103,99 @@ class GoogleCloudUploader(Uploader):
         if errors:
             raise tk.ValidationError(errors)
 
-        upload = data["upload"]  # type: FileStorage
+        if "upload" in data:
+            upload = data["upload"]  # type: types.Upload
 
-        first_byte = data.get("position", upload_data["uploaded"])
-        last_byte = first_byte + upload.content_length - 1
-        size = upload_data["size"]
+            first_byte = data.get("position", upload_data["uploaded"])
+            last_byte = first_byte + upload.content_length - 1
+            size = upload_data["size"]
 
-        if last_byte >= size:
-            raise exceptions.UploadOutOfBoundError(last_byte, size)
+            if last_byte >= size:
+                raise exceptions.UploadOutOfBoundError(last_byte, size)
 
-        if upload.content_length < 256 * 1024 and last_byte < size - 1:
-            raise tk.ValidationError({"upload": ["Cannot be smaller than 256KiB"]})
+            if upload.content_length < 256 * 1024 and last_byte < size - 1:
+                raise tk.ValidationError(
+                    {"upload": ["Only the final part can be smaller than 256KiB"]},
+                )
 
+            resp = requests.put(
+                upload_data["session_url"],
+                data=upload.stream.read(),
+                headers={
+                    "content-range": "bytes {}-{}/{}".format(
+                        first_byte,
+                        last_byte,
+                        size,
+                    ),
+                },
+            )
+
+            if not resp.ok:
+                raise tk.ValidationError({"upload": [resp.text]})
+
+            if "range" not in resp.headers:
+                upload_data["uploaded"] = upload_data["size"]
+                upload_data["result"] = resp.json()
+                return upload_data
+
+            range_match = RE_RANGE.match(resp.headers["range"])
+            if not range_match:
+                raise tk.ValidationError(
+                    {"upload": ["Invalid response from Google Cloud"]},
+                )
+            upload_data["uploaded"] = tk.asint(range_match.group("last_byte")) + 1
+
+        elif "uploaded" in data:
+            upload_data["uploaded"] = data["uploaded"]
+
+        else:
+            raise tk.ValidationError(
+                {"upload": ["Either upload or uploaded must be specified"]},
+            )
+
+        return upload_data
+
+    def show_multipart_upload(self, upload_data):
+        # type: (dict[str, Any]) -> dict[str, Any]
         resp = requests.put(
             upload_data["session_url"],
-            data=upload.stream.read(),
             headers={
-                "content-range": "bytes {}-{}/{}".format(first_byte, last_byte, size),
+                "content-range": "bytes */{}".format(upload_data["size"]),
+                "content-length": "0",
             },
         )
-
         if not resp.ok:
-            raise tk.ValidationError({"upload": [resp.text]})
+            raise tk.ValidationError({"id": [resp.text]})
 
-        if "range" not in resp.headers:
+        if resp.status_code == 308:
+            if "range" in resp.headers:
+                range_match = RE_RANGE.match(resp.headers["range"])
+                if not range_match:
+                    raise tk.ValidationError(
+                        {
+                            "id": [
+                                "Invalid response from Google Cloud:"
+                                + " missing range header",
+                            ],
+                        },
+                    )
+                upload_data["uploaded"] = tk.asint(range_match.group("last_byte")) + 1
+            else:
+                upload_data["uploaded"] = 0
+        elif resp.status_code in [200, 201]:
             upload_data["uploaded"] = upload_data["size"]
-            upload_data["result"] = resp.json()
-            return upload_data
+        else:
+            raise tk.ValidationError(
+                {
+                    "id": [
+                        "Invalid response from Google Cloud:"
+                        + " unexpected status {}".format(
+                            resp.status_code,
+                        ),
+                    ],
+                },
+            )
 
-        range_match = RE_RANGE.match(resp.headers["range"])
-        if not range_match:
-            raise tk.ValidationError({"upload": ["Invalid response from Google Cloud"]})
-
-        upload_data["uploaded"] = tk.asint(range_match.group("last_byte")) + 1
         return upload_data
 
     def complete_multipart_upload(self, upload_data, extras):
@@ -175,7 +232,7 @@ class GoogleCloudManager(Manager):
 
     def remove(self, data):
         # type: (dict[str, Any]) -> bool
-        filepath = os.path.join(self.storage.settings["path"], data["filename"])
+        filepath = os.path.join(str(self.storage.settings["path"]), data["filename"])
         client = self.storage.client  # type: Client
         blob = client.bucket(self.storage.settings["bucket"]).blob(filepath)
         blob.delete()

@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from typing import Any
+
 from dominate import tags
 
 import ckan.plugins.toolkit as tk
@@ -18,7 +20,7 @@ from ckanext.collection.utils.data.model import ModelData
 from ckanext.files.model import File
 
 
-def file_row_dictizer(serializer: ApHtmxTableSerializer, row: File):
+def file_row_dictizer(serializer: ApHtmxTableSerializer[Any], row: File):
     data = row.dictize({})
     data["bulk-action"] = data["id"]
 

@@ -1,22 +1,17 @@
 import six
 
 import ckan.plugins.toolkit as tk
-from ckan.lib.redis import connect_to_redis
+from ckan.lib.redis import connect_to_redis  # type: ignore
 
-from ckanext.files import utils
-
-from .base import Capability, HashingReader, Manager, Storage, Uploader
+from ckanext.files import types, utils
+from ckanext.files.base import Capability, HashingReader, Manager, Storage, Uploader
 
 if six.PY3:
     from typing import Any  # isort: skip # noqa: F401
-    from werkzeug.datastructures import FileStorage  # isort: skip # noqa: F401
-    from typing_extensions import TypedDict
 
-    from .base import MinimalStorageData
+    RedisAdditionalData = types.TypedDict("RedisAdditionalData", {"filename": str})
 
-    RedisAdditionalData = TypedDict("RedisAdditionalData", {"filename": str})
-
-    class RedisStorageData(RedisAdditionalData, MinimalStorageData):
+    class RedisStorageData(RedisAdditionalData, types.MinimalStorageData):
         pass
 
 
@@ -26,8 +21,8 @@ class RedisUploader(Uploader):
     required_options = ["prefix"]
     capabilities = utils.combine_capabilities(Capability.CREATE)
 
-    def upload(self, name, upload, extras):  # pragma: no cover
-        # type: (str, FileStorage, dict[str, Any]) -> RedisStorageData
+    def upload(self, name, upload, extras):
+        # type: (str, types.Upload, dict[str, Any]) -> RedisStorageData
 
         filename = self.compute_name(name, extras, upload)
         key = self.storage.settings["prefix"] + filename

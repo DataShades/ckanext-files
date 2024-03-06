@@ -48,6 +48,14 @@ def upload_initialize(ignore_empty, unicode_safe, default, int_validator, not_mi
 
 
 @validator_args
+def upload_show(not_empty, unicode_safe):
+    # type: (Any, Any) -> Any
+    return {
+        "id": [not_empty, unicode_safe],
+    }
+
+
+@validator_args
 def upload_update(not_empty, unicode_safe):
     # type: (Any, Any) -> Any
     return {

@@ -10,6 +10,8 @@ import ckan.plugins.toolkit as tk
 
 from ckanext.files.utils import make_collector
 
+from ckanext.files import types  # isort: skip # noqa: F401
+
 if six.PY3:
     from typing import Any  # isort: skip # noqa: F401
 
@@ -22,7 +24,7 @@ def get_validators():
 
 @validator
 def files_into_upload(value):
-    # type: (Any) -> FileStorage
+    # type: (Any) -> types.Upload
     """Try converting value into werkzeug.FileStorage object"""
     if isinstance(value, FileStorage):
         if not value.content_length:

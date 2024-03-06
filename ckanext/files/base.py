@@ -9,29 +9,26 @@ import six
 
 import ckan.plugins.toolkit as tk
 
-from ckanext.files import exceptions, utils
+from ckanext.files import exceptions, types, utils
 
 if six.PY3:
-    from typing_extensions import TYPE_CHECKING, NewType, TypedDict
-
     from typing import Any, IO  # isort: skip # noqa: F401
 
-    if TYPE_CHECKING:
-        from werkzeug.datastructures import FileStorage  # isort: skip # noqa: F401
 
-    MinimalStorageData = TypedDict(
-        "MinimalStorageData",
-        {
-            "content_type": str,
-            "size": int,
-            "hash": str,
-        },
-    )
+CHUNK_SIZE = 16 * 1024
+adapters = utils.Registry({})
+storages = utils.Registry({})
 
-    CapabilityCluster = NewType("CapabilityCluster", int)
-    CapabilityUnit = NewType("CapabilityUnit", int)
 
-CHUNK_SIZE = 16384
+def storage_from_settings(settings):
+    # type: (dict[str, Any]) -> Storage
+
+    adapter_type = settings.pop("type", None)
+    adapter = adapters.get(adapter_type)  # type: type[Storage] | None
+    if not adapter:
+        raise exceptions.UnknownAdapterError(adapter_type)
+
+    return adapter(**settings)
 
 
 class HashingReader:
@@ -60,13 +57,17 @@ class HashingReader:
     def get_hash(self):
         return self.hashsum.hexdigest()
 
+    def exhaust(self):
+        for _ in self:
+            pass
+
 
 class Capability(object):
-    CREATE = 1 << 0  # type: CapabilityUnit
-    STREAM = 1 << 1  # type: CapabilityUnit
-    DOWNLOAD = 1 << 2  # type: CapabilityUnit
-    REMOVE = 1 << 3  # type: CapabilityUnit
-    MULTIPART_UPLOAD = 1 << 4  # type: CapabilityUnit
+    CREATE = types.CapabilityUnit(1 << 0)
+    STREAM = types.CapabilityUnit(1 << 1)
+    DOWNLOAD = types.CapabilityUnit(1 << 2)
+    REMOVE = types.CapabilityUnit(1 << 3)
+    MULTIPART_UPLOAD = types.CapabilityUnit(1 << 4)
 
 
 class OptionChecker(object):
@@ -74,7 +75,7 @@ class OptionChecker(object):
     def ensure_option(cls, settings, option):
         # type: (dict[str, Any], str) -> Any
         if option not in settings:
-            raise exceptions.MissingAdapterConfigurationError(cls, option)
+            raise exceptions.MissingStorageConfigurationError(cls, option)
         return settings[option]
 
 
@@ -93,15 +94,12 @@ class StorageService(OptionChecker):
 
 
 class Uploader(StorageService):
-    __metaclass__ = abc.ABCMeta
-
-    @abc.abstractmethod
     def upload(self, name, upload, extras):
-        # type: (str, FileStorage, dict[str, Any]) -> MinimalStorageData
+        # type: (str, types.Upload, dict[str, Any]) -> types.MinimalStorageData
         raise NotImplementedError
 
     def compute_name(self, name, extras, upload=None):
-        # type: (str, dict[str, Any], FileStorage|None) -> str
+        # type: (str, dict[str, Any], types.Upload|None) -> str
         strategy = self.storage.settings.get("name_strategy", "uuid")
         if strategy == "uuid":
             return str(uuid.uuid4())
@@ -126,28 +124,26 @@ class Uploader(StorageService):
         # type: (str, dict[str, Any]) -> dict[str, Any]
         raise NotImplementedError
 
+    def show_multipart_upload(self, upload_data):
+        # type: (dict[str, Any]) -> dict[str, Any]
+        raise NotImplementedError
+
     def update_multipart_upload(self, upload_data, extras):
         # type: (dict[str, Any], dict[str, Any]) -> dict[str, Any]
         raise NotImplementedError
 
     def complete_multipart_upload(self, upload_data, extras):
-        # type: (dict[str, Any], dict[str, Any]) -> MinimalStorageData
+        # type: (dict[str, Any], dict[str, Any]) -> types.MinimalStorageData
         raise NotImplementedError
 
 
 class Manager(StorageService):
-    __metaclass__ = abc.ABCMeta
-
-    @abc.abstractmethod
     def remove(self, data):
         # type: (dict[str, Any]) -> bool
         raise NotImplementedError
 
 
 class Reader(StorageService):
-    __metaclass__ = abc.ABCMeta
-
-    @abc.abstractmethod
     def stream(self, data):
         # type: (dict[str, Any]) -> IO[str] | IO[bytes]
         raise NotImplementedError
@@ -171,7 +167,7 @@ class Storage(OptionChecker):
         return tk.asint(self.settings.get("max_size", 0))
 
     def compute_capabilities(self):
-        # type: () -> CapabilityCluster
+        # type: () -> types.CapabilityCluster
         return utils.combine_capabilities(
             self.uploader.capabilities,
             self.manager.capabilities,
@@ -188,11 +184,11 @@ class Storage(OptionChecker):
         return Reader(self)
 
     def supports(self, operation):
-        # type: (CapabilityCluster | CapabilityUnit) -> bool
+        # type: (types.CapabilityCluster | types.CapabilityUnit) -> bool
         return (self.capabilities & operation) == operation
 
     def upload(self, name, upload, extras):
-        # type: (str, FileStorage, dict[str, Any]) -> dict[str, Any]
+        # type: (str, types.Upload, dict[str, Any]) -> types.MinimalStorageData
         if not self.supports(Capability.CREATE):
             raise exceptions.UnsupportedOperationError("upload", type(self).__name__)
 
@@ -205,12 +201,16 @@ class Storage(OptionChecker):
         # type: (str, dict[str, Any]) -> dict[str, Any]
         return self.uploader.initialize_multipart_upload(name, extras)
 
+    def show_multipart_upload(self, upload_data):
+        # type: (dict[str, Any]) -> dict[str, Any]
+        return self.uploader.show_multipart_upload(copy.deepcopy(upload_data))
+
     def update_multipart_upload(self, upload_data, extras):
         # type: (dict[str, Any], dict[str, Any]) -> dict[str, Any]
         return self.uploader.update_multipart_upload(copy.deepcopy(upload_data), extras)
 
     def complete_multipart_upload(self, upload_data, extras):
-        # type: (dict[str, Any], dict[str, Any]) -> dict[str, Any]
+        # type: (dict[str, Any], dict[str, Any]) -> types.MinimalStorageData
         return self.uploader.complete_multipart_upload(
             copy.deepcopy(upload_data),
             extras,

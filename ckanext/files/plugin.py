@@ -5,19 +5,18 @@ import ckan.plugins.toolkit as tk
 from ckan.exceptions import CkanConfigurationException
 
 from ckanext.files import (
+    base,
     cli,
     config,
     exceptions,
     helpers,
     interfaces,
-    shared,
     storage,
-    utils,
     views,
 )
 from ckanext.files.logic import action, auth, validators
 
-if six.PY3:  # pragma: no cover
+if six.PY3:
     from typing import Any  # isort: skip # noqa: F401
 
 
@@ -52,19 +51,19 @@ class FilesPlugin(p.SingletonPlugin):
     # IConfigurable
     def configure(self, config_):
         # type: (Any) -> None
-        utils.adapters.reset()
+        base.adapters.reset()
         for plugin in p.PluginImplementations(interfaces.IFiles):
             for name, adapter in plugin.files_get_storage_adapters().items():
-                utils.adapters.register(name, adapter)
+                base.adapters.register(name, adapter)
 
-        shared.storages.reset()
+        base.storages.reset()
         for name, settings in config.storages().items():
             try:
-                storage = utils.storage_from_settings(settings)
+                storage = base.storage_from_settings(settings)
             except exceptions.UnknownAdapterError as err:
                 raise CkanConfigurationException(str(err))  # noqa: B904
 
-            shared.storages.register(name, storage)
+            base.storages.register(name, storage)
 
     # IActions
     def get_actions(self):

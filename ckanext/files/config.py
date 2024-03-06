@@ -4,7 +4,7 @@ import six
 
 import ckan.plugins.toolkit as tk
 
-if six.PY3:  # pragma: no cover
+if six.PY3:
     from typing import Any  # isort: skip # noqa: F401
 
 

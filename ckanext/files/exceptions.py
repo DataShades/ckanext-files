@@ -1,16 +1,19 @@
+"""Exception definitions for the extension.
+
+Avoid raising python-native exceptions and prefere defining `FilesError`
+subclass.
+
+"""
+
 import six
 
 from ckan.lib.formatters import localised_filesize
 
 if six.PY3:
-    pass
+    from typing import Any  # isort: skip # noqa: F401
 
 
 class FilesError(Exception):
-    pass
-
-
-class AdapterError(FilesError):
     pass
 
 
@@ -33,7 +36,7 @@ class UnknownStorageError(StorageError):
         return "Storage {} is not configured".format(self.storage)
 
 
-class UnknownAdapterError(AdapterError):
+class UnknownAdapterError(StorageError):
     """Specified storage adapter is not registered."""
 
     def __init__(self, adapter):
@@ -59,8 +62,8 @@ class UnsupportedOperationError(StorageError):
         )
 
 
-class InvalidAdapterConfigurationError(AdapterError):
-    """Adapter cannot be initialized with given configuration."""
+class InvalidStorageConfigurationError(StorageError):
+    """Storage cannot be initialized with given configuration."""
 
     def __init__(self, adapter, problem):
         # type: (type, str) -> None
@@ -74,19 +77,19 @@ class InvalidAdapterConfigurationError(AdapterError):
         )
 
 
-class MissingAdapterConfigurationError(InvalidAdapterConfigurationError):
-    """Adapter cannot be initialized due to missing option."""
+class MissingStorageConfigurationError(InvalidStorageConfigurationError):
+    """Storage cannot be initialized due to missing option."""
 
     def __init__(self, adapter, option):
         # type: (type, str) -> None
-        return super(InvalidAdapterConfigurationError, self).__init__(
+        return super(MissingStorageConfigurationError, self).__init__(
             adapter,
             "{} option is required".format(option),
         )
 
 
 class LargeUploadError(UploadError):
-    """Adapter cannot be initialized due to missing option."""
+    """Storage cannot be initialized due to missing option."""
 
     def __init__(self, actual_size, max_size):
         # type: (int, int) -> None

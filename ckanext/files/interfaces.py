@@ -1,6 +1,6 @@
 import six
 
-if six.PY3:  # pragma: no cover
+if six.PY3:
     from typing import Any  # isort: skip # noqa: F401
 
 

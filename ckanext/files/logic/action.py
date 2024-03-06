@@ -5,8 +5,8 @@ import ckan.plugins.toolkit as tk
 from ckan.logic import validate
 
 from ckanext.files import exceptions, shared
+from ckanext.files.base import Capability
 from ckanext.files.model import File, Upload
-from ckanext.files.storage import Capability
 from ckanext.files.utils import make_collector
 
 from . import schema
@@ -63,7 +63,7 @@ def _ensure_name(data_dict, name_field="name", upload_field="upload"):
             {
                 name_field: [
                     "Name is missing and cannot be deduced from {}".format(
-                        upload_field
+                        upload_field,
                     ),
                 ],
             },
@@ -149,6 +149,23 @@ def files_upload_initialize(context, data_dict):
 
 
 @action
+@validate(schema.upload_show)
+def files_upload_show(context, data_dict):
+    # type: (Any, dict[str, Any]) -> dict[str, Any]
+    tk.check_access("files_upload_show", context, data_dict)
+
+    upload = context["session"].get(Upload, data_dict["id"])
+    if not upload:
+        raise tk.ObjectNotFound("upload")
+
+    storage = shared.get_storage(upload.storage)
+
+    upload_data = storage.show_multipart_upload(upload.upload_data)
+
+    return dict(upload.dictize(context), upload_data=upload_data)
+
+
+@action
 @validate(schema.upload_update)
 def files_upload_update(context, data_dict):
     # type: (Any, dict[str, Any]) -> dict[str, Any]
@@ -156,7 +173,6 @@ def files_upload_update(context, data_dict):
 
     extras = data_dict.get("__extras", {})
 
-    data_dict["id"]
     upload = context["session"].get(Upload, data_dict["id"])
     if not upload:
         raise tk.ObjectNotFound("upload")

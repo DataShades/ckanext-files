@@ -7,20 +7,18 @@ from werkzeug.datastructures import FileStorage
 
 import ckan.plugins.toolkit as tk
 
-from ckanext.files import exceptions, utils
-
-from .base import Capability, HashingReader, Manager, Storage, Uploader
+from ckanext.files import exceptions, types, utils
+from ckanext.files.base import Capability, HashingReader, Manager, Storage, Uploader
 
 if six.PY3:
     from typing import Any  # isort: skip # noqa: F401
-    from typing_extensions import TypedDict
 
-    from .base import MinimalStorageData
 
-    FsAdditionalData = TypedDict("FsAdditionalData", {"filename": str})
+FsAdditionalData = types.TypedDict("FsAdditionalData", {"filename": str})
 
-    class FsStorageData(FsAdditionalData, MinimalStorageData):
-        pass
+
+class FsStorageData(FsAdditionalData, types.MinimalStorageData):
+    pass
 
 
 log = logging.getLogger(__name__)
@@ -34,8 +32,8 @@ class FileSystemUploader(Uploader):
         Capability.MULTIPART_UPLOAD,
     )
 
-    def upload(self, name, upload, extras):  # pragma: no cover
-        # type: (str, FileStorage, dict[str, Any]) -> FsStorageData
+    def upload(self, name, upload, extras):
+        # type: (str, types.Upload, dict[str, Any]) -> FsStorageData
         filename = self.compute_name(name, extras, upload)
         filepath = os.path.join(self.storage.settings["path"], filename)
 
@@ -73,8 +71,12 @@ class FileSystemUploader(Uploader):
 
         result = dict(self.upload(name, upload, data))
         result["size"] = data["size"]
-
+        result["uploaded"] = 0
         return result
+
+    def show_multipart_upload(self, upload_data):
+        # type: (dict[str, Any]) -> dict[str, Any]
+        return upload_data
 
     def update_multipart_upload(self, upload_data, extras):
         # type: (dict[str, Any], dict[str, Any]) -> dict[str, Any]
@@ -94,22 +96,29 @@ class FileSystemUploader(Uploader):
         if errors:
             raise tk.ValidationError(errors)
 
-        upload = data["upload"]  # type: FileStorage
+        upload = data["upload"]  # type: types.Upload
 
         expected_size = data["position"] + upload.content_length
         if expected_size > upload_data["size"]:
             raise exceptions.UploadOutOfBoundError(expected_size, upload_data["size"])
 
-        filepath = os.path.join(self.storage.settings["path"], upload_data["filename"])
+        filepath = os.path.join(
+            str(self.storage.settings["path"]),
+            upload_data["filename"],
+        )
         with open(filepath, "rb+") as dest:
             dest.seek(data["position"])
             dest.write(upload.stream.read())
 
+        upload_data["uploaded"] = os.path.getsize(filepath)
         return upload_data
 
     def complete_multipart_upload(self, upload_data, extras):
         # type: (dict[str, Any], dict[str, Any]) -> FsStorageData
-        filepath = os.path.join(self.storage.settings["path"], upload_data["filename"])
+        filepath = os.path.join(
+            str(self.storage.settings["path"]),
+            upload_data["filename"],
+        )
         size = os.path.getsize(filepath)
         if size != upload_data["size"]:
             raise tk.ValidationError(
@@ -146,7 +155,7 @@ class FileSystemManager(Manager):
 
     def remove(self, data):
         # type: (dict[str, Any]) -> bool
-        filepath = os.path.join(self.storage.settings["path"], data["filename"])
+        filepath = os.path.join(str(self.storage.settings["path"]), data["filename"])
         if not os.path.exists(filepath):
             return False
 
@@ -164,8 +173,15 @@ class FileSystemStorage(Storage):
     def __init__(self, **settings):
         # type: (**Any) -> None
         path = self.ensure_option(settings, "path")
+
         if not os.path.exists(path):
-            os.makedirs(path)
+            if tk.asbool(settings.get("create_path")):
+                os.makedirs(path)
+            else:
+                raise exceptions.InvalidStorageConfigurationError(
+                    type(self),
+                    "path `{}` does not exist".format(path),
+                )
 
         super(FileSystemStorage, self).__init__(**settings)
 

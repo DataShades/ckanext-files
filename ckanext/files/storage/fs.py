@@ -2,17 +2,12 @@ import logging
 import os
 
 import magic
-import six
 from werkzeug.datastructures import FileStorage
 
 import ckan.plugins.toolkit as tk
 
 from ckanext.files import exceptions, types, utils
 from ckanext.files.base import Capability, HashingReader, Manager, Storage, Uploader
-
-if six.PY3:
-    from typing import Any  # isort: skip # noqa: F401
-
 
 FsAdditionalData = types.TypedDict("FsAdditionalData", {"filename": str})
 
@@ -33,7 +28,7 @@ class FileSystemUploader(Uploader):
     )
 
     def upload(self, name, upload, extras):
-        # type: (str, types.Upload, dict[str, Any]) -> FsStorageData
+        # type: (str, types.Upload, dict[str, types.Any]) -> FsStorageData
         filename = self.compute_name(name, extras, upload)
         filepath = os.path.join(self.storage.settings["path"], filename)
 
@@ -50,7 +45,7 @@ class FileSystemUploader(Uploader):
         }
 
     def initialize_multipart_upload(self, name, extras):
-        # type: (str, dict[str, Any]) -> dict[str, Any]
+        # type: (str, dict[str, types.Any]) -> dict[str, types.Any]
         schema = {
             "size": [
                 tk.get_validator("not_missing"),
@@ -75,11 +70,11 @@ class FileSystemUploader(Uploader):
         return result
 
     def show_multipart_upload(self, upload_data):
-        # type: (dict[str, Any]) -> dict[str, Any]
+        # type: (dict[str, types.Any]) -> dict[str, types.Any]
         return upload_data
 
     def update_multipart_upload(self, upload_data, extras):
-        # type: (dict[str, Any], dict[str, Any]) -> dict[str, Any]
+        # type: (dict[str, types.Any], dict[str, types.Any]) -> dict[str, types.Any]
         schema = {
             "position": [
                 tk.get_validator("not_missing"),
@@ -114,7 +109,7 @@ class FileSystemUploader(Uploader):
         return upload_data
 
     def complete_multipart_upload(self, upload_data, extras):
-        # type: (dict[str, Any], dict[str, Any]) -> FsStorageData
+        # type: (dict[str, types.Any], dict[str, types.Any]) -> FsStorageData
         filepath = os.path.join(
             str(self.storage.settings["path"]),
             upload_data["filename"],
@@ -154,7 +149,7 @@ class FileSystemManager(Manager):
     capabilities = utils.combine_capabilities(Capability.REMOVE)
 
     def remove(self, data):
-        # type: (dict[str, Any]) -> bool
+        # type: (dict[str, types.Any]) -> bool
         filepath = os.path.join(str(self.storage.settings["path"]), data["filename"])
         if not os.path.exists(filepath):
             return False
@@ -171,7 +166,7 @@ class FileSystemStorage(Storage):
         return FileSystemManager(self)
 
     def __init__(self, **settings):
-        # type: (**Any) -> None
+        # type: (**types.Any) -> None
         path = self.ensure_option(settings, "path")
 
         if not os.path.exists(path):
@@ -185,9 +180,29 @@ class FileSystemStorage(Storage):
 
         super(FileSystemStorage, self).__init__(**settings)
 
+    @classmethod
+    def declare_config_options(cls, declaration, key):
+        # type: (types.Declaration, types.Key) -> None
+        super().declare_config_options(declaration, key)
+        declaration.declare(key.path).required().set_description(
+            "Path to the folder where uploaded data will be stored.",
+        )
+        declaration.declare_bool(key.create_path).set_description(
+            "Create storage folder if it does not exist.",
+        )
+
 
 class PublicFileSystemStorage(FileSystemStorage):
     def __init__(self, **settings):
-        # type: (**Any) -> None
+        # type: (**types.Any) -> None
         self.ensure_option(settings, "public_root")
         super(PublicFileSystemStorage, self).__init__(**settings)
+
+    @classmethod
+    def declare_config_options(cls, declaration, key):
+        # type: (types.Declaration, types.Key) -> None
+        super().declare_config_options(declaration, key)
+        declaration.declare(key.public_root).required().set_description(
+            "URL of the storage folder."
+            + " `public_root + filename` must produce a public URL",
+        )

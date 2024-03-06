@@ -1,6 +1,10 @@
 import pytest
 
+import ckan.plugins.toolkit as tk
+
 from ckanext.files import config
+
+from _pytest.monkeypatch import MonkeyPatch  # isort: skip # noqa: F401
 
 
 class TestDefault:
@@ -19,12 +23,27 @@ class TestDefault:
 
 
 class TestStorages:
+    def adapt_to_ckan_version(self, settings):
+        # type: (dict[str, object]) -> dict[str, object]
+        """CKAN v2.10 has max_size added to default storage by config
+        declaration.
+
+        """
+
+        if tk.check_ckan_version("2.10"):
+            settings.setdefault("max_size", 0)
+
+        return settings
+
     def test_empty(self):
         """With no customization we have only storage defined by test.ini"""
 
-        assert config.storages() == {"default": {"type": "files:redis"}}
+        assert config.storages() == {
+            "default": self.adapt_to_ckan_version({"type": "files:redis"}),
+        }
 
     def test_customized(self, monkeypatch, ckan_config):
+        # type: (MonkeyPatch, dict[str, object]) -> None
         """Storage configuration grouped by the storage name."""
         patches = [
             ("default.type", "files:redis"),
@@ -39,7 +58,7 @@ class TestStorages:
         storages = config.storages()
 
         assert storages == {
-            "default": {"type": "files:redis"},
+            "default": self.adapt_to_ckan_version({"type": "files:redis"}),
             "test": {"type": "test", "path": "somepath"},
             "another": {"type": "fancy", "name_strategy": "hello"},
         }
@@ -53,4 +72,6 @@ class TestStorages:
 
         storages = config.storages()
 
-        assert storages == {"default": {"type": "files:redis"}}
+        assert storages == {
+            "default": self.adapt_to_ckan_version({"type": "files:redis"}),
+        }

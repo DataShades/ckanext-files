@@ -5,8 +5,11 @@ from werkzeug.datastructures import FileStorage
 
 from ckanext.files import base, exceptions, utils
 
+from faker import Faker  # isort: skip # noqa: F401
+
 
 def test_registry(faker):
+    # type: (Faker) -> None
     """Brief test of registry functionality."""
 
     registry = utils.Registry()
@@ -17,9 +20,11 @@ def test_registry(faker):
 
     registry.register(key, value)
     assert registry.get(key) is value
+    assert list(registry) == [key]
 
     registry.reset()
     assert registry.get(key) is None
+    assert list(registry) == []
 
 
 def test_collector():
@@ -218,7 +223,6 @@ class TestParseFilesize:
 
     def test_empty_string(self):
         """Empty string causes an exception"""
-
         with pytest.raises(ValueError):
             utils.parse_filesize("")
 

@@ -10,7 +10,7 @@ import ckan.plugins.toolkit as tk
 
 from ckanext.files.utils import make_collector
 
-from ckanext.files import types  # isort: skip # noqa: F401
+from ckanext.files import types, utils  # isort: skip # noqa: F401
 
 if six.PY3:
     from typing import Any  # isort: skip # noqa: F401
@@ -63,3 +63,12 @@ def files_into_upload(value):
 
     msg = "Unsupported source type: {}".format(type(value))
     raise tk.Invalid(msg)
+
+
+@validator
+def files_parse_filesize(value):
+    # type: (Any) -> int
+    if isinstance(value, int):
+        return value
+
+    return utils.parse_filesize(value)

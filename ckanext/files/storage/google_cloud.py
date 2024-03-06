@@ -13,8 +13,6 @@ from ckanext.files import exceptions, types, utils
 from ckanext.files.base import Capability, Manager, Storage, Uploader
 
 if six.PY3:
-    from typing import Any  # isort: skip # noqa: F401
-
     GCAdditionalData = types.TypedDict("GCAdditionalData", {"filename": str})
 
     class GCStorageData(GCAdditionalData, types.MinimalStorageData):
@@ -34,7 +32,7 @@ class GoogleCloudUploader(Uploader):
     )
 
     def upload(self, name, upload, extras):
-        # type: (str, types.Upload, dict[str, Any]) -> GCStorageData
+        # type: (str, types.Upload, dict[str, types.Any]) -> GCStorageData
         filename = self.compute_name(name, extras, upload)
         filepath = os.path.join(self.storage.settings["path"], filename)
 
@@ -50,7 +48,7 @@ class GoogleCloudUploader(Uploader):
         }
 
     def initialize_multipart_upload(self, name, extras):
-        # type: (str, dict[str, Any]) -> dict[str, Any]
+        # type: (str, dict[str, types.Any]) -> dict[str, types.Any]
 
         schema = {
             "size": [
@@ -74,7 +72,7 @@ class GoogleCloudUploader(Uploader):
         if max_size and data["size"] > max_size:
             raise exceptions.LargeUploadError(data["size"], max_size)
 
-        url = blob.create_resumable_upload_session(size=data["size"])  # type: Any
+        url = blob.create_resumable_upload_session(size=data["size"])  # type: types.Any
 
         if not url:
             raise exceptions.UploadError("Cannot initialize session URL")
@@ -82,7 +80,7 @@ class GoogleCloudUploader(Uploader):
         return {"session_url": url, "size": data["size"], "uploaded": 0}
 
     def update_multipart_upload(self, upload_data, extras):
-        # type: (dict[str, Any], dict[str, Any]) -> dict[str, Any]
+        # type: (dict[str, types.Any], dict[str, types.Any]) -> dict[str, types.Any]
         schema = {
             "upload": [
                 tk.get_validator("ignore_missing"),
@@ -156,7 +154,7 @@ class GoogleCloudUploader(Uploader):
         return upload_data
 
     def show_multipart_upload(self, upload_data):
-        # type: (dict[str, Any]) -> dict[str, Any]
+        # type: (dict[str, types.Any]) -> dict[str, types.Any]
         resp = requests.put(
             upload_data["session_url"],
             headers={
@@ -199,7 +197,7 @@ class GoogleCloudUploader(Uploader):
         return upload_data
 
     def complete_multipart_upload(self, upload_data, extras):
-        # type: (dict[str, Any], dict[str, Any]) -> GCStorageData
+        # type: (dict[str, types.Any], dict[str, types.Any]) -> GCStorageData
         if upload_data["uploaded"] != upload_data["size"]:
             raise tk.ValidationError(
                 {
@@ -231,7 +229,7 @@ class GoogleCloudManager(Manager):
     capabilities = utils.combine_capabilities(Capability.REMOVE)
 
     def remove(self, data):
-        # type: (dict[str, Any]) -> bool
+        # type: (dict[str, types.Any]) -> bool
         filepath = os.path.join(str(self.storage.settings["path"]), data["filename"])
         client = self.storage.client  # type: Client
         blob = client.bucket(self.storage.settings["bucket"]).blob(filepath)
@@ -241,7 +239,7 @@ class GoogleCloudManager(Manager):
 
 class GoogleCloudStorage(Storage):
     def __init__(self, **settings):
-        # type: (**Any) -> None
+        # type: (**types.Any) -> None
         settings["path"] = settings.setdefault("path", "").lstrip("/")
 
         super(GoogleCloudStorage, self).__init__(**settings)
@@ -258,3 +256,18 @@ class GoogleCloudStorage(Storage):
 
     def make_manager(self):
         return GoogleCloudManager(self)
+
+    @classmethod
+    def declare_config_options(cls, declaration, key):
+        # type: (types.Declaration, types.Key) -> None
+        super().declare_config_options(declaration, key)
+        declaration.declare(key.path).required().set_description(
+            "Path to the folder where uploaded data will be stored.",
+        )
+        declaration.declare(key.bucket).required().set_description(
+            "Name of the GCS bucket where uploaded data will be stored.",
+        )
+        declaration.declare(key.credentials_file).set_description(
+            "Path to the credentials file used for authentication by GCS client."
+            + "\nIf empty, uses value of GOOGLE_APPLICATION_CREDENTIALS envvar.",
+        )

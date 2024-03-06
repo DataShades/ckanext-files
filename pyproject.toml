@@ -130,3 +130,7 @@ reportUnsupportedDunderAll = true
 reportUnusedCoroutine = true
 reportUnnecessaryTypeIgnoreComment = true
 reportMatchNotExhaustive = true
+
+[tool.coverage.run]
+branch = true
+omit = ["ckanext/files/tests/*"]

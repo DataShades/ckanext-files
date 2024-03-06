@@ -23,6 +23,7 @@ if six.PY3:
 
 
 RE_FILESIZE = re.compile(r"^(?P<size>\d+(?:\.\d+)?)\s*(?P<unit>\w*)$")
+
 UNITS = {
     "": 1,
     "b": 1,
@@ -42,30 +43,67 @@ UNITS = {
 
 
 class Registry(object):
+    """Mutable collection of objects.
+
+    Example:
+    >>> col = Registry()
+    >>>
+    >>> col.register("one", 1)
+    >>> assert col.get("one") == 1
+    >>>
+    >>> col.reset()
+    >>> assert col.get("one") is None
+    """
+
     def __init__(self, members=None):
         # type: (dict[str, Any] | None) -> None
         if members is None:
             members = {}
         self.members = members
 
+    def __iter__(self):
+        return iter(self.members)
+
     def reset(self):
+        """Remove all members from registry."""
+
         self.members.clear()
 
     def register(self, name, member):
         # type: (str, Any) -> None
+        """Add a member to registry."""
+
         self.members[name] = member
 
     def get(self, name):
-        # type: (str) -> Any | None
+        # type: (Any) -> Any | None
+        """Get an optional member from registry."""
+
         return self.members.get(name)
 
 
 def make_collector():
     # type: () -> tuple[dict[str, Any], Callable[[Any], Any]]
+    """Create pair of a dictionary and decorator that appends function to the
+    dictionary.
+
+    Example:
+    >>> col, add = make_collector()
+    >>> assert col == {}
+    >>>
+    >>> @add
+    >>> def hello():
+    >>>     return "world"
+    >>>
+    >>> assert col == {"hello": hello}
+    """
+
     collection = {}  # type: dict[str, Any]
 
     def collector(fn):
         # type: (T) -> T
+        """Decorator that appends functions to the collection."""
+
         collection[fn.__name__] = fn
         return fn
 
@@ -74,6 +112,7 @@ def make_collector():
 
 def ensure_size(upload, max_size):
     # type: (types.Upload, int) -> int
+    """Return filesize or rise an exception if it exceedes max_size."""
 
     filesize = upload.content_length
     if not filesize:
@@ -88,6 +127,12 @@ def ensure_size(upload, max_size):
 
 def combine_capabilities(*capabilities):
     # type: (*types.CapabilityCluster | types.CapabilityUnit) -> types.CapabilityCluster
+    """Combine multiple capabilities.
+
+    Example:
+    >>> cluster = combine_capabilities(Capability.CREATE, Capability.REMOVE)
+    """
+
     result = 0
     for capability in capabilities:
         result |= capability
@@ -97,6 +142,12 @@ def combine_capabilities(*capabilities):
 
 def exclude_capabilities(capabilities, *exclude):
     # type: (types.CapabilityCluster, *types.CapabilityCluster | types.CapabilityUnit) -> types.CapabilityCluster
+    """Remove capabilities from the cluster
+
+    Example:
+    >>> cluster = exclude_capabilities(cluster, Capability.REMOVE)
+    """
+
     for capability in exclude:
         capabilities = types.CapabilityCluster(capabilities & ~capability)
 
@@ -105,6 +156,12 @@ def exclude_capabilities(capabilities, *exclude):
 
 def parse_filesize(value):
     # type: (str) -> int
+    """Transform human-readable filesize into an integer.
+
+    Example:
+    >>> size = parse_filesize("10GiB")
+    >>> assert size == 10_737_418_240
+    """
     result = RE_FILESIZE.match(value.strip())
     if not result:
         raise ValueError(value)

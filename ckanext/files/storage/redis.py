@@ -7,8 +7,6 @@ from ckanext.files import types, utils
 from ckanext.files.base import Capability, HashingReader, Manager, Storage, Uploader
 
 if six.PY3:
-    from typing import Any  # isort: skip # noqa: F401
-
     RedisAdditionalData = types.TypedDict("RedisAdditionalData", {"filename": str})
 
     class RedisStorageData(RedisAdditionalData, types.MinimalStorageData):
@@ -22,7 +20,7 @@ class RedisUploader(Uploader):
     capabilities = utils.combine_capabilities(Capability.CREATE)
 
     def upload(self, name, upload, extras):
-        # type: (str, types.Upload, dict[str, Any]) -> RedisStorageData
+        # type: (str, types.Upload, dict[str, types.Any]) -> RedisStorageData
 
         filename = self.compute_name(name, extras, upload)
         key = self.storage.settings["prefix"] + filename
@@ -46,7 +44,7 @@ class RedisManager(Manager):
     capabilities = utils.combine_capabilities(Capability.REMOVE)
 
     def remove(self, data):
-        # type: (dict[str, Any]) -> bool
+        # type: (dict[str, types.Any]) -> bool
         key = self.storage.settings["prefix"] + data["filename"]
         self.storage.redis.delete(key)
         return True
@@ -60,7 +58,7 @@ class RedisStorage(Storage):
         return RedisManager(self)
 
     def __init__(self, **settings):
-        # type: (**Any) -> None
+        # type: (**types.Any) -> None
 
         settings.setdefault(
             "prefix",

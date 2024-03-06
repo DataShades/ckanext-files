@@ -1,4 +1,4 @@
-import six
+import os
 
 import ckan.plugins as p
 import ckan.plugins.toolkit as tk
@@ -16,8 +16,7 @@ from ckanext.files import (
 )
 from ckanext.files.logic import action, auth, validators
 
-if six.PY3:
-    from typing import Any  # isort: skip # noqa: F401
+from ckanext.files import types  # isort: skip # noqa: F401
 
 
 class FilesPlugin(p.SingletonPlugin):
@@ -27,16 +26,37 @@ class FilesPlugin(p.SingletonPlugin):
     p.implements(p.IValidators)
     p.implements(p.IBlueprint)
     p.implements(p.ITemplateHelpers)
+    p.implements(interfaces.IFiles)
 
     if tk.check_ckan_version("2.9"):
         p.implements(p.IClick)
 
-    p.implements(interfaces.IFiles)
+    if tk.check_ckan_version("2.10"):
+        p.implements(p.IConfigDeclaration)
+
+        def declare_config_options(self, declaration, key):
+            # type: (types.Declaration, types.Key) -> None
+            import yaml
+
+            here = os.path.dirname(__file__)
+            with open(os.path.join(here, "config_declaration.yaml"), "rb") as src:
+                declaration.load_dict(yaml.safe_load(src))
+
+            _register_adapters()
+            for name, settings in config.storages().items():
+                adapter = base.adapters.get(settings.get("type"))
+                if not adapter:
+                    continue
+
+                adapter.declare_config_options(
+                    declaration,
+                    key.from_string(config.STORAGE_PREFIX + name),
+                )
 
     # IFiles
     def files_get_storage_adapters(self):
-        # type: () -> dict[str, Any]
-        adapters = {}  # type: dict[str, Any]
+        # type: () -> dict[str, types.Any]
+        adapters = {}  # type: dict[str, types.Any]
         adapters = {
             "files:fs": storage.FileSystemStorage,
             "files:public_fs": storage.PublicFileSystemStorage,
@@ -50,20 +70,15 @@ class FilesPlugin(p.SingletonPlugin):
 
     # IConfigurable
     def configure(self, config_):
-        # type: (Any) -> None
-        base.adapters.reset()
-        for plugin in p.PluginImplementations(interfaces.IFiles):
-            for name, adapter in plugin.files_get_storage_adapters().items():
-                base.adapters.register(name, adapter)
+        # type: (types.Any) -> None
 
-        base.storages.reset()
-        for name, settings in config.storages().items():
-            try:
-                storage = base.storage_from_settings(settings)
-            except exceptions.UnknownAdapterError as err:
-                raise CkanConfigurationException(str(err))  # noqa: B904
+        # starting from CKAN v2.10, adapters are registered alongside with
+        # config declaration, to enrich declarations with adapter-specific
+        # options.
+        if not tk.check_ckan_version("2.10"):
+            _register_adapters()
 
-            base.storages.register(name, storage)
+        _initialize_storages()
 
     # IActions
     def get_actions(self):
@@ -90,5 +105,26 @@ class FilesPlugin(p.SingletonPlugin):
         return cli.get_commands()
 
 
-if tk.check_ckan_version("2.10"):
-    FilesPlugin = tk.blanket.config_declarations(FilesPlugin)
+def _register_adapters():
+    """Register all storage types provided by extensions."""
+
+    base.adapters.reset()
+    for plugin in p.PluginImplementations(interfaces.IFiles):
+        for name, adapter in plugin.files_get_storage_adapters().items():
+            base.adapters.register(name, adapter)
+
+
+def _initialize_storages():
+    """Initialize all configured storages.
+
+    Raise an exception if storage type is not registered.
+    """
+
+    base.storages.reset()
+    for name, settings in config.storages().items():
+        try:
+            storage = base.storage_from_settings(settings)
+        except exceptions.UnknownAdapterError as err:
+            raise CkanConfigurationException(str(err))  # noqa: B904
+
+        base.storages.register(name, storage)

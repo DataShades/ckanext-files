@@ -1,8 +1,13 @@
 version: 1
 groups:
-  - annotation: ckanext-admin_panel
+  - annotation: ckanext-files
     options:
       - key: ckanext.files.default_storage
         default: default
         description: |
           Default storage used for upload when no explicit storage specified
+
+      - key: ckanext.files.storage.<NAME>.<OPTION>
+        type: dynamic
+        description: |
+          Configuration of the named storage.

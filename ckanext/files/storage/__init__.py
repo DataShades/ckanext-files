@@ -3,7 +3,7 @@ from .redis import RedisStorage
 
 try:
     from .google_cloud import GoogleCloudStorage
-except ImportError:
+except ImportError:  # pragma: no cover
     pass
 
 __all__ = [

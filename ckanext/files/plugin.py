@@ -22,6 +22,7 @@ from ckanext.files import types  # isort: skip # noqa: F401
 
 class FilesPlugin(p.SingletonPlugin):
     p.implements(p.IConfigurable)
+    p.implements(p.IConfigurer, inherit=True)
     p.implements(p.IActions)
     p.implements(p.IAuthFunctions)
     p.implements(p.IValidators)
@@ -92,6 +93,13 @@ class FilesPlugin(p.SingletonPlugin):
             _register_adapters()
 
         _initialize_storages()
+
+    # IConfigurer
+    def update_config(self, config_):
+        # type: (types.Any) -> None
+        tk.add_template_directory(config_, "templates")
+        tk.add_resource("assets", "files")
+        tk.add_public_directory(config_, "public")
 
     # IActions
     def get_actions(self):

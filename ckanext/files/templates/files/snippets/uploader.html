@@ -1,0 +1,34 @@
+{% import 'macros/form.html' as form %}
+
+{% block uploader %}
+    <div class="file-uploader">
+        {% block form %}
+            <form action="" method="post" class="file-uploader__form">
+                {{ form.input("upload", label="File", type="file", attrs={
+                    "multiple": true,
+                    "class": "form-control",
+                    "data-module": "files--uploader",
+                    "data-module-storage": "default",
+                    "data-module-show-notifications": true,
+                    "data-module-progress-tpl-selector": "[data-uploader-template]"
+                }) }}
+            </form>
+        {% endblock form %}
+
+        {% block progress %}
+            <div class="file-uploader__progress" data-uploader-progress>
+                <div data-uploader-template hidden>
+                    <label></label>
+                    <div class="progress">
+                        <div class="progress-bar bg-secondary" style="width: 0%" data-uploader-bar>
+                            0%
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        {% endblock progress %}
+
+    </div>
+
+{% endblock %}

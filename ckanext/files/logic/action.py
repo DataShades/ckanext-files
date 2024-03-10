@@ -1,11 +1,13 @@
+import sqlalchemy as sa
 from werkzeug.utils import secure_filename
 
 import ckan.plugins.toolkit as tk
+from ckan import model
 from ckan.logic import validate
 
 from ckanext.files import exceptions, shared
 from ckanext.files.base import Capability
-from ckanext.files.model import File, Upload
+from ckanext.files.model import File, Owner
 from ckanext.files.utils import make_collector
 
 from . import schema
@@ -18,6 +20,50 @@ _actions, action = make_collector()
 
 def get_actions():
     return dict(_actions)
+
+
+@action
+@tk.side_effect_free
+@validate(schema.file_search_by_user)
+def files_file_search_by_user(context, data_dict):
+    # type: (types.Any, dict[str, types.Any]) -> dict[str, types.Any]
+    tk.check_access("files_file_search_by_user", context, data_dict)
+    sess = context["session"]
+
+    stmt = sa.select(File).join(
+        Owner, sa.and_(File.id == Owner.item_id, Owner.item_type == "file"),
+    )
+
+    user = model.User.get(data_dict.get("user", context["user"]))
+    if not user:
+        raise tk.ObjectNotFound("user")
+
+    stmt = stmt.where(Owner.owner_type == "user", Owner.owner_id == user.id)
+
+    total = sess.scalar(sa.select(sa.func.count()).select_from(stmt))
+
+    sort, *sort_path = data_dict["sort"].split(".")
+
+    inspector = sa.inspect(File)  # type: types.Any
+    columns = inspector.columns
+
+    if sort not in columns:
+        raise tk.ValidationError({"sort": ["Unknown sort column"]})
+
+    column = columns[sort]
+
+    if sort_path and sort == "storage_data":
+        for part in sort_path:
+            column = column[part]
+
+    if data_dict["reverse"]:
+        column = column.desc()
+
+    stmt = stmt.order_by(column)
+
+    stmt = stmt.limit(data_dict["rows"]).offset(data_dict["start"])
+
+    return {"count": total, "results": [f.dictize(context) for f in sess.scalars(stmt)]}
 
 
 @action
@@ -43,11 +89,15 @@ def files_file_create(context, data_dict):
     except exceptions.LargeUploadError as err:
         raise tk.ValidationError({"upload": [str(err)]})  # noqa: B904
 
-    fileobj = File(name=name, storage=data_dict["storage"], storage_data=storage_data)
-
+    fileobj = File(
+        name=name,
+        storage=data_dict["storage"],
+        storage_data=storage_data,
+        completed=True,
+    )
     context["session"].add(fileobj)
-    if not context.get("defer_commit"):
-        context["session"].commit()
+    _add_owner(context, "file", fileobj.id)
+    context["session"].commit()
 
     return fileobj.dictize(context)
 
@@ -70,6 +120,27 @@ def _ensure_name(data_dict, name_field="name", upload_field="upload"):
     data_dict[name_field] = name
 
 
+def _add_owner(context, item_type, item_id):
+    # type: (types.Any, str, str) -> None
+    user = model.User.get(context["user"])
+    if user:
+        owner = Owner(
+            item_id=item_id,
+            item_type=item_type,
+            owner_id=user.id,
+            owner_type="user",
+        )
+        context["session"].add(owner)
+
+
+def _delete_owners(context, item_type, item_id):
+    # type: (types.Any, str, str) -> None
+    stmt = sa.delete(Owner).where(
+        Owner.item_type == item_type, Owner.item_id == item_id,
+    )
+    context["session"].execute(stmt)
+
+
 @action
 @validate(schema.file_delete)
 def files_file_delete(context, data_dict):
@@ -86,9 +157,9 @@ def files_file_delete(context, data_dict):
         raise tk.ValidationError({"storage": ["Operation is not supported"]})
 
     storage.remove(fileobj.storage_data)
+    _delete_owners(context, "file", fileobj.id)
     context["session"].delete(fileobj)
-    if not context.get("defer_commit"):
-        context["session"].commit()
+    context["session"].commit()
 
     return fileobj.dictize(context)
 
@@ -130,21 +201,20 @@ def files_upload_initialize(context, data_dict):
         raise tk.ValidationError({"storage": ["Operation is not supported"]})
 
     try:
-        upload_data = storage.initialize_multipart_upload(name, extras)
+        storage_data = storage.initialize_multipart_upload(name, extras)
     except exceptions.LargeUploadError as err:
         raise tk.ValidationError({"upload": [str(err)]})  # noqa: B904
 
-    upload = Upload(
+    fileobj = File(
         name=name,
         storage=data_dict["storage"],
-        upload_data=upload_data,
+        storage_data=storage_data,
     )
+    context["session"].add(fileobj)
+    _add_owner(context, "file", fileobj.id)
+    context["session"].commit()
 
-    context["session"].add(upload)
-    if not context.get("defer_commit"):
-        context["session"].commit()
-
-    return upload.dictize(context)
+    return fileobj.dictize(context)
 
 
 @action
@@ -153,15 +223,15 @@ def files_upload_show(context, data_dict):
     # type: (types.Any, dict[str, types.Any]) -> dict[str, types.Any]
     tk.check_access("files_upload_show", context, data_dict)
 
-    upload = context["session"].get(Upload, data_dict["id"])
-    if not upload:
+    fileobj = context["session"].get(File, data_dict["id"])
+    if not fileobj:
         raise tk.ObjectNotFound("upload")
 
-    storage = shared.get_storage(upload.storage)
+    storage = shared.get_storage(fileobj.storage)
 
-    upload_data = storage.show_multipart_upload(upload.upload_data)
+    storage_data = storage.show_multipart_upload(fileobj.storage_data)
 
-    return dict(upload.dictize(context), upload_data=upload_data)
+    return dict(fileobj.dictize(context), storage_data=storage_data)
 
 
 @action
@@ -172,17 +242,16 @@ def files_upload_update(context, data_dict):
 
     extras = data_dict.get("__extras", {})
 
-    upload = context["session"].get(Upload, data_dict["id"])
-    if not upload:
+    fileobj = context["session"].get(File, data_dict["id"])
+    if not fileobj:
         raise tk.ObjectNotFound("upload")
 
-    storage = shared.get_storage(upload.storage)
+    storage = shared.get_storage(fileobj.storage)
 
-    upload.upload_data = storage.update_multipart_upload(upload.upload_data, extras)
-    if not context.get("defer_commit"):
-        context["session"].commit()
+    fileobj.storage_data = storage.update_multipart_upload(fileobj.storage_data, extras)
+    context["session"].commit()
 
-    return upload.dictize(context)
+    return fileobj.dictize(context)
 
 
 @action
@@ -194,18 +263,16 @@ def files_upload_complete(context, data_dict):
     extras = data_dict.get("__extras", {})
 
     data_dict["id"]
-    upload = context["session"].get(Upload, data_dict["id"])
-    if not upload:
+    fileobj = context["session"].get(File, data_dict["id"])
+    if not fileobj:
         raise tk.ObjectNotFound("upload")
 
-    storage = shared.get_storage(upload.storage)
+    storage = shared.get_storage(fileobj.storage)
 
-    storage_data = storage.complete_multipart_upload(upload.upload_data, extras)
-    fileobj = File(name=upload.name, storage=upload.storage, storage_data=storage_data)
-
-    context["session"].delete(upload)
-    context["session"].add(fileobj)
-    if not context.get("defer_commit"):
-        context["session"].commit()
+    fileobj.storage_data = storage.complete_multipart_upload(
+        fileobj.storage_data, extras,
+    )
+    fileobj.completed = True
+    context["session"].commit()
 
     return fileobj.dictize(context)

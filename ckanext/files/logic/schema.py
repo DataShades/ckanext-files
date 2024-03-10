@@ -1,3 +1,4 @@
+
 from ckan.logic.schema import validator_args
 
 from ckanext.files import config
@@ -15,6 +16,26 @@ def file_create(ignore_empty, unicode_safe, default, files_into_upload, not_miss
         "storage": [default(config.default_storage()), unicode_safe],
         "upload": [not_missing, files_into_upload],
     }
+
+
+@validator_args
+def _base_file_search(unicode_safe, default, int_validator, boolean_validator, one_of):
+    # type: (types.Any, types.Any, types.Any, types.Any, types.Any) -> types.Any
+
+    return {
+        "start": [default(0), int_validator],
+        "rows": [default(10), int_validator],
+        "sort": [default("name"), unicode_safe],
+        "reverse": [boolean_validator],
+    }
+
+
+@validator_args
+def file_search_by_user(ignore_missing, unicode_safe, default, ignore_not_sysadmin):
+    # type: (types.Any, types.Any, types.Any, types.Any) -> types.Any
+    schema = _base_file_search()
+    schema["user"] = [ignore_missing, ignore_not_sysadmin, unicode_safe]
+    return schema
 
 
 @validator_args

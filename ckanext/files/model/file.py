@@ -1,6 +1,7 @@
 import copy
 
 import six
+import sqlalchemy as sa
 from sqlalchemy import Column, DateTime, UnicodeText
 from sqlalchemy.dialects.postgresql import JSONB
 
@@ -8,6 +9,8 @@ from ckan.lib.dictization import table_dictize
 from ckan.model.types import make_uuid
 
 from .base import Base, now
+
+from ckanext.files import types  # isort: skip # noqa: F401
 
 if six.PY3:
     from typing import Any  # isort: skip # noqa: F401
@@ -25,6 +28,13 @@ class File(Base):  # type: ignore
 
     storage_data = Column(JSONB, default=dict)
     plugin_data = Column(JSONB, default=dict)
+    completed = Column(sa.Boolean, default=False)
+
+    def __init__(self, **kwargs):
+        # type: (**types.Any) -> None
+        super(File, self).__init__(**kwargs)
+        if not self.id:
+            self.id = make_uuid()
 
     def dictize(self, context):
         # type: (Any) -> dict[str, Any]
@@ -42,4 +52,4 @@ class File(Base):  # type: ignore
         self.mtime = now()
 
     def access(self):
-        self.mtime = now()
+        self.atime = now()

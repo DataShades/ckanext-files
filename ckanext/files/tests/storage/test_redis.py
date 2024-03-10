@@ -79,7 +79,7 @@ class TestReader:
 
         assert content == data
 
-    def test_missint(self, storage, faker):
+    def test_missing(self, storage, faker):
         # type: (redis.RedisStorage, Faker) -> None
         result = storage.upload("", FileStorage(), {})
         result["filename"] += faker.uuid4()

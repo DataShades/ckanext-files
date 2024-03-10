@@ -7,7 +7,14 @@ from werkzeug.datastructures import FileStorage
 import ckan.plugins.toolkit as tk
 
 from ckanext.files import exceptions, types, utils
-from ckanext.files.base import Capability, HashingReader, Manager, Storage, Uploader
+from ckanext.files.base import (
+    Capability,
+    HashingReader,
+    Manager,
+    Reader,
+    Storage,
+    Uploader,
+)
 
 FsAdditionalData = types.TypedDict("FsAdditionalData", {"filename": str})
 
@@ -51,6 +58,10 @@ class FileSystemUploader(Uploader):
                 tk.get_validator("not_missing"),
                 tk.get_validator("int_validator"),
             ],
+            "content_type": [
+                tk.get_validator("default")("application/octet-stream"),
+                tk.get_validator("unicode_safe"),
+            ],
             "__extras": [tk.get_validator("ignore")],
         }
         data, errors = tk.navl_validate(extras, schema)
@@ -66,7 +77,9 @@ class FileSystemUploader(Uploader):
 
         result = dict(self.upload(name, upload, data))
         result["size"] = data["size"]
+        result["content_type"] = data["content_type"]
         result["uploaded"] = 0
+
         return result
 
     def show_multipart_upload(self, upload_data):
@@ -77,7 +90,7 @@ class FileSystemUploader(Uploader):
         # type: (dict[str, types.Any], dict[str, types.Any]) -> dict[str, types.Any]
         schema = {
             "position": [
-                tk.get_validator("not_missing"),
+                tk.get_validator("ignore_missing"),
                 tk.get_validator("int_validator"),
             ],
             "upload": [
@@ -91,6 +104,7 @@ class FileSystemUploader(Uploader):
         if errors:
             raise tk.ValidationError(errors)
 
+        data.setdefault("position", upload_data["uploaded"])
         upload = data["upload"]  # type: types.Upload
 
         expected_size = data["position"] + upload.content_length
@@ -158,9 +172,25 @@ class FileSystemManager(Manager):
         return True
 
 
+class FileSystemReader(Reader):
+    required_options = ["path"]
+    capabilities = utils.combine_capabilities(Capability.STREAM)
+
+    def stream(self, data):
+        # type: (dict[str, types.Any]) -> types.IO[bytes]
+        filepath = os.path.join(str(self.storage.settings["path"]), data["filename"])
+        if not os.path.exists(filepath):
+            raise exceptions.MissingFileError(self.storage.settings["name"], filepath)
+
+        return open(filepath, "rb")
+
+
 class FileSystemStorage(Storage):
     def make_uploader(self):
         return FileSystemUploader(self)
+
+    def make_reader(self):
+        return FileSystemReader(self)
 
     def make_manager(self):
         return FileSystemManager(self)
@@ -181,7 +211,7 @@ class FileSystemStorage(Storage):
         super(FileSystemStorage, self).__init__(**settings)
 
     @classmethod
-    def declare_config_options(cls, declaration, key):
+    def declare_config_options(cls, declaration, key):  # pragma: no cover
         # type: (types.Declaration, types.Key) -> None
         super().declare_config_options(declaration, key)
         declaration.declare(key.path).required().set_description(
@@ -199,7 +229,7 @@ class PublicFileSystemStorage(FileSystemStorage):
         super(PublicFileSystemStorage, self).__init__(**settings)
 
     @classmethod
-    def declare_config_options(cls, declaration, key):
+    def declare_config_options(cls, declaration, key):  # pragma: no cover
         # type: (types.Declaration, types.Key) -> None
         super().declare_config_options(declaration, key)
         declaration.declare(key.public_root).required().set_description(

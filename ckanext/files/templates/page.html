@@ -1,0 +1,12 @@
+{% ckan_extends %}
+
+{% block scripts %}
+    {{ super() }}
+    {% if h.ckan_version().split('.')[1] | int >= 9 %}
+        {% include "files/snippets/_asset.html" %}
+
+    {% else %}
+        {% include "files/snippets/_resource.html" %}
+
+    {% endif %}
+{% endblock scripts %}

@@ -5,6 +5,7 @@ These bizarre definitions must remain here as long as Python2 is supported.
 """
 
 import six
+from sqlalchemy.sql.expression import Select
 from werkzeug.datastructures import FileStorage as Upload
 
 import ckan.plugins.toolkit as tk
@@ -38,6 +39,7 @@ __all__ = [
     "Declaration",
     "Any",
     "IO",
+    "Select",
 ]
 
 

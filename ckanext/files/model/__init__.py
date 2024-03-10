@@ -1,4 +1,4 @@
 from .file import File
-from .upload import Upload
+from .owner import Owner
 
-__all__ = ["File", "Upload"]
+__all__ = ["File", "Owner"]

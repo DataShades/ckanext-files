@@ -31,7 +31,8 @@ def files_file_search_by_user(context, data_dict):
     sess = context["session"]
 
     stmt = sa.select(File).join(
-        Owner, sa.and_(File.id == Owner.item_id, Owner.item_type == "file"),
+        Owner,
+        sa.and_(File.id == Owner.item_id, Owner.item_type == "file"),
     )
 
     user = model.User.get(data_dict.get("user", context["user"]))
@@ -74,7 +75,6 @@ def files_file_create(context, data_dict):
     _ensure_name(data_dict)
 
     extras = data_dict.get("__extras", {})
-    name = secure_filename(data_dict["name"])
 
     try:
         storage = shared.get_storage(data_dict["storage"])
@@ -85,12 +85,16 @@ def files_file_create(context, data_dict):
         raise tk.ValidationError({"storage": ["Operation is not supported"]})
 
     try:
-        storage_data = storage.upload(name, data_dict["upload"], extras)
+        storage_data = storage.upload(
+            secure_filename(data_dict["name"]),
+            data_dict["upload"],
+            extras,
+        )
     except exceptions.LargeUploadError as err:
         raise tk.ValidationError({"upload": [str(err)]})  # noqa: B904
 
     fileobj = File(
-        name=name,
+        name=data_dict["name"],
         storage=data_dict["storage"],
         storage_data=storage_data,
         completed=True,
@@ -136,7 +140,8 @@ def _add_owner(context, item_type, item_id):
 def _delete_owners(context, item_type, item_id):
     # type: (types.Any, str, str) -> None
     stmt = sa.delete(Owner).where(
-        Owner.item_type == item_type, Owner.item_id == item_id,
+        Owner.item_type == item_type,
+        Owner.item_id == item_id,
     )
     context["session"].execute(stmt)
 
@@ -165,6 +170,7 @@ def files_file_delete(context, data_dict):
 
 
 @action
+@tk.side_effect_free
 @validate(schema.file_show)
 def files_file_show(context, data_dict):
     # type: (types.Any, dict[str, types.Any]) -> dict[str, types.Any]
@@ -190,7 +196,6 @@ def files_upload_initialize(context, data_dict):
     tk.check_access("files_upload_initialize", context, data_dict)
     _ensure_name(data_dict)
     extras = data_dict.get("__extras", {})
-    name = secure_filename(data_dict["name"])
 
     try:
         storage = shared.get_storage(data_dict["storage"])
@@ -201,12 +206,15 @@ def files_upload_initialize(context, data_dict):
         raise tk.ValidationError({"storage": ["Operation is not supported"]})
 
     try:
-        storage_data = storage.initialize_multipart_upload(name, extras)
+        storage_data = storage.initialize_multipart_upload(
+            secure_filename(data_dict["name"]),
+            extras,
+        )
     except exceptions.LargeUploadError as err:
         raise tk.ValidationError({"upload": [str(err)]})  # noqa: B904
 
     fileobj = File(
-        name=name,
+        name=data_dict["name"],
         storage=data_dict["storage"],
         storage_data=storage_data,
     )
@@ -218,20 +226,20 @@ def files_upload_initialize(context, data_dict):
 
 
 @action
+@tk.side_effect_free
 @validate(schema.upload_show)
 def files_upload_show(context, data_dict):
     # type: (types.Any, dict[str, types.Any]) -> dict[str, types.Any]
     tk.check_access("files_upload_show", context, data_dict)
+    file_dict = tk.get_action("files_file_show")(context, data_dict)
 
-    fileobj = context["session"].get(File, data_dict["id"])
-    if not fileobj:
+    if file_dict["completed"]:
         raise tk.ObjectNotFound("upload")
 
-    storage = shared.get_storage(fileobj.storage)
+    storage = shared.get_storage(file_dict["storage"])
+    storage_data = storage.show_multipart_upload(file_dict["storage_data"])
 
-    storage_data = storage.show_multipart_upload(fileobj.storage_data)
-
-    return dict(fileobj.dictize(context), storage_data=storage_data)
+    return dict(file_dict, storage_data=storage_data)
 
 
 @action
@@ -270,7 +278,8 @@ def files_upload_complete(context, data_dict):
     storage = shared.get_storage(fileobj.storage)
 
     fileobj.storage_data = storage.complete_multipart_upload(
-        fileobj.storage_data, extras,
+        fileobj.storage_data,
+        extras,
     )
     fileobj.completed = True
     context["session"].commit()

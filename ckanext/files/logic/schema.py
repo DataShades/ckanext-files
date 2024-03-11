@@ -1,4 +1,3 @@
-
 from ckan.logic.schema import validator_args
 
 from ckanext.files import config

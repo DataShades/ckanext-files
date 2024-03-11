@@ -1,11 +1,16 @@
 files-js:
   filter: rjsmin
-  output: ckanext-admin_panel/%(version)s-file-manager.js
+  output: ckanext-files/%(version)s-files.js
   contents:
     - js/files--shared.js
-    - js/files--uploader.js
+    - js/files--queue.js
 
   extra:
     preload:
       - base/main
       - base/ckan
+
+files-css:
+  output: ckanext-files/%(version)s-files.css
+  contents:
+    - styles/files--style.css

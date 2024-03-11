@@ -1,0 +1,3 @@
+.files--no-after-content:after {
+    content: none;
+}

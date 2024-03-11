@@ -3,29 +3,48 @@
 {% block uploader %}
     <div class="file-uploader">
         {% block form %}
-            <form action="" method="post" class="file-uploader__form">
+            <form action="" method="post" class="file-uploader__form"  data-module="files--scheduler">
                 {{ form.input("upload", label="File", type="file", attrs={
                     "multiple": true,
                     "class": "form-control",
-                    "data-module": "files--uploader",
-                    "data-module-storage": "default",
-                    "data-module-show-notifications": true,
-                    "data-module-progress-tpl-selector": "[data-uploader-template]"
+                    "data-queue-scheduler": true,
                 }) }}
             </form>
         {% endblock form %}
 
         {% block progress %}
-            <div class="file-uploader__progress" data-uploader-progress>
-                <div data-uploader-template hidden>
-                    <label></label>
-                    <div class="progress">
-                        <div class="progress-bar bg-secondary" style="width: 0%" data-uploader-bar>
-                            0%
+            <div data-module="files--queue">
+
+                <div data-upload-template hidden class="card file-uploader__queue_item my-1">
+                    <div class="card-header">
+                        <strong data-item-name></strong>
+                    </div>
+
+                    <div class="card-body">
+                        <div class="progress">
+                            <div class="progress-bar progress-bar-striped bg-secondary" style="width: 0%" data-upload-progress>
+                                0%
+                            </div>
                         </div>
                     </div>
 
+                    <div class="card-footer">
+
+                        <div class="file-uploader__controls">
+
+                            <button type="button" class="btn btn-sm btn-light" data-upload-resume>
+                                <i class="fa fa-play"></i>
+                            </button>
+
+                            <button type="button" class="btn btn-sm btn-light" data-upload-pause>
+                                <i class="fa fa-pause"></i>
+                            </button>
+                        </div>
+
+                    </div>
+
                 </div>
+
             </div>
         {% endblock progress %}
 

@@ -20,7 +20,8 @@ depends_on = None
 def upgrade():
     op.drop_table("files_upload")
     op.add_column(
-        "files_file", sa.Column("completed", sa.Boolean, server_default="false"),
+        "files_file",
+        sa.Column("completed", sa.Boolean, server_default="false"),
     )
 
 

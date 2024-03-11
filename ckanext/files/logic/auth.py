@@ -1,4 +1,3 @@
-
 import ckan.plugins.toolkit as tk
 from ckan import authz, model
 

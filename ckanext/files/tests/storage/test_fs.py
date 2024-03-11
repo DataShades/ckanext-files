@@ -70,7 +70,8 @@ class TestMultipartUploader:
         # type: (fs.FileSystemStorage, Faker) -> None
         content = b"hello world"
         data = storage.initialize_multipart_upload(
-            faker.file_name(), {"size": len(content)},
+            faker.file_name(),
+            {"size": len(content)},
         )
         assert data["size"] == len(content)
         assert data["uploaded"] == 0
@@ -79,7 +80,8 @@ class TestMultipartUploader:
         # type: (fs.FileSystemStorage, Faker) -> None
         content = b"hello world"
         data = storage.initialize_multipart_upload(
-            faker.file_name(), {"size": len(content)},
+            faker.file_name(),
+            {"size": len(content)},
         )
         with pytest.raises(tk.ValidationError):
             storage.update_multipart_upload(data, {})
@@ -88,29 +90,34 @@ class TestMultipartUploader:
         # type: (fs.FileSystemStorage, Faker) -> None
         content = b"hello world"
         data = storage.initialize_multipart_upload(
-            faker.file_name(), {"size": len(content)},
+            faker.file_name(),
+            {"size": len(content)},
         )
 
         data = storage.update_multipart_upload(
-            data, {"upload": FileStorage(BytesIO(content[:5]))},
+            data,
+            {"upload": FileStorage(BytesIO(content[:5]))},
         )
         assert data["size"] == len(content)
         assert data["uploaded"] == 5
 
         data = storage.update_multipart_upload(
-            data, {"upload": FileStorage(BytesIO(content[:5])), "position": 3},
+            data,
+            {"upload": FileStorage(BytesIO(content[:5])), "position": 3},
         )
         assert data["size"] == len(content)
         assert data["uploaded"] == 8
 
         with pytest.raises(exceptions.UploadOutOfBoundError):
             storage.update_multipart_upload(
-                data, {"upload": FileStorage(BytesIO(content))},
+                data,
+                {"upload": FileStorage(BytesIO(content))},
             )
 
         missing_size = data["size"] - data["uploaded"]
         data = storage.update_multipart_upload(
-            data, {"upload": FileStorage(BytesIO(content[-missing_size:]))},
+            data,
+            {"upload": FileStorage(BytesIO(content[-missing_size:]))},
         )
         assert data["size"] == len(content)
         assert data["uploaded"] == len(content)
@@ -119,14 +126,16 @@ class TestMultipartUploader:
         # type: (fs.FileSystemStorage, Faker) -> None
         content = b"hello world"
         data = storage.initialize_multipart_upload(
-            faker.file_name(), {"size": len(content)},
+            faker.file_name(),
+            {"size": len(content)},
         )
 
         with pytest.raises(tk.ValidationError):
             storage.complete_multipart_upload(data, {})
 
         data = storage.update_multipart_upload(
-            data, {"upload": FileStorage(BytesIO(content))},
+            data,
+            {"upload": FileStorage(BytesIO(content))},
         )
         data = storage.complete_multipart_upload(data, {})
         assert data["size"] == len(content)
@@ -137,12 +146,14 @@ class TestMultipartUploader:
         content = b"hello world"
 
         data = storage.initialize_multipart_upload(
-            faker.file_name(), {"size": len(content)},
+            faker.file_name(),
+            {"size": len(content)},
         )
         assert storage.show_multipart_upload(data) == data
 
         data = storage.update_multipart_upload(
-            data, {"upload": FileStorage(BytesIO(content))},
+            data,
+            {"upload": FileStorage(BytesIO(content))},
         )
         assert storage.show_multipart_upload(data) == data
 

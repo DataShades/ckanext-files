@@ -19,9 +19,15 @@
   });
 
   class BaseUploader extends EventTarget {
+    static defaultSettings = {};
+
     constructor(settings) {
       super();
-      this.settings = { ...ckan.CKANEXT_FILES.default_settings, ...settings };
+      this.settings = {
+        ...ckan.CKANEXT_FILES.defaultSettings,
+        ...this.constructor.defaultSettings,
+        ...settings,
+      };
       this.sandbox = ckan.sandbox();
 
       const csrfField =
@@ -30,16 +36,21 @@
       this.csrfToken = document.querySelector(
         `meta[name=${csrfField}]`,
       )?.content;
-
-      this;
     }
 
     upload(file) {
       throw new Error("BaseUploader.upload is not implemented");
     }
 
+    resume(file, id) {
+      throw new Error("BaseUploader.resume is not implemented");
+    }
+
     dispatchStart(file) {
       this.dispatchEvent(new CustomEvent("start", { detail: { file } }));
+    }
+    dispatchCommit(file, id) {
+      this.dispatchEvent(new CustomEvent("commit", { detail: { file, id } }));
     }
     dispatchProgress(file, loaded, total) {
       this.dispatchEvent(
@@ -83,6 +94,7 @@
       request.addEventListener("load", (event) => {
         const result = JSON.parse(request.responseText);
         if (result.success) {
+          this.dispatchCommit(file, result.result.id);
           this.dispatchFinish(file, result.result);
         } else {
           this.dispatchFail(file, result.error);
@@ -117,16 +129,55 @@
   }
 
   class MultipartUploader extends BaseUploader {
+    static defaultSettings = { chunkSize: 1024 * 100 };
+    constructor(settings) {
+      super(settings);
+      this._active = new Set();
+    }
+
     async upload(file) {
+      if (this._active.has(file)) {
+        console.warn("File upload in progress");
+        return;
+      }
+      this._active.add(file);
+
       let info = await this._initializeUpload(file);
+      this.dispatchCommit(file, info.id);
       //   this.dispatchError(file, );
       //   this.dispatchFail(file, );
 
       this.dispatchStart(file);
 
+      this._doUpload(file, info);
+    }
+
+    async resume(file, id) {
+      if (this._active.has(file)) {
+        console.warn("File upload in progress");
+        return;
+      }
+      this._active.add(file);
+
+      let info = await this._showUpload(id);
+      this.dispatchStart(file);
+
+      this._doUpload(file, info);
+    }
+
+    pause(file) {
+      this._active.delete(file);
+    }
+
+    async _doUpload(file, info) {
       let start = info.storage_data.uploaded || 0;
 
       while (start < file.size) {
+        if (!this._active.has(file)) {
+          console.info("File upload is paused");
+          return;
+        }
+
         info = await this._uploadChunk(
           info.id,
           file.slice(start, start + this.settings.chunkSize),
@@ -135,7 +186,7 @@
 
         const uploaded = info.storage_data.uploaded;
         if (uploaded <= start) {
-          throw new Error();
+          throw new Error("Uploaded size is reduced");
         }
 
         this.dispatchProgress(file, start, file.size);
@@ -157,6 +208,25 @@
             name: file.name,
             size: file.size,
           },
+          (data) => {
+            done(data.result);
+          },
+          (resp) => {
+            fail(
+              typeof resp.responseJSON === "string"
+                ? resp.responseText
+                : resp.responseJSON.error,
+            );
+          },
+        ),
+      );
+    }
+    _showUpload(id) {
+      return new Promise((done, fail) =>
+        this.sandbox.client.call(
+          "GET",
+          "files_upload_show",
+          `?id=${id}`,
           (data) => {
             done(data.result);
           },
@@ -238,14 +308,17 @@
   }
 
   ckan.CKANEXT_FILES = {
+    topics: {
+      addFileToQueue: "ckanext:files:queue:file:add",
+      restoreFileInQueue: "ckanext:files:queue:file:restore",
+    },
     adapters: {
       base: BaseUploader,
       standard: StandardUploader,
       multipart: MultipartUploader,
     },
-    default_settings: {
+    defaultSettings: {
       storage: "default",
-      chunkSize: 100,
     },
   };
 })(ckan, $);

@@ -1,12 +1,15 @@
 {
     "$schema": "https://json.schemastore.org/tsconfig",
     "compilerOptions": {
-
-        "target": "es2022",
-        "declaration": true,
+        "target": "es2020",
+        "outDir": "ckanext/files/assets/scripts/",
+        // "declaration": true,
         "strict": true,
         "esModuleInterop": true,
         "skipLibCheck": true,
         "forceConsistentCasingInFileNames": true,
-    }
+        "inlineSources": true,
+        "inlineSourceMap": true,
+    },
+    "include": ["ckanext/files/assets/ts/"]
 }

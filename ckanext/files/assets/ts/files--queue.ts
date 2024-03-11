@@ -120,6 +120,43 @@ ckan.module("files--queue", function ($) {
         (event: CustomEvent) => (info.id = event.detail.id),
       );
       info.uploader.addEventListener(
+        "fail",
+        ({
+          detail: { reasons, file },
+        }: CustomEvent<{
+          reasons: { [key: string]: string[] };
+          file: File;
+        }>) => {
+          this.sandbox.notify(
+            file.name,
+            Object.entries(reasons)
+              .filter(([k, v]) => k[0] !== "_")
+              .map(([k, v]) => v.join("; "))
+              .join("; "),
+          );
+          this.toggleAnimation(widget, false);
+
+          widget
+            .find("[data-upload-progress]")
+            .removeClass("bg-primary bg-secondary")
+            .addClass("bg-danger");
+        },
+      );
+      info.uploader.addEventListener(
+        "error",
+        ({
+          detail: { message, file },
+        }: CustomEvent<{ message: string; file: File }>) => {
+          this.sandbox.notify(file.name, message);
+          this.toggleAnimation(widget, false);
+          widget
+            .find("[data-upload-progress]")
+            .removeClass("bg-primary bg-secondary")
+            .addClass("bg-danger");
+        },
+      );
+
+      info.uploader.addEventListener(
         "progress",
         ({ detail: { loaded, total } }: CustomEvent) =>
           this.setWidgetCompletion(widget, loaded, total),

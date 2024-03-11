@@ -72,12 +72,20 @@ class GoogleCloudUploader(Uploader):
         if max_size and data["size"] > max_size:
             raise exceptions.LargeUploadError(data["size"], max_size)
 
-        url = blob.create_resumable_upload_session(size=data["size"])  # type: types.Any
+        url = blob.create_resumable_upload_session(
+            size=data["size"],
+            origin=self.storage.settings["resumable_origin"],
+        )  # type: types.Any
 
         if not url:
             raise exceptions.UploadError("Cannot initialize session URL")
 
-        return {"session_url": url, "size": data["size"], "uploaded": 0}
+        return {
+            "session_url": url,
+            "size": data["size"],
+            "uploaded": 0,
+            "filename": filename,
+        }
 
     def update_multipart_upload(self, upload_data, extras):
         # type: (dict[str, types.Any], dict[str, types.Any]) -> dict[str, types.Any]
@@ -155,6 +163,7 @@ class GoogleCloudUploader(Uploader):
 
     def show_multipart_upload(self, upload_data):
         # type: (dict[str, types.Any]) -> dict[str, types.Any]
+
         resp = requests.put(
             upload_data["session_url"],
             headers={
@@ -182,6 +191,8 @@ class GoogleCloudUploader(Uploader):
                 upload_data["uploaded"] = 0
         elif resp.status_code in [200, 201]:
             upload_data["uploaded"] = upload_data["size"]
+            upload_data["result"] = resp.json()
+
         else:
             raise tk.ValidationError(
                 {
@@ -198,6 +209,7 @@ class GoogleCloudUploader(Uploader):
 
     def complete_multipart_upload(self, upload_data, extras):
         # type: (dict[str, types.Any], dict[str, types.Any]) -> GCStorageData
+        upload_data = self.show_multipart_upload(upload_data)
         if upload_data["uploaded"] != upload_data["size"]:
             raise tk.ValidationError(
                 {
@@ -233,14 +245,17 @@ class GoogleCloudManager(Manager):
         filepath = os.path.join(str(self.storage.settings["path"]), data["filename"])
         client = self.storage.client  # type: Client
         blob = client.bucket(self.storage.settings["bucket"]).blob(filepath)
-        blob.delete()
-        return True
+        if blob.exists():
+            blob.delete()
+            return True
+        return False
 
 
 class GoogleCloudStorage(Storage):
     def __init__(self, **settings):
         # type: (**types.Any) -> None
         settings["path"] = settings.setdefault("path", "").lstrip("/")
+        settings.setdefault("resumable_origin", tk.config["ckan.site_url"])
 
         super(GoogleCloudStorage, self).__init__(**settings)
 
@@ -270,4 +285,11 @@ class GoogleCloudStorage(Storage):
         declaration.declare(key.credentials_file).set_description(
             "Path to the credentials file used for authentication by GCS client."
             + "\nIf empty, uses value of GOOGLE_APPLICATION_CREDENTIALS envvar.",
+        )
+        declaration.declare(
+            key.resumable_origin,
+            tk.config["ckan.site_url"],
+        ).set_description(
+            "Value of the Origin header set for resumable upload."
+            + "\nIn most cases, keep it the same as CKAN base URL.",
         )

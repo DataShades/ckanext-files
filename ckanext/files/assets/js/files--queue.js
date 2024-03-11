@@ -62,7 +62,7 @@ ckan.module("files--queue", function ($) {
   return {
     options: {
       storage: "default",
-      uploader: "multipart",
+      uploader: "single",
     },
 
     initialize() {

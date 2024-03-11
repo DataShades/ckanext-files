@@ -129,7 +129,7 @@
   }
 
   class MultipartUploader extends BaseUploader {
-    static defaultSettings = { chunkSize: 1024 * 100 };
+    static defaultSettings = { chunkSize: 1024 * 1024 * 5 };
     constructor(settings) {
       super(settings);
       this._active = new Set();
@@ -144,9 +144,6 @@
 
       let info = await this._initializeUpload(file);
       this.dispatchCommit(file, info.id);
-      //   this.dispatchError(file, );
-      //   this.dispatchFail(file, );
-
       this.dispatchStart(file);
 
       this._doUpload(file, info);
@@ -179,7 +176,7 @@
         }
 
         info = await this._uploadChunk(
-          info.id,
+          info,
           file.slice(start, start + this.settings.chunkSize),
           start,
         );
@@ -189,7 +186,7 @@
           throw new Error("Uploaded size is reduced");
         }
 
-        this.dispatchProgress(file, start, file.size);
+        this.dispatchProgress(file, uploaded, file.size);
         start = uploaded;
       }
 
@@ -241,7 +238,7 @@
       );
     }
 
-    _uploadChunk(id, part, start) {
+    _uploadChunk(info, part, start) {
       if (!part.size) {
         throw new Error("0-length chunks are not allowed");
       }
@@ -271,7 +268,7 @@
         request.setRequestHeader("X-CSRFToken", this.csrfToken);
       }
 
-      this._sendRequest(request, part, start, id);
+      this._sendRequest(request, part, start, info.id);
 
       return result;
     }
@@ -307,6 +304,61 @@
     }
   }
 
+  class GCSMultipartUploader extends MultipartUploader {
+    async _uploadChunk(info, part, start) {
+      if (!part.size) {
+        throw new Error("0-length chunks are not allowed");
+      }
+
+      const request = new XMLHttpRequest();
+      request.open("PUT", info.storage_data.session_url);
+      request.setRequestHeader(
+        "content-range",
+        `bytes ${start}-${start + part.size - 1}/${info.storage_data.size}`,
+      );
+      request.send(part);
+
+      const resp = await new Promise((done, fail) => {
+        request.addEventListener("load", (event) => done(request));
+      });
+      let uploaded;
+
+      if ([200, 201].includes(resp.status)) {
+        uploaded = info.storage_data.size;
+      } else if (resp.status === 308) {
+        const range = resp.getResponseHeader("range");
+        uploaded = Number(range.split("=")[1].split("-")[1]) + 1;
+      } else {
+        throw new Error(await resp.responseText);
+      }
+
+      if (!Number.isInteger(uploaded)) {
+        throw new Error(`Invalid uploaded size ${uploaded}`);
+      }
+
+      return new Promise((done, fail) => {
+        this.sandbox.client.call(
+          "POST",
+          "files_upload_update",
+          {
+            id: info.id,
+            uploaded,
+          },
+          (data) => {
+            done(data.result);
+          },
+          (resp) => {
+            fail(
+              typeof resp.responseJSON === "string"
+                ? resp.responseText
+                : resp.responseJSON.error,
+            );
+          },
+        );
+      });
+    }
+  }
+
   ckan.CKANEXT_FILES = {
     topics: {
       addFileToQueue: "ckanext:files:queue:file:add",
@@ -316,6 +368,7 @@
       base: BaseUploader,
       standard: StandardUploader,
       multipart: MultipartUploader,
+      gscMultipart: GCSMultipartUploader,
     },
     defaultSettings: {
       storage: "default",

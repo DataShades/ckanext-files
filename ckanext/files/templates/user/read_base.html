@@ -1,6 +1,0 @@
-{% ckan_extends %}
-
-{% block content_primary_nav %}
-    {{ super() }}
-    {{ h.build_nav_icon('files.user', _("Files"), user_id=user.name, icon='file') }}
-{% endblock %}

@@ -6,16 +6,29 @@ from werkzeug.datastructures import FileStorage
 
 from ckan.lib.redis import connect_to_redis
 from ckan.tests.helpers import call_action
+import ckan.plugins.toolkit as tk
 
 if six.PY3:
     from typing import Any  # isort: skip # noqa: F401
 
 
-@pytest.fixture
-def clean_db(reset_db, migrate_db_for):
-    # type: (Any, Any) -> None
-    reset_db()
-    migrate_db_for("files")
+if tk.check_ckan_version("2.9"):
+    @pytest.fixture
+    def clean_db(reset_db, migrate_db_for):
+        # type: (Any, Any) -> None
+        reset_db()
+        migrate_db_for("files")
+
+else:
+    @pytest.fixture
+    def clean_db(reset_db):
+        # type: (Any) -> None
+        from ckanext.files.command import create_tables, drop_tables
+        reset_db()
+        drop_tables()
+        create_tables()
+
+
 
 
 class FakeFileStorage(FileStorage):
@@ -43,8 +56,8 @@ def create_with_upload(ckan_config, monkeypatch, tmpdir):
         action = kwargs.pop("action", "resource_create")
         field = kwargs.pop("upload_field_name", "upload")
         test_file = BytesIO()
-        if not isinstance(data, bytes):
-            data = bytes(data, encoding="utf-8")
+        if isinstance(data, six.text_type):
+            data = data.encode()
         test_file.write(data)
         test_file.seek(0)
         test_resource = FakeFileStorage(test_file, filename)

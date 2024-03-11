@@ -50,10 +50,10 @@ def files_into_upload(value):
             content_length=size,
         )
 
-    if isinstance(value, str):
+    if isinstance(value, six.text_type):
         value = value.encode()
 
-    if isinstance(value, bytes):
+    if isinstance(value, (bytes, bytearray)):
         stream = BytesIO(value)
         mime = magic.from_buffer(stream.read(1024), True)
         size = stream.seek(0, 2)

@@ -14,7 +14,7 @@ def random_file(create_with_upload, faker):
         faker.binary(10),
         faker.file_name(),
         action="files_file_create",
-        name=faker.unique.name(),
+        name=faker.name(),
     )
 
 

@@ -142,8 +142,10 @@ def _add_owner(context, item_type, item_id):
 def _delete_owners(context, item_type, item_id):
     # type: (types.Any, str, str) -> None
     stmt = sa.delete(Owner).where(
-        Owner.item_type == item_type,
-        Owner.item_id == item_id,
+        sa.and_(
+            Owner.item_type == item_type,
+            Owner.item_id == item_id,
+        )
     )
     context["session"].execute(stmt)
 
@@ -155,7 +157,7 @@ def files_file_delete(context, data_dict):
     tk.check_access("files_file_delete", context, data_dict)
 
     data_dict["id"]
-    fileobj = context["session"].get(File, data_dict["id"])
+    fileobj = context["session"].query(File).filter_by(id=data_dict["id"]).one_or_none()
     if not fileobj:
         raise tk.ObjectNotFound("file")
 
@@ -179,7 +181,7 @@ def files_file_show(context, data_dict):
     tk.check_access("files_file_show", context, data_dict)
 
     data_dict["id"]
-    fileobj = context["session"].get(File, data_dict["id"])
+    fileobj = context["session"].query(File).filter_by(id=data_dict["id"]).one_or_none()
     if not fileobj:
         raise tk.ObjectNotFound("file")
 

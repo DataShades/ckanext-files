@@ -116,7 +116,8 @@ def ensure_size(upload, max_size):
 
     filesize = upload.content_length
     if not filesize:
-        filesize = upload.stream.seek(0, 2)
+        # in py2 .seek returns None for empty stream.
+        filesize = upload.stream.seek(0, 2) or 0
         upload.stream.seek(0)
 
     if filesize > max_size:

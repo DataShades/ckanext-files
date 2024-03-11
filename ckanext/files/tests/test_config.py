@@ -33,6 +33,10 @@ class TestStorages:
         if tk.check_ckan_version("2.10"):
             settings.setdefault("max_size", 0)
 
+        else:
+            settings.pop("prefix")
+            settings.pop("name")
+
         return settings
 
     def test_empty(self):

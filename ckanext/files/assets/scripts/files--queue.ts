@@ -1,25 +1,27 @@
 ckan.module("files--scheduler", function ($) {
   return {
     initialize() {
-      $.proxyAll(this, /_on/);
-
       const scheduler = this.$("[data-queue-scheduler]");
-      scheduler.on("change", (event) => this.push(...event.target.files));
+      scheduler.on("change", (event: Event) =>
+        this.push(...(event.target as HTMLInputElement).files!),
+      );
     },
 
-    push(...files) {
+    push(...files: File[]) {
       files.forEach((file) =>
         this.sandbox.publish(ckan.CKANEXT_FILES.topics.addFileToQueue, file),
       );
     },
-  };
+  } as any;
 });
 
 ckan.module("files--restorer", function ($) {
   return {
     options: {
-      name: null,
-      size: null,
+      name: "",
+      size: 0,
+      uploaded: 0,
+      id: "",
     },
 
     initialize() {
@@ -27,8 +29,8 @@ ckan.module("files--restorer", function ($) {
       this.el.on("change", this._onChange);
     },
 
-    _onChange(event) {
-      const [file] = event.target.files;
+    _onChange(event: Event) {
+      const file = (event.target as HTMLInputElement).files?.[0];
 
       if (!file) {
         return;
@@ -57,12 +59,11 @@ ckan.module("files--restorer", function ($) {
     },
   };
 });
-
 ckan.module("files--queue", function ($) {
   return {
     options: {
       storage: "default",
-      uploader: "single",
+      uploader: "Standard",
     },
 
     initialize() {
@@ -86,15 +87,18 @@ ckan.module("files--queue", function ($) {
     teardown() {
       ckan.pubsub.unsubscribe(
         ckan.CKANEXT_FILES.topics.addFileToQueue,
-        this._onNewFile,
+        this._onFile,
       );
       ckan.pubsub.unsubscribe(
         ckan.CKANEXT_FILES.topics.restoreFileInQueue,
-        this._onRestoreFile,
+        this._onFile,
       );
     },
 
-    _onFile(file, options = {}) {
+    _onFile(
+      file: File,
+      options = { id: "", uploaded: 0, uploader: null, storage: null },
+    ) {
       const widget = this.tpl.clone(true).appendTo(this.el);
       const info = {
         file,
@@ -113,30 +117,38 @@ ckan.module("files--queue", function ($) {
 
       info.uploader.addEventListener(
         "commit",
-        (event) => (info.id = event.detail.id),
+        (event: CustomEvent) => (info.id = event.detail.id),
       );
       info.uploader.addEventListener(
         "progress",
-        ({ detail: { loaded, total } }) =>
+        ({ detail: { loaded, total } }: CustomEvent) =>
           this.setWidgetCompletion(widget, loaded, total),
       );
-      info.uploader.addEventListener("finish", () => {
-        this.toggleAnimation(widget, false);
-        widget
-          .find("[data-upload-progress]")
-          .removeClass("bg-primary bg-secondary")
-          .addClass("bg-success");
-      });
+      info.uploader.addEventListener(
+        "finish",
+        ({ detail: { file, result } }: CustomEvent) => {
+          this.toggleAnimation(widget, false);
+          widget
+            .find("[data-upload-progress]")
+            .removeClass("bg-primary bg-secondary")
+            .addClass("bg-success");
+          this.sandbox.publish(
+            ckan.CKANEXT_FILES.topics.queueItemUploaded,
+            file,
+            result,
+          );
+        },
+      );
 
       this.setWidgetName(widget, info.file.name);
       this.setWidgetCompletion(widget, info.uploaded, info.file.size);
     },
 
-    setWidgetName(widget, name) {
+    setWidgetName(widget: JQuery, name: string) {
       widget.find("[data-item-name]").text(name);
     },
 
-    setWidgetCompletion(widget, uploaded, total) {
+    setWidgetCompletion(widget: JQuery, uploaded: number, total: number) {
       const value = (uploaded * 100) / total;
       const info = this.widgets.get(widget[0]);
       info.uploaded = uploaded;
@@ -148,13 +160,13 @@ ckan.module("files--queue", function ($) {
         .css("width", completion);
     },
 
-    toggleAnimation(widget, state) {
+    toggleAnimation(widget: JQuery, state: boolean) {
       widget
         .find("[data-upload-progress]")
         .toggleClass("progress-bar-animated", state);
     },
 
-    _onWidgetResume(event) {
+    _onWidgetResume(event: JQuery.TriggeredEvent) {
       const info = this.widgets.get(event.delegateTarget);
       if (info.uploaded >= info.total) return;
 
@@ -173,7 +185,7 @@ ckan.module("files--queue", function ($) {
       this.toggleAnimation(widget, true);
     },
 
-    _onWidgetPause(event) {
+    _onWidgetPause(event: JQuery.TriggeredEvent) {
       const info = this.widgets.get(event.delegateTarget);
       if (info.uploaded >= info.total) return;
 

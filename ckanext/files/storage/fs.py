@@ -59,11 +59,11 @@ class FileSystemUploader(Uploader):
                 tk.get_validator("int_validator"),
             ],
             "content_type": [
-                tk.get_validator("default")("application/octet-stream"),
+                tk.get_validator("default")("application/octet-stream"),  # type: ignore
                 tk.get_validator("unicode_safe"),
             ],
             "__extras": [tk.get_validator("ignore")],
-        }
+        }  # type: dict[str, types.Any]
         data, errors = tk.navl_validate(extras, schema)
 
         if errors:

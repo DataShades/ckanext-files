@@ -32,7 +32,7 @@ def files_file_search_by_user(context, data_dict):
 
     stmt = sa.select(File).join(
         Owner,
-        sa.and_(File.id == Owner.item_id, Owner.item_type == "file"),
+        sa.and_(File.id == Owner.item_id, Owner.item_type == "file"),  # type: ignore
     )
 
     user = model.User.get(data_dict.get("user", context["user"]))
@@ -100,7 +100,7 @@ def files_file_create(context, data_dict):
         completed=True,
     )
     context["session"].add(fileobj)
-    _add_owner(context, "file", fileobj.id)
+    _add_owner(context, "file", fileobj.id)  # type: ignore
     context["session"].commit()
 
     return fileobj.dictize(context)
@@ -219,7 +219,7 @@ def files_upload_initialize(context, data_dict):
         storage_data=storage_data,
     )
     context["session"].add(fileobj)
-    _add_owner(context, "file", fileobj.id)
+    _add_owner(context, "file", fileobj.id)  # type: ignore
     context["session"].commit()
 
     return fileobj.dictize(context)

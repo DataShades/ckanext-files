@@ -70,7 +70,7 @@ def user(user_id):
     user_dict = tk.get_action("user_show")({}, {"id": user_id})
 
     rows = 10
-    params = tk.request.params
+    params = tk.request.params  # type: ignore
     page = tk.h.get_page_number(params)
     start = rows * page - rows
     try:
@@ -83,7 +83,7 @@ def user(user_id):
                 "sort": params.get("sort", "ctime"),
                 "reverse": params.get("reverse", True),
             },
-        )
+        )  # type: dict[str, types.Any]
     except tk.ValidationError as err:
         for k, v in err.error_summary.items():
             tk.h.flash_error("{}: {}".format(k, v))

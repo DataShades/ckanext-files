@@ -22,7 +22,7 @@ def _get_user(context):
     if tk.check_ckan_version("2.10"):
         user = tk.current_user if tk.current_user.is_authenticated else None
     else:
-        user = tk.g.userobj
+        user = tk.g.userobj  # type: types.Any
 
     if user and context["user"] == user.name:
         return user
@@ -31,7 +31,7 @@ def _get_user(context):
 
 
 def _is_owner(user_id, file_id):
-    # type: (types.Any, str, str) -> bool
+    # type: (str, str) -> bool
     stmt = Owner.owners_of(file_id, "file").where(
         Owner.owner_type == "user",
         Owner.owner_ie == user_id,

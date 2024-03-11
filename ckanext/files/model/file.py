@@ -22,13 +22,13 @@ class File(Base):  # type: ignore
     name = Column(UnicodeText, nullable=False)
     storage = Column(UnicodeText, nullable=False)
 
-    ctime = Column(DateTime, nullable=False, default=now)
+    ctime = Column(DateTime, nullable=False, default=now, server_default=sa.func.now())
     mtime = Column(DateTime)
     atime = Column(DateTime)
 
-    storage_data = Column(JSONB, default=dict)
-    plugin_data = Column(JSONB, default=dict)
-    completed = Column(sa.Boolean, default=False)
+    storage_data = Column(JSONB, default=dict, server_default="{}")
+    plugin_data = Column(JSONB, default=dict, server_default="{}")
+    completed = Column(sa.Boolean, default=False, server_default="false")
 
     def __init__(self, **kwargs):
         # type: (**types.Any) -> None

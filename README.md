@@ -13,6 +13,9 @@ Compatibility with core CKAN versions:
 | 2.9          | yes         |
 | master       | yes         |
 
+
+alembic==1.4
+
 ## Installation
 
 To install ckanext-files:

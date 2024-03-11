@@ -43,7 +43,9 @@ def files_file_search_by_user(context, data_dict):
 
     total = sess.scalar(sa.select(sa.func.count()).select_from(stmt))
 
-    sort, *sort_path = data_dict["sort"].split(".")
+    parts = data_dict["sort"].split(".")
+    sort = parts[0]
+    sort_path = parts[1:]
 
     inspector = sa.inspect(File)  # type: types.Any
     columns = inspector.columns

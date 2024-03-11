@@ -13,14 +13,15 @@ log = logging.getLogger(__name__)
 bp = Blueprint("files", __name__)
 
 
-def not_found_handler(error: tk.ObjectNotFound):
+def not_found_handler(error):
+    # type: (tk.ObjectNotFound) -> tuple[str, int]
     """Generic handler for ObjectNotFound exception"""
     return (
         tk.render(
             "error_document_template.html",
             {
                 "code": 404,
-                "content": f"Object not found: {error.message}",
+                "content": "Object not found: {}".format(error.message),
                 "name": "Not found",
             },
         ),
@@ -28,7 +29,8 @@ def not_found_handler(error: tk.ObjectNotFound):
     )
 
 
-def not_authorized_handler(error: tk.NotAuthorized):
+def not_authorized_handler(error):
+    # type: (tk.NotAuthorized) -> tuple[str, int]
     """Generic handler for NotAuthorized exception"""
     return (
         tk.render(

@@ -21,6 +21,8 @@ class Owner(Base):  # type: ignore
     owner_id = sa.Column(sa.Text, nullable=False)
     owner_type = sa.Column(sa.Text, nullable=False)
 
+    sa.UniqueConstraint(item_id, item_type, owner_id, owner_type)
+
     def dictize(self, context):
         # type: (Any) -> dict[str, Any]
         return table_dictize(self, context)

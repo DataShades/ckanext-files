@@ -34,7 +34,7 @@ To install ckanext-files:
    # minimal installation
    pip install ckanext-files
 
-  # Google Cloud Storage support
+   # Google Cloud Storage support
    pip install 'ckanext-files[gcs]'
    ```
 

@@ -113,12 +113,16 @@ namespace ckan {
       export class Standard extends Base {
         upload(file: File) {
           const request = new XMLHttpRequest();
+          const promise = this._addListeners(request, file);
           this._prepareRequest(request, file);
           this._sendRequest(request, file);
-          return request;
+          return promise;
         }
 
-        _addListeners(request: XMLHttpRequest, file: File) {
+        _addListeners(
+          request: XMLHttpRequest,
+          file: File,
+        ): Promise<UploadInfo> {
           request.upload.addEventListener("loadstart", (event) =>
             this.dispatchStart(file),
           );
@@ -127,24 +131,28 @@ namespace ckan {
             this.dispatchProgress(file, event.loaded, event.total),
           );
 
-          request.addEventListener("load", (event) => {
-            const result = JSON.parse(request.responseText);
-            if (result.success) {
-              this.dispatchCommit(file, result.result.id);
-              this.dispatchFinish(file, result.result);
-            } else {
-              this.dispatchFail(file, result.error);
-            }
-          });
+          return new Promise((done, fail) => {
+            request.addEventListener("load", (event) => {
+              const result = JSON.parse(request.responseText);
+              if (result.success) {
+                this.dispatchCommit(file, result.result.id);
+                this.dispatchFinish(file, result.result);
+                done(result.result);
+              } else {
+                this.dispatchFail(file, result.error);
 
-          request.addEventListener("error", (event) =>
-            this.dispatchError(file, request.responseText),
-          );
+                fail(result.error);
+              }
+            });
+
+            request.addEventListener("error", (event) => {
+              this.dispatchError(file, request.responseText);
+              fail(request.responseText);
+            });
+          });
         }
 
         _prepareRequest(request: XMLHttpRequest, file: File) {
-          this._addListeners(request, file);
-
           request.open(
             "POST",
             this.sandbox.client.url("/api/action/files_file_create"),

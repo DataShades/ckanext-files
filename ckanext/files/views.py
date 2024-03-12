@@ -69,7 +69,7 @@ def _pager_url(*args, **kwargs):
 @bp.route("/user/<user_id>/files")
 def user(user_id):
     # type: (str) -> str
-    user_dict = tk.get_action("user_show")({}, {"id": user_id})
+    user_dict = tk.get_action("user_show")({}, {"id": user_id, "include_num_followers": True})
 
     rows = 10
     params = tk.request.params  # type: ignore
@@ -121,7 +121,7 @@ class DeleteFile(MethodView):
 
         tk.check_access("files_file_delete", {}, {"id": file_id})
         info = tk.get_action("files_file_show")({}, {"id": file_id})
-        user_dict = tk.get_action("user_show")({}, {"id": user_id})
+        user_dict = tk.get_action("user_show")({}, {"id": user_id, "include_num_followers": True})
 
         return tk.render(
             "files/delete.html",

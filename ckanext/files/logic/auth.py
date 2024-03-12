@@ -1,4 +1,5 @@
 import ckan.plugins.toolkit as tk
+import sqlalchemy as sa
 from ckan import authz, model
 
 from ckanext.files.model import Owner
@@ -33,8 +34,10 @@ def _get_user(context):
 def _is_owner(user_id, file_id):
     # type: (str, str) -> bool
     stmt = Owner.owners_of(file_id, "file").where(
-        Owner.owner_type == "user",
-        Owner.owner_ie == user_id,
+        sa.and_(
+            Owner.owner_type == "user",
+            Owner.owner_ie == user_id,
+        )
     )
     return model.Session.query(stmt.exists()).scalar()
 

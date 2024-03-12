@@ -30,7 +30,7 @@ def files_file_search_by_user(context, data_dict):
     tk.check_access("files_file_search_by_user", context, data_dict)
     sess = context["session"]
 
-    stmt = sa.select(File).join(
+    q = sess.query(File).join(
         Owner,
         sa.and_(File.id == Owner.item_id, Owner.item_type == "file"),  # type: ignore
     )
@@ -39,9 +39,10 @@ def files_file_search_by_user(context, data_dict):
     if not user:
         raise tk.ObjectNotFound("user")
 
-    stmt = stmt.where(Owner.owner_type == "user", Owner.owner_id == user.id)
 
-    total = sess.scalar(sa.select(sa.func.count()).select_from(stmt))
+    q = q.filter(sa.and_(Owner.owner_type == "user", Owner.owner_id == user.id))
+
+    total = q.count()
 
     parts = data_dict["sort"].split(".")
     sort = parts[0]
@@ -62,11 +63,11 @@ def files_file_search_by_user(context, data_dict):
     if data_dict["reverse"]:
         column = column.desc()
 
-    stmt = stmt.order_by(column)
+    q = q.order_by(column)
 
-    stmt = stmt.limit(data_dict["rows"]).offset(data_dict["start"])
+    q = q.limit(data_dict["rows"]).offset(data_dict["start"])
 
-    return {"count": total, "results": [f.dictize(context) for f in sess.scalars(stmt)]}
+    return {"count": total, "results": [f.dictize(context) for f in q]}
 
 
 @action

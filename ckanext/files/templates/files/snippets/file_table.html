@@ -31,7 +31,7 @@ Example:
 
                                 <i class="fa fa-sort-amount-desc"></i>
                             {% else %}
-                                <a href="{{ h.remove_url_param(['sort', 'reverse'], replace=column.name) }}&reverse=false">
+                                <a href="{{ h.remove_url_param(['sort', 'reverse'], replace=column.name, alternative_url=request.path) }}&reverse=false">
                                     {{ _(column.label) }}
                                 </a>
                             {% endif %}
@@ -84,7 +84,7 @@ Example:
                                 {% endif %}
 
                                 {% if not file.completed and h.check_access("files_upload_update", {"id": file.id})%}
-                                    <label type="button" class="files--no-after-content btn btn-sm btn-primary" title="Resume upload">
+                                    <label class="files--no-after-content btn btn-sm btn-primary" title="Resume upload">
                                         <i class="fa fa-upload"></i>
                                         <input type="file" hidden data-module="files--restorer"
                                                data-module-name="{{ file.name }}"

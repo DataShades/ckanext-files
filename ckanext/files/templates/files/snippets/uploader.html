@@ -1,19 +1,28 @@
+{#
+storage
+uploader
+file_attrs
+#}
+
 {% import 'macros/form.html' as form %}
+
+{% set storage = storage or "default" %}
+{% set uploader = uploader or "Standard" %}
+
 
 {% block uploader %}
     <div class="file-uploader">
         {% block form %}
             <form action="" method="post" class="file-uploader__form"  data-module="files--scheduler">
-                {{ form.input("upload", label="File", type="file", attrs={
-                    "multiple": true,
+                {{ form.input("upload", label="File", type="file", attrs=dict({
                     "class": "form-control",
                     "data-queue-scheduler": true,
-                }) }}
+                }, **file_attrs|default({}))) }}
             </form>
         {% endblock form %}
 
         {% block progress %}
-            <div data-module="files--queue">
+            <div data-module="files--queue" data-module-storage="{{ storage }}" data-module-uploader="{{ uploader }}">
 
                 <div data-upload-template hidden class="card file-uploader__queue_item my-1">
                     <div class="card-header">
@@ -29,9 +38,7 @@
                     </div>
 
                     <div class="card-footer">
-
                         <div class="file-uploader__controls">
-
                             <button type="button" class="btn btn-sm btn-light" data-upload-resume>
                                 <i class="fa fa-play"></i>
                             </button>
@@ -39,8 +46,8 @@
                             <button type="button" class="btn btn-sm btn-light" data-upload-pause>
                                 <i class="fa fa-pause"></i>
                             </button>
-                        </div>
 
+                        </div>
                     </div>
 
                 </div>

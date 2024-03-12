@@ -181,7 +181,19 @@ namespace ckan {
           }
           this._active.add(file);
 
-          let info = await this._initializeUpload(file);
+          let info;
+
+          try {
+            info = await this._initializeUpload(file);
+          } catch (err) {
+            if (typeof err === "string") {
+              this.dispatchError(file, err);
+            } else {
+              this.dispatchFail(file, err as any);
+            }
+            return;
+          }
+
           this.dispatchCommit(file, info.id);
           this.dispatchStart(file);
 

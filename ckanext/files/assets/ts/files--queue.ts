@@ -131,7 +131,7 @@ ckan.module("files--queue", function ($) {
             file.name,
             Object.entries(reasons)
               .filter(([k, v]) => k[0] !== "_")
-              .map(([k, v]) => v.join("; "))
+              .map(([k, v]) => (Array.isArray(v) ? v.join("; ") : v))
               .join("; "),
           );
           this.toggleAnimation(widget, false);
@@ -139,7 +139,7 @@ ckan.module("files--queue", function ($) {
           widget
             .find("[data-upload-progress]")
             .removeClass("bg-primary bg-secondary")
-            .addClass("bg-danger");
+            .addClass("bg-danger progress-bar-danger");
         },
       );
       info.uploader.addEventListener(
@@ -152,7 +152,7 @@ ckan.module("files--queue", function ($) {
           widget
             .find("[data-upload-progress]")
             .removeClass("bg-primary bg-secondary")
-            .addClass("bg-danger");
+            .addClass("bg-danger progress-bar-danger");
         },
       );
 
@@ -168,7 +168,7 @@ ckan.module("files--queue", function ($) {
           widget
             .find("[data-upload-progress]")
             .removeClass("bg-primary bg-secondary")
-            .addClass("bg-success");
+            .addClass("bg-success progress-bar-succes");
           this.sandbox.publish(
             ckan.CKANEXT_FILES.topics.queueItemUploaded,
             file,

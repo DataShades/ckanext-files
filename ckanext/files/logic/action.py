@@ -30,17 +30,21 @@ def files_file_search_by_user(context, data_dict):
     tk.check_access("files_file_search_by_user", context, data_dict)
     sess = context["session"]
 
-    q = sess.query(File).join(
-        Owner,
-        sa.and_(File.id == Owner.item_id, Owner.item_type == "file"),  # type: ignore
-    )
-
     user = model.User.get(data_dict.get("user", context["user"]))
     if not user:
         raise tk.ObjectNotFound("user")
 
 
+    q = sess.query(File).join(
+        Owner,
+        sa.and_(File.id == Owner.item_id, Owner.item_type == "file"),  # type: ignore
+    )
+
+    if "storage" in data_dict:
+        q = q.filter(File.storage == data_dict["storage"])
+
     q = q.filter(sa.and_(Owner.owner_type == "user", Owner.owner_id == user.id))
+
 
     total = q.count()
 
@@ -182,14 +186,9 @@ def files_file_show(context, data_dict):
     tk.check_access("files_file_show", context, data_dict)
 
     data_dict["id"]
-    fileobj = context["session"].query(File).filter_by(id=data_dict["id"]).one_or_none()
+    fileobj = context["session"].query(File).filter(File.id==data_dict["id"]).one_or_none()
     if not fileobj:
         raise tk.ObjectNotFound("file")
-
-    if context.get("update_access_time"):
-        fileobj.access()
-        if not context.get("defer_commit"):
-            context["session"].commit()
 
     return fileobj.dictize(context)
 
@@ -255,7 +254,7 @@ def files_upload_update(context, data_dict):
 
     extras = data_dict.get("__extras", {})
 
-    fileobj = context["session"].get(File, data_dict["id"])
+    fileobj = context["session"].query(File).filter_by(id=data_dict["id"]).one_or_none()
     if not fileobj:
         raise tk.ObjectNotFound("upload")
 
@@ -276,7 +275,7 @@ def files_upload_complete(context, data_dict):
     extras = data_dict.get("__extras", {})
 
     data_dict["id"]
-    fileobj = context["session"].get(File, data_dict["id"])
+    fileobj = context["session"].query(File).filter_by(id=data_dict["id"]).one_or_none()
     if not fileobj:
         raise tk.ObjectNotFound("upload")
 

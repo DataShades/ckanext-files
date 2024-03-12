@@ -76,9 +76,10 @@ Example:
                         <td>
                             {% block file_actions %}
                                 {% if owner_type == "user" and owner_id and h.check_access("files_file_delete", {"id": file.id})%}
-                                    {% set delete_extras = {"user_id": owner_id} %}
                                     <a class="btn btn-danger btn-sm" title="Remove the file"
-                                       href="{{ h.url_for('files.delete_file', file_id=file.id, **delete_extras) }}">
+                                       href="{{ h.url_for('files.delete_file',
+                                             file_id=file.id,
+                                             came_from=request.path, user_id=owner_id) }}">
                                         <i class="fa fa-remove"></i>
                                     </a>
                                 {% endif %}
@@ -86,7 +87,12 @@ Example:
                                 {% if not file.completed and h.check_access("files_upload_update", {"id": file.id})%}
                                     <label class="files--no-after-content btn btn-sm btn-primary" title="Resume upload">
                                         <i class="fa fa-upload"></i>
-                                        <input type="file" hidden data-module="files--restorer"
+                                        {% set extension = "." ~ file.name.rsplit('.', 1)|last %}
+
+                                        <input type="file" hidden data-module="files--restorer" class="hidden"
+                                               {% if extnension|length < file.name|length %}
+                                               accept="{{ extension }}"
+                                               {% endif %}
                                                data-module-name="{{ file.name }}"
                                                data-module-size="{{ file.storage_data.size }}"
                                                data-module-uploaded="{{ file.storage_data.uploaded }}"

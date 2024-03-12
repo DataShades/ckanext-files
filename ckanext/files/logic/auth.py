@@ -43,6 +43,7 @@ def _is_owner(user_id, file_id):
 
 
 @auth
+@tk.auth_disallow_anonymous_access
 def files_manage_files(context, data_dict):
     # type: (types.Any, dict[str, types.Any]) -> types.Any
     return {"success": False}
@@ -50,8 +51,22 @@ def files_manage_files(context, data_dict):
 
 @auth
 @tk.auth_disallow_anonymous_access
+def files_owns_file(context, data_dict):
+    # type: (types.Any, dict[str, types.Any]) -> types.Any
+    user = _get_user(context)
+    is_owner = bool(user and _is_owner(user.id, data_dict["id"]))
+
+    return {"success": is_owner, "msg": "Not an owner of the file"}
+
+
+@auth
+@tk.auth_disallow_anonymous_access
 def files_file_search_by_user(context, data_dict):
     # type: (types.Any, dict[str, types.Any]) -> types.Any
+    """Only user himself can view his own files."""
+
+    # `user` from context will be used used when it's not in data_dict, so it's
+    # an access to own files
     if "user" not in data_dict:
         return {"success": True}
 
@@ -64,46 +79,51 @@ def files_file_search_by_user(context, data_dict):
 
 
 @auth
+@tk.auth_disallow_anonymous_access
 def files_file_create(context, data_dict):
     # type: (types.Any, dict[str, types.Any]) -> types.Any
-    return authz.is_authorized("files_manage_files", context, data_dict)
+    return {"success": True}
 
 
 @auth
 @tk.auth_disallow_anonymous_access
 def files_file_delete(context, data_dict):
     # type: (types.Any, dict[str, types.Any]) -> types.Any
-    user = _get_user(context)
-    is_owner = bool(user and _is_owner(user.id, data_dict["id"]))
-
-    return {"success": is_owner, "msg": "Not authorized to remove the file"}
+    """Only owner can remove files."""
+    return authz.is_authorized("files_owns_file", context, data_dict)
 
 
 @auth
+@tk.auth_disallow_anonymous_access
 def files_file_show(context, data_dict):
     # type: (types.Any, dict[str, types.Any]) -> types.Any
-    return authz.is_authorized("files_manage_files", context, data_dict)
+    """Only owner can view files."""
+    return authz.is_authorized("files_owns_file", context, data_dict)
 
 
 @auth
+@tk.auth_disallow_anonymous_access
 def files_upload_show(context, data_dict):
     # type: (types.Any, dict[str, types.Any]) -> types.Any
-    return authz.is_authorized("files_manage_files", context, data_dict)
+    return authz.is_authorized("files_owns_file", context, data_dict)
 
 
 @auth
+@tk.auth_disallow_anonymous_access
 def files_upload_initialize(context, data_dict):
     # type: (types.Any, dict[str, types.Any]) -> types.Any
-    return authz.is_authorized("files_manage_files", context, data_dict)
+    return authz.is_authorized("files_file_create", context, data_dict)
 
 
 @auth
+@tk.auth_disallow_anonymous_access
 def files_upload_update(context, data_dict):
     # type: (types.Any, dict[str, types.Any]) -> types.Any
-    return authz.is_authorized("files_manage_files", context, data_dict)
+    return authz.is_authorized("files_owns_file", context, data_dict)
 
 
 @auth
+@tk.auth_disallow_anonymous_access
 def files_upload_complete(context, data_dict):
     # type: (types.Any, dict[str, types.Any]) -> types.Any
-    return authz.is_authorized("files_manage_files", context, data_dict)
+    return authz.is_authorized("files_owns_file", context, data_dict)

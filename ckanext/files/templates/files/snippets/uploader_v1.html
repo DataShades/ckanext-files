@@ -1,14 +1,10 @@
 {#
-storage
-uploader
-file_attrs
+storage?
+uploader?
+file_attrs?
 #}
 
 {% import 'macros/form.html' as form %}
-
-{% set storage = storage or "default" %}
-{% set uploader = uploader or "Standard" %}
-
 
 {% block uploader %}
     <div class="file-uploader">
@@ -22,7 +18,10 @@ file_attrs
         {% endblock form %}
 
         {% block progress %}
-            <div data-module="files--queue" data-module-storage="{{ storage }}" data-module-uploader="{{ uploader }}">
+            <div data-module="files--queue"
+                 {% if storage is defined %} data-module-storage="{{ storage }}"{% endif %}
+                 {% if uploader is defined %} data-module-uploader="{{ uploader }}"{% endif %}
+            >
 
                 <div data-upload-template hidden class="card file-uploader__queue_item my-1">
                     <div class="card-header">

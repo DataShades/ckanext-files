@@ -67,30 +67,36 @@ def _pager_url(*args, **kwargs):
 
 
 @bp.route("/user/<user_id>/files")
-def user(user_id):
-    # type: (str) -> str
-    user_dict = tk.get_action("user_show")({}, {"id": user_id, "include_num_followers": True})
+@bp.route("/user/<user_id>/files/storage/<storage>")
+def user(user_id, storage=None):
+    # type: (str, str | None) -> str
+    user_dict = tk.get_action("user_show")(
+        {}, {"id": user_id, "include_num_followers": True}
+    )
 
     rows = 10
     params = tk.request.params  # type: ignore
     page = tk.h.get_page_number(params)
     start = rows * page - rows
+
+    search_dict = {
+        "rows": rows,
+        "start": start,
+        "user": user_id,
+        "sort": params.get("sort", "ctime"),
+        "reverse": params.get("reverse", True),
+    }  # type: dict[str, types.Any]
+
+    if storage:
+        search_dict["storage"] = storage
+
     try:
-        files = tk.get_action("files_file_search_by_user")(
-            {},
-            {
-                "rows": rows,
-                "start": start,
-                "user": user_id,
-                "sort": params.get("sort", "ctime"),
-                "reverse": params.get("reverse", True),
-            },
-        )  # type: dict[str, types.Any]
+        files = tk.get_action("files_file_search_by_user")({}, search_dict)
     except tk.ValidationError as err:
         for k, v in err.error_summary.items():
             tk.h.flash_error("{}: {}".format(k, v))
 
-        files = {"count": 0, "results": []}
+        files = {"count": 0, "results": []}  # type: dict[str, types.Any]
 
     pager = Page(
         [],
@@ -100,20 +106,30 @@ def user(user_id):
         url=partial(_pager_url),
     )
 
-    return tk.render(
-        "files/user.html",
-        {
-            "user_dict": user_dict,
-            "files": files,
-            "pager": pager,
-        },
-    )
+    tpl_names = ["files/user/index.html"]
+    tpl_data = {
+        "user_dict": user_dict,
+        "files": files,
+        "pager": pager,
+    }  # type: dict[str, types.Any]
+
+
+    if storage:
+        tpl_data["storage"] = storage
+        tpl_names.insert(0, "files/user/index.{}.html".format(storage))
+
+    return tk.render(tpl_names, tpl_data)  # type: ignore
 
 
 class DeleteFile(MethodView):
     def post(self, user_id, file_id):
         # type: (str, str) -> types.Any
         tk.get_action("files_file_delete")({}, {"id": file_id})
+
+        came_from = tk.h.get_request_param("came_from")
+        if came_from:
+            return tk.redirect_to(came_from)
+
         return tk.redirect_to("files.user", user_id=user_id)
 
     def get(self, user_id, file_id):
@@ -121,10 +137,12 @@ class DeleteFile(MethodView):
 
         tk.check_access("files_file_delete", {}, {"id": file_id})
         info = tk.get_action("files_file_show")({}, {"id": file_id})
-        user_dict = tk.get_action("user_show")({}, {"id": user_id, "include_num_followers": True})
+        user_dict = tk.get_action("user_show")(
+            {}, {"id": user_id, "include_num_followers": True}
+        )
 
         return tk.render(
-            "files/delete.html",
+            "files/user/delete.html",
             {
                 "file": info,
                 "user_dict": user_dict,

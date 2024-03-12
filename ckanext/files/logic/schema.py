@@ -18,7 +18,7 @@ def file_create(ignore_empty, unicode_safe, default, files_into_upload, not_miss
 
 
 @validator_args
-def _base_file_search(unicode_safe, default, int_validator, boolean_validator, one_of):
+def _base_file_search(unicode_safe, default, int_validator, boolean_validator, ignore_empty):
     # type: (types.Any, types.Any, types.Any, types.Any, types.Any) -> types.Any
 
     return {
@@ -26,6 +26,7 @@ def _base_file_search(unicode_safe, default, int_validator, boolean_validator, o
         "rows": [default(10), int_validator],
         "sort": [default("name"), unicode_safe],
         "reverse": [boolean_validator],
+        "storage": [ignore_empty, unicode_safe],
     }
 
 

@@ -1,10 +1,15 @@
+{#
+storage?
+uploader?
+#}
+
 {% extends "user/read_base.html" %}
 
 {% block page_primary_action %}
 
     {% if (g.userobj or current_user or {}).id == user_dict.id and h.check_access('files_file_create') %}
 
-        {% snippet "files/snippets/uploader.html" %}
+        {% snippet "files/snippets/uploader_v1.html", storage=storage, uploader=uploader %}
 
     {% endif %}
 {% endblock %}

@@ -168,7 +168,7 @@ ckan.module("files--queue", function ($) {
           widget
             .find("[data-upload-progress]")
             .removeClass("bg-primary bg-secondary")
-            .addClass("bg-success progress-bar-succes");
+            .addClass("bg-success progress-bar-success");
           this.sandbox.publish(
             ckan.CKANEXT_FILES.topics.queueItemUploaded,
             file,
@@ -200,7 +200,7 @@ ckan.module("files--queue", function ($) {
     toggleAnimation(widget: JQuery, state: boolean) {
       widget
         .find("[data-upload-progress]")
-        .toggleClass("progress-bar-animated", state);
+        .toggleClass("progress-bar-animated active", state);
     },
 
     _onWidgetResume(event: JQuery.TriggeredEvent) {

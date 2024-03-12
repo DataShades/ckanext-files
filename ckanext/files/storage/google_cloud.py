@@ -21,6 +21,12 @@ if six.PY3:
 
 RE_RANGE = re.compile(r"bytes=(?P<first_byte>\d+)-(?P<last_byte>\d+)")
 
+def decode(value):
+    # type: (bytes) -> str
+    if six.PY3:
+        return base64.decodebytes(value).hex()
+
+    return base64.decodestring(value).encode("hex")
 
 class GoogleCloudUploader(Uploader):
     storage = None  # type: GoogleCloudStorage # pyright: ignore
@@ -39,7 +45,7 @@ class GoogleCloudUploader(Uploader):
         client = self.storage.client
         blob = client.bucket(self.storage.settings["bucket"]).blob(filepath)
         blob.upload_from_file(upload.stream)
-        filehash = base64.decodebytes(blob.md5_hash.encode()).hex()
+        filehash = decode(blob.md5_hash.encode())
         return {
             "filename": filename,
             "content_type": upload.content_type,
@@ -222,7 +228,7 @@ class GoogleCloudUploader(Uploader):
                 },
             )
 
-        filehash = base64.decodebytes(upload_data["result"]["md5Hash"].encode()).hex()
+        filehash = decode(upload_data["result"]["md5Hash"].encode())
 
         return {
             "filename": os.path.relpath(

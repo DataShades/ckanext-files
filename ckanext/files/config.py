@@ -34,7 +34,7 @@ def storages():
     # type: () -> dict[str, dict[str, Any]]
     """Mapping of storage names to their settings."""
 
-    storages = defaultdict(lambda: defaultdict(dict))  # type: dict[str, dict[str, Any]]
+    storages = defaultdict(dict)  # type: dict[str, dict[str, Any]]
     prefix_len = len(STORAGE_PREFIX)
     for k, v in tk.config.items():
         if not k.startswith(STORAGE_PREFIX):

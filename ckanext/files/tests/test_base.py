@@ -1,5 +1,7 @@
 import hashlib
 import uuid
+from datetime import datetime  # isort: skip # noqa: F401
+
 from io import BytesIO
 
 import pytest
@@ -9,7 +11,6 @@ from ckanext.files import base, exceptions, utils
 from ckanext.files.storage import RedisStorage
 
 from faker import Faker  # isort: skip # noqa: F401
-from freezegun.api import FrozenDateTimeFactory  # isort: skip # noqa: F401
 
 
 class TestStorageFromSettings:
@@ -173,25 +174,27 @@ class TestUploader:
         assert result.endswith(extension)
         assert uuid.UUID(result[: -len(extension) - 1])
 
-    def test_compute_name_datetime_prefix(self, uploader, faker, freezer):
-        # type: (base.Uploader, Faker, FrozenDateTimeFactory) -> None
+    def test_compute_name_datetime_prefix(self, uploader, faker, files_stopped_time):
+        # type: (base.Uploader, Faker, datetime) -> None
         """`datetime_prefix` name strategy produces valid UUID."""
         uploader.storage.settings["name_strategy"] = "datetime_prefix"
         extension = faker.file_extension()
         name = faker.file_name(extension=extension)
         result = uploader.compute_name(name, {})
 
-        assert result == freezer().isoformat() + name
+        assert result == files_stopped_time.isoformat() + name
 
-    def test_compute_name_datetime_with_extension(self, uploader, faker, freezer):
-        # type: (base.Uploader, Faker, FrozenDateTimeFactory) -> None
+    def test_compute_name_datetime_with_extension(
+        self, uploader, faker, files_stopped_time
+    ):
+        # type: (base.Uploader, Faker, datetime) -> None
         """`datetime_with_extension` name strategy produces valid UUID."""
         uploader.storage.settings["name_strategy"] = "datetime_with_extension"
         extension = faker.file_extension()
         name = faker.file_name(extension=extension)
         result = uploader.compute_name(name, {})
 
-        assert result == freezer().isoformat() + "." + extension
+        assert result == files_stopped_time.isoformat() + "." + extension
 
     def test_compute_name_with_wrong_strategy(self, uploader):
         # type: (base.Uploader) -> None

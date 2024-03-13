@@ -2,17 +2,27 @@ from io import BytesIO
 
 import pytest
 import six
+from datetime import datetime
 from werkzeug.datastructures import FileStorage
 
 from ckan.lib.redis import connect_to_redis
 from ckan.tests.helpers import call_action
 import ckan.plugins.toolkit as tk
+from freezegun import freeze_time
 
 if six.PY3:
     from typing import Any  # isort: skip # noqa: F401
 
 
+@pytest.fixture()
+def files_stopped_time():
+    now = datetime.now()
+    with freeze_time(now):
+        yield now
+
+
 if tk.check_ckan_version("2.9"):
+
     @pytest.fixture
     def clean_db(reset_db, migrate_db_for):
         # type: (Any, Any) -> None
@@ -20,15 +30,15 @@ if tk.check_ckan_version("2.9"):
         migrate_db_for("files")
 
 else:
+
     @pytest.fixture
     def clean_db(reset_db):
         # type: (Any) -> None
         from ckanext.files.command import create_tables, drop_tables
+
         reset_db()
         drop_tables()
         create_tables()
-
-
 
 
 class FakeFileStorage(FileStorage):

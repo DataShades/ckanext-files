@@ -71,7 +71,8 @@ def _pager_url(*args, **kwargs):
 def user(user_id, storage=None):
     # type: (str, str | None) -> str
     user_dict = tk.get_action("user_show")(
-        {}, {"id": user_id, "include_num_followers": True}
+        {},
+        {"id": user_id, "include_num_followers": True},
     )
 
     rows = 10
@@ -113,7 +114,6 @@ def user(user_id, storage=None):
         "pager": pager,
     }  # type: dict[str, types.Any]
 
-
     if storage:
         tpl_data["storage"] = storage
         tpl_names.insert(0, "files/user/index.{}.html".format(storage))
@@ -138,7 +138,8 @@ class DeleteFile(MethodView):
         tk.check_access("files_file_delete", {}, {"id": file_id})
         info = tk.get_action("files_file_show")({}, {"id": file_id})
         user_dict = tk.get_action("user_show")(
-            {}, {"id": user_id, "include_num_followers": True}
+            {},
+            {"id": user_id, "include_num_followers": True},
         )
 
         return tk.render(

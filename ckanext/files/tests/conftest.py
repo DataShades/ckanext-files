@@ -1,14 +1,14 @@
+from datetime import datetime
 from io import BytesIO
 
 import pytest
 import six
-from datetime import datetime
+from freezegun import freeze_time
 from werkzeug.datastructures import FileStorage
 
+import ckan.plugins.toolkit as tk
 from ckan.lib.redis import connect_to_redis
 from ckan.tests.helpers import call_action
-import ckan.plugins.toolkit as tk
-from freezegun import freeze_time
 
 if six.PY3:
     from typing import Any  # isort: skip # noqa: F401
@@ -26,6 +26,10 @@ if tk.check_ckan_version("2.9"):
     @pytest.fixture
     def clean_db(reset_db, migrate_db_for):
         # type: (Any, Any) -> None
+
+        # fix for CKAN v2.9 issue with `reset_db` attempting to remove all
+        # registered models, not only core-models
+        migrate_db_for("files")
         reset_db()
         migrate_db_for("files")
 

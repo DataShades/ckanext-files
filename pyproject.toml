@@ -3,7 +3,7 @@
 # preview = true
 
 [tool.ruff]
-target-version = "py38"
+target-version = "py37"
 [tool.ruff.lint]
 select = [
        "B",  # likely bugs and design problems
@@ -62,7 +62,7 @@ convention = "conventional"
 parse-trailers = true
 
 [tool.pyright]
-pythonVersion = "3.8"
+pythonVersion = "3.6"
 include = ["ckanext"]
 exclude = [
     "**/test*",

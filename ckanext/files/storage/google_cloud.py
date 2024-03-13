@@ -21,12 +21,14 @@ if six.PY3:
 
 RE_RANGE = re.compile(r"bytes=(?P<first_byte>\d+)-(?P<last_byte>\d+)")
 
+
 def decode(value):
     # type: (bytes) -> str
     if six.PY3:
         return base64.decodebytes(value).hex()
 
-    return base64.decodestring(value).encode("hex")
+    return base64.decodestring(value).encode("hex")  # type: ignore
+
 
 class GoogleCloudUploader(Uploader):
     storage = None  # type: GoogleCloudStorage # pyright: ignore

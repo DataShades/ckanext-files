@@ -1,7 +1,5 @@
 import hashlib
 import uuid
-from datetime import datetime  # isort: skip # noqa: F401
-
 from io import BytesIO
 
 import pytest
@@ -9,6 +7,9 @@ from werkzeug.datastructures import FileStorage
 
 from ckanext.files import base, exceptions, utils
 from ckanext.files.storage import RedisStorage
+
+from datetime import datetime  # isort: skip # noqa: F401
+
 
 from faker import Faker  # isort: skip # noqa: F401
 
@@ -185,7 +186,10 @@ class TestUploader:
         assert result == files_stopped_time.isoformat() + name
 
     def test_compute_name_datetime_with_extension(
-        self, uploader, faker, files_stopped_time
+        self,
+        uploader,
+        faker,
+        files_stopped_time,
     ):
         # type: (base.Uploader, Faker, datetime) -> None
         """`datetime_with_extension` name strategy produces valid UUID."""

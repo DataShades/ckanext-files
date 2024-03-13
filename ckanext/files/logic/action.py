@@ -34,7 +34,6 @@ def files_file_search_by_user(context, data_dict):
     if not user:
         raise tk.ObjectNotFound("user")
 
-
     q = sess.query(File).join(
         Owner,
         sa.and_(File.id == Owner.item_id, Owner.item_type == "file"),  # type: ignore
@@ -44,7 +43,6 @@ def files_file_search_by_user(context, data_dict):
         q = q.filter(File.storage == data_dict["storage"])
 
     q = q.filter(sa.and_(Owner.owner_type == "user", Owner.owner_id == user.id))
-
 
     total = q.count()
 
@@ -150,7 +148,7 @@ def _delete_owners(context, item_type, item_id):
         sa.and_(
             Owner.item_type == item_type,
             Owner.item_id == item_id,
-        )
+        ),
     )
     context["session"].execute(stmt)
 
@@ -186,7 +184,9 @@ def files_file_show(context, data_dict):
     tk.check_access("files_file_show", context, data_dict)
 
     data_dict["id"]
-    fileobj = context["session"].query(File).filter(File.id==data_dict["id"]).one_or_none()
+    fileobj = (
+        context["session"].query(File).filter(File.id == data_dict["id"]).one_or_none()
+    )
     if not fileobj:
         raise tk.ObjectNotFound("file")
 

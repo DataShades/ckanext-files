@@ -1,9 +1,9 @@
 import six
 import sqlalchemy as sa
 
+import ckan.plugins.toolkit as tk
 from ckan.lib.dictization import table_dictize
 from ckan.model.types import make_uuid
-import ckan.plugins.toolkit as tk
 
 from .base import Base
 
@@ -33,11 +33,15 @@ class Owner(Base):  # type: ignore
         # type: (str, str) -> types.Select
         """List records with given item."""
         selectable = cls if tk.check_ckan_version("2.9") else [cls]
-        return sa.select(selectable).where(sa.and_(cls.item_type == type, cls.item_id == id))
+        return sa.select(selectable).where(
+            sa.and_(cls.item_type == type, cls.item_id == id),
+        )
 
     @classmethod
     def owned_by(cls, id, type):
         # type: (str, str) -> types.Select
         """List records with given owner."""
         selectable = cls if tk.check_ckan_version("2.9") else [cls]
-        return sa.select(selectable).where(sa.and_(cls.owner_type == type, cls.owner_id == id))
+        return sa.select(selectable).where(
+            sa.and_(cls.owner_type == type, cls.owner_id == id),
+        )

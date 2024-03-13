@@ -18,7 +18,13 @@ def file_create(ignore_empty, unicode_safe, default, files_into_upload, not_miss
 
 
 @validator_args
-def _base_file_search(unicode_safe, default, int_validator, boolean_validator, ignore_empty):
+def _base_file_search(
+    unicode_safe,
+    default,
+    int_validator,
+    boolean_validator,
+    ignore_empty,
+):
     # type: (types.Any, types.Any, types.Any, types.Any, types.Any) -> types.Any
 
     return {

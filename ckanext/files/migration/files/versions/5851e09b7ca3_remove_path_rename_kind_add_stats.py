@@ -13,6 +13,8 @@ import sqlalchemy as sa
 from alembic import op
 from sqlalchemy.dialects.postgresql import JSONB
 
+import ckan.plugins.toolkit as tk
+
 # revision identifiers, used by Alembic.
 revision = "5851e09b7ca3"
 down_revision = "2c5f1f90888c"
@@ -38,7 +40,9 @@ def upgrade():
     op.alter_column("files_file", "uploaded_at", new_column_name="ctime")
     op.alter_column("files_file", "kind", new_column_name="storage")
 
-    stmt = sa.select(table.c.id, table.c.last_access, table.c.path, table.c.extras)
+    columns = [table.c.id, table.c.last_access, table.c.path, table.c.extras]
+    stmt = sa.select(*columns) if tk.check_ckan_version("2.10") else sa.select(columns)
+
     for id, last_access, path, extras in bind.execute(stmt):
         op.execute(
             sa.update(table)

@@ -160,11 +160,11 @@ class Manager(StorageService):
 
 class Reader(StorageService):
     def stream(self, data):
-        # type: (dict[str, types.Any]) -> types.IO[str] | types.IO[bytes]
+        # type: (dict[str, types.Any]) -> types.IO[bytes]
         raise NotImplementedError
 
     def content(self, data):
-        # type: (dict[str, types.Any]) -> bytes | str
+        # type: (dict[str, types.Any]) -> bytes
         return self.stream(data).read()
 
 
@@ -263,7 +263,7 @@ class Storage(OptionChecker):
         return self.manager.remove(data)
 
     def stream(self, data):
-        # type: (dict[str, types.Any]) -> types.IO[bytes] | types.IO[str]
+        # type: (dict[str, types.Any]) -> types.IO[bytes]
         if not self.supports(Capability.STREAM):
             raise exceptions.UnsupportedOperationError("stream", type(self).__name__)
 

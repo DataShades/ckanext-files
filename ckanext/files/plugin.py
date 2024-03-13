@@ -54,9 +54,14 @@ class FilesPlugin(p.SingletonPlugin):
                         separators=(",", ":"),
                     )
 
-                    declaration.declare(storage_key.type, settings.get("type")).append_validators(
+                    declaration.declare(
+                        storage_key.type,
+                        settings.get("type"),
+                    ).append_validators(
                         "one_of({})".format(available_adapters),
-                    ).set_description("Storage adapter used by the storage")
+                    ).set_description(
+                        "Storage adapter used by the storage",
+                    )
 
                 adapter = base.adapters.get(settings.get("type"))
                 if not adapter:

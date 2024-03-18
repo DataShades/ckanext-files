@@ -1,7 +1,5 @@
 from io import BytesIO
 
-import six
-
 import ckan.plugins.toolkit as tk
 from ckan.lib.redis import connect_to_redis  # type: ignore
 
@@ -18,18 +16,22 @@ from ckanext.files.base import (
 import redis  # isort: skip # noqa: F401
 
 
-if six.PY3:
-    RedisAdditionalData = types.TypedDict("RedisAdditionalData", {"filename": str})
+RedisAdditionalData = types.TypedDict("RedisAdditionalData", {})
 
-    class RedisStorageData(RedisAdditionalData, types.MinimalStorageData):
-        pass
+
+class RedisStorageData(RedisAdditionalData, types.MinimalStorageData):
+    pass
 
 
 class RedisUploader(Uploader):
     storage = None  # type: RedisStorage # pyright: ignore
 
     required_options = ["prefix"]
-    capabilities = utils.combine_capabilities(Capability.CREATE)
+    capabilities = utils.combine_capabilities(
+        Capability.CREATE,
+        Capability.COPY,
+        Capability.MOVE,
+    )
 
     def upload(self, name, upload, extras):
         # type: (str, types.Upload, dict[str, types.Any]) -> RedisStorageData
@@ -49,6 +51,26 @@ class RedisUploader(Uploader):
             "size": reader.position,
             "hash": reader.get_hash(),
         }
+
+    def copy(self, data, name, extras):
+        # type: (types.MinimalStorageData, str, dict[str, types.Any]) -> RedisStorageData
+        filename = self.compute_name(name, extras)
+
+        src = self.storage.settings["prefix"] + data["filename"]
+        dest = self.storage.settings["prefix"] + filename
+
+        self.storage.redis.copy(src, dest)
+        return RedisStorageData(data, filename=filename)
+
+    def move(self, data, name, extras):
+        # type: (types.MinimalStorageData, str, dict[str, types.Any]) -> RedisStorageData
+        filename = self.compute_name(name, extras)
+
+        src = self.storage.settings["prefix"] + data["filename"]
+        dest = self.storage.settings["prefix"] + filename
+
+        self.storage.redis.rename(src, dest)
+        return RedisStorageData(data, filename=filename)
 
 
 class RedisReader(Reader):
@@ -75,13 +97,18 @@ class RedisManager(Manager):
     storage = None  # type: RedisStorage # pyright: ignore
 
     required_options = ["prefix"]
-    capabilities = utils.combine_capabilities(Capability.REMOVE)
+    capabilities = utils.combine_capabilities(Capability.REMOVE, Capability.EXISTS)
 
     def remove(self, data):
         # type: (dict[str, types.Any]) -> bool
         key = self.storage.settings["prefix"] + data["filename"]
         self.storage.redis.delete(key)
         return True
+
+    def exists(self, data):
+        # type: (dict[str, types.Any]) -> bool
+        key = self.storage.settings["prefix"] + data["filename"]
+        return self.storage.redis.exists(key)
 
 
 class RedisStorage(Storage):

@@ -105,7 +105,7 @@ def files_file_create(context, data_dict):
         completed=True,
     )
     context["session"].add(fileobj)
-    _add_owner(context, "file", fileobj.id)  # type: ignore
+    _set_owner(context, "file", fileobj.id)  # type: ignore
     context["session"].commit()
 
     return fileobj.dictize(context)
@@ -129,7 +129,7 @@ def _ensure_name(data_dict, name_field="name", upload_field="upload"):
     data_dict[name_field] = name
 
 
-def _add_owner(context, item_type, item_id):
+def _set_owner(context, item_type, item_id):
     # type: (types.Any, str, str) -> None
     user = model.User.get(context["user"])
     if user:
@@ -142,7 +142,7 @@ def _add_owner(context, item_type, item_id):
         context["session"].add(owner)
 
 
-def _delete_owners(context, item_type, item_id):
+def _delete_owner(context, item_type, item_id):
     # type: (types.Any, str, str) -> None
     stmt = sa.delete(Owner).where(
         sa.and_(
@@ -169,7 +169,7 @@ def files_file_delete(context, data_dict):
         raise tk.ValidationError({"storage": ["Operation is not supported"]})
 
     storage.remove(fileobj.storage_data)
-    _delete_owners(context, "file", fileobj.id)
+    _delete_owner(context, "file", fileobj.id)
     context["session"].delete(fileobj)
     context["session"].commit()
 
@@ -183,12 +183,30 @@ def files_file_show(context, data_dict):
     # type: (types.Any, dict[str, types.Any]) -> dict[str, types.Any]
     tk.check_access("files_file_show", context, data_dict)
 
-    data_dict["id"]
     fileobj = (
         context["session"].query(File).filter(File.id == data_dict["id"]).one_or_none()
     )
     if not fileobj:
         raise tk.ObjectNotFound("file")
+
+    return fileobj.dictize(context)
+
+
+@action
+@validate(schema.file_rename)
+def files_file_rename(context, data_dict):
+    # type: (types.Any, dict[str, types.Any]) -> dict[str, types.Any]
+    tk.check_access("files_file_rename", context, data_dict)
+
+    fileobj = (
+        context["session"].query(File).filter(File.id == data_dict["id"]).one_or_none()
+    )  # type: File | None
+    if not fileobj:
+        raise tk.ObjectNotFound("file")
+
+    fileobj.name = data_dict["name"]
+    fileobj.touch()
+    context["session"].commit()
 
     return fileobj.dictize(context)
 
@@ -223,7 +241,7 @@ def files_upload_initialize(context, data_dict):
         storage_data=storage_data,
     )
     context["session"].add(fileobj)
-    _add_owner(context, "file", fileobj.id)  # type: ignore
+    _set_owner(context, "file", fileobj.id)  # type: ignore
     context["session"].commit()
 
     return fileobj.dictize(context)

@@ -24,7 +24,13 @@ def upgrade():
         sa.Column("item_type", sa.Text(), nullable=False),
         sa.Column("owner_id", sa.Text(), nullable=False),
         sa.Column("owner_type", sa.Text(), nullable=False),
-        sa.UniqueConstraint("item_id", "item_type", "owner_id", "owner_type"),
+        sa.UniqueConstraint(
+            "item_id",
+            "item_type",
+            "owner_id",
+            "owner_type",
+            name="files_owner_item_id_item_type_owner_id_owner_type_key",
+        ),
     )
 
 

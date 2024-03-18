@@ -16,7 +16,7 @@ from ckanext.files.base import (
     Uploader,
 )
 
-FsAdditionalData = types.TypedDict("FsAdditionalData", {"filename": str})
+FsAdditionalData = types.TypedDict("FsAdditionalData", {})
 
 
 class FsStorageData(FsAdditionalData, types.MinimalStorageData):
@@ -58,10 +58,6 @@ class FileSystemUploader(Uploader):
                 tk.get_validator("not_missing"),
                 tk.get_validator("int_validator"),
             ],
-            "content_type": [
-                tk.get_validator("default")("application/octet-stream"),  # type: ignore
-                tk.get_validator("unicode_safe"),
-            ],
             "__extras": [tk.get_validator("ignore")],
         }  # type: dict[str, types.Any]
         data, errors = tk.navl_validate(extras, schema)
@@ -77,7 +73,7 @@ class FileSystemUploader(Uploader):
 
         result = dict(self.upload(name, upload, data))
         result["size"] = data["size"]
-        result["content_type"] = data["content_type"]
+        result["content_type"] = "application/octet-stream"
         result["uploaded"] = 0
 
         return result

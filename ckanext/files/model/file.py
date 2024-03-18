@@ -10,6 +10,9 @@ from ckan.model.types import make_uuid
 
 from .base import Base, now
 
+from datetime import datetime  # isort: skip # noqa: F401
+
+
 from ckanext.files import types  # isort: skip # noqa: F401
 
 if six.PY3:
@@ -48,8 +51,13 @@ class File(Base):  # type: ignore
 
         return result
 
-    def touch(self):
-        self.mtime = now()
+    def touch(self, access=True, modification=True, moment=None):
+        # type: (bool, bool, datetime | None) -> None
+        if not moment:
+            moment = now()
 
-    def access(self):
-        self.atime = now()
+        if access:
+            self.atime = moment
+
+        if modification:
+            self.mtime = moment

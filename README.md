@@ -1,3 +1,5 @@
+[![Tests](https://github.com/DataShades/ckanext-files/actions/workflows/test.yml/badge.svg?branch=storage)](https://github.com/DataShades/ckanext-files/actions/workflows/test.yml)
+
 # ckanext-files
 
 Files as first-class citizens of CKAN. Upload, manage, remove files directly

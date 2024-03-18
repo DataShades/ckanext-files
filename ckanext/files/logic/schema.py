@@ -61,6 +61,15 @@ def file_show(not_empty, unicode_safe):
 
 
 @validator_args
+def file_rename(not_empty, unicode_safe):
+    # type: (types.Any, types.Any) -> types.Any
+    return {
+        "id": [not_empty, unicode_safe],
+        "name": [not_empty, unicode_safe],
+    }
+
+
+@validator_args
 def upload_initialize(ignore_empty, unicode_safe, default, int_validator, not_missing):
     # type: (types.Any, types.Any, types.Any, types.Any, types.Any) -> types.Any
 

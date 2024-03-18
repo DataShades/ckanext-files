@@ -21,6 +21,7 @@ class Owner(Base):  # type: ignore
     item_type = sa.Column(sa.Text, nullable=False)
     owner_id = sa.Column(sa.Text, nullable=False)
     owner_type = sa.Column(sa.Text, nullable=False)
+    access = sa.Column(sa.Text, nullable=False, default="full")
 
     sa.UniqueConstraint(item_id, item_type, owner_id, owner_type)
 
@@ -31,7 +32,7 @@ class Owner(Base):  # type: ignore
     @classmethod
     def owners_of(cls, id, type):
         # type: (str, str) -> types.Select
-        """List records with given item."""
+        """List owners of the given item."""
         selectable = cls if tk.check_ckan_version("2.9") else [cls]
         return sa.select(selectable).where(
             sa.and_(cls.item_type == type, cls.item_id == id),

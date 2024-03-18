@@ -47,6 +47,26 @@ class TestUploader:
         result = storage.upload("", FileStorage(BytesIO(content)), {})
         assert result["hash"] == hashlib.md5(content).hexdigest()
 
+    def test_copy(self, storage, faker):
+        # type: (redis.RedisStorage, Faker) -> None
+        content = faker.binary(100)
+        original = storage.upload("", FileStorage(BytesIO(content)), {})
+        copy = storage.copy(original, storage, faker.file_name(), {})
+
+        assert copy["filename"] != original["filename"]
+        assert storage.content(copy) == storage.content(original)
+
+    def test_move(self, storage, faker):
+        # type: (redis.RedisStorage, Faker) -> None
+        content = faker.binary(100)
+        original = storage.upload("", FileStorage(BytesIO(content)), {})
+        copy = storage.move(original, storage, faker.file_name(), {})
+
+        with pytest.raises(exceptions.MissingFileError):
+            storage.content(original)
+
+        assert storage.content(copy) == content
+
 
 class TestManager:
     def test_removal(self, storage):
@@ -58,6 +78,14 @@ class TestManager:
 
         storage.remove(result)
         assert not storage.redis.exists(key)
+
+    def test_exists(self, storage):
+        # type: (redis.RedisStorage) -> None
+        result = storage.upload("", FileStorage(), {})
+
+        assert storage.exists(result)
+        storage.remove(result)
+        assert not storage.exists(result)
 
 
 class TestReader:

@@ -45,5 +45,5 @@ __all__ = [
 
 MinimalStorageData = TypedDict(
     "MinimalStorageData",
-    {"content_type": str, "size": int, "hash": str},
+    {"filename": str, "content_type": str, "size": int, "hash": str},
 )

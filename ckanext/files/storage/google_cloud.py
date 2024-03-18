@@ -12,22 +12,22 @@ import ckan.plugins.toolkit as tk
 from ckanext.files import exceptions, types, utils
 from ckanext.files.base import Capability, Manager, Storage, Uploader
 
-if six.PY3:
-    GCAdditionalData = types.TypedDict("GCAdditionalData", {"filename": str})
+GCAdditionalData = types.TypedDict("GCAdditionalData", {})
 
-    class GCStorageData(GCAdditionalData, types.MinimalStorageData):
-        pass
+
+class GCStorageData(GCAdditionalData, types.MinimalStorageData):
+    pass
 
 
 RE_RANGE = re.compile(r"bytes=(?P<first_byte>\d+)-(?P<last_byte>\d+)")
 
 
 def decode(value):
-    # type: (bytes) -> str
+    # type: (str) -> str
     if six.PY3:
-        return base64.decodebytes(value).hex()
+        return base64.decodebytes(value.encode()).hex()
 
-    return base64.decodestring(value).encode("hex")  # type: ignore
+    return base64.decodestring(value.encode()).encode("hex")  # type: ignore
 
 
 class GoogleCloudUploader(Uploader):
@@ -46,8 +46,9 @@ class GoogleCloudUploader(Uploader):
 
         client = self.storage.client
         blob = client.bucket(self.storage.settings["bucket"]).blob(filepath)
+
         blob.upload_from_file(upload.stream)
-        filehash = decode(blob.md5_hash.encode())
+        filehash = decode(blob.md5_hash)
         return {
             "filename": filename,
             "content_type": upload.content_type,
@@ -230,7 +231,7 @@ class GoogleCloudUploader(Uploader):
                 },
             )
 
-        filehash = decode(upload_data["result"]["md5Hash"].encode())
+        filehash = decode(upload_data["result"]["md5Hash"])
 
         return {
             "filename": os.path.relpath(
@@ -250,6 +251,7 @@ class GoogleCloudManager(Manager):
 
     def remove(self, data):
         # type: (dict[str, types.Any]) -> bool
+
         filepath = os.path.join(str(self.storage.settings["path"]), data["filename"])
         client = self.storage.client  # type: Client
         blob = client.bucket(self.storage.settings["bucket"]).blob(filepath)
@@ -270,7 +272,13 @@ class GoogleCloudStorage(Storage):
         credentials = None
         credentials_file = settings.get("credentials_file", None)
         if credentials_file:
-            credentials = Credentials.from_service_account_file(credentials_file)
+            try:
+                credentials = Credentials.from_service_account_file(credentials_file)
+            except FileNotFoundError:
+                raise exceptions.InvalidStorageConfigurationError(  # noqa: B904
+                    type(self),
+                    "file `{}` does not exist".format(credentials_file),
+                )
 
         self.client = Client(credentials=credentials)
 

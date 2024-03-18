@@ -4,6 +4,7 @@ from io import BytesIO
 import pytest
 import six
 from freezegun import freeze_time
+from responses import RequestsMock
 from werkzeug.datastructures import FileStorage
 
 import ckan.plugins.toolkit as tk
@@ -12,6 +13,14 @@ from ckan.tests.helpers import call_action
 
 if six.PY3:
     from typing import Any  # isort: skip # noqa: F401
+
+
+@pytest.fixture()
+def responses(ckan_config):
+    # type: (Any) -> Any
+    with RequestsMock() as rsps:
+        rsps.add_passthru(ckan_config["solr_url"])
+        yield rsps
 
 
 @pytest.fixture()

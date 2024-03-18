@@ -34,7 +34,7 @@ def _get_user(context):
 
 def _is_owner(user_id, file_id):
     # type: (str, str) -> bool
-    stmt = Owner.owners_of(file_id, "file").where(
+    stmt = Owner.owner_of(file_id, "file").where(
         sa.and_(
             Owner.owner_type == "user",
             Owner.owner_ie == user_id,
@@ -99,6 +99,14 @@ def files_file_delete(context, data_dict):
 def files_file_show(context, data_dict):
     # type: (types.Any, dict[str, types.Any]) -> types.Any
     """Only owner can view files."""
+    return authz.is_authorized("files_owns_file", context, data_dict)
+
+
+@auth
+@tk.auth_disallow_anonymous_access
+def files_file_rename(context, data_dict):
+    # type: (types.Any, dict[str, types.Any]) -> types.Any
+    """Only owner can rename files."""
     return authz.is_authorized("files_owns_file", context, data_dict)
 
 

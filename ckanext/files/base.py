@@ -16,6 +16,8 @@ import os
 import uuid
 from datetime import datetime
 
+from werkzeug.datastructures import FileStorage
+
 from ckanext.files import exceptions, types, utils
 
 CHUNK_SIZE = 16 * 1024
@@ -80,9 +82,11 @@ class HashingReader:
 class Capability(object):
     CREATE = types.CapabilityUnit(1 << 0)
     STREAM = types.CapabilityUnit(1 << 1)
-    DOWNLOAD = types.CapabilityUnit(1 << 2)
+    COPY = types.CapabilityUnit(1 << 2)
     REMOVE = types.CapabilityUnit(1 << 3)
     MULTIPART_UPLOAD = types.CapabilityUnit(1 << 4)
+    MOVE = types.CapabilityUnit(1 << 5)
+    EXISTS = types.CapabilityUnit(1 << 6)
 
 
 class OptionChecker(object):
@@ -111,6 +115,14 @@ class StorageService(OptionChecker):
 class Uploader(StorageService):
     def upload(self, name, upload, extras):
         # type: (str, types.Upload, dict[str, types.Any]) -> types.MinimalStorageData
+        raise NotImplementedError
+
+    def copy(self, data, name, extras):
+        # type: (types.MinimalStorageData, str, dict[str, types.Any]) -> types.MinimalStorageData
+        raise NotImplementedError
+
+    def move(self, data, name, extras):
+        # type: (types.MinimalStorageData, str, dict[str, types.Any]) -> types.MinimalStorageData
         raise NotImplementedError
 
     def compute_name(self, name, extras, upload=None):
@@ -154,6 +166,10 @@ class Uploader(StorageService):
 
 class Manager(StorageService):
     def remove(self, data):
+        # type: (dict[str, types.Any]) -> bool
+        raise NotImplementedError
+
+    def exists(self, data):
         # type: (dict[str, types.Any]) -> bool
         raise NotImplementedError
 
@@ -255,6 +271,13 @@ class Storage(OptionChecker):
             extras,
         )
 
+    def exists(self, data):
+        # type: (dict[str, types.Any]) -> bool
+        if not self.supports(Capability.EXISTS):
+            raise exceptions.UnsupportedOperationError("exists", type(self).__name__)
+
+        return self.manager.exists(data)
+
     def remove(self, data):
         # type: (dict[str, types.Any]) -> bool
         if not self.supports(Capability.REMOVE):
@@ -275,3 +298,28 @@ class Storage(OptionChecker):
             raise exceptions.UnsupportedOperationError("content", type(self).__name__)
 
         return self.reader.content(data)
+
+    def copy(self, data, storage, name, extras):
+        # type: (dict[str, types.Any], Storage, str, dict[str, types.Any]) -> types.MinimalStorageData
+        if storage is self and self.supports(Capability.COPY):
+            return self.uploader.copy(data, name, extras)
+
+        if self.supports(Capability.STREAM) and storage.supports(Capability.CREATE):
+            return storage.upload(name, FileStorage(self.stream(data)), extras)
+
+        raise exceptions.UnsupportedOperationError("copy", type(self).__name__)
+
+    def move(self, data, storage, name, extras):
+        # type: (dict[str, types.Any], Storage, str, dict[str, types.Any]) -> types.MinimalStorageData
+
+        if storage is self and self.supports(Capability.MOVE):
+            return self.uploader.move(data, name, extras)
+
+        if self.supports(
+            utils.combine_capabilities(Capability.STREAM, Capability.REMOVE),
+        ) and storage.supports(Capability.CREATE):
+            result = storage.upload(name, FileStorage(self.stream(data)), extras)
+            storage.remove(data)
+            return result
+
+        raise exceptions.UnsupportedOperationError("copy", type(self).__name__)

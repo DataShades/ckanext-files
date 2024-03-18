@@ -144,6 +144,12 @@ class TestUploader:
         with pytest.raises(NotImplementedError):
             uploader.complete_multipart_upload({}, {})
 
+        with pytest.raises(NotImplementedError):
+            uploader.copy({}, "", {})
+
+        with pytest.raises(NotImplementedError):
+            uploader.move({}, "", {})
+
     def test_compute_name_uuid(self, uploader, faker):
         # type: (base.Uploader, Faker) -> None
         """`uuid`(default) name strategy produces valid UUID."""
@@ -234,27 +240,27 @@ class TestReader:
             reader.stream({})
 
 
-class Manager(base.Manager):
+class RemovingManager(base.Manager):
     capabilities = utils.combine_capabilities(base.Capability.REMOVE)
 
 
-class Reader(base.Reader):
-    capabilities = utils.combine_capabilities(base.Capability.DOWNLOAD)
+class StreamingReader(base.Reader):
+    capabilities = utils.combine_capabilities(base.Capability.STREAM)
 
 
-class Uploader(base.Uploader):
+class SimpleUploader(base.Uploader):
     capabilities = utils.combine_capabilities(base.Capability.CREATE)
 
 
 class Storage(base.Storage):
     def make_reader(self):
-        return Reader(self)
+        return StreamingReader(self)
 
     def make_uploader(self):
-        return Uploader(self)
+        return SimpleUploader(self)
 
     def make_manager(self):
-        return Manager(self)
+        return RemovingManager(self)
 
 
 class TestStorage:
@@ -263,7 +269,7 @@ class TestStorage:
         storage = Storage()
         assert storage.capabilities == utils.combine_capabilities(
             base.Capability.REMOVE,
-            base.Capability.DOWNLOAD,
+            base.Capability.STREAM,
             base.Capability.CREATE,
         )
 
@@ -293,11 +299,11 @@ class TestStorage:
         assert storage.supports(
             utils.combine_capabilities(
                 base.Capability.REMOVE,
-                base.Capability.DOWNLOAD,
+                base.Capability.STREAM,
             ),
         )
 
-        assert not storage.supports(base.Capability.STREAM)
+        assert not storage.supports(base.Capability.MULTIPART_UPLOAD)
         assert not storage.supports(
             utils.combine_capabilities(
                 base.Capability.REMOVE,
@@ -305,11 +311,22 @@ class TestStorage:
             ),
         )
 
-    def test_upload_is_not_supported(self, faker):
+    def test_not_supported_methods(self, faker):
         # type: (Faker) -> None
-        """Storage raises an error if upload is not supported."""
         with pytest.raises(exceptions.UnsupportedOperationError):
             base.Storage().upload(faker.file_name(), FileStorage(), {})
+
+        with pytest.raises(exceptions.UnsupportedOperationError):
+            base.Storage().stream({})
+
+        with pytest.raises(exceptions.UnsupportedOperationError):
+            base.Storage().remove({})
+
+        with pytest.raises(exceptions.UnsupportedOperationError):
+            base.Storage().copy({}, base.Storage(), "", {})
+
+        with pytest.raises(exceptions.UnsupportedOperationError):
+            base.Storage().move({}, base.Storage(), "", {})
 
     def test_upload_checks_max_size(self, faker):
         # type: (Faker) -> None
@@ -322,17 +339,13 @@ class TestStorage:
                 {},
             )
 
-    def test_upload_supported_but_not_implemented(self, faker):
+    def test_not_implemented_methods(self, faker):
         # type: (Faker) -> None
         """Storage raises an error if upload is not implemented."""
         storage = Storage()
         with pytest.raises(NotImplementedError):
             storage.upload(faker.file_name(), FileStorage(), {})
 
-    def test_multipart_not_implemented(self, faker):
-        # type: (Faker) -> None
-        """Multipart methods raise an exception when not implemented"""
-        storage = Storage()
         with pytest.raises(NotImplementedError):
             storage.initialize_multipart_upload(faker.file_name(), {})
 
@@ -345,13 +358,11 @@ class TestStorage:
         with pytest.raises(NotImplementedError):
             storage.complete_multipart_upload({}, {})
 
-    def test_remove_is_not_supported(self):
-        """Storage raises an error if remove is not supported."""
-        with pytest.raises(exceptions.UnsupportedOperationError):
-            base.Storage().remove({})
-
-    def test_remove_supported_but_not_implemented(self):
-        """Storage raises an error if remove is not implemented."""
-        storage = Storage()
         with pytest.raises(NotImplementedError):
             storage.remove({})
+
+        with pytest.raises(NotImplementedError):
+            storage.copy({}, storage, "", {})
+
+        with pytest.raises(NotImplementedError):
+            storage.move({}, storage, "", {})

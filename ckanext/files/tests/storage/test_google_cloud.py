@@ -3,11 +3,11 @@ import hashlib
 import json
 import os
 from io import BytesIO
-from urllib.parse import quote_plus
 from uuid import UUID
 
 import pytest
 import six
+from six.moves.urllib.parse import quote_plus
 from werkzeug.datastructures import FileStorage
 
 import ckan.plugins.toolkit as tk

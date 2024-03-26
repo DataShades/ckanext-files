@@ -59,7 +59,6 @@ class FilesCommand(CkanCommand):
             self._create()
 
     def _init(self):
-        self._drop()
         self._create()
         log.info("DB tables are reinitialized")
 

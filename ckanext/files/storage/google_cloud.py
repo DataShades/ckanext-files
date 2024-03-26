@@ -292,7 +292,7 @@ class GoogleCloudStorage(Storage):
     def declare_config_options(cls, declaration, key):
         # type: (types.Declaration, types.Key) -> None
         super().declare_config_options(declaration, key)
-        declaration.declare(key.path).required().set_description(
+        declaration.declare(key.path, "").set_description(
             "Path to the folder where uploaded data will be stored.",
         )
         declaration.declare(key.bucket).required().set_description(

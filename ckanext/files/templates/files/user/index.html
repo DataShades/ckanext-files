@@ -1,0 +1,32 @@
+{#
+storage?
+uploader?
+#}
+
+{% extends "user/read_base.html" %}
+
+{% block page_primary_action %}
+
+    {% if (g.userobj or current_user or {}).id == user_dict.id and h.check_access('files_file_create') %}
+
+        {% snippet "files/snippets/uploader_v1.html", storage=storage, uploader=uploader %}
+
+    {% endif %}
+{% endblock %}
+
+{% block primary_content_inner %}
+    {% block files_list %}
+        {% if files.results %}
+            {% snippet 'files/snippets/file_table.html', files=files.results, owner_type="user", owner_id=user_dict.name %}
+
+        {% elif not files.count %}
+            <p class="text-muted">
+                {{ _("There are no files uploaded by the current user.") }}
+            </p>
+
+        {% endif %}
+
+        {{ pager.pager() }}
+    {% endblock %}
+
+{% endblock %}

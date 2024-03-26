@@ -1,0 +1,14 @@
+
+{% extends "user/read_base.html" %}
+
+{% block primary_content_inner %}
+    <p>{{ _('Are you sure you want to delete file - {name}?').format(name=file.name) }}</p>
+    <p class="form-actions">
+        <form id="file-confirm-delete-form" method="post">
+            {{ h.csrf_input() if "csrf_input" in h}}
+            <button class="btn btn-danger" type="button" onclick="history.back()" >{{ _('Cancel') }}</button>
+            <button class="btn btn-primary" type="submit" >{{ _('Confirm Delete') }}</button>
+        </form>
+    </p>
+
+{% endblock %}

@@ -1,47 +1,104 @@
-import ckan.plugins.toolkit as tk
 from ckan.logic.schema import validator_args
 
+from ckanext.files import config
 
-CONFIG_KIND = "ckanext.files.default.kind"
-DEFAULT_KIND = "ckanext_files_file"
+from ckanext.files import types  # isort: skip # noqa: F401
 
 
 @validator_args
-def file_create(
-    ignore_empty,
-    dict_only,
-    not_empty,
+def file_create(ignore_empty, unicode_safe, default, files_into_upload, not_missing):
+    # type: (types.Any, types.Any, types.Any, types.Any, types.Any) -> types.Any
+
+    # name is checked inside action, using "upload" as source if empty
+    return {
+        "name": [ignore_empty, unicode_safe],
+        "storage": [default(config.default_storage()), unicode_safe],
+        "upload": [not_missing, files_into_upload],
+    }
+
+
+@validator_args
+def _base_file_search(
     unicode_safe,
     default,
-    ignore,
-    not_missing,
+    int_validator,
+    boolean_validator,
+    ignore_empty,
 ):
-    default_kind = tk.config.get(CONFIG_KIND, DEFAULT_KIND)
+    # type: (types.Any, types.Any, types.Any, types.Any, types.Any) -> types.Any
+
     return {
+        "start": [default(0), int_validator],
+        "rows": [default(10), int_validator],
+        "sort": [default("name"), unicode_safe],
+        "reverse": [boolean_validator],
+        "storage": [ignore_empty, unicode_safe],
+    }
+
+
+@validator_args
+def file_search_by_user(ignore_missing, unicode_safe, default, ignore_not_sysadmin):
+    # type: (types.Any, types.Any, types.Any, types.Any) -> types.Any
+    schema = _base_file_search()
+    schema["user"] = [ignore_missing, ignore_not_sysadmin, unicode_safe]
+    return schema
+
+
+@validator_args
+def file_delete(not_empty, unicode_safe):
+    # type: (types.Any, types.Any) -> types.Any
+    return {
+        "id": [not_empty, unicode_safe],
+    }
+
+
+@validator_args
+def file_show(not_empty, unicode_safe):
+    # type: (types.Any, types.Any) -> types.Any
+    return {
+        "id": [not_empty, unicode_safe],
+    }
+
+
+@validator_args
+def file_rename(not_empty, unicode_safe):
+    # type: (types.Any, types.Any) -> types.Any
+    return {
+        "id": [not_empty, unicode_safe],
         "name": [not_empty, unicode_safe],
-        "upload": [not_missing],
-        "kind": [default(default_kind), unicode_safe],
-        "extras": [ignore_empty, dict_only],
-        "__extras": [ignore],
     }
 
 
 @validator_args
-def file_update(not_empty, ignore_missing, unicode_safe, dict_only, ignore):
+def upload_initialize(ignore_empty, unicode_safe, default, int_validator, not_missing):
+    # type: (types.Any, types.Any, types.Any, types.Any, types.Any) -> types.Any
+
+    # name is checked inside action, using "upload" as source if empty
     return {
-        "id": [not_empty],
-        "name": [ignore_missing, unicode_safe],
-        "upload": [ignore_missing],
-        "extras": [ignore_missing, dict_only],
-        "__extras": [ignore],
+        "name": [ignore_empty, unicode_safe],
+        "storage": [default(config.default_storage()), unicode_safe],
     }
 
 
 @validator_args
-def file_get_unused_files(int_validator, default):
+def upload_show(not_empty, unicode_safe):
+    # type: (types.Any, types.Any) -> types.Any
     return {
-        "threshold": [
-            default(tk.config["ckanext.files.unused_threshold"]),
-            int_validator,
-        ],
+        "id": [not_empty, unicode_safe],
+    }
+
+
+@validator_args
+def upload_update(not_empty, unicode_safe):
+    # type: (types.Any, types.Any) -> types.Any
+    return {
+        "id": [not_empty, unicode_safe],
+    }
+
+
+@validator_args
+def upload_complete(not_empty, unicode_safe):
+    # type: (types.Any, types.Any) -> types.Any
+    return {
+        "id": [not_empty, unicode_safe],
     }

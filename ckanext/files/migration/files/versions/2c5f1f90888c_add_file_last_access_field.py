@@ -5,9 +5,9 @@ Revises: cc1a832108c5
 Create Date: 2024-01-27 12:47:35.568291
 
 """
-from alembic import op
+
 import sqlalchemy as sa
-from sqlalchemy.sql import func
+from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = "2c5f1f90888c"
@@ -23,7 +23,7 @@ def upgrade():
             "last_access",
             sa.DateTime(),
             nullable=False,
-            server_default=func.now(),
+            server_default=sa.func.now(),
         ),
     )
 

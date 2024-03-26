@@ -5,8 +5,9 @@ Revises:
 Create Date: 2021-09-21 13:02:25.731642
 
 """
-from alembic import op
+
 import sqlalchemy as sa
+from alembic import op
 from sqlalchemy.dialects.postgresql import JSONB
 
 # revision identifiers, used by Alembic.
@@ -19,11 +20,7 @@ depends_on = None
 def upgrade():
     op.create_table(
         "files_file",
-        sa.Column(
-            "id",
-            sa.UnicodeText,
-            primary_key=True,
-        ),
+        sa.Column("id", sa.UnicodeText, primary_key=True),
         sa.Column("name", sa.UnicodeText, nullable=False),
         sa.Column("path", sa.UnicodeText, nullable=False),
         sa.Column("kind", sa.UnicodeText, nullable=False),

@@ -1,34 +1,63 @@
-from __future__ import annotations
+import copy
 
-import datetime
-
-
-from sqlalchemy import Column, UnicodeText, DateTime
-from sqlalchemy.orm import Query
+import six
+import sqlalchemy as sa
+from sqlalchemy import Column, DateTime, UnicodeText
 from sqlalchemy.dialects.postgresql import JSONB
 
-import ckan.plugins.toolkit as tk
-import ckan.model as model
-from ckan.model.types import make_uuid
 from ckan.lib.dictization import table_dictize
-from .base import Base
+from ckan.model.types import make_uuid
+
+from .base import Base, now
+
+from datetime import datetime  # isort: skip # noqa: F401
 
 
-class File(Base):
+from ckanext.files import types  # isort: skip # noqa: F401
+
+if six.PY3:
+    from typing import Any  # isort: skip # noqa: F401
+
+
+class File(Base):  # type: ignore
     __tablename__ = "files_file"
     id = Column(UnicodeText, primary_key=True, default=make_uuid)
     name = Column(UnicodeText, nullable=False)
-    path = Column(UnicodeText, nullable=False)
-    kind = Column(UnicodeText, nullable=False)
-    uploaded_at = Column(
-        DateTime, nullable=False, default=datetime.datetime.utcnow
-    )
-    last_access = Column(
-        DateTime, nullable=False, default=datetime.datetime.utcnow
-    )
-    extras = Column(JSONB)
+    storage = Column(UnicodeText, nullable=False)
+
+    ctime = Column(DateTime, nullable=False, default=now, server_default=sa.func.now())
+    mtime = Column(DateTime)
+    atime = Column(DateTime)
+
+    storage_data = Column(JSONB, default=dict, server_default="{}")
+    plugin_data = Column(JSONB, default=dict, server_default="{}")
+    completed = Column(sa.Boolean, default=False, server_default="false")
+
+    def __init__(self, **kwargs):
+        # type: (**types.Any) -> None
+        super(File, self).__init__(**kwargs)
+        if not self.id:
+            self.id = make_uuid()
 
     def dictize(self, context):
+        # type: (Any) -> dict[str, Any]
+
         result = table_dictize(self, context)
-        result["url"] = tk.h.url_for("files.get_file", file_id=self.id, qualified=True)
+        result["storage_data"] = copy.deepcopy(result["storage_data"])
+
+        plugin_data = result.pop("plugin_data")
+        if context.get("include_plugin_data"):
+            result["plugin_data"] = copy.deepcopy(plugin_data)
+
         return result
+
+    def touch(self, access=True, modification=True, moment=None):
+        # type: (bool, bool, datetime | None) -> None
+        if not moment:
+            moment = now()
+
+        if access:
+            self.atime = moment
+
+        if modification:
+            self.mtime = moment

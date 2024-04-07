@@ -22,6 +22,19 @@ def get_actions():
     return dict(_actions)
 
 
+def _flat_mask(data):
+    # type: (dict[str, types.Any]) -> dict[tuple[types.Any], types.Any]
+    result = {}  # type: dict[tuple[types.Any], types.Any]
+
+    for k, v in data.items():
+        if isinstance(v, dict):
+            result.update({(k,) + sk: sv for sk, sv in _flat_mask(v).items()})
+        else:
+            result[(k,)] = v
+
+    return result
+
+
 @action
 @tk.side_effect_free
 @validate(schema.file_search_by_user)
@@ -36,7 +49,7 @@ def files_file_search_by_user(context, data_dict):
 
     q = sess.query(File).join(
         Owner,
-        sa.and_(File.id == Owner.item_id, Owner.item_type == "file"),  # type: ignore
+        sa.and_(File.id == Owner.item_id, Owner.item_type == "file"),
     )
 
     if "storage" in data_dict:
@@ -44,14 +57,23 @@ def files_file_search_by_user(context, data_dict):
 
     q = q.filter(sa.and_(Owner.owner_type == "user", Owner.owner_id == user.id))
 
+    inspector = sa.inspect(File)  # type: types.Any
+    columns = inspector.columns
+
+    for mask in ["storage_data", "plugin_data"]:
+        if mask in data_dict:
+            for k, v in _flat_mask(data_dict[mask]).items():
+                field = columns[mask]
+                for segment in k:
+                    field = field[segment]
+
+                q = q.filter(field.astext == v)
+
     total = q.count()
 
     parts = data_dict["sort"].split(".")
     sort = parts[0]
     sort_path = parts[1:]
-
-    inspector = sa.inspect(File)  # type: types.Any
-    columns = inspector.columns
 
     if sort not in columns:
         raise tk.ValidationError({"sort": ["Unknown sort column"]})
@@ -215,6 +237,7 @@ def files_file_rename(context, data_dict):
 @validate(schema.upload_initialize)
 def files_upload_initialize(context, data_dict):
     # type: (types.Any, dict[str, types.Any]) -> dict[str, types.Any]
+
     tk.check_access("files_upload_initialize", context, data_dict)
     _ensure_name(data_dict)
     extras = data_dict.get("__extras", {})

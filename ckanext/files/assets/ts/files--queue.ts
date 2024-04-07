@@ -110,14 +110,14 @@ ckan.module("files--queue", function ($) {
 
     _onFile(
       file: File,
-      options = { id: "", uploaded: 0, uploader: null, storage: null },
+        options = { id: "", uploaded: 0, uploaderInstance: null, uploader: null, storage: null },
     ) {
       const widget = this.tpl.clone(true).appendTo(this.el);
       const info = {
         file,
         id: options.id,
         uploaded: options.uploaded || 0,
-        uploader: this.sandbox.files.makeUploader(
+        uploader: options.uploaderInstance || this.sandbox.files.makeUploader(
           options.uploader || this.options.uploader,
           { storage: options.storage || this.options.storage },
         ),

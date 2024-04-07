@@ -33,6 +33,8 @@ def _base_file_search(
         "sort": [default("name"), unicode_safe],
         "reverse": [boolean_validator],
         "storage": [ignore_empty, unicode_safe],
+        "storage_data": [ignore_empty],
+        "plugin_data": [ignore_empty],
     }
 
 

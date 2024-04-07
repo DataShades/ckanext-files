@@ -41,7 +41,7 @@ def upgrade():
     op.alter_column("files_file", "kind", new_column_name="storage")
 
     columns = [table.c.id, table.c.last_access, table.c.path, table.c.extras]
-    stmt = sa.select(*columns) if tk.check_ckan_version("2.10") else sa.select(columns)
+    stmt = sa.select(*columns) if tk.check_ckan_version("2.9") else sa.select(columns)
 
     for id, last_access, path, extras in bind.execute(stmt):
         op.execute(
@@ -93,7 +93,9 @@ def downgrade():
         new_column_name="extras",
     )
 
-    stmt = sa.select(table.c.id, table.c.atime, table.c.extras)
+    columns = [table.c.id, table.c.atime, table.c.extras]
+    stmt = sa.select(*columns) if tk.check_ckan_version("2.9") else sa.select(columns)
+
     for id, atime, extras in bind.execute(stmt):
         extras = dict(extras)
         path = extras.pop("filename", None)

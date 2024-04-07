@@ -28,7 +28,8 @@ def files_into_upload(value):
     """Convert value into werkzeug.FileStorage object"""
     if isinstance(value, FileStorage):
         if not value.content_length:
-            value.headers["content-length"] = str(value.stream.seek(0, 2))
+            value.stream.seek(0, 2)
+            value.headers["content-length"] = str(value.stream.tell())
             value.stream.seek(0)
         return value
 
@@ -40,7 +41,8 @@ def files_into_upload(value):
         if not mime:
             mime = magic.from_buffer(value.file.read(1024), True)
             value.file.seek(0)
-        size = value.file.seek(0, 2)
+        value.file.seek(0, 2)
+        size = value.file.tell()
         value.file.seek(0)
 
         return FileStorage(
@@ -56,7 +58,8 @@ def files_into_upload(value):
     if isinstance(value, (bytes, bytearray)):
         stream = BytesIO(value)
         mime = magic.from_buffer(stream.read(1024), True)
-        size = stream.seek(0, 2)
+        stream.seek(0, 2)
+        size = stream.tell()
         stream.seek(0)
 
         return FileStorage(stream, content_type=mime, content_length=size)

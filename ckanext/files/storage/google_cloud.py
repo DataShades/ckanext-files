@@ -274,7 +274,7 @@ class GoogleCloudStorage(Storage):
         if credentials_file:
             try:
                 credentials = Credentials.from_service_account_file(credentials_file)
-            except FileNotFoundError:
+            except IOError:
                 raise exceptions.InvalidStorageConfigurationError(  # noqa: B904
                     type(self),
                     "file `{}` does not exist".format(credentials_file),

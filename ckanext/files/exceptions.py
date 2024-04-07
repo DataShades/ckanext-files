@@ -88,6 +88,21 @@ class MissingStorageConfigurationError(InvalidStorageConfigurationError):
         )
 
 
+class MissingFileError(StorageError):
+    """File does not exist."""
+
+    def __init__(self, storage, filename):
+        # type: (str, str) -> None
+        self.storage = storage
+        self.filename = filename
+
+    def __str__(self):
+        return "File {} does not exist inside {} storage".format(
+            self.filename,
+            self.storage,
+        )
+
+
 class LargeUploadError(UploadError):
     """Storage cannot be initialized due to missing option."""
 
@@ -124,16 +139,23 @@ class NameStrategyError(UploadError):
         return "Unknown name strategy {}".format(self.strategy)
 
 
-class MissingFileError(StorageError):
-    """File does not exist."""
+class UploadExtrasError(UploadError):
+    """Wrong extras passed during upload."""
 
-    def __init__(self, storage, filename):
-        # type: (str, str) -> None
-        self.storage = storage
-        self.filename = filename
+    def __init__(self, extras):
+        # type: (Any) -> None
+        self.extras = extras
 
     def __str__(self):
-        return "File {} does not exist inside {} storage".format(
-            self.filename,
-            self.storage,
-        )
+        return "Wrong extras: {}".format(self.extras)
+
+
+class MissingExtrasError(UploadExtrasError):
+    """Wrong extras passed during upload."""
+
+    def __init__(self, key):
+        # type: (Any) -> None
+        self.key = key
+
+    def __str__(self):
+        return "Key {} is missing from upload extras".format(self.key)

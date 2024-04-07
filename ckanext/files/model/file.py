@@ -16,7 +16,7 @@ from datetime import datetime  # isort: skip # noqa: F401
 from ckanext.files import types  # isort: skip # noqa: F401
 
 if six.PY3:
-    from typing import Any  # isort: skip # noqa: F401
+    from typing import Any, Literal  # isort: skip # noqa: F401
 
 
 class File(Base):  # type: ignore
@@ -61,3 +61,18 @@ class File(Base):  # type: ignore
 
         if modification:
             self.mtime = moment
+
+    def patch_data(self, patch, dict_path=None, prop="plugin_data"):
+        # type: (dict[str, Any], list[str]|None, Literal["storage_data", "plugin_data"]) -> dict[str, Any]
+        data = copy.deepcopy(getattr(self, prop))  # type: dict[str, Any]
+
+        target = data  # type: dict[str, Any] | Any
+        if dict_path:
+            for part in dict_path:
+                target = target.setdefault(part, {})
+                if not isinstance(target, dict):
+                    raise TypeError(part)
+        target.update(patch)
+
+        setattr(self, prop, data)
+        return data

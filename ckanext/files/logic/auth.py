@@ -34,7 +34,7 @@ def _get_user(context):
 
 def _is_owner(user_id, file_id):
     # type: (str, str) -> bool
-    stmt = Owner.owner_of(file_id, "file").where(
+    stmt = Owner.owners_of(file_id, "file").where(
         sa.and_(
             Owner.owner_type == "user",
             Owner.owner_ie == user_id,

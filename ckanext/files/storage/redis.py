@@ -59,7 +59,11 @@ class RedisUploader(Uploader):
         src = self.storage.settings["prefix"] + data["filename"]
         dest = self.storage.settings["prefix"] + filename
 
-        self.storage.redis.copy(src, dest)
+        try:
+            self.storage.redis.copy(src, dest)
+        except AttributeError:
+            self.storage.redis.restore(dest, 0, self.storage.redis.dump(src))
+
         return RedisStorageData(data, filename=filename)
 
     def move(self, data, name, extras):

@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Features
 
+- file search by plugin data ([9dc51bd](https://github.com/DataShades/ckanext-files/commit/9dc51bd9f67f58d3f77aeff0247e9eb224ea0a38) by Sergey Motornyuk).
 - multipart uploaders accept initialize/complete payloads in JS ([97d9933](https://github.com/DataShades/ckanext-files/commit/97d9933f69dd4fe4053912c75ba3db41e44c34e2) by Sergey Motornyuk).
 
 ### Bug Fixes

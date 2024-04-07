@@ -47,10 +47,9 @@ else:
     @pytest.fixture
     def clean_db(reset_db):
         # type: (Any) -> None
-        from ckanext.files.command import create_tables, drop_tables
+        from ckanext.files.command import create_tables
 
         reset_db()
-        drop_tables()
         create_tables()
 
 

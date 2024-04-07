@@ -6,9 +6,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 <!-- insertion marker -->
-## Unreleased
+## [v0.2.3](https://github.com/DataShades/ckanext-files/releases/tag/v0.2.3) - 2024-04-07
 
-<small>[Compare with latest](https://github.com/DataShades/ckanext-files/compare/v0.2.2...HEAD)</small>
+<small>[Compare with v0.2.2](https://github.com/DataShades/ckanext-files/compare/v0.2.2...v0.2.3)</small>
 
 ### Features
 
@@ -19,7 +19,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 - python2 fails when content-length accessed ([6e99315](https://github.com/DataShades/ckanext-files/commit/6e993154d6988d3d144dad0790e9860daa0ab2b6) by Sergey Motornyuk).
 
-<!-- insertion marker -->
 ## [v0.2.2](https://github.com/DataShades/ckanext-files/releases/tag/v0.2.2) - 2024-03-18
 
 <small>[Compare with v0.2.1](https://github.com/DataShades/ckanext-files/compare/v0.2.1...v0.2.2)</small>

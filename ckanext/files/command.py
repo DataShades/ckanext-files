@@ -13,11 +13,6 @@ from ckanext.files.model.base import metadata
 log = logging.getLogger(__name__)
 
 
-def drop_tables():
-    """Drop tables defined in model."""
-    metadata.drop_all(model.meta.engine)
-
-
 def create_tables():
     """Create tables defined in model."""
     metadata.create_all(model.meta.engine)
@@ -29,7 +24,7 @@ class FilesCommand(CkanCommand):
 
     Usage::
         paster --plugin=ckanext-files files  -c ckan.ini initdb
-        paster --plugin=ckanext-files files  -c ckan.ini dropdb
+        paster --plugin=ckanext-files files  -c ckan.ini createdb
     """
 
     summary = __doc__.split("\n")[0]
@@ -53,20 +48,12 @@ class FilesCommand(CkanCommand):
 
         elif self.args[0] == "initdb":
             self._init()
-        elif self.args[0] == "dropdb":
-            self._drop()
         elif self.args[0] == "createdb":
             self._create()
 
     def _init(self):
         self._create()
         log.info("DB tables are reinitialized")
-
-    def _drop(self):
-        model.Session.rollback()
-
-        drop_tables()
-        log.info("DB tables are removed")
 
     def _create(self):
         model.Session.rollback()

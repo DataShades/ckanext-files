@@ -1,3 +1,8 @@
+/**
+ * Add selected file to upload queue whenever `[data-queue-scheduler]`
+ * dispatches `change` event.
+ *
+ */
 ckan.module("files--scheduler", function ($) {
   return {
     initialize() {
@@ -12,9 +17,17 @@ ckan.module("files--scheduler", function ($) {
         this.sandbox.publish(ckan.CKANEXT_FILES.topics.addFileToQueue, file),
       );
     },
-  } as any;
+  };
 });
 
+/**
+ * Add to queue a file, that has associated incomplete upload.
+ *
+ * Supports a number of properties to verify that the new file matches
+ * previously uploaded file.
+ *
+ *
+ */
 ckan.module("files--restorer", function ($) {
   return {
     options: {

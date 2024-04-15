@@ -41,7 +41,7 @@ class GoogleCloudUploader(Uploader):
 
     def upload(self, name, upload, extras):
         # type: (str, types.Upload, dict[str, types.Any]) -> GCStorageData
-        filename = self.compute_name(name, extras, upload)
+        filename = self.storage.compute_name(name, extras, upload)
         filepath = os.path.join(self.storage.settings["path"], filename)
 
         client = self.storage.client
@@ -71,7 +71,7 @@ class GoogleCloudUploader(Uploader):
         if errors:
             raise tk.ValidationError(errors)
 
-        filename = self.compute_name(name, extras)
+        filename = self.storage.compute_name(name, extras)
         filepath = os.path.join(self.storage.settings["path"], filename)
 
         client = self.storage.client

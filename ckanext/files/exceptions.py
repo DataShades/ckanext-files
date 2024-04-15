@@ -97,7 +97,22 @@ class MissingFileError(StorageError):
         self.filename = filename
 
     def __str__(self):
-        return "File {} does not exist inside {} storage".format(
+        return "File {} does not exist inside storage {}".format(
+            self.filename,
+            self.storage,
+        )
+
+
+class ExistingFileError(StorageError):
+    """File already exists."""
+
+    def __init__(self, storage, filename):
+        # type: (str, str) -> None
+        self.storage = storage
+        self.filename = filename
+
+    def __str__(self):
+        return "File {} already exists inside storage {}".format(
             self.filename,
             self.storage,
         )

@@ -1,10 +1,4 @@
-import cgi
-import mimetypes
-from io import BytesIO
-
-import magic
 import six
-from werkzeug.datastructures import FileStorage
 
 import ckan.plugins.toolkit as tk
 
@@ -26,46 +20,16 @@ def get_validators():
 def files_into_upload(value):
     # type: (Any) -> types.Upload
     """Convert value into werkzeug.FileStorage object"""
-    if isinstance(value, FileStorage):
-        if not value.content_length:
-            value.stream.seek(0, 2)
-            value.headers["content-length"] = str(value.stream.tell())
-            value.stream.seek(0)
-        return value
+    try:
+        return utils.make_upload(value)
 
-    if isinstance(value, cgi.FieldStorage):
-        if not value.filename or not value.file:
-            raise ValueError(value)
+    except TypeError as err:
+        msg = "Unsupported source type: {}".format(err)
+        raise tk.Invalid(msg)  # noqa: B904
 
-        mime, _encoding = mimetypes.guess_type(value.filename)
-        if not mime:
-            mime = magic.from_buffer(value.file.read(1024), True)
-            value.file.seek(0)
-        value.file.seek(0, 2)
-        size = value.file.tell()
-        value.file.seek(0)
-
-        return FileStorage(
-            value.file,
-            value.filename,
-            content_type=mime,
-            content_length=size,
-        )
-
-    if isinstance(value, six.text_type):
-        value = value.encode()
-
-    if isinstance(value, (bytes, bytearray)):
-        stream = BytesIO(value)
-        mime = magic.from_buffer(stream.read(1024), True)
-        stream.seek(0, 2)
-        size = stream.tell()
-        stream.seek(0)
-
-        return FileStorage(stream, content_type=mime, content_length=size)
-
-    msg = "Unsupported source type: {}".format(type(value))
-    raise tk.Invalid(msg)
+    except ValueError as err:
+        msg = "Wrong file: {}".format(err)
+        raise tk.Invalid(msg)  # noqa: B904
 
 
 @validator

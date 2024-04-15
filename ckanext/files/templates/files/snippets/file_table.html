@@ -1,23 +1,23 @@
 {#
-Displays a list of files.
+    Displays a list of files.
 
-files       - A list of files to display.
-owner_type  - type of the files owner
-owner_id    - ID of the files owner
+    files       - A list of files to display.
+    owner_type  - type of the files owner
+    owner_id    - ID of the files owner
 
-Example:
+    Example:
 
-{% snippet 'files/snippets/file_table.html', files=files %}
+    {% snippet 'files/snippets/file_table.html', files=files %}
 
-#}
+    #}
 {% set columns = [
     {"name": "name", "label": "Name"},
     {"name": "ctime", "label": "Created"},
     {"name": "storage_data.content_type", "label": "Type"},
     {"name": "storage_data.size", "label": "Size"},
-] %}
+    ] %}
 
-{% set params = request.params or request.args %}
+{% set params = request.args or request.params or {} %}
 
 {% block file_table %}
     <table class="table table-striped">

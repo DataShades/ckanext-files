@@ -76,7 +76,7 @@ def user(user_id, storage=None):
     )
 
     rows = 10
-    params = tk.request.params  # type: ignore
+    params = tk.request.args if tk.check_ckan_version("2.10") else tk.request.params  # type: ignore
     page = tk.h.get_page_number(params)
     start = rows * page - rows
 

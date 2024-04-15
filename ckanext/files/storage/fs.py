@@ -36,7 +36,7 @@ class FileSystemUploader(Uploader):
 
     def upload(self, name, upload, extras):
         # type: (str, types.Upload, dict[str, types.Any]) -> FsStorageData
-        filename = self.compute_name(name, extras, upload)
+        filename = self.storage.compute_name(name, extras, upload)
         filepath = os.path.join(self.storage.settings["path"], filename)
 
         reader = HashingReader(upload.stream)
@@ -139,12 +139,8 @@ class FileSystemUploader(Uploader):
 
         with open(filepath, "rb") as src:
             reader = HashingReader(src)
-            it = iter(reader)
-            content_type = magic.from_buffer(next(it, b""), True)
-
-            # exhaust reader to get the checksum
-            for _chunk in it:
-                pass
+            content_type = magic.from_buffer(next(reader, b""), True)
+            reader.exhaust()
 
         return {
             "filename": upload_data["filename"],

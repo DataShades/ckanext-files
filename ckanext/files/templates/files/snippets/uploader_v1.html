@@ -1,26 +1,37 @@
 {#
-storage?
-uploader?
-file_attrs?
-#}
+    storage: str | None
+    uploader: str | None
+    file_attrs: dict[str, str] | None
+    with_dropzone: bool | None
+
+    #}
 
 {% import 'macros/form.html' as form %}
 
 {% block uploader %}
     <div class="file-uploader">
         {% block form %}
-            <form action="" method="post" class="file-uploader__form"  data-module="files--scheduler">
+            <form action="" method="post" class="file-uploader__form"
+                data-module="files--scheduler">
                 {{ form.input("upload", label="File", type="file", attrs=dict({
                     "class": "form-control",
                     "data-queue-scheduler": true,
-                }, **file_attrs|default({}))) }}
+                    }, **file_attrs|default({}))) }}
             </form>
         {% endblock form %}
 
+        {% block dropzone %}
+            {% if with_dropzone %}
+                <div class="file-uploader__dropzone" data-module="files--dropzone" data-module-immediate>
+                    {{ _("Drag a file here") }}
+                </div>
+            {% endif %}
+        {% endblock dropzone%}
+
         {% block progress %}
             <div data-module="files--queue"
-                 {% if storage is defined %} data-module-storage="{{ storage }}"{% endif %}
-                 {% if uploader is defined %} data-module-uploader="{{ uploader }}"{% endif %}
+                {% if storage is defined %} data-module-storage="{{ storage }}"{% endif %}
+                {% if uploader is defined %} data-module-uploader="{{ uploader }}"{% endif %}
             >
 
                 <div data-upload-template hidden class="card file-uploader__queue_item my-1">

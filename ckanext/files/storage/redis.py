@@ -36,12 +36,13 @@ class RedisUploader(Uploader):
     def upload(self, name, upload, extras):
         # type: (str, types.Upload, dict[str, types.Any]) -> RedisStorageData
 
-        filename = self.compute_name(name, extras, upload)
+        filename = self.storage.compute_name(name, extras, upload)
         key = self.storage.settings["prefix"] + filename
 
         self.storage.redis.delete(key)
 
         reader = HashingReader(upload.stream)
+        self.storage.redis.set(key, b"")
         for chunk in reader:
             self.storage.redis.append(key, chunk)
 
@@ -51,30 +52,6 @@ class RedisUploader(Uploader):
             "size": reader.position,
             "hash": reader.get_hash(),
         }
-
-    def copy(self, data, name, extras):
-        # type: (types.MinimalStorageData, str, dict[str, types.Any]) -> RedisStorageData
-        filename = self.compute_name(name, extras)
-
-        src = self.storage.settings["prefix"] + data["filename"]
-        dest = self.storage.settings["prefix"] + filename
-
-        try:
-            self.storage.redis.copy(src, dest)
-        except AttributeError:
-            self.storage.redis.restore(dest, 0, self.storage.redis.dump(src))
-
-        return RedisStorageData(data, filename=filename)
-
-    def move(self, data, name, extras):
-        # type: (types.MinimalStorageData, str, dict[str, types.Any]) -> RedisStorageData
-        filename = self.compute_name(name, extras)
-
-        src = self.storage.settings["prefix"] + data["filename"]
-        dest = self.storage.settings["prefix"] + filename
-
-        self.storage.redis.rename(src, dest)
-        return RedisStorageData(data, filename=filename)
 
 
 class RedisReader(Reader):
@@ -104,15 +81,43 @@ class RedisManager(Manager):
     capabilities = utils.combine_capabilities(Capability.REMOVE, Capability.EXISTS)
 
     def remove(self, data):
-        # type: (dict[str, types.Any]) -> bool
+        # type: (RedisStorageData) -> bool
         key = self.storage.settings["prefix"] + data["filename"]
         self.storage.redis.delete(key)
         return True
 
     def exists(self, data):
-        # type: (dict[str, types.Any]) -> bool
+        # type: (RedisStorageData) -> bool
         key = self.storage.settings["prefix"] + data["filename"]
-        return self.storage.redis.exists(key)
+        return bool(self.storage.redis.exists(key))
+
+    def copy(self, data, name, extras):
+        # type: (types.MinimalStorageData, str, dict[str, types.Any]) -> RedisStorageData
+        src = self.storage.settings["prefix"] + data["filename"]
+        dest = self.storage.settings["prefix"] + name
+
+        if not self.storage.redis.exists(src):
+            raise exceptions.MissingFileError(self.storage.settings["name"], src)
+
+        if self.storage.redis.exists(dest):
+            raise exceptions.ExistingFileError(self.storage.settings["name"], dest)
+
+        try:
+            self.storage.redis.copy(src, dest)
+        except AttributeError:
+            self.storage.redis.restore(dest, 0, self.storage.redis.dump(src))
+
+        return RedisStorageData(data, filename=name)
+
+    def move(self, data, name, extras):
+        # type: (types.MinimalStorageData, str, dict[str, types.Any]) -> RedisStorageData
+        filename = self.storage.compute_name(name, extras)
+
+        src = self.storage.settings["prefix"] + data["filename"]
+        dest = self.storage.settings["prefix"] + filename
+
+        self.storage.redis.rename(src, dest)
+        return RedisStorageData(data, filename=filename)
 
 
 class RedisStorage(Storage):

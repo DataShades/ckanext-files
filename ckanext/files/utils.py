@@ -6,9 +6,14 @@ stored here, to avoid import cycles.
 
 """
 
+import cgi
+import mimetypes
 import re
+from io import BytesIO
 
+import magic
 import six
+from werkzeug.datastructures import FileStorage
 
 from ckanext.files import exceptions
 
@@ -173,3 +178,47 @@ def parse_filesize(value):
         raise ValueError(value)
 
     return int(float(size) * multiplier)
+
+
+def make_upload(value):
+    # type: (Any) -> types.Upload
+    """Convert value into werkzeug.FileStorage object"""
+    if isinstance(value, FileStorage):
+        if not value.content_length:
+            value.stream.seek(0, 2)
+            value.headers["content-length"] = str(value.stream.tell())
+            value.stream.seek(0)
+        return value
+
+    if isinstance(value, cgi.FieldStorage):
+        if not value.filename or not value.file:
+            raise ValueError(value)
+
+        mime, _encoding = mimetypes.guess_type(value.filename)
+        if not mime:
+            mime = magic.from_buffer(value.file.read(1024), True)
+            value.file.seek(0)
+        value.file.seek(0, 2)
+        size = value.file.tell()
+        value.file.seek(0)
+
+        return FileStorage(
+            value.file,
+            value.filename,
+            content_type=mime,
+            content_length=size,
+        )
+
+    if isinstance(value, six.text_type):
+        value = value.encode()
+
+    if isinstance(value, (bytes, bytearray)):
+        stream = BytesIO(value)
+        mime = magic.from_buffer(stream.read(1024), True)
+        stream.seek(0, 2)
+        size = stream.tell()
+        stream.seek(0)
+
+        return FileStorage(stream, content_type=mime, content_length=size)
+
+    raise TypeError(type(value))

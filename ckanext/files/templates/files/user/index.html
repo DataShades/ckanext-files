@@ -1,7 +1,7 @@
 {#
-storage?
-uploader?
-#}
+    storage: str | None
+    uploader: str | None
+    #}
 
 {% extends "user/read_base.html" %}
 
@@ -9,7 +9,7 @@ uploader?
 
     {% if (g.userobj or current_user or {}).id == user_dict.id and h.check_access('files_file_create') %}
 
-        {% snippet "files/snippets/uploader_v1.html", storage=storage, uploader=uploader %}
+        {% snippet "files/snippets/uploader_v1.html", storage=storage, uploader=uploader, with_dropzone=true %}
 
     {% endif %}
 {% endblock %}

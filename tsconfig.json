@@ -4,6 +4,7 @@
         "target": "es2020",
         "outDir": "ckanext/files/assets/scripts/",
         // "declaration": true,
+        "alwaysStrict": false,
         "strict": true,
         "esModuleInterop": true,
         "skipLibCheck": true,

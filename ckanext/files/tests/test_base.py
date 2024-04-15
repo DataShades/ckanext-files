@@ -144,75 +144,6 @@ class TestUploader:
         with pytest.raises(NotImplementedError):
             uploader.complete_multipart_upload({}, {})
 
-        with pytest.raises(NotImplementedError):
-            uploader.copy({}, "", {})
-
-        with pytest.raises(NotImplementedError):
-            uploader.move({}, "", {})
-
-    def test_compute_name_uuid(self, uploader, faker):
-        # type: (base.Uploader, Faker) -> None
-        """`uuid`(default) name strategy produces valid UUID."""
-
-        extension = faker.file_extension()
-        name = faker.file_name(extension=extension)
-        result = uploader.compute_name(name, {})
-
-        assert uuid.UUID(result)
-
-    def test_compute_name_uuid_prefix(self, uploader, faker):
-        # type: (base.Uploader, Faker) -> None
-        """`uuid_prefix` name strategy produces valid UUID."""
-        uploader.storage.settings["name_strategy"] = "uuid_prefix"
-        extension = faker.file_extension()
-        name = faker.file_name(extension=extension)
-        result = uploader.compute_name(name, {})
-        assert result.endswith(name)
-        assert uuid.UUID(result[: -len(name)])
-
-    def test_compute_name_uuid_with_extension(self, uploader, faker):
-        # type: (base.Uploader, Faker) -> None
-        """`uuid_with_extension` name strategy produces valid UUID."""
-        uploader.storage.settings["name_strategy"] = "uuid_with_extension"
-        extension = faker.file_extension()
-        name = faker.file_name(extension=extension)
-        result = uploader.compute_name(name, {})
-
-        assert result.endswith(extension)
-        assert uuid.UUID(result[: -len(extension) - 1])
-
-    def test_compute_name_datetime_prefix(self, uploader, faker, files_stopped_time):
-        # type: (base.Uploader, Faker, datetime) -> None
-        """`datetime_prefix` name strategy produces valid UUID."""
-        uploader.storage.settings["name_strategy"] = "datetime_prefix"
-        extension = faker.file_extension()
-        name = faker.file_name(extension=extension)
-        result = uploader.compute_name(name, {})
-
-        assert result == files_stopped_time.isoformat() + name
-
-    def test_compute_name_datetime_with_extension(
-        self,
-        uploader,
-        faker,
-        files_stopped_time,
-    ):
-        # type: (base.Uploader, Faker, datetime) -> None
-        """`datetime_with_extension` name strategy produces valid UUID."""
-        uploader.storage.settings["name_strategy"] = "datetime_with_extension"
-        extension = faker.file_extension()
-        name = faker.file_name(extension=extension)
-        result = uploader.compute_name(name, {})
-
-        assert result == files_stopped_time.isoformat() + "." + extension
-
-    def test_compute_name_with_wrong_strategy(self, uploader):
-        # type: (base.Uploader) -> None
-        """`datetime_with_extension` name strategy produces valid UUID."""
-        uploader.storage.settings["name_strategy"] = "wrong_strategy"
-        with pytest.raises(exceptions.NameStrategyError):
-            uploader.compute_name("test", {})
-
 
 class TestManager:
     @pytest.fixture()
@@ -366,3 +297,72 @@ class TestStorage:
 
         with pytest.raises(NotImplementedError):
             storage.move({}, storage, "", {})
+
+    def test_compute_name_uuid(self, faker):
+        # type: (Faker) -> None
+        """`uuid`(default) name strategy produces valid UUID."""
+        storage = Storage()
+
+        extension = faker.file_extension()
+        name = faker.file_name(extension=extension)
+        result = storage.compute_name(name, {})
+
+        assert uuid.UUID(result)
+
+    def test_compute_name_uuid_prefix(self, faker):
+        # type: (Faker) -> None
+        """`uuid_prefix` name strategy produces valid UUID."""
+        storage = Storage()
+
+        storage.settings["name_strategy"] = "uuid_prefix"
+        extension = faker.file_extension()
+        name = faker.file_name(extension=extension)
+        result = storage.compute_name(name, {})
+        assert result.endswith(name)
+        assert uuid.UUID(result[: -len(name)])
+
+    def test_compute_name_uuid_with_extension(self, faker):
+        # type: (Faker) -> None
+        """`uuid_with_extension` name strategy produces valid UUID."""
+        storage = Storage()
+        storage.settings["name_strategy"] = "uuid_with_extension"
+        extension = faker.file_extension()
+        name = faker.file_name(extension=extension)
+        result = storage.compute_name(name, {})
+
+        assert result.endswith(extension)
+        assert uuid.UUID(result[: -len(extension) - 1])
+
+    def test_compute_name_datetime_prefix(self, faker, files_stopped_time):
+        # type: (Faker, datetime) -> None
+        """`datetime_prefix` name strategy produces valid UUID."""
+        storage = Storage()
+        storage.settings["name_strategy"] = "datetime_prefix"
+        extension = faker.file_extension()
+        name = faker.file_name(extension=extension)
+        result = storage.compute_name(name, {})
+
+        assert result == files_stopped_time.isoformat() + name
+
+    def test_compute_name_datetime_with_extension(
+        self,
+        faker,
+        files_stopped_time,
+    ):
+        # type: (Faker, datetime) -> None
+        """`datetime_with_extension` name strategy produces valid UUID."""
+        storage = Storage()
+        storage.settings["name_strategy"] = "datetime_with_extension"
+        extension = faker.file_extension()
+        name = faker.file_name(extension=extension)
+        result = storage.compute_name(name, {})
+
+        assert result == files_stopped_time.isoformat() + "." + extension
+
+    def test_compute_name_with_wrong_strategy(self):
+        # type: () -> None
+        """`datetime_with_extension` name strategy produces valid UUID."""
+        storage = Storage()
+        storage.settings["name_strategy"] = "wrong_strategy"
+        with pytest.raises(exceptions.NameStrategyError):
+            storage.compute_name("test", {})

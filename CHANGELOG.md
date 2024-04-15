@@ -6,6 +6,14 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 <!-- insertion marker -->
+## [v0.2.4](https://github.com/DataShades/ckanext-files/releases/tag/v0.2.4) - 2024-04-15
+
+<small>[Compare with v0.2.3](https://github.com/DataShades/ckanext-files/compare/v0.2.3...v0.2.4)</small>
+
+### Features
+
+- add dropzone and immediate upload ([0486a00](https://github.com/DataShades/ckanext-files/commit/0486a007a3eb1178cb8e838160ac84579024fa68) by Sergey Motornyuk).
+
 ## [v0.2.3](https://github.com/DataShades/ckanext-files/releases/tag/v0.2.3) - 2024-04-07
 
 <small>[Compare with v0.2.2](https://github.com/DataShades/ckanext-files/compare/v0.2.2...v0.2.3)</small>
@@ -71,4 +79,3 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## [v0.0.1](https://github.com/DataShades/ckanext-files/releases/tag/v0.0.1) - 2021-09-21
 
 <small>[Compare with first commit](https://github.com/DataShades/ckanext-files/compare/d57d17e412821d56a9f5262636be89311e8050fc...v0.0.1)</small>
-

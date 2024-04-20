@@ -190,7 +190,11 @@ def files_file_delete(context, data_dict):
     if not storage.supports(Capability.REMOVE):
         raise tk.ValidationError({"storage": ["Operation is not supported"]})
 
-    storage.remove(fileobj.storage_data)
+    try:
+        storage.remove(fileobj.storage_data)
+    except exceptions.PermissionError as err:
+        raise tk.NotAuthorized(str(err))
+
     _delete_owner(context, "file", fileobj.id)
     context["session"].delete(fileobj)
     context["session"].commit()

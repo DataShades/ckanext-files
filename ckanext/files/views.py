@@ -1,6 +1,7 @@
 import logging
 from functools import partial
 
+from ckan.logic import NotAuthorized
 from flask import Blueprint
 from flask.views import MethodView
 
@@ -124,7 +125,12 @@ def user(user_id, storage=None):
 class DeleteFile(MethodView):
     def post(self, user_id, file_id):
         # type: (str, str) -> types.Any
-        tk.get_action("files_file_delete")({}, {"id": file_id})
+
+        try:
+            tk.get_action("files_file_delete")({}, {"id": file_id})
+        except tk.NotAuthorized as err:
+            tk.h.flash_error(err)
+            return self.get(user_id, file_id)
 
         came_from = tk.h.get_request_param("came_from")
         if came_from:

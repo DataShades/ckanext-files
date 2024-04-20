@@ -4,6 +4,7 @@ import re
 
 import requests
 import six
+from google.api_core.exceptions import Forbidden
 from google.cloud.storage import Client
 from google.oauth2.service_account import Credentials
 
@@ -250,13 +251,22 @@ class GoogleCloudManager(Manager):
     capabilities = utils.combine_capabilities(Capability.REMOVE)
 
     def remove(self, data):
-        # type: (dict[str, types.Any]) -> bool
+        # type: (types.MinimalStorageData) -> bool
 
         filepath = os.path.join(str(self.storage.settings["path"]), data["filename"])
         client = self.storage.client  # type: Client
         blob = client.bucket(self.storage.settings["bucket"]).blob(filepath)
-        if blob.exists():
-            blob.delete()
+
+        try:
+            exists = blob.exists()
+        except Forbidden as err:
+            raise exceptions.PermissionError(type(self), "exists", str(err))
+
+        if exists:
+            try:
+                blob.delete()
+            except Forbidden as err:
+                raise exceptions.PermissionError(type(self), "remove", str(err))
             return True
         return False
 

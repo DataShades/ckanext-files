@@ -77,6 +77,24 @@ class InvalidStorageConfigurationError(StorageError):
         )
 
 
+class PermissionError(StorageError):
+    """Storage client does not have required permissions."""
+
+    def __init__(self, adapter, operation, problem):
+        # type: (type, str, str) -> None
+        self.adapter = adapter
+        self.operation = operation
+        self.problem = problem
+
+    def __str__(self):
+        return "Storage {} does not have sufficient permissions to perform {} operation: {}".format(
+            self.adapter.__name__,
+            self.operation,
+            self.problem,
+        )
+
+
+
 class MissingStorageConfigurationError(InvalidStorageConfigurationError):
     """Storage cannot be initialized due to missing option."""
 

@@ -87,12 +87,12 @@ class PermissionError(StorageError):
         self.problem = problem
 
     def __str__(self):
-        return "Storage {} does not have sufficient permissions to perform {} operation: {}".format(
+        msg = "Storage {} is not allowed to perform {} operation: {}"
+        return msg.format(
             self.adapter.__name__,
             self.operation,
             self.problem,
         )
-
 
 
 class MissingStorageConfigurationError(InvalidStorageConfigurationError):

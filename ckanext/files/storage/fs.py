@@ -152,7 +152,7 @@ class FileSystemUploader(Uploader):
 
 class FileSystemManager(Manager):
     required_options = ["path"]
-    capabilities = utils.combine_capabilities(Capability.REMOVE)
+    capabilities = utils.combine_capabilities(Capability.REMOVE, Capability.ANALYZE)
 
     def remove(self, data):
         # type: (dict[str, types.Any]) -> bool
@@ -162,6 +162,25 @@ class FileSystemManager(Manager):
 
         os.remove(filepath)
         return True
+
+    def analyze(self, filename):
+        # type: (str) -> types.FsStorageData
+        """Return all details about filename."""
+        filepath = os.path.join(str(self.storage.settings["path"]), filename)
+        if not os.path.exists(filepath):
+            raise exceptions.MissingFileError(self.storage.settings["name"], filepath)
+
+        with open(filepath, "rb") as src:
+            reader = HashingReader(src)
+            content_type = magic.from_buffer(next(reader, b""), True)
+            reader.exhaust()
+
+        return {
+            "filename": filename,
+            "content_type": content_type,
+            "size": os.path.getsize(filepath),
+            "hash": reader.get_hash(),
+        }
 
 
 class FileSystemReader(Reader):

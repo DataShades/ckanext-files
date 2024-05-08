@@ -83,7 +83,7 @@ def files_file_search_by_user(context, data_dict):
 @tk.auth_disallow_anonymous_access
 def files_file_create(context, data_dict):
     # type: (types.Any, dict[str, types.Any]) -> types.Any
-    return {"success": True}
+    return authz.is_authorized("files_manage_files", context, data_dict)
 
 
 @auth

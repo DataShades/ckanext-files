@@ -17,9 +17,18 @@ Declaration = None
 Key = None
 Any = None
 IO = None
+Iterable = None
+PUploader = None
+PResourceUploader = None
+cast = lambda _type, _value: _value  # type: ignore # noqa: E731
 
 if six.PY3:
-    from typing import IO, Any  # pyright: ignore[reportConstantRedefinition]
+    from typing import (  # pyright: ignore[reportConstantRedefinition]
+        IO,
+        Any,
+        Iterable,
+        cast,
+    )
 
     from typing_extensions import NewType, TypedDict
 
@@ -28,6 +37,7 @@ if six.PY3:
 
     if tk.check_ckan_version("2.10"):
         from ckan.config.declaration import Declaration, Key
+        from ckan.types import PResourceUploader, PUploader
 
 __all__ = [
     "Upload",
@@ -40,6 +50,10 @@ __all__ = [
     "Any",
     "IO",
     "Select",
+    "PUploader",
+    "PResourceUploader",
+    "cast",
+    "Iterable",
 ]
 
 

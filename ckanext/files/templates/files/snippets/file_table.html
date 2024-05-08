@@ -61,10 +61,10 @@
                         </td>
                         <td>
                             {% set content_type = file.storage_data.content_type %}
-                            <div data-content-type="{{ content_type }}" class="file-item__type">
+                            <div data-content-type="{{ content_type }}" class="file-item__type" title="{{ content_type }}">
                                 {% set icon_path = h.files_content_type_icon(content_type, "amy-dark", "svg") %}
                                 {% if icon_path %}
-                                    <img alt="type icon" src="{{ icon_path }}" title="{{ content_type }}" />
+                                    <img alt="type icon" src="{{ icon_path }}"/>
                                 {% endif %}
 
                                 {{ _(h.files_humanize_content_type(file.storage_data.content_type)) }}

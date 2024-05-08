@@ -5,6 +5,7 @@ import sqlalchemy as sa
 from sqlalchemy import Column, DateTime, UnicodeText
 from sqlalchemy.dialects.postgresql import JSONB
 
+import ckan.plugins.toolkit as tk
 from ckan.lib.dictization import table_dictize
 from ckan.model.types import make_uuid
 
@@ -76,3 +77,16 @@ class File(Base):  # type: ignore
 
         setattr(self, prop, data)
         return data
+
+    @classmethod
+    def by_location(cls, location, storage=None):
+        # type: (str, str | None) -> sa.sql.Select
+        selectable = cls if tk.check_ckan_version("2.9") else [cls]
+
+        stmt = sa.select(selectable).where(
+            cls.storage_data["filename"].astext == location,
+        )
+        if storage:
+            stmt = stmt.where(cls.storage == storage)
+
+        return stmt

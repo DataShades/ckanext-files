@@ -162,6 +162,9 @@ class Capability(object):
     # return specific range of file bytes
     RANGE = types.CapabilityUnit(1 << 10)
 
+    # return file details from the storage
+    ANALYZE = types.CapabilityUnit(1 << 11)
+
 
 class OptionChecker(object):
     """Mixin for standard access to required settings.
@@ -261,6 +264,16 @@ class Manager(StorageService):
     def move(self, data, name, extras):
         # type: (types.MinimalStorageData, str, dict[str, types.Any]) -> types.MinimalStorageData
         """Move file to a different location inside the storage."""
+        raise NotImplementedError
+
+    def scan(self):
+        # type: () -> types.Iterable[str]
+        """List all filenames in storage."""
+        raise NotImplementedError
+
+    def analyze(self, filename):
+        # type: (str) -> types.MinimalStorageData
+        """Return all details about filename."""
         raise NotImplementedError
 
 
@@ -400,6 +413,20 @@ class Storage(OptionChecker):
             raise exceptions.UnsupportedOperationError("remove", type(self).__name__)
 
         return self.manager.remove(data)
+
+    def scan(self):
+        # type: () -> types.Iterable[str]
+        if not self.supports(Capability.SCAN):
+            raise exceptions.UnsupportedOperationError("scan", type(self).__name__)
+
+        return self.manager.scan()
+
+    def analyze(self, filename):
+        # type: (str) -> types.MinimalStorageData
+        if not self.supports(Capability.ANALYZE):
+            raise exceptions.UnsupportedOperationError("analyze", type(self).__name__)
+
+        return self.manager.analyze(filename)
 
     def stream(self, data):
         # type: (types.MinimalStorageData) -> types.IO[bytes]

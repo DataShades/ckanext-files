@@ -20,7 +20,8 @@ CKAN v2.8 and v2.9 are supported by ckanext-files v0.2. Starting from v1.0 this
 extension switches to CKAN support policy of two latest CKAN releases. I.e,
 ckanext-files v1.0 supports only CKAN v2.10 and v2.11.
 
-v0.2 will not receive any new features, only bug-fixes.
+v0.* will not receive any new major features, only bug-fixes and small
+improvements.
 
 It's recommended to install the extension via pip, so you probably have all the
 requirements pinned already. If you are using GitHub version of this extension,

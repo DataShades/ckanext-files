@@ -1,7 +1,6 @@
 import logging
 from functools import partial
 
-from ckan.logic import NotAuthorized
 from flask import Blueprint
 from flask.views import MethodView
 

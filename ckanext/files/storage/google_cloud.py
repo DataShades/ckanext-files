@@ -260,13 +260,21 @@ class GoogleCloudManager(Manager):
         try:
             exists = blob.exists()
         except Forbidden as err:
-            raise exceptions.PermissionError(type(self), "exists", str(err))
+            raise exceptions.PermissionError(  # noqa: B904
+                type(self),
+                "exists",
+                str(err),
+            )
 
         if exists:
             try:
                 blob.delete()
             except Forbidden as err:
-                raise exceptions.PermissionError(type(self), "remove", str(err))
+                raise exceptions.PermissionError(  # noqa: B904
+                    type(self),
+                    "remove",
+                    str(err),
+                )
             return True
         return False
 

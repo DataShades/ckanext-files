@@ -117,7 +117,7 @@ def files_file_create(context, data_dict):
             data_dict["upload"],
             extras,
         )
-    except exceptions.LargeUploadError as err:
+    except exceptions.UploadError as err:
         raise tk.ValidationError({"upload": [str(err)]})  # noqa: B904
 
     fileobj = File(
@@ -259,7 +259,7 @@ def files_upload_initialize(context, data_dict):
             secure_filename(data_dict["name"]),
             extras,
         )
-    except exceptions.LargeUploadError as err:
+    except exceptions.UploadError as err:
         raise tk.ValidationError({"upload": [str(err)]})  # noqa: B904
 
     fileobj = File(
@@ -305,7 +305,11 @@ def files_upload_update(context, data_dict):
 
     storage = shared.get_storage(fileobj.storage)
 
-    fileobj.storage_data = storage.update_multipart_upload(fileobj.storage_data, extras)
+    try:
+        fileobj.storage_data = storage.update_multipart_upload(fileobj.storage_data, extras)
+    except exceptions.UploadError as err:
+        raise tk.ValidationError({"upload": [str(err)]})
+
     context["session"].commit()
 
     return fileobj.dictize(context)
@@ -326,10 +330,14 @@ def files_upload_complete(context, data_dict):
 
     storage = shared.get_storage(fileobj.storage)
 
-    fileobj.storage_data = storage.complete_multipart_upload(
-        fileobj.storage_data,
-        extras,
-    )
+    try:
+        fileobj.storage_data = storage.complete_multipart_upload(
+            fileobj.storage_data,
+            extras,
+        )
+    except exceptions.UploadError as err:
+        raise tk.ValidationError({"upload": [str(err)]})
+
     fileobj.completed = True
     context["session"].commit()
 

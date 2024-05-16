@@ -127,6 +127,7 @@ ckan.module("files--restorer", function ($) {
                     "Name mismatch.",
                     `Expected name: ${this.options.name}`,
                 );
+                this.sandbox.notify.el[0].scrollIntoView();
                 return;
             }
 
@@ -135,6 +136,7 @@ ckan.module("files--restorer", function ($) {
                     "Size mismatch.",
                     `Expected size: ${this.options.size.toLocaleString()} bytes`,
                 );
+                this.sandbox.notify.el[0].scrollIntoView();
                 return;
             }
 
@@ -244,6 +246,7 @@ ckan.module("files--queue", function ($) {
                     reasons: { [key: string]: string[] };
                     file: File;
                 }>) => {
+                    console.log(info.uploader, 1)
                     this.sandbox.notify(
                         file.name,
                         Object.entries(reasons)
@@ -253,6 +256,8 @@ ckan.module("files--queue", function ($) {
                             )
                             .join("; "),
                     );
+                    this.sandbox.notify.el[0].scrollIntoView();
+
                     this.toggleAnimation(widget, false);
 
                     widget
@@ -266,7 +271,10 @@ ckan.module("files--queue", function ($) {
                 ({
                     detail: { message, file },
                 }: CustomEvent<{ message: string; file: File }>) => {
+                    console.log(info.uploader, 2)
                     this.sandbox.notify(file.name, message);
+                    this.sandbox.notify.el[0].scrollIntoView();
+
                     this.toggleAnimation(widget, false);
                     widget
                         .find("[data-upload-progress]")

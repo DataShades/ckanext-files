@@ -257,7 +257,17 @@ namespace ckan {
                     }
 
                     this.dispatchProgress(file, file.size, file.size);
-                    info = await this._completeUpload(info);
+                    try {
+                        info = await this._completeUpload(info);
+                    } catch (err) {
+                        if (typeof err === "string") {
+                            this.dispatchError(file, err);
+                        } else {
+                            this.dispatchFail(file, err as any);
+                        }
+
+                        return;
+                    }
                     this.dispatchFinish(file, info);
                 }
 

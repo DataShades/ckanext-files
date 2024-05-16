@@ -39,6 +39,8 @@ class FileSystemUploader(Uploader):
         filename = self.storage.compute_name(name, extras, upload)
         filepath = os.path.join(self.storage.settings["path"], filename)
 
+        os.makedirs(os.path.dirname(filepath), exist_ok=True)
+
         reader = HashingReader(upload.stream)
         with open(filepath, "wb") as dest:
             for chunk in reader:

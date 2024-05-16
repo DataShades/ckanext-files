@@ -9,6 +9,7 @@ stored here, to avoid import cycles.
 import cgi
 import mimetypes
 import re
+import tempfile
 from io import BytesIO
 
 import magic
@@ -190,6 +191,14 @@ def make_upload(value):
             value.stream.seek(0)
         return value
 
+    if isinstance(value, tempfile.SpooledTemporaryFile):
+        mime = magic.from_buffer(value.read(1024), True)
+        value.seek(0, 2)
+        size = value.tell()
+        value.seek(0)
+
+        return FileStorage(value, "", content_type=mime, content_length=size)
+
     if isinstance(value, cgi.FieldStorage):
         if not value.filename or not value.file:
             raise ValueError(value)
@@ -213,12 +222,14 @@ def make_upload(value):
         value = value.encode()
 
     if isinstance(value, (bytes, bytearray)):
-        stream = BytesIO(value)
-        mime = magic.from_buffer(stream.read(1024), True)
-        stream.seek(0, 2)
-        size = stream.tell()
-        stream.seek(0)
+        value = BytesIO(value)
 
-        return FileStorage(stream, content_type=mime, content_length=size)
+    if isinstance(value, BytesIO):
+        mime = magic.from_buffer(value.read(1024), True)
+        value.seek(0, 2)
+        size = value.tell()
+        value.seek(0)
+
+        return FileStorage(value, content_type=mime, content_length=size)
 
     raise TypeError(type(value))

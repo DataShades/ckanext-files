@@ -33,7 +33,6 @@ def default_storage():
 def storages():
     # type: () -> dict[str, dict[str, Any]]
     """Mapping of storage names to their settings."""
-
     storages = defaultdict(dict)  # type: dict[str, dict[str, Any]]
     prefix_len = len(STORAGE_PREFIX)
     for k, v in tk.config.items():

@@ -56,7 +56,7 @@ else:
 class FakeFileStorage(FileStorage):
     def __init__(self, stream, filename):
         # type: (Any, str) -> None
-        super(FakeFileStorage, self).__init__(stream, filename, "uplod")
+        super(FakeFileStorage, self).__init__(stream, filename, "upload")
 
 
 @pytest.fixture

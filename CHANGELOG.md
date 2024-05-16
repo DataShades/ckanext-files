@@ -10,6 +10,15 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 <small>[Compare with latest](https://github.com/DataShades/ckanext-files/compare/v0.0.6...HEAD)</small>
 
+### Features
+
+- files_uploader plugin compatible with native uploader interface ([31aaaa6](https://github.com/DataShades/ckanext-files/commit/31aaaa676c3f1a0aba2bb3a706f85deb066895fa) by Sergey Motornyuk).
+
+### Bug Fixes
+
+- upload errors rendered outside of view box ([48005ed](https://github.com/DataShades/ckanext-files/commit/48005ed4229110dfca43fb219ba2bff4b8c9f5ba) by Sergey Motornyuk).
+- upload errors in actions not tracked ([530c6d9](https://github.com/DataShades/ckanext-files/commit/530c6d98dcdb3e923c8eb2639cfef36e1b5e6d42) by Sergey Motornyuk).
+
 ### Code Refactoring
 
 - disallow file creation via auth function ([0db289b](https://github.com/DataShades/ckanext-files/commit/0db289bfbbc3de99c3b49fbc671009db4406ccff) by Sergey Motornyuk).

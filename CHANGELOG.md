@@ -6,9 +6,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 <!-- insertion marker -->
-## Unreleased
+## [v0.3.0](https://github.com/DataShades/ckanext-files/releases/tag/v0.3.0) - 2024-05-16
 
-<small>[Compare with latest](https://github.com/DataShades/ckanext-files/compare/v0.0.6...HEAD)</small>
+<small>[Compare with v0.0.6](https://github.com/DataShades/ckanext-files/compare/v0.0.6...v0.3.0)</small>
 
 ### Features
 
@@ -23,7 +23,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 - disallow file creation via auth function ([0db289b](https://github.com/DataShades/ckanext-files/commit/0db289bfbbc3de99c3b49fbc671009db4406ccff) by Sergey Motornyuk).
 
-<!-- insertion marker -->
 ## [v0.0.6](https://github.com/DataShades/ckanext-files/releases/tag/v0.0.6) - 2024-04-24
 
 <small>[Compare with v0.2.6](https://github.com/DataShades/ckanext-files/compare/v0.2.6...v0.0.6)</small>

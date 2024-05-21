@@ -4,6 +4,7 @@
 
 [tool.ruff]
 target-version = "py37"
+
 [tool.ruff.lint]
 select = [
        "B",  # likely bugs and design problems

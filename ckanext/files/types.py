@@ -18,6 +18,7 @@ Key = None
 Any = None
 IO = None
 Iterable = None
+Literal = None
 PUploader = None
 PResourceUploader = None
 cast = lambda _type, _value: _value  # type: ignore # noqa: E731
@@ -30,7 +31,7 @@ if six.PY3:
         cast,
     )
 
-    from typing_extensions import NewType, TypedDict
+    from typing_extensions import Literal, NewType, TypedDict
 
     CapabilityCluster = NewType("CapabilityCluster", int)
     CapabilityUnit = NewType("CapabilityUnit", int)
@@ -54,6 +55,7 @@ __all__ = [
     "PResourceUploader",
     "cast",
     "Iterable",
+    "Literal",
 ]
 
 

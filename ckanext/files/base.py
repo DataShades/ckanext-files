@@ -12,15 +12,18 @@ cycles.
 import abc
 import copy
 import hashlib
+import itertools
 import os
 import uuid
 from datetime import datetime
 
+import pytz
 from werkzeug.datastructures import FileStorage
 
 from ckanext.files import exceptions, types, utils
 
 CHUNK_SIZE = 16 * 1024
+
 adapters = utils.Registry({})
 storages = utils.Registry({})
 
@@ -126,44 +129,56 @@ class Capability(object):
     >>> read_and_write = utils.combine_capabilities(
     >>>     Capability.STREAM, Capability.CREATE,
     >>> )
-    >>> storage.supports(read_and_write)
+    >>> if storage.supports(read_and_write)
+    >>>     ...
     """
 
+    _counter = itertools.count()
+
     # create a file as an atomic object
-    CREATE = types.CapabilityUnit(1 << 0)
+    CREATE = types.CapabilityUnit(1 << next(_counter))
 
     # return file content as stream of bytes
-    STREAM = types.CapabilityUnit(1 << 1)
+    STREAM = types.CapabilityUnit(1 << next(_counter))
 
     # make a copy of the file inside the storage
-    COPY = types.CapabilityUnit(1 << 2)
+    COPY = types.CapabilityUnit(1 << next(_counter))
 
     # remove file from the storage
-    REMOVE = types.CapabilityUnit(1 << 3)
+    REMOVE = types.CapabilityUnit(1 << next(_counter))
 
     # create file in 3 stages: initialize, upload(repeatable), complete
-    MULTIPART_UPLOAD = types.CapabilityUnit(1 << 4)
+    MULTIPART_UPLOAD = types.CapabilityUnit(1 << next(_counter))
 
     # move file to a different location inside the storage
-    MOVE = types.CapabilityUnit(1 << 5)
+    MOVE = types.CapabilityUnit(1 << next(_counter))
 
     # check if file exists
-    EXISTS = types.CapabilityUnit(1 << 6)
+    EXISTS = types.CapabilityUnit(1 << next(_counter))
 
     # iterate over all files in storage
-    SCAN = types.CapabilityUnit(1 << 7)
+    SCAN = types.CapabilityUnit(1 << next(_counter))
 
     # add content to the existing file
-    APPEND = types.CapabilityUnit(1 << 8)
+    APPEND = types.CapabilityUnit(1 << next(_counter))
 
     # combine multiple files into a new one
-    COMPOSE = types.CapabilityUnit(1 << 9)
+    COMPOSE = types.CapabilityUnit(1 << next(_counter))
 
     # return specific range of file bytes
-    RANGE = types.CapabilityUnit(1 << 10)
+    RANGE = types.CapabilityUnit(1 << next(_counter))
 
-    # return file details from the storage
-    ANALYZE = types.CapabilityUnit(1 << 11)
+    # return file details from the storage, as if file was uploaded just now
+    ANALYZE = types.CapabilityUnit(1 << next(_counter))
+
+    # make permanent download link
+    PERMANENT_LINK = types.CapabilityUnit(1 << next(_counter))
+
+    # make expiring download link
+    TEMPORAL_LINK = types.CapabilityUnit(1 << next(_counter))
+
+    # make one-time download link
+    ONE_TIME_LINK = types.CapabilityUnit(1 << next(_counter))
 
 
 class OptionChecker(object):
@@ -290,6 +305,24 @@ class Reader(StorageService):
 
         return self.stream(data).read()
 
+    def permanent_link(self, data):
+        # type: (types.MinimalStorageData) -> str
+        """Return permanent download link."""
+
+        raise NotImplementedError
+
+    def temporal_link(self, data):
+        # type: (types.MinimalStorageData) -> str
+        """Return temporal download link."""
+
+        raise NotImplementedError
+
+    def one_time_link(self, data):
+        # type: (types.MinimalStorageData) -> str
+        """Return one-time download link."""
+
+        raise NotImplementedError
+
 
 class Storage(OptionChecker):
     __metaclass__ = abc.ABCMeta
@@ -306,6 +339,12 @@ class Storage(OptionChecker):
 
     @property
     def max_size(self):
+        """Max allowed upload size.
+
+        Max size set to 0 removes all limitations.
+
+        """
+
         size = self.settings.get("max_size", 0)
 
         # pre v2.10 CKAN instances do not support config declarations
@@ -359,7 +398,7 @@ class Storage(OptionChecker):
             return str(uuid.uuid4()) + name
 
         if strategy == "datetime_prefix":
-            return datetime.utcnow().isoformat() + name
+            return datetime.now(pytz.utc).isoformat() + name
 
         if strategy == "uuid_with_extension":
             _path, ext = os.path.splitext(name)
@@ -367,7 +406,7 @@ class Storage(OptionChecker):
 
         if strategy == "datetime_with_extension":
             _path, ext = os.path.splitext(name)
-            return datetime.utcnow().isoformat() + ext
+            return datetime.now(pytz.utc).isoformat() + ext
 
         raise exceptions.NameStrategyError(strategy)
 
@@ -466,3 +505,22 @@ class Storage(OptionChecker):
             return result
 
         raise exceptions.UnsupportedOperationError("copy", type(self).__name__)
+
+    def link(self, data, extras, link_type=None):
+        # type: (types.MinimalStorageData, dict[str, types.Any], types.Literal["permanent", "temporal", "one-time"]|None) -> str
+        if self.supports(Capability.PERMANENT_LINK) and (
+            not link_type or link_type == "permanent"
+        ):
+            return self.reader.permanent_link(data)
+
+        if self.supports(Capability.TEMPORAL_LINK) and (
+            not link_type or link_type == "temporal"
+        ):
+            return self.reader.temporal_link(data)
+
+        if self.supports(Capability.ONE_TIME_LINK) and (
+            not link_type or link_type == "one-time"
+        ):
+            return self.reader.one_time_link(data)
+
+        raise exceptions.UnsupportedOperationError("link", type(self).__name__)

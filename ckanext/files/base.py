@@ -20,6 +20,9 @@ from datetime import datetime
 import pytz
 from werkzeug.datastructures import FileStorage
 
+import ckan.plugins.toolkit as tk
+from ckan.common import streaming_response
+
 from ckanext.files import exceptions, types, utils
 
 CHUNK_SIZE = 16 * 1024
@@ -524,3 +527,21 @@ class Storage(OptionChecker):
             return self.reader.one_time_link(data)
 
         raise exceptions.UnsupportedOperationError("link", type(self).__name__)
+
+    def make_download_response(self, name, data):
+        # type: (str, types.MinimalStorageData) -> types.Response
+        """Return Flask response for generic file download."""
+        try:
+            return tk.redirect_to(self.link(data, {}))
+        except exceptions.UnsupportedOperationError:
+            pass
+
+        if self.supports(Capability.STREAM):
+            resp = streaming_response(self.stream(data), data["content_type"])
+            resp.headers["content-disposition"] = "attachment; filename={}".format(name)
+            return resp
+
+        raise exceptions.UnsupportedOperationError(
+            "download response",
+            type(self).__name__,
+        )

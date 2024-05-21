@@ -37,7 +37,8 @@ def _is_owner(user_id, file_id):
     stmt = Owner.owners_of(file_id, "file").where(
         sa.and_(
             Owner.owner_type == "user",
-            Owner.owner_ie == user_id,
+            Owner.owner_id == user_id,
+            Owner.access == Owner.ACCESS_FULL,
         ),
     )
     return model.Session.query(stmt.exists()).scalar()
@@ -99,6 +100,14 @@ def files_file_delete(context, data_dict):
 def files_file_show(context, data_dict):
     # type: (types.Any, dict[str, types.Any]) -> types.Any
     """Only owner can view files."""
+    return authz.is_authorized("files_owns_file", context, data_dict)
+
+
+@auth
+@tk.auth_disallow_anonymous_access
+def files_file_download(context, data_dict):
+    # type: (types.Any, dict[str, types.Any]) -> types.Any
+    """Only owner can download files."""
     return authz.is_authorized("files_owns_file", context, data_dict)
 
 

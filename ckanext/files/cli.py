@@ -103,6 +103,7 @@ def scan(storage_name, orphans_only, adopt_by, materialize):
                     item_type="file",
                     owner_id=stepfather.id,
                     owner_type="user",
+                    access=Owner.ACCESS_FULL,
                 )
                 model.Session.add(owner)
 

@@ -75,6 +75,13 @@
                         </td>
                         <td>
                             {% block file_actions %}
+                                {% if h.check_access("files_file_download", {"id": file.id}) %}
+                                    <a class="btn btn-success btn-sm" title="Download the file"
+                                        href="{{ h.url_for('files.generic_download', file_id=file.id) }}">
+                                        <i class="fa fa-download"></i>
+                                    </a>
+                                {% endif %}
+
                                 {% if owner_type == "user" and owner_id and h.check_access("files_file_delete", {"id": file.id})%}
                                     <a class="btn btn-danger btn-sm" title="Remove the file"
                                        href="{{ h.url_for('files.delete_file',

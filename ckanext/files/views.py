@@ -7,6 +7,8 @@ from flask.views import MethodView
 import ckan.plugins.toolkit as tk
 from ckan.lib.helpers import Page
 
+from ckanext.files import exceptions, shared
+
 from ckanext.files import types  # isort: skip # noqa: F401
 
 log = logging.getLogger(__name__)
@@ -51,6 +53,19 @@ bp.register_error_handler(tk.NotAuthorized, not_authorized_handler)
 
 def get_blueprints():
     return [bp]
+
+
+@bp.route("/file/<file_id>/download")
+def generic_download(file_id):
+    # type: (str) -> types.Any
+    tk.check_access("files_file_download", {}, {"id": file_id})
+    info = tk.get_action("files_file_show")({}, {"id": file_id})
+    storage = shared.get_storage(info["storage"])
+
+    try:
+        return storage.make_download_response(info["name"], info["storage_data"])
+    except exceptions.UnsupportedOperationError:
+        return tk.abort(405)
 
 
 def _pager_url(*args, **kwargs):

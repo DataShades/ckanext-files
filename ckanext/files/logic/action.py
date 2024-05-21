@@ -111,9 +111,10 @@ def files_file_create(context, data_dict):
     if not storage.supports(Capability.CREATE):
         raise tk.ValidationError({"storage": ["Operation is not supported"]})
 
+    filename = secure_filename(data_dict["name"])
     try:
         storage_data = storage.upload(
-            secure_filename(data_dict["name"]),
+            filename,
             data_dict["upload"],
             extras,
         )
@@ -121,13 +122,13 @@ def files_file_create(context, data_dict):
         raise tk.ValidationError({"upload": [str(err)]})  # noqa: B904
 
     fileobj = File(
-        name=data_dict["name"],
+        name=filename,
         storage=data_dict["storage"],
         storage_data=storage_data,
         completed=True,
     )
     context["session"].add(fileobj)
-    _set_owner(context, "file", fileobj.id)  # type: ignore
+    _add_owner(context, "file", fileobj.id)  # type: ignore
     context["session"].commit()
 
     return fileobj.dictize(context)
@@ -151,7 +152,7 @@ def _ensure_name(data_dict, name_field="name", upload_field="upload"):
     data_dict[name_field] = name
 
 
-def _set_owner(context, item_type, item_id):
+def _add_owner(context, item_type, item_id):
     # type: (types.Any, str, str) -> None
     user = model.User.get(context["user"])
     if user:
@@ -160,11 +161,12 @@ def _set_owner(context, item_type, item_id):
             item_type=item_type,
             owner_id=user.id,
             owner_type="user",
+            access=Owner.ACCESS_FULL,
         )
         context["session"].add(owner)
 
 
-def _delete_owner(context, item_type, item_id):
+def _delete_owners(context, item_type, item_id):
     # type: (types.Any, str, str) -> None
     stmt = sa.delete(Owner).where(
         sa.and_(
@@ -195,7 +197,7 @@ def files_file_delete(context, data_dict):
     except exceptions.PermissionError as err:
         raise tk.NotAuthorized(str(err))  # noqa: B904
 
-    _delete_owner(context, "file", fileobj.id)
+    _delete_owners(context, "file", fileobj.id)
     context["session"].delete(fileobj)
     context["session"].commit()
 
@@ -230,7 +232,7 @@ def files_file_rename(context, data_dict):
     if not fileobj:
         raise tk.ObjectNotFound("file")
 
-    fileobj.name = data_dict["name"]
+    fileobj.name = secure_filename(data_dict["name"])
     fileobj.touch()
     context["session"].commit()
 
@@ -254,21 +256,22 @@ def files_upload_initialize(context, data_dict):
     if not storage.supports(Capability.MULTIPART_UPLOAD):
         raise tk.ValidationError({"storage": ["Operation is not supported"]})
 
+    filename = secure_filename(data_dict["name"])
     try:
         storage_data = storage.initialize_multipart_upload(
-            secure_filename(data_dict["name"]),
+            filename,
             extras,
         )
     except exceptions.UploadError as err:
         raise tk.ValidationError({"upload": [str(err)]})  # noqa: B904
 
     fileobj = File(
-        name=data_dict["name"],
+        name=filename,
         storage=data_dict["storage"],
         storage_data=storage_data,
     )
     context["session"].add(fileobj)
-    _set_owner(context, "file", fileobj.id)  # type: ignore
+    _add_owner(context, "file", fileobj.id)  # type: ignore
     context["session"].commit()
 
     return fileobj.dictize(context)
@@ -306,9 +309,12 @@ def files_upload_update(context, data_dict):
     storage = shared.get_storage(fileobj.storage)
 
     try:
-        fileobj.storage_data = storage.update_multipart_upload(fileobj.storage_data, extras)
+        fileobj.storage_data = storage.update_multipart_upload(
+            fileobj.storage_data,
+            extras,
+        )
     except exceptions.UploadError as err:
-        raise tk.ValidationError({"upload": [str(err)]})
+        raise tk.ValidationError({"upload": [str(err)]})  # noqa: B904
 
     context["session"].commit()
 
@@ -336,7 +342,7 @@ def files_upload_complete(context, data_dict):
             extras,
         )
     except exceptions.UploadError as err:
-        raise tk.ValidationError({"upload": [str(err)]})
+        raise tk.ValidationError({"upload": [str(err)]})  # noqa: B904
 
     fileobj.completed = True
     context["session"].commit()

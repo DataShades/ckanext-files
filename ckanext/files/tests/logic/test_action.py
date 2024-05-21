@@ -29,7 +29,7 @@ class TestFileCreate:
             name="Test file.txt",
         )
 
-        assert result["name"] == "Test file.txt"
+        assert result["name"] == "Test_file.txt"
 
 
 @pytest.mark.usefixtures("with_plugins", "clean_db")

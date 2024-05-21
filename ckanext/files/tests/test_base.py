@@ -366,3 +366,23 @@ class TestStorage:
         storage.settings["name_strategy"] = "wrong_strategy"
         with pytest.raises(exceptions.NameStrategyError):
             storage.compute_name("test", {})
+
+    def test_download_response(self, faker, monkeypatch, mock):
+        storage = Storage()
+        stream_mock = mock.Mock(return_value="hello")
+
+        monkeypatch.setattr(storage, "stream", stream_mock)
+        data = {"content_type": "text/csv"}
+        name = faker.file_name()
+        resp = storage.make_download_response(name, data)
+
+        assert resp.data == b"hello"
+        assert stream_mock.called_once_with(data)
+
+        url = faker.url()
+        link_mock = mock.Mock(return_value=url)
+        monkeypatch.setattr(storage, "link", link_mock)
+        resp = storage.make_download_response(name, data)
+
+        assert resp.headers["location"] == url
+        assert link_mock.called_once_with(data, {})

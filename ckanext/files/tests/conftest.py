@@ -2,6 +2,7 @@ from datetime import datetime
 from io import BytesIO
 
 import pytest
+import pytz
 import six
 from freezegun import freeze_time
 from responses import RequestsMock
@@ -13,6 +14,14 @@ from ckan.tests.helpers import call_action
 
 if six.PY3:
     from typing import Any  # isort: skip # noqa: F401
+    from unittest import mock as _mock
+else:
+    import mock as _mock
+
+
+@pytest.fixture()
+def mock():
+    return _mock
 
 
 @pytest.fixture()
@@ -25,7 +34,7 @@ def responses(ckan_config):
 
 @pytest.fixture()
 def files_stopped_time():
-    now = datetime.now()
+    now = datetime.now(pytz.utc)
     with freeze_time(now):
         yield now
 

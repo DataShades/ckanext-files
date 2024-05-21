@@ -5,6 +5,7 @@ These bizarre definitions must remain here as long as Python2 is supported.
 """
 
 import six
+from flask import Response
 from sqlalchemy.sql.expression import Select
 from werkzeug.datastructures import FileStorage as Upload
 
@@ -56,6 +57,7 @@ __all__ = [
     "cast",
     "Iterable",
     "Literal",
+    "Response",
 ]
 
 

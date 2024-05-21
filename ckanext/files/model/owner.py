@@ -14,6 +14,8 @@ if six.PY3:
 
 
 class Owner(Base):  # type: ignore
+    ACCESS_FULL = "full"
+
     __tablename__ = "files_owner"
     id = sa.Column(sa.Text, primary_key=True, default=make_uuid)
 
@@ -21,7 +23,7 @@ class Owner(Base):  # type: ignore
     item_type = sa.Column(sa.Text, nullable=False)
     owner_id = sa.Column(sa.Text, nullable=False)
     owner_type = sa.Column(sa.Text, nullable=False)
-    access = sa.Column(sa.Text, nullable=False, default="full")
+    access = sa.Column(sa.Text, nullable=False, default=ACCESS_FULL)
 
     sa.UniqueConstraint(item_id, item_type, owner_id, owner_type)
 

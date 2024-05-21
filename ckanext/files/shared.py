@@ -6,7 +6,7 @@ from ckanext.files.base import (
     Uploader,
     get_storage,
 )
-from ckanext.files.utils import combine_capabilities, exclude_capabilities
+from ckanext.files.utils import combine_capabilities, exclude_capabilities, make_upload
 
 __all__ = [
     "combine_capabilities",
@@ -17,4 +17,5 @@ __all__ = [
     "Reader",
     "Manager",
     "Capability",
+    "make_upload",
 ]

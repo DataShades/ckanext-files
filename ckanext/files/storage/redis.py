@@ -1,5 +1,7 @@
 from io import BytesIO
 
+from redis import ResponseError
+
 import ckan.plugins.toolkit as tk
 from ckan.lib.redis import connect_to_redis  # type: ignore
 
@@ -104,7 +106,7 @@ class RedisManager(Manager):
 
         try:
             self.storage.redis.copy(src, dest)
-        except AttributeError:
+        except (AttributeError, ResponseError):
             self.storage.redis.restore(dest, 0, self.storage.redis.dump(src))
 
         return RedisStorageData(data, filename=name)

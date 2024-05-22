@@ -117,6 +117,8 @@ namespace ckan {
             }
 
             export class Standard extends Base {
+                protected uploadAction = "files_file_create";
+
                 upload(file: File) {
                     const request = new XMLHttpRequest();
                     const promise = this._addListeners(request, file);
@@ -162,7 +164,7 @@ namespace ckan {
                     request.open(
                         "POST",
                         this.sandbox.client.url(
-                            "/api/action/files_file_create",
+                            `/api/action/${this.uploadAction}`,
                         ),
                     );
 
@@ -182,6 +184,7 @@ namespace ckan {
 
             export class Multipart extends Base {
                 static defaultSettings = { chunkSize: 1024 * 1024 * 5 };
+                protected initializeAction = "files_upload_initialize";
 
                 private _active = new Set<File>();
 
@@ -275,7 +278,7 @@ namespace ckan {
                     return new Promise((done, fail) =>
                         this.sandbox.client.call(
                             "POST",
-                            "files_upload_initialize",
+                            this.initializeAction,
                             Object.assign(
                                 {},
                                 this.settings.initializePayload || {},

@@ -2,6 +2,7 @@ import logging
 import os
 
 import magic
+import six
 from werkzeug.datastructures import FileStorage
 
 import ckan.plugins.toolkit as tk
@@ -39,7 +40,13 @@ class FileSystemUploader(Uploader):
         filename = self.storage.compute_name(name, extras, upload)
         filepath = os.path.join(self.storage.settings["path"], filename)
 
-        os.makedirs(os.path.dirname(filepath), exist_ok=True)
+        if six.PY3:
+            os.makedirs(os.path.dirname(filepath), exist_ok=True)
+        else:
+            try:
+                os.makedirs(os.path.dirname(filepath))
+            except OSError:
+                pass
 
         reader = HashingReader(upload.stream)
         with open(filepath, "wb") as dest:

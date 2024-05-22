@@ -29,7 +29,16 @@ def upload_progress():
 @pytest.fixture()
 def storage():
     # type: () -> gc.GoogleCloudStorage
-    return gc.GoogleCloudStorage(name="test", path="test", bucket=TEST_BUCKET)
+    credentials_file = os.path.join(
+        os.path.dirname(__name__),
+        "fake_creds.json",
+    )
+    return gc.GoogleCloudStorage(
+        name="test",
+        path="test",
+        bucket=TEST_BUCKET,
+        credentials_file=credentials_file,
+    )
 
 
 @pytest.fixture()

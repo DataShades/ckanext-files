@@ -30,9 +30,10 @@ def upload_progress():
 def storage():
     # type: () -> gc.GoogleCloudStorage
     credentials_file = os.path.join(
-        os.path.dirname(__name__),
+        os.path.dirname(__file__),
         "fake_creds.json",
     )
+
     return gc.GoogleCloudStorage(
         name="test",
         path="test",

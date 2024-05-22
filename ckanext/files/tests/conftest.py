@@ -57,6 +57,7 @@ else:
     def clean_db(reset_db):
         # type: (Any) -> None
         from ckanext.files.command import create_tables
+
         reset_db()
         create_tables()
 
@@ -81,7 +82,8 @@ def create_with_upload(ckan_config, monkeypatch, tmpdir):
 
     storage_path = str(tmpdir)
     monkeypatch.setitem(ckan_config, "ckan.storage_path", storage_path)
-    monkeypatch.setattr(uploader, "_storage_path", storage_path)
+    if hasattr(uploader, "_storage_path"):
+        monkeypatch.setattr(uploader, "_storage_path", storage_path)
 
     def factory(data, filename, context=None, **kwargs):
         # type: (Any, Any, Any, **Any) -> Any

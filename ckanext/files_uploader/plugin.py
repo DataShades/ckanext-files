@@ -1,6 +1,8 @@
 import glob
 import os
 
+import sqlalchemy as sa
+
 import ckan.plugins as p
 import ckan.plugins.toolkit as tk
 from ckan import model
@@ -65,8 +67,11 @@ class Uploader(uploader.Upload):
         ):
             existing = model.Session.execute(
                 File.by_location(
-                    self.old_filename, self.storage.settings["name"],
-                ).with_only_columns("id" if tk.check_ckan_version("2.9") else ["id"]),
+                    self.old_filename,
+                    self.storage.settings["name"],
+                ).with_only_columns(
+                    sa.column("id") if tk.check_ckan_version("2.9") else ["id"],
+                ),
             ).scalar()
             if not existing:
                 return
@@ -123,7 +128,9 @@ class ResourceUploader(uploader.ResourceUpload):
                 File.by_location(
                     self._file_location(id),
                     self.storage.settings["name"],
-                ).with_only_columns("id" if tk.check_ckan_version("2.9") else ["id"]),
+                ).with_only_columns(
+                    sa.column("id") if tk.check_ckan_version("2.9") else ["id"],
+                ),
             ).scalar()
             if not existing:
                 return

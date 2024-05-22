@@ -82,10 +82,10 @@ class File(Base):  # type: ignore
     def by_location(cls, location, storage=None):
         # type: (str, str | None) -> sa.sql.Select
         selectable = cls if tk.check_ckan_version("2.9") else [cls]
-
         stmt = sa.select(selectable).where(
             cls.storage_data["filename"].astext == location,
         )
+
         if storage:
             stmt = stmt.where(cls.storage == storage)
 

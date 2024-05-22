@@ -64,13 +64,15 @@ class Uploader(uploader.Upload):
             and self.old_filepath
         ):
             existing = model.Session.execute(
-                File.by_location(self.old_filename, self.storage.settings["name"]),
+                File.by_location(
+                    self.old_filename, self.storage.settings["name"],
+                ).with_only_columns("id" if tk.check_ckan_version("2.9") else ["id"]),
             ).scalar()
             if not existing:
                 return
             tk.get_action("files_file_delete")(
                 {"ignore_auth": True},
-                {"id": existing.id},
+                {"id": existing},
             )
 
 
@@ -121,13 +123,13 @@ class ResourceUploader(uploader.ResourceUpload):
                 File.by_location(
                     self._file_location(id),
                     self.storage.settings["name"],
-                ),
+                ).with_only_columns("id" if tk.check_ckan_version("2.9") else ["id"]),
             ).scalar()
             if not existing:
                 return
             tk.get_action("files_file_delete")(
                 {"ignore_auth": True},
-                {"id": existing.id},
+                {"id": existing},
             )
 
 

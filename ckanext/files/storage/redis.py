@@ -1,6 +1,7 @@
-from io import BytesIO
+from __future__ import absolute_import
 
 from redis import ResponseError
+from io import BytesIO
 
 import ckan.plugins.toolkit as tk
 from ckan.lib.redis import connect_to_redis  # type: ignore
@@ -16,6 +17,8 @@ from ckanext.files.base import (
 )
 
 import redis  # isort: skip # noqa: F401
+
+
 
 
 RedisAdditionalData = types.TypedDict("RedisAdditionalData", {})

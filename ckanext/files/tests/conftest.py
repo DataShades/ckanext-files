@@ -57,7 +57,6 @@ else:
     def clean_db(reset_db):
         # type: (Any) -> None
         from ckanext.files.command import create_tables
-
         reset_db()
         create_tables()
 
@@ -65,6 +64,8 @@ else:
 class FakeFileStorage(FileStorage):
     def __init__(self, stream, filename):
         # type: (Any, str) -> None
+        self.filename = filename
+
         super(FakeFileStorage, self).__init__(stream, filename, "upload")
 
 
@@ -76,8 +77,11 @@ def create_with_upload(ckan_config, monkeypatch, tmpdir):
     CKAN version adds just a few attributes to FileStorage object, while
     current plugin requires exact immitation.
     """
+    from ckan.lib import uploader
 
-    monkeypatch.setitem(ckan_config, "ckan.storage_path", str(tmpdir))
+    storage_path = str(tmpdir)
+    monkeypatch.setitem(ckan_config, "ckan.storage_path", storage_path)
+    monkeypatch.setattr(uploader, "_storage_path", storage_path)
 
     def factory(data, filename, context=None, **kwargs):
         # type: (Any, Any, Any, **Any) -> Any

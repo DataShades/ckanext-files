@@ -367,6 +367,7 @@ class TestStorage:
         with pytest.raises(exceptions.NameStrategyError):
             storage.compute_name("test", {})
 
+    @pytest.mark.usefixtures("with_request_context")
     def test_download_response(self, faker, monkeypatch, mock):
         storage = Storage()
         stream_mock = mock.Mock(return_value="hello")

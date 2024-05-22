@@ -43,7 +43,7 @@ def files_file_search_by_user(context, data_dict):
     tk.check_access("files_file_search_by_user", context, data_dict)
     sess = context["session"]
 
-    user = model.User.get(data_dict.get("user", context["user"]))
+    user = model.User.get(data_dict.get("user", context.get("user", "")))
     if not user:
         raise tk.ObjectNotFound("user")
 
@@ -128,6 +128,7 @@ def files_file_create(context, data_dict):
         completed=True,
     )
     context["session"].add(fileobj)
+
     _add_owner(context, "file", fileobj.id)  # type: ignore
     context["session"].commit()
 
@@ -154,7 +155,7 @@ def _ensure_name(data_dict, name_field="name", upload_field="upload"):
 
 def _add_owner(context, item_type, item_id):
     # type: (types.Any, str, str) -> None
-    user = model.User.get(context["user"])
+    user = model.User.get(context.get("user", ""))
     if user:
         owner = Owner(
             item_id=item_id,

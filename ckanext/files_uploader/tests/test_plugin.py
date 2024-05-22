@@ -39,13 +39,15 @@ class SharedTests:
             action="group_create",
             name=faker.word(),
         )
+
         filepath = os.path.join(
-            tmpdir,
+            str(tmpdir),
             "storage",
             "uploads",
             "group",
             group["image_url"],
         )
+
         assert os.path.exists(filepath)
 
     def test_resource_upload_goes_to_fs(self, tmpdir, create_with_upload):
@@ -54,7 +56,7 @@ class SharedTests:
         resource = create_with_upload(content, "file.txt", package_id=package["id"])
 
         filepath = os.path.join(
-            tmpdir,
+            str(tmpdir),
             "resources",
             resource["id"][:3],
             resource["id"][3:6],
@@ -86,7 +88,7 @@ class SharedTests:
             package_id=package["id"],
         )
         filepath = os.path.join(
-            tmpdir,
+            str(tmpdir),
             "resources",
             resource["id"][:3],
             resource["id"][3:6],
@@ -106,7 +108,7 @@ class TestNativeUploader(SharedTests):
 
 
 @pytest.mark.usefixtures("with_files_uploader", "with_plugins", "clean_db")
-@pytest.mark.ckan_config("ckan.plugins", "files files_uploader")
+@pytest.mark.ckan_config("ckan.plugins", "files_uploader files")
 class TestFilesUploader(SharedTests):
     def test_resource_storage_is_registered(self):
         assert get_storage("resource")

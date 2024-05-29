@@ -1,21 +1,13 @@
+from __future__ import annotations
+
 import os
 
 import ckan.plugins.toolkit as tk
 
-from ckanext.files.utils import make_collector
-
-_helpers, helper = make_collector()
-
 HERE = os.path.dirname(__file__)
 
 
-def get_helpers():
-    return dict(_helpers)
-
-
-@helper
-def files_humanize_content_type(content_type):
-    # type: (str) -> str
+def files_humanize_content_type(content_type: str) -> str:
     if not content_type:
         content_type = "application/octet-stream"
 
@@ -27,9 +19,11 @@ def files_humanize_content_type(content_type):
     return main.capitalize()
 
 
-@helper
-def files_content_type_icon(content_type, theme, extension):
-    # type: (str, str, str) -> str | None
+def files_content_type_icon(
+    content_type: str,
+    theme: str,
+    extension: str,
+) -> str | None:
     if not content_type:
         content_type = "application/octet-stream"
 

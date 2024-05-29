@@ -5,12 +5,9 @@ subclass.
 
 """
 
-import six
+from typing import Any
 
 from ckan.lib.formatters import localised_filesize
-
-if six.PY3:
-    from typing import Any  # isort: skip # noqa: F401
 
 
 class FilesError(Exception):
@@ -28,8 +25,7 @@ class UploadError(StorageError):
 class UnknownStorageError(StorageError):
     """Storage with the given name is not configured."""
 
-    def __init__(self, storage):
-        # type: (str) -> None
+    def __init__(self, storage: str):
         self.storage = storage
 
     def __str__(self):
@@ -39,8 +35,7 @@ class UnknownStorageError(StorageError):
 class UnknownAdapterError(StorageError):
     """Specified storage adapter is not registered."""
 
-    def __init__(self, adapter):
-        # type: (str) -> None
+    def __init__(self, adapter: str):
         self.adapter = adapter
 
     def __str__(self):
@@ -50,8 +45,7 @@ class UnknownAdapterError(StorageError):
 class UnsupportedOperationError(StorageError):
     """Requested operation is not supported by storage."""
 
-    def __init__(self, operation, adapter):
-        # type: (Any, Any) -> None
+    def __init__(self, operation: str, adapter: type):
         self.operation = operation
         self.adapter = adapter
 
@@ -65,8 +59,7 @@ class UnsupportedOperationError(StorageError):
 class InvalidStorageConfigurationError(StorageError):
     """Storage cannot be initialized with given configuration."""
 
-    def __init__(self, adapter, problem):
-        # type: (type, str) -> None
+    def __init__(self, adapter: type, problem: str):
         self.adapter = adapter
         self.problem = problem
 
@@ -80,8 +73,7 @@ class InvalidStorageConfigurationError(StorageError):
 class PermissionError(StorageError):
     """Storage client does not have required permissions."""
 
-    def __init__(self, adapter, operation, problem):
-        # type: (type, str, str) -> None
+    def __init__(self, adapter: type, operation: str, problem: str):
         self.adapter = adapter
         self.operation = operation
         self.problem = problem
@@ -98,8 +90,7 @@ class PermissionError(StorageError):
 class MissingStorageConfigurationError(InvalidStorageConfigurationError):
     """Storage cannot be initialized due to missing option."""
 
-    def __init__(self, adapter, option):
-        # type: (type, str) -> None
+    def __init__(self, adapter: type, option: str):
         return super(MissingStorageConfigurationError, self).__init__(
             adapter,
             "{} option is required".format(option),
@@ -109,8 +100,7 @@ class MissingStorageConfigurationError(InvalidStorageConfigurationError):
 class MissingFileError(StorageError):
     """File does not exist."""
 
-    def __init__(self, storage, filename):
-        # type: (str, str) -> None
+    def __init__(self, storage: str, filename: str):
         self.storage = storage
         self.filename = filename
 
@@ -124,8 +114,7 @@ class MissingFileError(StorageError):
 class ExistingFileError(StorageError):
     """File already exists."""
 
-    def __init__(self, storage, filename):
-        # type: (str, str) -> None
+    def __init__(self, storage: str, filename: str):
         self.storage = storage
         self.filename = filename
 
@@ -139,8 +128,7 @@ class ExistingFileError(StorageError):
 class LargeUploadError(UploadError):
     """Storage cannot be initialized due to missing option."""
 
-    def __init__(self, actual_size, max_size):
-        # type: (int, int) -> None
+    def __init__(self, actual_size: int, max_size: int):
         self.actual_size = actual_size
         self.max_size = max_size
 
@@ -164,8 +152,7 @@ class UploadOutOfBoundError(LargeUploadError):
 class NameStrategyError(UploadError):
     """Undefined name strategy."""
 
-    def __init__(self, strategy):
-        # type: (str) -> None
+    def __init__(self, strategy: str):
         self.strategy = strategy
 
     def __str__(self):
@@ -175,8 +162,7 @@ class NameStrategyError(UploadError):
 class UploadExtrasError(UploadError):
     """Wrong extras passed during upload."""
 
-    def __init__(self, extras):
-        # type: (Any) -> None
+    def __init__(self, extras: Any):
         self.extras = extras
 
     def __str__(self):
@@ -186,8 +172,7 @@ class UploadExtrasError(UploadError):
 class MissingExtrasError(UploadExtrasError):
     """Wrong extras passed during upload."""
 
-    def __init__(self, key):
-        # type: (Any) -> None
+    def __init__(self, key: Any):
         self.key = key
 
     def __str__(self):

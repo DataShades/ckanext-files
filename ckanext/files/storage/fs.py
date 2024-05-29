@@ -1,5 +1,8 @@
+from __future__ import annotations
+
 import logging
 import os
+from typing import IO, Any
 
 import magic
 import six
@@ -35,8 +38,12 @@ class FileSystemUploader(Uploader):
         Capability.MULTIPART_UPLOAD,
     )
 
-    def upload(self, name, upload, extras):
-        # type: (str, types.Upload, dict[str, types.Any]) -> FsStorageData
+    def upload(
+        self,
+        name: str,
+        upload: types.Upload,
+        extras: dict[str, Any],
+    ) -> FsStorageData:
         filename = self.storage.compute_name(name, extras, upload)
         filepath = os.path.join(self.storage.settings["path"], filename)
 
@@ -60,15 +67,18 @@ class FileSystemUploader(Uploader):
             "hash": reader.get_hash(),
         }
 
-    def initialize_multipart_upload(self, name, extras):
-        # type: (str, dict[str, types.Any]) -> dict[str, types.Any]
-        schema = {
+    def initialize_multipart_upload(
+        self,
+        name: str,
+        extras: dict[str, Any],
+    ) -> dict[str, Any]:
+        schema: dict[str, Any] = {
             "size": [
                 tk.get_validator("not_missing"),
                 tk.get_validator("int_validator"),
             ],
             "__extras": [tk.get_validator("ignore")],
-        }  # type: dict[str, types.Any]
+        }
         data, errors = tk.navl_validate(extras, schema)
 
         if errors:
@@ -87,12 +97,14 @@ class FileSystemUploader(Uploader):
 
         return result
 
-    def show_multipart_upload(self, upload_data):
-        # type: (dict[str, types.Any]) -> dict[str, types.Any]
+    def show_multipart_upload(self, upload_data: dict[str, Any]) -> dict[str, Any]:
         return upload_data
 
-    def update_multipart_upload(self, upload_data, extras):
-        # type: (dict[str, types.Any], dict[str, types.Any]) -> dict[str, types.Any]
+    def update_multipart_upload(
+        self,
+        upload_data: dict[str, Any],
+        extras: dict[str, Any],
+    ) -> dict[str, Any]:
         schema = {
             "position": [
                 tk.get_validator("ignore_missing"),
@@ -110,7 +122,7 @@ class FileSystemUploader(Uploader):
             raise tk.ValidationError(errors)
 
         data.setdefault("position", upload_data["uploaded"])
-        upload = data["upload"]  # type: types.Upload
+        upload: types.Upload = data["upload"]
 
         expected_size = data["position"] + upload.content_length
         if expected_size > upload_data["size"]:
@@ -127,8 +139,11 @@ class FileSystemUploader(Uploader):
         upload_data["uploaded"] = os.path.getsize(filepath)
         return upload_data
 
-    def complete_multipart_upload(self, upload_data, extras):
-        # type: (dict[str, types.Any], dict[str, types.Any]) -> FsStorageData
+    def complete_multipart_upload(
+        self,
+        upload_data: dict[str, Any],
+        extras: dict[str, Any],
+    ) -> FsStorageData:
         filepath = os.path.join(
             str(self.storage.settings["path"]),
             upload_data["filename"],
@@ -163,8 +178,7 @@ class FileSystemManager(Manager):
     required_options = ["path"]
     capabilities = utils.combine_capabilities(Capability.REMOVE, Capability.ANALYZE)
 
-    def remove(self, data):
-        # type: (dict[str, types.Any]) -> bool
+    def remove(self, data: types.MinimalStorageData) -> bool:
         filepath = os.path.join(str(self.storage.settings["path"]), data["filename"])
         if not os.path.exists(filepath):
             return False
@@ -172,8 +186,7 @@ class FileSystemManager(Manager):
         os.remove(filepath)
         return True
 
-    def analyze(self, filename):
-        # type: (str) -> types.FsStorageData
+    def analyze(self, filename: str) -> FsStorageData:
         """Return all details about filename."""
         filepath = os.path.join(str(self.storage.settings["path"]), filename)
         if not os.path.exists(filepath):
@@ -196,8 +209,7 @@ class FileSystemReader(Reader):
     required_options = ["path"]
     capabilities = utils.combine_capabilities(Capability.STREAM)
 
-    def stream(self, data):
-        # type: (dict[str, types.Any]) -> types.IO[bytes]
+    def stream(self, data: types.MinimalStorageData) -> IO[bytes]:
         filepath = os.path.join(str(self.storage.settings["path"]), data["filename"])
         if not os.path.exists(filepath):
             raise exceptions.MissingFileError(self.storage.settings["name"], filepath)
@@ -206,6 +218,8 @@ class FileSystemReader(Reader):
 
 
 class FileSystemStorage(Storage):
+    """Store files in local filesystem."""
+
     def make_uploader(self):
         return FileSystemUploader(self)
 
@@ -215,8 +229,7 @@ class FileSystemStorage(Storage):
     def make_manager(self):
         return FileSystemManager(self)
 
-    def __init__(self, **settings):
-        # type: (**types.Any) -> None
+    def __init__(self, **settings: Any) -> None:
         path = self.ensure_option(settings, "path")
 
         if not os.path.exists(path):
@@ -231,8 +244,7 @@ class FileSystemStorage(Storage):
         super(FileSystemStorage, self).__init__(**settings)
 
     @classmethod
-    def declare_config_options(cls, declaration, key):  # pragma: no cover
-        # type: (types.Declaration, types.Key) -> None
+    def declare_config_options(cls, declaration: types.Declaration, key: types.Key):
         super().declare_config_options(declaration, key)
         declaration.declare(key.path).required().set_description(
             "Path to the folder where uploaded data will be stored.",
@@ -243,14 +255,16 @@ class FileSystemStorage(Storage):
 
 
 class PublicFileSystemStorage(FileSystemStorage):
-    def __init__(self, **settings):
-        # type: (**types.Any) -> None
+    def __init__(self, **settings: Any) -> None:
         self.ensure_option(settings, "public_root")
         super(PublicFileSystemStorage, self).__init__(**settings)
 
     @classmethod
-    def declare_config_options(cls, declaration, key):  # pragma: no cover
-        # type: (types.Declaration, types.Key) -> None
+    def declare_config_options(
+        cls,
+        declaration: types.Declaration,
+        key: types.Key,
+    ) -> None:
         super().declare_config_options(declaration, key)
         declaration.declare(key.public_root).required().set_description(
             "URL of the storage folder."

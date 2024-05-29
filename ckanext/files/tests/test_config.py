@@ -1,6 +1,8 @@
-import pytest
+from __future__ import annotations
 
-import ckan.plugins.toolkit as tk
+from typing import Any
+
+import pytest
 
 from ckanext.files import config
 
@@ -23,19 +25,13 @@ class TestDefault:
 
 
 class TestStorages:
-    def adapt_to_ckan_version(self, settings):
-        # type: (dict[str, object]) -> dict[str, object]
+    def adapt_to_ckan_version(self, settings: dict[str, Any]) -> dict[str, Any]:
         """CKAN v2.10 has max_size added to default storage by config
         declaration.
 
         """
 
-        if tk.check_ckan_version("2.10"):
-            settings.setdefault("max_size", 0)
-
-        else:
-            settings.pop("prefix")
-            settings.pop("name")
+        settings.setdefault("max_size", 0)
 
         return settings
 
@@ -52,16 +48,15 @@ class TestStorages:
             ),
         }
 
-    def test_customized(self, monkeypatch, ckan_config):
-        # type: (MonkeyPatch, dict[str, object]) -> None
+    def test_customized(self, monkeypatch: MonkeyPatch, ckan_config: dict[str, Any]):
         """Storage configuration grouped by the storage name."""
-        patches = [
+        patches: list[tuple[str, str]] = [
             ("default.type", "files:redis"),
             ("test.type", "test"),
             ("test.path", "somepath"),
             ("another.type", "fancy"),
             ("another.name_strategy", "hello"),
-        ]  # type: list[tuple[str, str]]
+        ]
         for key, value in patches:
             monkeypatch.setitem(ckan_config, config.STORAGE_PREFIX + key, value)
 

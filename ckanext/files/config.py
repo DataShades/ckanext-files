@@ -9,29 +9,23 @@ the extension.
 
 """
 
-from collections import defaultdict
+from __future__ import annotations
 
-import six
+from collections import defaultdict
+from typing import Any
 
 import ckan.plugins.toolkit as tk
-
-if six.PY3:
-    from typing import Any  # isort: skip # noqa: F401
-
 
 DEFAULT_STORAGE = "ckanext.files.default_storage"
 STORAGE_PREFIX = "ckanext.files.storage."
 
 
-def default_storage():
-    # type: () -> str
+def default_storage() -> str:
     """Default storage used for upload when no explicit storage specified."""
+    return tk.config[DEFAULT_STORAGE]
 
-    return tk.config.get(DEFAULT_STORAGE, "default")
 
-
-def storages():
-    # type: () -> dict[str, dict[str, Any]]
+def storages() -> dict[str, dict[str, Any]]:
     """Mapping of storage names to their settings."""
     storages = defaultdict(dict)  # type: dict[str, dict[str, Any]]
     prefix_len = len(STORAGE_PREFIX)

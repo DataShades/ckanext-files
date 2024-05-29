@@ -1,5 +1,8 @@
+from __future__ import annotations
+
 import logging
 from functools import partial
+from typing import Any
 
 from flask import Blueprint
 from flask.views import MethodView
@@ -14,9 +17,10 @@ from ckanext.files import types  # isort: skip # noqa: F401
 log = logging.getLogger(__name__)
 bp = Blueprint("files", __name__)
 
+__all__ = ["bp"]
 
-def not_found_handler(error):
-    # type: (tk.ObjectNotFound) -> tuple[str, int]
+
+def not_found_handler(error: tk.ObjectNotFound) -> tuple[str, int]:
     """Generic handler for ObjectNotFound exception"""
     return (
         tk.render(
@@ -31,8 +35,7 @@ def not_found_handler(error):
     )
 
 
-def not_authorized_handler(error):
-    # type: (tk.NotAuthorized) -> tuple[str, int]
+def not_authorized_handler(error: tk.NotAuthorized) -> tuple[str, int]:
     """Generic handler for NotAuthorized exception"""
     return (
         tk.render(
@@ -56,8 +59,7 @@ def get_blueprints():
 
 
 @bp.route("/file/<file_id>/download")
-def generic_download(file_id):
-    # type: (str) -> types.Any
+def generic_download(file_id: str) -> types.Response:
     tk.check_access("files_file_download", {}, {"id": file_id})
     info = tk.get_action("files_file_show")({}, {"id": file_id})
     storage = shared.get_storage(info["storage"])
@@ -68,8 +70,7 @@ def generic_download(file_id):
         return tk.abort(405)
 
 
-def _pager_url(*args, **kwargs):
-    # type: (*types.Any, **types.Any) -> str
+def _pager_url(*args: Any, **kwargs: Any) -> str:
     """Generic URL builder for `url` parameter of ckan.lib.pagination.Page.
 
     It generates pagination link keeping all the parameters from URL and query
@@ -83,15 +84,14 @@ def _pager_url(*args, **kwargs):
 
 @bp.route("/user/<user_id>/files")
 @bp.route("/user/<user_id>/files/storage/<storage>")
-def user(user_id, storage=None):
-    # type: (str, str | None) -> str
+def user(user_id: str, storage: str | None = None) -> str:
     user_dict = tk.get_action("user_show")(
         {},
         {"id": user_id, "include_num_followers": True},
     )
 
     rows = 10
-    params = tk.request.args if tk.check_ckan_version("2.10") else tk.request.params  # type: ignore
+    params = tk.request.args
     page = tk.h.get_page_number(params)
     start = rows * page - rows
 
@@ -137,9 +137,7 @@ def user(user_id, storage=None):
 
 
 class DeleteFile(MethodView):
-    def post(self, user_id, file_id):
-        # type: (str, str) -> types.Any
-
+    def post(self, user_id: str, file_id: str) -> types.Response | str:
         try:
             tk.get_action("files_file_delete")({}, {"id": file_id})
         except tk.NotAuthorized as err:
@@ -152,9 +150,7 @@ class DeleteFile(MethodView):
 
         return tk.redirect_to("files.user", user_id=user_id)
 
-    def get(self, user_id, file_id):
-        # type: (str, str) -> types.Any
-
+    def get(self, user_id: str, file_id: str) -> str:
         tk.check_access("files_file_delete", {}, {"id": file_id})
         info = tk.get_action("files_file_show")({}, {"id": file_id})
         user_dict = tk.get_action("user_show")(

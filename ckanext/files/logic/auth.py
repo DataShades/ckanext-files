@@ -1,33 +1,25 @@
+from __future__ import annotations
+
+from typing import Any, cast
+
 import sqlalchemy as sa
 
 import ckan.plugins.toolkit as tk
 from ckan import authz, model
+from ckan.types import AuthResult, Context
 
 from ckanext.files.model import Owner
-from ckanext.files.utils import make_collector
-
-from ckanext.files import types  # isort: skip # noqa: F401
 
 
-_auth_functions, auth = make_collector()
-
-
-def get_auth_functions():
-    return dict(_auth_functions)
-
-
-def _get_user(context):
+def _get_user(context: Context) -> model.User | None:
     # type: (types.Any) -> model.User | None
     if "auth_user_obj" in context:
-        return context["auth_user_obj"]
+        return cast(model.User, context["auth_user_obj"])
 
-    if tk.check_ckan_version("2.10"):
-        user = tk.current_user if tk.current_user.is_authenticated else None
-    else:
-        user = tk.g.userobj  # type: types.Any
+    user = tk.current_user if tk.current_user.is_authenticated else None
 
     if user and context["user"] == user.name:
-        return user
+        return cast(model.User, user)
 
     return model.User.get(context["user"])
 
@@ -44,17 +36,13 @@ def _is_owner(user_id, file_id):
     return model.Session.query(stmt.exists()).scalar()
 
 
-@auth
 @tk.auth_disallow_anonymous_access
-def files_manage_files(context, data_dict):
-    # type: (types.Any, dict[str, types.Any]) -> types.Any
+def files_manage_files(context: Context, data_dict: dict[str, Any]) -> AuthResult:
     return {"success": False}
 
 
-@auth
 @tk.auth_disallow_anonymous_access
-def files_owns_file(context, data_dict):
-    # type: (types.Any, dict[str, types.Any]) -> types.Any
+def files_owns_file(context: Context, data_dict: dict[str, Any]) -> AuthResult:
     user = _get_user(context)
     is_manager = authz.is_authorized_boolean("files_manage_files", context, data_dict)
     is_owner = bool(user and _is_owner(user.id, data_dict["id"]))
@@ -65,10 +53,11 @@ def files_owns_file(context, data_dict):
     }
 
 
-@auth
 @tk.auth_disallow_anonymous_access
-def files_file_search_by_user(context, data_dict):
-    # type: (types.Any, dict[str, types.Any]) -> types.Any
+def files_file_search_by_user(
+    context: Context,
+    data_dict: dict[str, Any],
+) -> AuthResult:
     """Only user himself can view his own files."""
 
     # `user` from context will be used used when it's not in data_dict, so it's
@@ -79,73 +68,55 @@ def files_file_search_by_user(context, data_dict):
     user = _get_user(context)
 
     return {
-        "success": user and data_dict["user"] in [user.name, user.id],
+        "success": bool(user) and data_dict["user"] in [user.name, user.id],
         "msg": "Not authorized to view files of this user",
     }
 
 
-@auth
 @tk.auth_disallow_anonymous_access
-def files_file_create(context, data_dict):
-    # type: (types.Any, dict[str, types.Any]) -> types.Any
+def files_file_create(context: Context, data_dict: dict[str, Any]) -> AuthResult:
     return authz.is_authorized("files_manage_files", context, data_dict)
 
 
-@auth
 @tk.auth_disallow_anonymous_access
-def files_file_delete(context, data_dict):
-    # type: (types.Any, dict[str, types.Any]) -> types.Any
+def files_file_delete(context: Context, data_dict: dict[str, Any]) -> AuthResult:
     """Only owner can remove files."""
     return authz.is_authorized("files_owns_file", context, data_dict)
 
 
-@auth
 @tk.auth_disallow_anonymous_access
-def files_file_show(context, data_dict):
-    # type: (types.Any, dict[str, types.Any]) -> types.Any
+def files_file_show(context: Context, data_dict: dict[str, Any]) -> AuthResult:
     """Only owner can view files."""
     return authz.is_authorized("files_owns_file", context, data_dict)
 
 
-@auth
 @tk.auth_disallow_anonymous_access
-def files_file_download(context, data_dict):
-    # type: (types.Any, dict[str, types.Any]) -> types.Any
+def files_file_download(context: Context, data_dict: dict[str, Any]) -> AuthResult:
     """Only owner can download files."""
     return authz.is_authorized("files_owns_file", context, data_dict)
 
 
-@auth
 @tk.auth_disallow_anonymous_access
-def files_file_rename(context, data_dict):
-    # type: (types.Any, dict[str, types.Any]) -> types.Any
+def files_file_rename(context: Context, data_dict: dict[str, Any]) -> AuthResult:
     """Only owner can rename files."""
     return authz.is_authorized("files_owns_file", context, data_dict)
 
 
-@auth
 @tk.auth_disallow_anonymous_access
-def files_upload_show(context, data_dict):
-    # type: (types.Any, dict[str, types.Any]) -> types.Any
+def files_upload_show(context: Context, data_dict: dict[str, Any]) -> AuthResult:
     return authz.is_authorized("files_owns_file", context, data_dict)
 
 
-@auth
 @tk.auth_disallow_anonymous_access
-def files_upload_initialize(context, data_dict):
-    # type: (types.Any, dict[str, types.Any]) -> types.Any
+def files_upload_initialize(context: Context, data_dict: dict[str, Any]) -> AuthResult:
     return authz.is_authorized("files_file_create", context, data_dict)
 
 
-@auth
 @tk.auth_disallow_anonymous_access
-def files_upload_update(context, data_dict):
-    # type: (types.Any, dict[str, types.Any]) -> types.Any
+def files_upload_update(context: Context, data_dict: dict[str, Any]) -> AuthResult:
     return authz.is_authorized("files_owns_file", context, data_dict)
 
 
-@auth
 @tk.auth_disallow_anonymous_access
-def files_upload_complete(context, data_dict):
-    # type: (types.Any, dict[str, types.Any]) -> types.Any
+def files_upload_complete(context: Context, data_dict: dict[str, Any]) -> AuthResult:
     return authz.is_authorized("files_owns_file", context, data_dict)

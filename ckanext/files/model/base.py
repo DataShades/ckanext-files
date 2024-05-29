@@ -1,10 +1,8 @@
 from datetime import datetime
 
-from sqlalchemy.ext.declarative import declarative_base
+import ckan.plugins.toolkit as tk
 
-from ckan.model.meta import metadata
-
-Base = declarative_base(metadata=metadata)
+Base = tk.BaseModel
 
 
 def now():

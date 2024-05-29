@@ -1,48 +1,60 @@
+from __future__ import annotations
+
 import copy
+from datetime import datetime
+from typing import Any, Literal
 
-import six
 import sqlalchemy as sa
-from sqlalchemy import Column, DateTime, UnicodeText
 from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy.orm import Mapped
 
-import ckan.plugins.toolkit as tk
 from ckan.lib.dictization import table_dictize
 from ckan.model.types import make_uuid
 
 from .base import Base, now
 
-from datetime import datetime  # isort: skip # noqa: F401
-
-
-from ckanext.files import types  # isort: skip # noqa: F401
-
-if six.PY3:
-    from typing import Any, Literal  # isort: skip # noqa: F401
-
 
 class File(Base):  # type: ignore
-    __tablename__ = "files_file"
-    id = Column(UnicodeText, primary_key=True, default=make_uuid)
-    name = Column(UnicodeText, nullable=False)
-    storage = Column(UnicodeText, nullable=False)
+    __table__ = sa.Table(
+        "files_file",
+        Base.metadata,
+        sa.Column("id", sa.UnicodeText, primary_key=True, default=make_uuid),
+        sa.Column("name", sa.UnicodeText, nullable=False),
+        sa.Column("storage", sa.UnicodeText, nullable=False),
+        sa.Column(
+            "ctime",
+            sa.DateTime,
+            nullable=False,
+            default=now,
+            server_default=sa.func.now(),
+        ),
+        sa.Column("mtime", sa.DateTime),
+        sa.Column("atime", sa.DateTime),
+        sa.Column("storage_data", JSONB, default=dict, server_default="{}"),
+        sa.Column("plugin_data", JSONB, default=dict, server_default="{}"),
+        sa.Column("completed", sa.Boolean, default=False, server_default="false"),
+    )
 
-    ctime = Column(DateTime, nullable=False, default=now, server_default=sa.func.now())
-    mtime = Column(DateTime)
-    atime = Column(DateTime)
+    id: Mapped[str]
 
-    storage_data = Column(JSONB, default=dict, server_default="{}")
-    plugin_data = Column(JSONB, default=dict, server_default="{}")
-    completed = Column(sa.Boolean, default=False, server_default="false")
+    name: Mapped[str]
+    storage: Mapped[str]
 
-    def __init__(self, **kwargs):
-        # type: (**types.Any) -> None
+    ctime: Mapped[datetime]
+    mtime: Mapped[datetime | None]
+    atime: Mapped[datetime | None]
+
+    storage_data: Mapped[dict[str, Any]]
+    plugin_data: Mapped[dict[str, Any]]
+
+    completed: Mapped[bool]
+
+    def __init__(self, **kwargs: Any):
         super(File, self).__init__(**kwargs)
         if not self.id:
             self.id = make_uuid()
 
-    def dictize(self, context):
-        # type: (Any) -> dict[str, Any]
-
+    def dictize(self, context: Any) -> dict[str, Any]:
         result = table_dictize(self, context)
         result["storage_data"] = copy.deepcopy(result["storage_data"])
 
@@ -52,8 +64,12 @@ class File(Base):  # type: ignore
 
         return result
 
-    def touch(self, access=True, modification=True, moment=None):
-        # type: (bool, bool, datetime | None) -> None
+    def touch(
+        self,
+        access: bool = True,
+        modification: bool = True,
+        moment: datetime | None = None,
+    ):
         if not moment:
             moment = now()
 
@@ -63,11 +79,15 @@ class File(Base):  # type: ignore
         if modification:
             self.mtime = moment
 
-    def patch_data(self, patch, dict_path=None, prop="plugin_data"):
-        # type: (dict[str, Any], list[str]|None, Literal["storage_data", "plugin_data"]) -> dict[str, Any]
-        data = copy.deepcopy(getattr(self, prop))  # type: dict[str, Any]
+    def patch_data(
+        self,
+        patch: dict[str, Any],
+        dict_path: list[str] | None = None,
+        prop: Literal["storage_data", "plugin_data"] = "plugin_data",
+    ) -> dict[str, Any]:
+        data: dict[str, Any] = copy.deepcopy(getattr(self, prop))
 
-        target = data  # type: dict[str, Any] | Any
+        target: dict[str, Any] | Any = data
         if dict_path:
             for part in dict_path:
                 target = target.setdefault(part, {})
@@ -81,8 +101,7 @@ class File(Base):  # type: ignore
     @classmethod
     def by_location(cls, location, storage=None):
         # type: (str, str | None) -> sa.sql.Select
-        selectable = cls if tk.check_ckan_version("2.9") else [cls]
-        stmt = sa.select(selectable).where(
+        stmt = sa.select(cls).where(
             cls.storage_data["filename"].astext == location,
         )
 

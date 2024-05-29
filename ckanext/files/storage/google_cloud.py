@@ -1,9 +1,11 @@
+from __future__ import annotations
+
 import base64
 import os
 import re
+from typing import Any, cast
 
 import requests
-import six
 from google.api_core.exceptions import Forbidden
 from google.cloud.storage import Client
 from google.oauth2.service_account import Credentials
@@ -23,16 +25,12 @@ class GCStorageData(GCAdditionalData, types.MinimalStorageData):
 RE_RANGE = re.compile(r"bytes=(?P<first_byte>\d+)-(?P<last_byte>\d+)")
 
 
-def decode(value):
-    # type: (str) -> str
-    if six.PY3:
-        return base64.decodebytes(value.encode()).hex()
-
-    return base64.decodestring(value.encode()).encode("hex")  # type: ignore
+def decode(value: str) -> str:
+    return base64.decodebytes(value.encode()).hex()
 
 
 class GoogleCloudUploader(Uploader):
-    storage = None  # type: GoogleCloudStorage # pyright: ignore
+    storage: GoogleCloudStorage
 
     required_options = ["bucket"]
     capabilities = utils.combine_capabilities(
@@ -40,8 +38,12 @@ class GoogleCloudUploader(Uploader):
         Capability.MULTIPART_UPLOAD,
     )
 
-    def upload(self, name, upload, extras):
-        # type: (str, types.Upload, dict[str, types.Any]) -> GCStorageData
+    def upload(
+        self,
+        name: str,
+        upload: types.Upload,
+        extras: dict[str, Any],
+    ) -> GCStorageData:
         filename = self.storage.compute_name(name, extras, upload)
         filepath = os.path.join(self.storage.settings["path"], filename)
 
@@ -57,9 +59,11 @@ class GoogleCloudUploader(Uploader):
             "size": blob.size or upload.content_length,
         }
 
-    def initialize_multipart_upload(self, name, extras):
-        # type: (str, dict[str, types.Any]) -> dict[str, types.Any]
-
+    def initialize_multipart_upload(
+        self,
+        name: str,
+        extras: dict[str, Any],
+    ) -> dict[str, Any]:
         schema = {
             "size": [
                 tk.get_validator("not_missing"),
@@ -82,10 +86,13 @@ class GoogleCloudUploader(Uploader):
         if max_size and data["size"] > max_size:
             raise exceptions.LargeUploadError(data["size"], max_size)
 
-        url = blob.create_resumable_upload_session(
-            size=data["size"],
-            origin=self.storage.settings["resumable_origin"],
-        )  # type: types.Any
+        url = cast(
+            str,
+            blob.create_resumable_upload_session(
+                size=data["size"],
+                origin=self.storage.settings["resumable_origin"],
+            ),
+        )
 
         if not url:
             raise exceptions.UploadError("Cannot initialize session URL")
@@ -97,8 +104,11 @@ class GoogleCloudUploader(Uploader):
             "filename": filename,
         }
 
-    def update_multipart_upload(self, upload_data, extras):
-        # type: (dict[str, types.Any], dict[str, types.Any]) -> dict[str, types.Any]
+    def update_multipart_upload(
+        self,
+        upload_data: dict[str, Any],
+        extras: dict[str, Any],
+    ) -> dict[str, Any]:
         schema = {
             "upload": [
                 tk.get_validator("ignore_missing"),
@@ -120,7 +130,7 @@ class GoogleCloudUploader(Uploader):
             raise tk.ValidationError(errors)
 
         if "upload" in data:
-            upload = data["upload"]  # type: types.Upload
+            upload: types.Upload = data["upload"]
 
             first_byte = data.get("position", upload_data["uploaded"])
             last_byte = first_byte + upload.content_length - 1
@@ -171,9 +181,7 @@ class GoogleCloudUploader(Uploader):
 
         return upload_data
 
-    def show_multipart_upload(self, upload_data):
-        # type: (dict[str, types.Any]) -> dict[str, types.Any]
-
+    def show_multipart_upload(self, upload_data: dict[str, Any]) -> dict[str, Any]:
         resp = requests.put(
             upload_data["session_url"],
             headers={
@@ -217,8 +225,11 @@ class GoogleCloudUploader(Uploader):
 
         return upload_data
 
-    def complete_multipart_upload(self, upload_data, extras):
-        # type: (dict[str, types.Any], dict[str, types.Any]) -> GCStorageData
+    def complete_multipart_upload(
+        self,
+        upload_data: dict[str, Any],
+        extras: dict[str, Any],
+    ) -> GCStorageData:
         upload_data = self.show_multipart_upload(upload_data)
         if upload_data["uploaded"] != upload_data["size"]:
             raise tk.ValidationError(
@@ -246,15 +257,13 @@ class GoogleCloudUploader(Uploader):
 
 
 class GoogleCloudManager(Manager):
-    storage = None  # type: GoogleCloudStorage # pyright: ignore
+    storage: GoogleCloudStorage
     required_options = ["bucket"]
     capabilities = utils.combine_capabilities(Capability.REMOVE)
 
-    def remove(self, data):
-        # type: (types.MinimalStorageData) -> bool
-
+    def remove(self, data: types.MinimalStorageData) -> bool:
         filepath = os.path.join(str(self.storage.settings["path"]), data["filename"])
-        client = self.storage.client  # type: Client
+        client: Client = self.storage.client
         blob = client.bucket(self.storage.settings["bucket"]).blob(filepath)
 
         try:
@@ -280,8 +289,7 @@ class GoogleCloudManager(Manager):
 
 
 class GoogleCloudStorage(Storage):
-    def __init__(self, **settings):
-        # type: (**types.Any) -> None
+    def __init__(self, **settings: Any):
         settings["path"] = settings.setdefault("path", "").lstrip("/")
         settings.setdefault("resumable_origin", tk.config["ckan.site_url"])
 
@@ -307,8 +315,7 @@ class GoogleCloudStorage(Storage):
         return GoogleCloudManager(self)
 
     @classmethod
-    def declare_config_options(cls, declaration, key):
-        # type: (types.Declaration, types.Key) -> None
+    def declare_config_options(cls, declaration: types.Declaration, key: types.Key):
         super().declare_config_options(declaration, key)
         declaration.declare(key.path, "").set_description(
             "Path to the folder where uploaded data will be stored.",

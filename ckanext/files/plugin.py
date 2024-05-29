@@ -1,82 +1,69 @@
+from __future__ import annotations
+
 import json
 import os
+from typing import Any
 
 import ckan.plugins as p
 import ckan.plugins.toolkit as tk
 from ckan.exceptions import CkanConfigurationException
 
-from ckanext.files import (
-    base,
-    cli,
-    config,
-    exceptions,
-    helpers,
-    interfaces,
-    storage,
-    views,
-)
-from ckanext.files.logic import action, auth, validators
-
-from ckanext.files import types  # isort: skip # noqa: F401
+from ckanext.files import base, config, exceptions, interfaces, storage, types
 
 
+@tk.blanket.helpers
+@tk.blanket.validators
+@tk.blanket.actions
+@tk.blanket.auth_functions
+@tk.blanket.cli
 class FilesPlugin(p.SingletonPlugin):
     p.implements(p.IConfigurable)
     p.implements(p.IConfigurer, inherit=True)
-    p.implements(p.IActions)
-    p.implements(p.IAuthFunctions)
-    p.implements(p.IValidators)
-    p.implements(p.IBlueprint)
-    p.implements(p.ITemplateHelpers)
     p.implements(interfaces.IFiles)
 
-    if tk.check_ckan_version("2.9"):
-        p.implements(p.IClick)
+    p.implements(p.IConfigDeclaration)
 
-    if tk.check_ckan_version("2.10"):
-        p.implements(p.IConfigDeclaration)
+    def declare_config_options(self, declaration: types.Declaration, key: types.Key):
+        import yaml
 
-        def declare_config_options(self, declaration, key):
-            # type: (types.Declaration, types.Key) -> None
-            import yaml
+        here = os.path.dirname(__file__)
+        with open(os.path.join(here, "config_declaration.yaml"), "rb") as src:
+            declaration.load_dict(yaml.safe_load(src))
 
-            here = os.path.dirname(__file__)
-            with open(os.path.join(here, "config_declaration.yaml"), "rb") as src:
-                declaration.load_dict(yaml.safe_load(src))
+        _register_adapters()
+        for name, settings in config.storages().items():
+            storage_key = key.from_string(config.STORAGE_PREFIX + name)
 
-            _register_adapters()
-            for name, settings in config.storages().items():
-                storage_key = key.from_string(config.STORAGE_PREFIX + name)
-
-                if tk.check_ckan_version("2.10.3"):
-                    available_adapters = json.dumps(
-                        list(base.adapters),
-                        separators=(",", ":"),
-                    )
-
-                    declaration.declare(
-                        storage_key.type,
-                        settings.get("type"),
-                    ).append_validators(
-                        "one_of({})".format(available_adapters),
-                    ).set_description(
-                        "Storage adapter used by the storage",
-                    )
-
-                adapter = base.adapters.get(settings.get("type"))
-                if not adapter:
-                    continue
-
-                adapter.declare_config_options(
-                    declaration,
-                    storage_key,
+            if tk.check_ckan_version("2.10.3"):
+                # literal evaluation in validators was added in
+                # v2.10.3. Without it we cannot validate dynamically storage
+                # type
+                available_adapters = json.dumps(
+                    list(base.adapters),
+                    separators=(",", ":"),
                 )
 
+                declaration.declare(
+                    storage_key.type,
+                    settings.get("type"),
+                ).append_validators(
+                    "one_of({})".format(available_adapters),
+                ).set_description(
+                    "Storage adapter used by the storage",
+                )
+
+            adapter = base.adapters.get(settings.get("type", ""))
+            if not adapter:
+                continue
+
+            adapter.declare_config_options(
+                declaration,
+                storage_key,
+            )
+
     # IFiles
-    def files_get_storage_adapters(self):
-        # type: () -> dict[str, types.Any]
-        adapters = {}  # type: dict[str, types.Any]
-        adapters = {
+    def files_get_storage_adapters(self) -> dict[str, type[base.Storage]]:
+        adapters: dict[str, type[base.Storage]] = {
             "files:fs": storage.FileSystemStorage,
             "files:public_fs": storage.PublicFileSystemStorage,
             "files:redis": storage.RedisStorage,
@@ -88,47 +75,14 @@ class FilesPlugin(p.SingletonPlugin):
         return adapters
 
     # IConfigurable
-    def configure(self, config_):
-        # type: (types.Any) -> None
-
-        # starting from CKAN v2.10, adapters are registered alongside with
-        # config declaration, to enrich declarations with adapter-specific
-        # options.
-        if not tk.check_ckan_version("2.10"):
-            _register_adapters()
-
+    def configure(self, config_: Any):
         _initialize_storages()
 
     # IConfigurer
-    def update_config(self, config_):
-        # type: (types.Any) -> None
+    def update_config(self, config_: Any):
         tk.add_template_directory(config_, "templates")
         tk.add_resource("assets", "files")
         tk.add_public_directory(config_, "public")
-
-    # IActions
-    def get_actions(self):
-        return action.get_actions()
-
-    # IAuthFunctions
-    def get_auth_functions(self):
-        return auth.get_auth_functions()
-
-    # IValidators
-    def get_validators(self):
-        return validators.get_validators()
-
-    # IBlueprint
-    def get_blueprint(self):
-        return views.get_blueprints()
-
-    # ITemplateHelpers
-    def get_helpers(self):
-        return helpers.get_helpers()
-
-    # IClick
-    def get_commands(self):
-        return cli.get_commands()
 
 
 def _register_adapters():

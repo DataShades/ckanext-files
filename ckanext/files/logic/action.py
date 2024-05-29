@@ -1,29 +1,25 @@
+from __future__ import annotations
+
+from typing import Any
+
 import sqlalchemy as sa
 from werkzeug.utils import secure_filename
 
 import ckan.plugins.toolkit as tk
 from ckan import model
 from ckan.logic import validate
+from ckan.types import Context
 
 from ckanext.files import exceptions, shared
 from ckanext.files.base import Capability
 from ckanext.files.model import File, Owner
-from ckanext.files.utils import make_collector
 
 from . import schema
 
 from ckanext.files import types  # isort: skip # noqa: F401
 
 
-_actions, action = make_collector()
-
-
-def get_actions():
-    return dict(_actions)
-
-
-def _flat_mask(data):
-    # type: (dict[str, types.Any]) -> dict[tuple[types.Any], types.Any]
+def _flat_mask(data: dict[str, Any]) -> dict[tuple[Any, ...], Any]:
     result = {}  # type: dict[tuple[types.Any], types.Any]
 
     for k, v in data.items():
@@ -35,11 +31,12 @@ def _flat_mask(data):
     return result
 
 
-@action
 @tk.side_effect_free
 @validate(schema.file_search_by_user)
-def files_file_search_by_user(context, data_dict):
-    # type: (types.Any, dict[str, types.Any]) -> dict[str, types.Any]
+def files_file_search_by_user(
+    context: Context,
+    data_dict: dict[str, Any],
+) -> dict[str, Any]:
     tk.check_access("files_file_search_by_user", context, data_dict)
     sess = context["session"]
 
@@ -94,10 +91,8 @@ def files_file_search_by_user(context, data_dict):
     return {"count": total, "results": [f.dictize(context) for f in q]}
 
 
-@action
 @validate(schema.file_create)
-def files_file_create(context, data_dict):
-    # type: (types.Any, dict[str, types.Any]) -> dict[str, types.Any]
+def files_file_create(context: Context, data_dict: dict[str, Any]) -> dict[str, Any]:
     tk.check_access("files_file_create", context, data_dict)
     _ensure_name(data_dict)
 
@@ -129,7 +124,7 @@ def files_file_create(context, data_dict):
     )
     context["session"].add(fileobj)
 
-    _add_owner(context, "file", fileobj.id)  # type: ignore
+    _add_owner(context, "file", fileobj.id)
     context["session"].commit()
 
     return fileobj.dictize(context)
@@ -178,10 +173,8 @@ def _delete_owners(context, item_type, item_id):
     context["session"].execute(stmt)
 
 
-@action
 @validate(schema.file_delete)
-def files_file_delete(context, data_dict):
-    # type: (types.Any, dict[str, types.Any]) -> bool
+def files_file_delete(context: Context, data_dict: dict[str, Any]) -> bool:
     tk.check_access("files_file_delete", context, data_dict)
 
     data_dict["id"]
@@ -205,11 +198,9 @@ def files_file_delete(context, data_dict):
     return fileobj.dictize(context)
 
 
-@action
 @tk.side_effect_free
 @validate(schema.file_show)
-def files_file_show(context, data_dict):
-    # type: (types.Any, dict[str, types.Any]) -> dict[str, types.Any]
+def files_file_show(context: Context, data_dict: dict[str, Any]) -> dict[str, Any]:
     tk.check_access("files_file_show", context, data_dict)
 
     fileobj = (
@@ -221,10 +212,8 @@ def files_file_show(context, data_dict):
     return fileobj.dictize(context)
 
 
-@action
 @validate(schema.file_rename)
-def files_file_rename(context, data_dict):
-    # type: (types.Any, dict[str, types.Any]) -> dict[str, types.Any]
+def files_file_rename(context: Context, data_dict: dict[str, Any]) -> dict[str, Any]:
     tk.check_access("files_file_rename", context, data_dict)
 
     fileobj = (
@@ -240,11 +229,11 @@ def files_file_rename(context, data_dict):
     return fileobj.dictize(context)
 
 
-@action
 @validate(schema.upload_initialize)
-def files_upload_initialize(context, data_dict):
-    # type: (types.Any, dict[str, types.Any]) -> dict[str, types.Any]
-
+def files_upload_initialize(
+    context: Context,
+    data_dict: dict[str, Any],
+) -> dict[str, Any]:
     tk.check_access("files_upload_initialize", context, data_dict)
     _ensure_name(data_dict)
     extras = data_dict.get("__extras", {})
@@ -272,17 +261,15 @@ def files_upload_initialize(context, data_dict):
         storage_data=storage_data,
     )
     context["session"].add(fileobj)
-    _add_owner(context, "file", fileobj.id)  # type: ignore
+    _add_owner(context, "file", fileobj.id)
     context["session"].commit()
 
     return fileobj.dictize(context)
 
 
-@action
 @tk.side_effect_free
 @validate(schema.upload_show)
-def files_upload_show(context, data_dict):
-    # type: (types.Any, dict[str, types.Any]) -> dict[str, types.Any]
+def files_upload_show(context: Context, data_dict: dict[str, Any]) -> dict[str, Any]:
     tk.check_access("files_upload_show", context, data_dict)
     file_dict = tk.get_action("files_file_show")(context, data_dict)
 
@@ -295,10 +282,8 @@ def files_upload_show(context, data_dict):
     return dict(file_dict, storage_data=storage_data)
 
 
-@action
 @validate(schema.upload_update)
-def files_upload_update(context, data_dict):
-    # type: (types.Any, dict[str, types.Any]) -> dict[str, types.Any]
+def files_upload_update(context: Context, data_dict: dict[str, Any]) -> dict[str, Any]:
     tk.check_access("files_upload_update", context, data_dict)
 
     extras = data_dict.get("__extras", {})
@@ -322,9 +307,11 @@ def files_upload_update(context, data_dict):
     return fileobj.dictize(context)
 
 
-@action
 @validate(schema.upload_complete)
-def files_upload_complete(context, data_dict):
+def files_upload_complete(
+    context: Context,
+    data_dict: dict[str, Any],
+) -> dict[str, Any]:
     # type: (types.Any, dict[str, types.Any]) -> dict[str, types.Any]
     tk.check_access("files_upload_complete", context, data_dict)
 

@@ -1,5 +1,9 @@
+from __future__ import annotations
+
 import os
+import pydoc
 import textwrap
+
 import click
 
 import ckan.plugins.toolkit as tk
@@ -23,7 +27,7 @@ def files():
 
 
 @files.command()
-@click.option("-v", "--verbose", is_flag=True)
+@click.option("-v", "--verbose", is_flag=True, help="Show adapter's documentation")
 def adapters(verbose: bool):
     """Show all awailable storage adapters."""
     for name in sorted(base.adapters):
@@ -35,7 +39,11 @@ def adapters(verbose: bool):
                 adapter.__name__,
             ),
         )
-
+        if verbose:
+            doc = pydoc.getdoc(adapter)
+            wrapped = textwrap.indent(doc, "\t")
+            if wrapped:
+                click.echo(wrapped)
 
 
 @files.command()
@@ -55,8 +63,12 @@ def storages():
 )
 @click.option("-m", "--materialize", help="Register orphans in DB", is_flag=True)
 @click.option("-a", "--adopt-by", help="Attach orphans to specified user")
-def scan(storage_name, orphans_only, adopt_by, materialize):
-    # type: (str | None, bool, str | None, bool) -> None
+def scan(
+    storage_name: str | None,
+    orphans_only: bool,
+    adopt_by: str | None,
+    materialize: bool,
+):
     """Iterate over all files available in storage.
 
     This command can be used to locate "orphans", that are not registered in

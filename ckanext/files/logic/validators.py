@@ -1,24 +1,13 @@
-import six
+from __future__ import annotations
+
+from typing import Any
 
 import ckan.plugins.toolkit as tk
 
-from ckanext.files.utils import make_collector
-
-from ckanext.files import types, utils  # isort: skip # noqa: F401
-
-if six.PY3:
-    from typing import Any  # isort: skip # noqa: F401
-
-_validators, validator = make_collector()
+from ckanext.files import types, utils
 
 
-def get_validators():
-    return dict(_validators)
-
-
-@validator
-def files_into_upload(value):
-    # type: (Any) -> types.Upload
+def files_into_upload(value: Any) -> types.Upload:
     """Convert value into werkzeug.FileStorage object"""
     try:
         return utils.make_upload(value)
@@ -32,9 +21,7 @@ def files_into_upload(value):
         raise tk.Invalid(msg)  # noqa: B904
 
 
-@validator
-def files_parse_filesize(value):
-    # type: (Any) -> int
+def files_parse_filesize(value: Any) -> int:
     """Convert human-readable filesize into an integer."""
 
     if isinstance(value, int):

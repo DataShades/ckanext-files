@@ -1,10 +1,12 @@
-from __future__ import absolute_import
+from __future__ import annotations
+
+from io import BytesIO
+from typing import IO, Any, cast
 
 from redis import ResponseError
-from io import BytesIO
 
 import ckan.plugins.toolkit as tk
-from ckan.lib.redis import connect_to_redis  # type: ignore
+from ckan.lib.redis import connect_to_redis
 
 from ckanext.files import exceptions, types, utils
 from ckanext.files.base import (
@@ -19,8 +21,6 @@ from ckanext.files.base import (
 import redis  # isort: skip # noqa: F401
 
 
-
-
 RedisAdditionalData = types.TypedDict("RedisAdditionalData", {})
 
 
@@ -29,7 +29,7 @@ class RedisStorageData(RedisAdditionalData, types.MinimalStorageData):
 
 
 class RedisUploader(Uploader):
-    storage = None  # type: RedisStorage # pyright: ignore
+    storage: "RedisStorage"
 
     required_options = ["prefix"]
     capabilities = utils.combine_capabilities(
@@ -38,9 +38,12 @@ class RedisUploader(Uploader):
         Capability.MOVE,
     )
 
-    def upload(self, name, upload, extras):
-        # type: (str, types.Upload, dict[str, types.Any]) -> RedisStorageData
-
+    def upload(
+        self,
+        name: str,
+        upload: types.Upload,
+        extras: dict[str, Any],
+    ) -> RedisStorageData:
         filename = self.storage.compute_name(name, extras, upload)
         key = self.storage.settings["prefix"] + filename
 
@@ -60,19 +63,17 @@ class RedisUploader(Uploader):
 
 
 class RedisReader(Reader):
-    storage = None  # type: RedisStorage # pyright: ignore
+    storage: RedisStorage
 
     required_options = ["prefix"]
     capabilities = utils.combine_capabilities(Capability.STREAM)
 
-    def stream(self, data):
-        # type: (dict[str, types.Any]) -> types.IO[bytes]
+    def stream(self, data: types.MinimalStorageData) -> IO[bytes]:
         return BytesIO(self.content(data))
 
-    def content(self, data):
-        # type: (dict[str, types.Any]) -> bytes
+    def content(self, data: types.MinimalStorageData) -> bytes:
         key = self.storage.settings["prefix"] + data["filename"]
-        value = self.storage.redis.get(key)
+        value = cast("bytes | None", self.storage.redis.get(key))
         if value is None:
             raise exceptions.MissingFileError(self.storage.settings["name"], key)
 
@@ -80,26 +81,28 @@ class RedisReader(Reader):
 
 
 class RedisManager(Manager):
-    storage = None  # type: RedisStorage # pyright: ignore
+    storage: RedisStorage
 
     required_options = ["prefix"]
     capabilities = utils.combine_capabilities(Capability.REMOVE, Capability.EXISTS)
 
-    def remove(self, data):
-        # type: (RedisStorageData) -> bool
+    def remove(self, data: RedisStorageData) -> bool:
         key = self.storage.settings["prefix"] + data["filename"]
         self.storage.redis.delete(key)
         return True
 
-    def exists(self, data):
-        # type: (RedisStorageData) -> bool
+    def exists(self, data: RedisStorageData) -> bool:
         key = self.storage.settings["prefix"] + data["filename"]
         return bool(self.storage.redis.exists(key))
 
-    def copy(self, data, name, extras):
-        # type: (types.MinimalStorageData, str, dict[str, types.Any]) -> RedisStorageData
-        src = self.storage.settings["prefix"] + data["filename"]
-        dest = self.storage.settings["prefix"] + name
+    def copy(
+        self,
+        data: types.MinimalStorageData,
+        name: str,
+        extras: dict[str, Any],
+    ) -> RedisStorageData:
+        src: str = self.storage.settings["prefix"] + data["filename"]
+        dest: str = self.storage.settings["prefix"] + name
 
         if not self.storage.redis.exists(src):
             raise exceptions.MissingFileError(self.storage.settings["name"], src)
@@ -110,12 +113,20 @@ class RedisManager(Manager):
         try:
             self.storage.redis.copy(src, dest)
         except (AttributeError, ResponseError):
-            self.storage.redis.restore(dest, 0, self.storage.redis.dump(src))
+            self.storage.redis.restore(
+                dest,
+                0,
+                cast(Any, self.storage.redis.dump(src)),
+            )
 
         return RedisStorageData(data, filename=name)
 
-    def move(self, data, name, extras):
-        # type: (types.MinimalStorageData, str, dict[str, types.Any]) -> RedisStorageData
+    def move(
+        self,
+        data: types.MinimalStorageData,
+        name: str,
+        extras: dict[str, Any],
+    ) -> RedisStorageData:
         filename = self.storage.compute_name(name, extras)
 
         src = self.storage.settings["prefix"] + data["filename"]
@@ -135,19 +146,16 @@ class RedisStorage(Storage):
     def make_reader(self):
         return RedisReader(self)
 
-    def __init__(self, **settings):
-        # type: (**types.Any) -> None
-
+    def __init__(self, **settings: Any):
         settings.setdefault(
             "prefix",
             _default_prefix(),
         )
         super(RedisStorage, self).__init__(**settings)
-        self.redis = connect_to_redis()  # type: redis.Redis[bytes]
+        self.redis: redis.Redis = connect_to_redis()
 
     @classmethod
-    def declare_config_options(cls, declaration, key):
-        # type: (types.Declaration, types.Key) -> None
+    def declare_config_options(cls, declaration: types.Declaration, key: types.Key):
         super().declare_config_options(declaration, key)
         declaration.declare(key.prefix, _default_prefix()).set_description(
             "Static prefix of the Redis key generated for every upload.",

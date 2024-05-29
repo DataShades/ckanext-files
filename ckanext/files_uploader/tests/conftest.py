@@ -1,1 +1,1 @@
-from ckanext.files.tests.conftest import *
+from ckanext.files.tests.conftest import *  # noqa: F403

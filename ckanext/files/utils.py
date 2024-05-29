@@ -6,49 +6,49 @@ stored here, to avoid import cycles.
 
 """
 
-import cgi
+from __future__ import annotations
+
+import contextlib
 import mimetypes
 import re
 import tempfile
 from io import BytesIO
+from typing import Any, Callable, TypeVar, cast
 
 import magic
 import six
+from typing_extensions import Generic
 from werkzeug.datastructures import FileStorage
 
-from ckanext.files import exceptions
+from ckanext.files import exceptions, types
 
-from ckanext.files import types  # isort: skip # noqa: 401
-
-if six.PY3:
-    from typing import TypeVar
-
-    from typing import Callable, Any  # isort: skip # noqa: F401
-
-    T = TypeVar("T")
-
+T = TypeVar("T")
+TC = TypeVar("TC", bound=Callable[..., Any])
 
 RE_FILESIZE = re.compile(r"^(?P<size>\d+(?:\.\d+)?)\s*(?P<unit>\w*)$")
 
-UNITS = {
-    "": 1,
-    "b": 1,
-    "k": 10**3,
-    "kb": 10**3,
-    "m": 10**6,
-    "mb": 10**6,
-    "g": 10**9,
-    "gb": 10**9,
-    "t": 10**12,
-    "tb": 10**12,
-    "kib": 2**10,
-    "mib": 2**20,
-    "gib": 2**30,
-    "tib": 2**40,
-}  # type: dict[str, int]
+UNITS = cast(
+    "dict[str, int]",
+    {
+        "": 1,
+        "b": 1,
+        "k": 10**3,
+        "kb": 10**3,
+        "m": 10**6,
+        "mb": 10**6,
+        "g": 10**9,
+        "gb": 10**9,
+        "t": 10**12,
+        "tb": 10**12,
+        "kib": 2**10,
+        "mib": 2**20,
+        "gib": 2**30,
+        "tib": 2**40,
+    },
+)
 
 
-class Registry(object):
+class Registry(Generic[T]):
     """Mutable collection of objects.
 
     Example:
@@ -61,8 +61,7 @@ class Registry(object):
     >>> assert col.get("one") is None
     """
 
-    def __init__(self, members=None):
-        # type: (dict[str, Any] | None) -> None
+    def __init__(self, members: dict[str, T] | None = None) -> None:
         if members is None:
             members = {}
         self.members = members
@@ -78,21 +77,18 @@ class Registry(object):
 
         self.members.clear()
 
-    def register(self, name, member):
-        # type: (str, Any) -> None
+    def register(self, name: str, member: T) -> None:
         """Add a member to registry."""
 
         self.members[name] = member
 
-    def get(self, name):
-        # type: (Any) -> Any | None
+    def get(self, name: str) -> T | None:
         """Get an optional member from registry."""
 
         return self.members.get(name)
 
 
-def make_collector():
-    # type: () -> tuple[dict[str, Any], Callable[[Any], Any]]
+def make_collector() -> tuple[dict[str, TC], Callable[[TC], TC]]:
     """Create pair of a dictionary and decorator that appends function to the
     dictionary.
 
@@ -107,10 +103,9 @@ def make_collector():
     >>> assert col == {"hello": hello}
     """
 
-    collection = {}  # type: dict[str, Any]
+    collection: dict[str, TC] = {}
 
-    def collector(fn):
-        # type: (T) -> T
+    def collector(fn: TC) -> TC:
         """Decorator that appends functions to the collection."""
 
         collection[fn.__name__] = fn
@@ -119,8 +114,7 @@ def make_collector():
     return collection, collector
 
 
-def ensure_size(upload, max_size):
-    # type: (types.Upload, int) -> int
+def ensure_size(upload: types.Upload, max_size: int) -> int:
     """Return filesize or rise an exception if it exceedes max_size."""
 
     filesize = upload.content_length
@@ -135,8 +129,9 @@ def ensure_size(upload, max_size):
     return filesize
 
 
-def combine_capabilities(*capabilities):
-    # type: (*types.CapabilityCluster | types.CapabilityUnit) -> types.CapabilityCluster
+def combine_capabilities(
+    *capabilities: types.CapabilityCluster | types.CapabilityUnit,
+) -> types.CapabilityCluster:
     """Combine multiple capabilities.
 
     Example:
@@ -150,8 +145,10 @@ def combine_capabilities(*capabilities):
     return types.CapabilityCluster(result)
 
 
-def exclude_capabilities(capabilities, *exclude):
-    # type: (types.CapabilityCluster, *types.CapabilityCluster | types.CapabilityUnit) -> types.CapabilityCluster
+def exclude_capabilities(
+    capabilities: types.CapabilityCluster,
+    *exclude: types.CapabilityCluster | types.CapabilityUnit,
+) -> types.CapabilityCluster:
     """Remove capabilities from the cluster
 
     Example:
@@ -164,8 +161,7 @@ def exclude_capabilities(capabilities, *exclude):
     return capabilities
 
 
-def parse_filesize(value):
-    # type: (str) -> int
+def parse_filesize(value: str) -> int:
     """Transform human-readable filesize into an integer.
 
     Example:
@@ -184,9 +180,40 @@ def parse_filesize(value):
     return int(float(size) * multiplier)
 
 
-def make_upload(value):
-    # type: (Any) -> types.Upload
+def make_upload(
+    value: (
+        FileStorage
+        | tempfile.SpooledTemporaryFile[Any]
+        | str
+        | bytes
+        | bytearray
+        | BytesIO
+        | Any
+    ),
+) -> types.Upload:
     """Convert value into werkzeug.FileStorage object"""
+    with contextlib.suppress(ImportError):
+        import cgi
+
+        if isinstance(value, cgi.FieldStorage):
+            if not value.filename or not value.file:
+                raise ValueError(value)
+
+            mime, _encoding = mimetypes.guess_type(value.filename)
+            if not mime:
+                mime = magic.from_buffer(value.file.read(1024), True)
+                value.file.seek(0)
+            value.file.seek(0, 2)
+            size = value.file.tell()
+            value.file.seek(0)
+
+            return FileStorage(
+                value.file,
+                value.filename,
+                content_type=mime,
+                content_length=size,
+            )
+
     if isinstance(value, FileStorage):
         if not value.content_length:
             value.stream.seek(0, 2)
@@ -201,25 +228,6 @@ def make_upload(value):
         value.seek(0)
 
         return FileStorage(value, "", content_type=mime, content_length=size)
-
-    if isinstance(value, cgi.FieldStorage):
-        if not value.filename or not value.file:
-            raise ValueError(value)
-
-        mime, _encoding = mimetypes.guess_type(value.filename)
-        if not mime:
-            mime = magic.from_buffer(value.file.read(1024), True)
-            value.file.seek(0)
-        value.file.seek(0, 2)
-        size = value.file.tell()
-        value.file.seek(0)
-
-        return FileStorage(
-            value.file,
-            value.filename,
-            content_type=mime,
-            content_length=size,
-        )
 
     if isinstance(value, six.text_type):
         value = value.encode()

@@ -1,11 +1,9 @@
 """Interfaces of the extension.
 """
 
-import six
+from __future__ import annotations
 
-if six.PY3:
-    from typing import Any  # isort: skip # noqa: F401
-
+from typing import Any
 
 from ckan.plugins import Interface
 
@@ -13,8 +11,7 @@ from ckan.plugins import Interface
 class IFiles(Interface):
     """Extension point for ckanext-files."""
 
-    def files_get_storage_adapters(self):
-        # type: () -> dict[str, Any]
+    def files_get_storage_adapters(self) -> dict[str, Any]:
         """Return mapping of storage type to storage factory.
 
         Example:

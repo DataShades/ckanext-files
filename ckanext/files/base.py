@@ -9,6 +9,8 @@ cycles.
 
 """
 
+from __future__ import annotations
+
 import abc
 import copy
 import hashlib
@@ -16,6 +18,7 @@ import itertools
 import os
 import uuid
 from datetime import datetime
+from typing import IO, Any, Iterable, Literal
 
 import pytz
 from werkzeug.datastructures import FileStorage
@@ -27,13 +30,12 @@ from ckanext.files import exceptions, types, utils
 
 CHUNK_SIZE = 16 * 1024
 
-adapters = utils.Registry({})
-storages = utils.Registry({})
+adapters: utils.Registry[type[Storage]] = utils.Registry({})
+storages: utils.Registry[Storage] = utils.Registry({})
 
 
-def storage_from_settings(name, settings):
-    # type: (str, dict[str, types.Any]) -> Storage
-    """Initialize storage instance with specified settings.
+def storage_from_settings(name: str, settings: dict[str, Any]) -> Storage:
+    """Initialize storage instance with sppeecified settings.
 
     Storage adapter is defined by `type` key of the settings. All other
     settings depend on the specific adapter.
@@ -43,7 +45,7 @@ def storage_from_settings(name, settings):
     """
 
     adapter_type = settings.pop("type", None)
-    adapter = adapters.get(adapter_type)  # type: type[Storage] | None
+    adapter = adapters.get(adapter_type)
     if not adapter:
         raise exceptions.UnknownAdapterError(adapter_type)
 
@@ -51,8 +53,7 @@ def storage_from_settings(name, settings):
     return adapter(**settings)
 
 
-def get_storage(name):
-    # type: (str) -> Storage
+def get_storage(name: str) -> Storage:
     """Return existing storage instance.
 
     Storages are initialized when plugin is loaded. As result, this function
@@ -82,8 +83,12 @@ class HashingReader:
 
     """
 
-    def __init__(self, stream, chunk_size=CHUNK_SIZE, algorithm="md5"):
-        # type: (types.IO[bytes], int, str) -> None
+    def __init__(
+        self,
+        stream: IO[bytes],
+        chunk_size: int = CHUNK_SIZE,
+        algorithm: str = "md5",
+    ) -> None:
         self.stream = stream
         self.chunk_size = chunk_size
         self.algorithm = algorithm
@@ -193,8 +198,7 @@ class OptionChecker(object):
     """
 
     @classmethod
-    def ensure_option(cls, settings, option):
-        # type: (dict[str, types.Any], str) -> types.Any
+    def ensure_option(cls, settings: dict[str, Any], option: str) -> Any:
         """Return value of the option or rise an exception."""
 
         if option not in settings:
@@ -216,11 +220,10 @@ class StorageService(OptionChecker):
 
     """
 
-    required_options = []  # type: list[str]
+    required_options: list[str] = []
     capabilities = utils.combine_capabilities()
 
-    def __init__(self, storage):
-        # type: (Storage) -> None
+    def __init__(self, storage: Storage):
         self.storage = storage
         self.ensure_settings()
 
@@ -232,96 +235,107 @@ class StorageService(OptionChecker):
 class Uploader(StorageService):
     """Service responsible for writing data into a storage."""
 
-    def upload(self, name, upload, extras):
-        # type: (str, types.Upload, dict[str, types.Any]) -> types.MinimalStorageData
+    def upload(
+        self,
+        name: str,
+        upload: types.Upload,
+        extras: dict[str, Any],
+    ) -> types.MinimalStorageData:
         """Upload file using single stream."""
 
         raise NotImplementedError
 
-    def initialize_multipart_upload(self, name, extras):
-        # type: (str, dict[str, types.Any]) -> dict[str, types.Any]
+    def initialize_multipart_upload(
+        self,
+        name: str,
+        extras: dict[str, Any],
+    ) -> dict[str, Any]:
         """Prepare everything for multipart(resumable) upload."""
 
         raise NotImplementedError
 
-    def show_multipart_upload(self, upload_data):
-        # type: (dict[str, types.Any]) -> dict[str, types.Any]
+    def show_multipart_upload(self, upload_data: dict[str, Any]) -> dict[str, Any]:
         """Show details of the incomplete upload."""
         raise NotImplementedError
 
-    def update_multipart_upload(self, upload_data, extras):
-        # type: (dict[str, types.Any], dict[str, types.Any]) -> dict[str, types.Any]
+    def update_multipart_upload(
+        self,
+        upload_data: dict[str, Any],
+        extras: dict[str, Any],
+    ) -> dict[str, Any]:
         """Add data to the incomplete upload."""
         raise NotImplementedError
 
-    def complete_multipart_upload(self, upload_data, extras):
-        # type: (dict[str, types.Any], dict[str, types.Any]) -> types.MinimalStorageData
+    def complete_multipart_upload(
+        self,
+        upload_data: dict[str, Any],
+        extras: dict[str, Any],
+    ) -> types.MinimalStorageData:
         """Verify file integrity and finalize incomplete upload."""
 
         raise NotImplementedError
 
 
 class Manager(StorageService):
-    def remove(self, data):
-        # type: (types.MinimalStorageData) -> bool
+    def remove(self, data: types.MinimalStorageData) -> bool:
         """Remove file from the storage."""
         raise NotImplementedError
 
-    def exists(self, data):
-        # type: (types.MinimalStorageData) -> bool
+    def exists(self, data: types.MinimalStorageData) -> bool:
         """Check if file exists in the storage."""
 
         raise NotImplementedError
 
-    def copy(self, data, name, extras):
-        # type: (types.MinimalStorageData, str, dict[str, types.Any]) -> types.MinimalStorageData
+    def copy(
+        self,
+        data: types.MinimalStorageData,
+        name: str,
+        extras: dict[str, Any],
+    ) -> types.MinimalStorageData:
         """Copy file inside the storage."""
 
         raise NotImplementedError
 
-    def move(self, data, name, extras):
-        # type: (types.MinimalStorageData, str, dict[str, types.Any]) -> types.MinimalStorageData
+    def move(
+        self,
+        data: types.MinimalStorageData,
+        name: str,
+        extras: dict[str, Any],
+    ) -> types.MinimalStorageData:
         """Move file to a different location inside the storage."""
         raise NotImplementedError
 
-    def scan(self):
-        # type: () -> types.Iterable[str]
-        """List all filenames in storage."""
+    def scan(self) -> Iterable[str]:
+        """List all locations(filenames) in storage."""
         raise NotImplementedError
 
-    def analyze(self, filename):
-        # type: (str) -> types.MinimalStorageData
+    def analyze(self, filename: str) -> types.MinimalStorageData:
         """Return all details about filename."""
         raise NotImplementedError
 
 
 class Reader(StorageService):
-    def stream(self, data):
-        # type: (types.MinimalStorageData) -> types.IO[bytes]
+    def stream(self, data: types.MinimalStorageData) -> IO[bytes]:
         """Return byte-stream of the file content."""
 
         raise NotImplementedError
 
-    def content(self, data):
-        # type: (types.MinimalStorageData) -> bytes
+    def content(self, data: types.MinimalStorageData) -> bytes:
         """Return file content as a single byte object."""
 
         return self.stream(data).read()
 
-    def permanent_link(self, data):
-        # type: (types.MinimalStorageData) -> str
+    def permanent_link(self, data: types.MinimalStorageData) -> str:
         """Return permanent download link."""
 
         raise NotImplementedError
 
-    def temporal_link(self, data):
-        # type: (types.MinimalStorageData) -> str
+    def temporal_link(self, data: types.MinimalStorageData) -> str:
         """Return temporal download link."""
 
         raise NotImplementedError
 
-    def one_time_link(self, data):
-        # type: (types.MinimalStorageData) -> str
+    def one_time_link(self, data: types.MinimalStorageData) -> str:
         """Return one-time download link."""
 
         raise NotImplementedError
@@ -330,8 +344,7 @@ class Reader(StorageService):
 class Storage(OptionChecker):
     __metaclass__ = abc.ABCMeta
 
-    def __init__(self, **settings):
-        # type: (**types.Any) -> None
+    def __init__(self, **settings: Any) -> None:
         self.settings = settings
 
         self.uploader = self.make_uploader()
@@ -341,7 +354,7 @@ class Storage(OptionChecker):
         self.capabilities = self.compute_capabilities()
 
     @property
-    def max_size(self):
+    def max_size(self) -> int:
         """Max allowed upload size.
 
         Max size set to 0 removes all limitations.
@@ -349,16 +362,14 @@ class Storage(OptionChecker):
         """
 
         size = self.settings.get("max_size", 0)
-
-        # pre v2.10 CKAN instances do not support config declarations
-        if isinstance(size, str):
-            size = utils.parse_filesize(size)
-
         return size
 
     @classmethod
-    def declare_config_options(cls, declaration, key):
-        # type: (types.Declaration, types.Key) -> None
+    def declare_config_options(
+        cls,
+        declaration: types.Declaration,
+        key: types.Key,
+    ) -> None:
         declaration.declare(key.max_size, 0).append_validators(
             "files_parse_filesize",
         ).set_description(
@@ -370,8 +381,7 @@ class Storage(OptionChecker):
             "Descriptive name of the storage used for debugging.",
         )
 
-    def compute_capabilities(self):
-        # type: () -> types.CapabilityCluster
+    def compute_capabilities(self) -> types.CapabilityCluster:
         return utils.combine_capabilities(
             self.uploader.capabilities,
             self.manager.capabilities,
@@ -387,12 +397,18 @@ class Storage(OptionChecker):
     def make_reader(self):
         return Reader(self)
 
-    def supports(self, operation):
-        # type: (types.CapabilityCluster | types.CapabilityUnit) -> bool
+    def supports(
+        self,
+        operation: types.CapabilityCluster | types.CapabilityUnit,
+    ) -> bool:
         return (self.capabilities & operation) == operation
 
-    def compute_name(self, name, extras, upload=None):
-        # type: (str, dict[str, types.Any], types.Upload|None) -> str
+    def compute_name(
+        self,
+        name: str,
+        extras: dict[str, Any],
+        upload: types.Upload | None = None,
+    ) -> str:
         strategy = self.settings.get("name_strategy", "uuid")
         if strategy == "uuid":
             return str(uuid.uuid4())
@@ -413,90 +429,105 @@ class Storage(OptionChecker):
 
         raise exceptions.NameStrategyError(strategy)
 
-    def upload(self, name, upload, extras):
-        # type: (str, types.Upload, dict[str, types.Any]) -> types.MinimalStorageData
+    def upload(
+        self,
+        name: str,
+        upload: types.Upload,
+        extras: dict[str, Any],
+    ) -> types.MinimalStorageData:
         if not self.supports(Capability.CREATE):
-            raise exceptions.UnsupportedOperationError("upload", type(self).__name__)
+            raise exceptions.UnsupportedOperationError("upload", type(self))
 
         if self.max_size:
             utils.ensure_size(upload, self.max_size)
 
         return self.uploader.upload(name, upload, extras)
 
-    def initialize_multipart_upload(self, name, extras):
-        # type: (str, dict[str, types.Any]) -> dict[str, types.Any]
+    def initialize_multipart_upload(
+        self,
+        name: str,
+        extras: dict[str, Any],
+    ) -> dict[str, Any]:
         return self.uploader.initialize_multipart_upload(name, extras)
 
-    def show_multipart_upload(self, upload_data):
-        # type: (dict[str, types.Any]) -> dict[str, types.Any]
+    def show_multipart_upload(self, upload_data: dict[str, Any]) -> dict[str, Any]:
         return self.uploader.show_multipart_upload(copy.deepcopy(upload_data))
 
-    def update_multipart_upload(self, upload_data, extras):
-        # type: (dict[str, types.Any], dict[str, types.Any]) -> dict[str, types.Any]
+    def update_multipart_upload(
+        self,
+        upload_data: dict[str, Any],
+        extras: dict[str, Any],
+    ) -> dict[str, Any]:
         return self.uploader.update_multipart_upload(copy.deepcopy(upload_data), extras)
 
-    def complete_multipart_upload(self, upload_data, extras):
-        # type: (dict[str, types.Any], dict[str, types.Any]) -> types.MinimalStorageData
+    def complete_multipart_upload(
+        self,
+        upload_data: dict[str, Any],
+        extras: dict[str, Any],
+    ) -> types.MinimalStorageData:
         return self.uploader.complete_multipart_upload(
             copy.deepcopy(upload_data),
             extras,
         )
 
-    def exists(self, data):
-        # type: (types.MinimalStorageData) -> bool
+    def exists(self, data: types.MinimalStorageData) -> bool:
         if not self.supports(Capability.EXISTS):
-            raise exceptions.UnsupportedOperationError("exists", type(self).__name__)
+            raise exceptions.UnsupportedOperationError("exists", type(self))
 
         return self.manager.exists(data)
 
-    def remove(self, data):
-        # type: (types.MinimalStorageData) -> bool
+    def remove(self, data: types.MinimalStorageData) -> bool:
         if not self.supports(Capability.REMOVE):
-            raise exceptions.UnsupportedOperationError("remove", type(self).__name__)
+            raise exceptions.UnsupportedOperationError("remove", type(self))
 
         return self.manager.remove(data)
 
-    def scan(self):
-        # type: () -> types.Iterable[str]
+    def scan(self) -> Iterable[str]:
         if not self.supports(Capability.SCAN):
-            raise exceptions.UnsupportedOperationError("scan", type(self).__name__)
+            raise exceptions.UnsupportedOperationError("scan", type(self))
 
         return self.manager.scan()
 
-    def analyze(self, filename):
-        # type: (str) -> types.MinimalStorageData
+    def analyze(self, filename: str) -> types.MinimalStorageData:
         if not self.supports(Capability.ANALYZE):
-            raise exceptions.UnsupportedOperationError("analyze", type(self).__name__)
+            raise exceptions.UnsupportedOperationError("analyze", type(self))
 
         return self.manager.analyze(filename)
 
-    def stream(self, data):
-        # type: (types.MinimalStorageData) -> types.IO[bytes]
+    def stream(self, data: types.MinimalStorageData) -> IO[bytes]:
         if not self.supports(Capability.STREAM):
-            raise exceptions.UnsupportedOperationError("stream", type(self).__name__)
+            raise exceptions.UnsupportedOperationError("stream", type(self))
 
         return self.reader.stream(data)
 
-    def content(self, data):
-        # type: (types.MinimalStorageData) -> bytes | str
+    def content(self, data: types.MinimalStorageData) -> bytes:
         if not self.supports(Capability.STREAM):
-            raise exceptions.UnsupportedOperationError("content", type(self).__name__)
+            raise exceptions.UnsupportedOperationError("content", type(self))
 
         return self.reader.content(data)
 
-    def copy(self, data, storage, name, extras):
-        # type: (types.MinimalStorageData, Storage, str, dict[str, types.Any]) -> types.MinimalStorageData
+    def copy(
+        self,
+        data: types.MinimalStorageData,
+        storage: Storage,
+        name: str,
+        extras: dict[str, Any],
+    ) -> types.MinimalStorageData:
         if storage is self and self.supports(Capability.COPY):
             return self.manager.copy(data, name, extras)
 
         if self.supports(Capability.STREAM) and storage.supports(Capability.CREATE):
             return storage.upload(name, FileStorage(self.stream(data)), extras)
 
-        raise exceptions.UnsupportedOperationError("copy", type(self).__name__)
+        raise exceptions.UnsupportedOperationError("copy", type(self))
 
-    def move(self, data, storage, name, extras):
-        # type: (types.MinimalStorageData, Storage, str, dict[str, types.Any]) -> types.MinimalStorageData
-
+    def move(
+        self,
+        data: types.MinimalStorageData,
+        storage: Storage,
+        name: str,
+        extras: dict[str, Any],
+    ) -> types.MinimalStorageData:
         if storage is self and self.supports(Capability.MOVE):
             return self.manager.move(data, name, extras)
 
@@ -507,10 +538,14 @@ class Storage(OptionChecker):
             storage.remove(data)
             return result
 
-        raise exceptions.UnsupportedOperationError("copy", type(self).__name__)
+        raise exceptions.UnsupportedOperationError("copy", type(self))
 
-    def link(self, data, extras, link_type=None):
-        # type: (types.MinimalStorageData, dict[str, types.Any], types.Literal["permanent", "temporal", "one-time"]|None) -> str
+    def link(
+        self,
+        data: types.MinimalStorageData,
+        extras: dict[str, Any],
+        link_type: Literal["permanent", "temporal", "one-time", None] = None,
+    ) -> str:
         if self.supports(Capability.PERMANENT_LINK) and (
             not link_type or link_type == "permanent"
         ):
@@ -526,10 +561,13 @@ class Storage(OptionChecker):
         ):
             return self.reader.one_time_link(data)
 
-        raise exceptions.UnsupportedOperationError("link", type(self).__name__)
+        raise exceptions.UnsupportedOperationError("link", type(self))
 
-    def make_download_response(self, name, data):
-        # type: (str, types.MinimalStorageData) -> types.Response
+    def make_download_response(
+        self,
+        name: str,
+        data: types.MinimalStorageData,
+    ) -> types.Response:
         """Return Flask response for generic file download."""
         try:
             return tk.redirect_to(self.link(data, {}))
@@ -541,7 +579,4 @@ class Storage(OptionChecker):
             resp.headers["content-disposition"] = "attachment; filename={}".format(name)
             return resp
 
-        raise exceptions.UnsupportedOperationError(
-            "download response",
-            type(self).__name__,
-        )
+        raise exceptions.UnsupportedOperationError("download response", type(self))

@@ -104,7 +104,7 @@ def _initialize_storages():
     base.storages.reset()
     for name, settings in config.storages().items():
         try:
-            storage = base.storage_from_settings(name, settings)
+            storage = base.make_storage(name, settings)
         except exceptions.UnknownAdapterError as err:
             raise CkanConfigurationException(str(err))  # noqa: B904
 

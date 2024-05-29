@@ -15,23 +15,23 @@ from datetime import datetime  # isort: skip # noqa: F401
 from faker import Faker  # isort: skip # noqa: F401
 
 
-class TestStorageFromSettings:
+class TestMakeStorage:
     def test_missing_adapter(self):
         """Unknown udapter causes an exception."""
 
         with pytest.raises(exceptions.UnknownAdapterError):
-            base.storage_from_settings("", {})
+            base.make_storage("", {})
 
     def test_invalid_configuration(self):
         """Wrong configuration causes an exception."""
 
         with pytest.raises(exceptions.InvalidStorageConfigurationError):
-            base.storage_from_settings("", {"type": "files:fs"})
+            base.make_storage("", {"type": "files:fs"})
 
     def test_normal_configuration(self):
         """Valid configuration produces a storage."""
 
-        storage = base.storage_from_settings("", {"type": "files:redis"})
+        storage = base.make_storage("", {"type": "files:redis"})
         assert isinstance(storage, RedisStorage)
 
 

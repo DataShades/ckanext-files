@@ -1,8 +1,8 @@
 """Base abstract functionality of the extentsion.
 
 All classes required for specific storage implementations are defined
-here. Some utilities, like `storage_from_settings` are also added to this
-module instead of `utils` to avoid import cycles.
+here. Some utilities, like `make_storage` are also added to this module instead
+of `utils` to avoid import cycles.
 
 This module relies only on types, exceptions and utils to prevent import
 cycles.
@@ -35,14 +35,14 @@ adapters: utils.Registry[type[Storage]] = utils.Registry({})
 storages: utils.Registry[Storage] = utils.Registry({})
 
 
-def storage_from_settings(name: str, settings: dict[str, Any]) -> Storage:
+def make_storage(name: str, settings: dict[str, Any]) -> Storage:
     """Initialize storage instance with sppeecified settings.
 
     Storage adapter is defined by `type` key of the settings. All other
     settings depend on the specific adapter.
 
     Example:
-    >>> storage = storage_from_settings("memo", {"type": "files:redis"})
+    >>> storage = make_storage("memo", {"type": "files:redis"})
     """
 
     adapter_type = settings.pop("type", None)
@@ -153,7 +153,7 @@ class StorageService(OptionChecker):
     storage, service raises an error during storage initialization stage.
 
     >>> class Uploader(StorageService):
-    >>>     capabilities = Capability.CREATE
+    >>>     capabilities = Capability.combine(Capability.CREATE)
     >>>     required_options = ["allowed_mimetypes"]
 
     """

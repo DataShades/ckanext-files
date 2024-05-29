@@ -5,9 +5,9 @@ from io import BytesIO
 import pytest
 from werkzeug.datastructures import FileStorage
 
-from ckanext.files import base, exceptions, utils
+from ckanext.files import base, exceptions
+from ckanext.files.shared import Capability
 from ckanext.files.storage import RedisStorage
-from ckanext.files.types import Capability
 
 from datetime import datetime  # isort: skip # noqa: F401
 
@@ -173,15 +173,15 @@ class TestReader:
 
 
 class RemovingManager(base.Manager):
-    capabilities = utils.combine_capabilities(Capability.REMOVE)
+    capabilities = Capability.combine(Capability.REMOVE)
 
 
 class StreamingReader(base.Reader):
-    capabilities = utils.combine_capabilities(Capability.STREAM)
+    capabilities = Capability.combine(Capability.STREAM)
 
 
 class SimpleUploader(base.Uploader):
-    capabilities = utils.combine_capabilities(Capability.CREATE)
+    capabilities = Capability.combine(Capability.CREATE)
 
 
 class Storage(base.Storage):
@@ -199,7 +199,7 @@ class TestStorage:
     def test_inherited_capabilities(self):
         """Storage combine capabilities of its services."""
         storage = Storage()
-        assert storage.capabilities == utils.combine_capabilities(
+        assert storage.capabilities == Capability.combine(
             Capability.REMOVE,
             Capability.STREAM,
             Capability.CREATE,
@@ -229,7 +229,7 @@ class TestStorage:
 
         assert storage.supports(Capability.CREATE)
         assert storage.supports(
-            utils.combine_capabilities(
+            Capability.combine(
                 Capability.REMOVE,
                 Capability.STREAM,
             ),
@@ -237,7 +237,7 @@ class TestStorage:
 
         assert not storage.supports(Capability.MULTIPART_UPLOAD)
         assert not storage.supports(
-            utils.combine_capabilities(
+            Capability.combine(
                 Capability.REMOVE,
                 Capability.MULTIPART_UPLOAD,
             ),

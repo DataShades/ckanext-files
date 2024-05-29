@@ -75,7 +75,9 @@ def file_rename(not_empty: Validator, unicode_safe: Validator) -> Schema:
 
 @validator_args
 def upload_initialize(
-    ignore_empty: Validator, unicode_safe: Validator, default: ValidatorFactory
+    ignore_empty: Validator,
+    unicode_safe: Validator,
+    default: ValidatorFactory,
 ) -> Schema:
     # name is checked inside action, using "upload" as source if empty
     return {

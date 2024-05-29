@@ -12,7 +12,7 @@ from werkzeug.datastructures import FileStorage
 import ckan.plugins.toolkit as tk
 from ckan.config.declaration import Declaration, Key
 
-from ckanext.files import exceptions, types, utils
+from ckanext.files import exceptions, shared, types, utils
 from ckanext.files.base import HashingReader, Manager, Reader, Storage, Uploader
 
 FsAdditionalData = TypedDict("FsAdditionalData", {})
@@ -28,9 +28,9 @@ CHUNK_SIZE = 16384
 
 class FileSystemUploader(Uploader):
     required_options = ["path"]
-    capabilities = utils.combine_capabilities(
-        types.Capability.CREATE,
-        types.Capability.MULTIPART_UPLOAD,
+    capabilities = shared.Capability.combine(
+        shared.Capability.CREATE,
+        shared.Capability.MULTIPART_UPLOAD,
     )
 
     def upload(
@@ -171,8 +171,9 @@ class FileSystemUploader(Uploader):
 
 class FileSystemManager(Manager):
     required_options = ["path"]
-    capabilities = utils.combine_capabilities(
-        types.Capability.REMOVE, types.Capability.ANALYZE
+    capabilities = shared.Capability.combine(
+        shared.Capability.REMOVE,
+        shared.Capability.ANALYZE,
     )
 
     def remove(self, data: types.MinimalStorageData) -> bool:
@@ -204,7 +205,7 @@ class FileSystemManager(Manager):
 
 class FileSystemReader(Reader):
     required_options = ["path"]
-    capabilities = utils.combine_capabilities(types.Capability.STREAM)
+    capabilities = shared.Capability.combine(shared.Capability.STREAM)
 
     def stream(self, data: types.MinimalStorageData) -> IO[bytes]:
         filepath = os.path.join(str(self.storage.settings["path"]), data["filename"])

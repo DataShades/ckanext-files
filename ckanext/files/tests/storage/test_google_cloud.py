@@ -7,7 +7,6 @@ from typing import Any
 from uuid import UUID
 
 import pytest
-import six
 from six.moves.urllib.parse import quote_plus
 from werkzeug.datastructures import FileStorage
 
@@ -93,7 +92,9 @@ def mocked_upload_initialize(
 
 @pytest.fixture()
 def mocked_upload_update(
-    responses: Any, mocked_session_url: Any, upload_progress: dict[str, Any]
+    responses: Any,
+    mocked_session_url: Any,
+    upload_progress: dict[str, Any],
 ):
     def put_callback(request: Any) -> Any:
 

@@ -153,13 +153,13 @@ class StorageService(OptionChecker):
     storage, service raises an error during storage initialization stage.
 
     >>> class Uploader(StorageService):
-    >>>     capabilities = utils.combine_capabilities(Capability.CREATE)
+    >>>     capabilities = Capability.CREATE
     >>>     required_options = ["allowed_mimetypes"]
 
     """
 
     required_options: list[str] = []
-    capabilities = utils.combine_capabilities()
+    capabilities = utils.Capability.NONE
 
     def __init__(self, storage: Storage):
         self.storage = storage
@@ -315,8 +315,8 @@ class Storage(OptionChecker):
             "Descriptive name of the storage used for debugging.",
         )
 
-    def compute_capabilities(self) -> types.Capability:
-        return utils.combine_capabilities(
+    def compute_capabilities(self) -> utils.Capability:
+        return utils.Capability.combine(
             self.uploader.capabilities,
             self.manager.capabilities,
             self.reader.capabilities,
@@ -331,7 +331,7 @@ class Storage(OptionChecker):
     def make_reader(self):
         return Reader(self)
 
-    def supports(self, operation: types.Capability) -> bool:
+    def supports(self, operation: utils.Capability) -> bool:
         return (self.capabilities & operation) == operation
 
     def compute_name(
@@ -366,7 +366,7 @@ class Storage(OptionChecker):
         upload: types.Upload,
         extras: dict[str, Any],
     ) -> types.MinimalStorageData:
-        if not self.supports(types.Capability.CREATE):
+        if not self.supports(utils.Capability.CREATE):
             raise exceptions.UnsupportedOperationError("upload", type(self))
 
         if self.max_size:
@@ -402,37 +402,37 @@ class Storage(OptionChecker):
         )
 
     def exists(self, data: types.MinimalStorageData) -> bool:
-        if not self.supports(types.Capability.EXISTS):
+        if not self.supports(utils.Capability.EXISTS):
             raise exceptions.UnsupportedOperationError("exists", type(self))
 
         return self.manager.exists(data)
 
     def remove(self, data: types.MinimalStorageData) -> bool:
-        if not self.supports(types.Capability.REMOVE):
+        if not self.supports(utils.Capability.REMOVE):
             raise exceptions.UnsupportedOperationError("remove", type(self))
 
         return self.manager.remove(data)
 
     def scan(self) -> Iterable[str]:
-        if not self.supports(types.Capability.SCAN):
+        if not self.supports(utils.Capability.SCAN):
             raise exceptions.UnsupportedOperationError("scan", type(self))
 
         return self.manager.scan()
 
     def analyze(self, filename: str) -> types.MinimalStorageData:
-        if not self.supports(types.Capability.ANALYZE):
+        if not self.supports(utils.Capability.ANALYZE):
             raise exceptions.UnsupportedOperationError("analyze", type(self))
 
         return self.manager.analyze(filename)
 
     def stream(self, data: types.MinimalStorageData) -> IO[bytes]:
-        if not self.supports(types.Capability.STREAM):
+        if not self.supports(utils.Capability.STREAM):
             raise exceptions.UnsupportedOperationError("stream", type(self))
 
         return self.reader.stream(data)
 
     def content(self, data: types.MinimalStorageData) -> bytes:
-        if not self.supports(types.Capability.STREAM):
+        if not self.supports(utils.Capability.STREAM):
             raise exceptions.UnsupportedOperationError("content", type(self))
 
         return self.reader.content(data)
@@ -444,11 +444,11 @@ class Storage(OptionChecker):
         name: str,
         extras: dict[str, Any],
     ) -> types.MinimalStorageData:
-        if storage is self and self.supports(types.Capability.COPY):
+        if storage is self and self.supports(utils.Capability.COPY):
             return self.manager.copy(data, name, extras)
 
-        if self.supports(types.Capability.STREAM) and storage.supports(
-            types.Capability.CREATE
+        if self.supports(utils.Capability.STREAM) and storage.supports(
+            utils.Capability.CREATE,
         ):
             return storage.upload(name, FileStorage(self.stream(data)), extras)
 
@@ -461,14 +461,15 @@ class Storage(OptionChecker):
         name: str,
         extras: dict[str, Any],
     ) -> types.MinimalStorageData:
-        if storage is self and self.supports(types.Capability.MOVE):
+        if storage is self and self.supports(utils.Capability.MOVE):
             return self.manager.move(data, name, extras)
 
         if self.supports(
-            utils.combine_capabilities(
-                types.Capability.STREAM, types.Capability.REMOVE
+            utils.Capability.combine(
+                utils.Capability.STREAM,
+                utils.Capability.REMOVE,
             ),
-        ) and storage.supports(types.Capability.CREATE):
+        ) and storage.supports(utils.Capability.CREATE):
             result = storage.upload(name, FileStorage(self.stream(data)), extras)
             storage.remove(data)
             return result
@@ -481,17 +482,17 @@ class Storage(OptionChecker):
         extras: dict[str, Any],
         link_type: Literal["permanent", "temporal", "one-time", None] = None,
     ) -> str:
-        if self.supports(types.Capability.PERMANENT_LINK) and (
+        if self.supports(utils.Capability.PERMANENT_LINK) and (
             not link_type or link_type == "permanent"
         ):
             return self.reader.permanent_link(data)
 
-        if self.supports(types.Capability.TEMPORAL_LINK) and (
+        if self.supports(utils.Capability.TEMPORAL_LINK) and (
             not link_type or link_type == "temporal"
         ):
             return self.reader.temporal_link(data)
 
-        if self.supports(types.Capability.ONE_TIME_LINK) and (
+        if self.supports(utils.Capability.ONE_TIME_LINK) and (
             not link_type or link_type == "one-time"
         ):
             return self.reader.one_time_link(data)
@@ -509,7 +510,7 @@ class Storage(OptionChecker):
         except exceptions.UnsupportedOperationError:
             pass
 
-        if self.supports(types.Capability.STREAM):
+        if self.supports(utils.Capability.STREAM):
             resp = streaming_response(self.stream(data), data["content_type"])
             resp.headers["content-disposition"] = "attachment; filename={}".format(name)
             return resp

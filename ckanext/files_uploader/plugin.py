@@ -151,7 +151,7 @@ class ImageStorage(fs.FileSystemStorage):
 
 
 class ImageManager(fs.FileSystemManager):
-    capabilities = shared.combine_capabilities(
+    capabilities = shared.Capability.combine(
         fs.FileSystemManager.capabilities,
         shared.Capability.SCAN,
     )
@@ -177,7 +177,7 @@ class ResourceStorage(fs.FileSystemStorage):
 
 
 class ResourceManager(fs.FileSystemManager):
-    capabilities = shared.combine_capabilities(
+    capabilities = shared.Capability.combine(
         fs.FileSystemManager.capabilities,
         shared.Capability.SCAN,
     )

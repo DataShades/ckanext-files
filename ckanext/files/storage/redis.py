@@ -11,8 +11,9 @@ import ckan.plugins.toolkit as tk
 from ckan.config.declaration import Declaration, Key
 from ckan.lib.redis import connect_to_redis
 
-from ckanext.files import exceptions, types, utils
-from ckanext.files.base import HashingReader, Manager, Reader, Storage, Uploader
+from ckanext.files import exceptions, types
+from ckanext.files.base import HashingReader
+from ckanext.files.shared import Capability, Manager, Reader, Storage, Uploader
 
 RedisAdditionalData = TypedDict("RedisAdditionalData", {})
 
@@ -25,10 +26,10 @@ class RedisUploader(Uploader):
     storage: "RedisStorage"
 
     required_options = ["prefix"]
-    capabilities = utils.combine_capabilities(
-        types.Capability.CREATE,
-        types.Capability.COPY,
-        types.Capability.MOVE,
+    capabilities = Capability.combine(
+        Capability.CREATE,
+        Capability.COPY,
+        Capability.MOVE,
     )
 
     def upload(
@@ -59,7 +60,7 @@ class RedisReader(Reader):
     storage: RedisStorage
 
     required_options = ["prefix"]
-    capabilities = utils.combine_capabilities(types.Capability.STREAM)
+    capabilities = Capability.combine(Capability.STREAM)
 
     def stream(self, data: types.MinimalStorageData) -> IO[bytes]:
         return BytesIO(self.content(data))
@@ -77,9 +78,7 @@ class RedisManager(Manager):
     storage: RedisStorage
 
     required_options = ["prefix"]
-    capabilities = utils.combine_capabilities(
-        types.Capability.REMOVE, types.Capability.EXISTS
-    )
+    capabilities = Capability.combine(Capability.REMOVE, Capability.EXISTS)
 
     def remove(self, data: RedisStorageData) -> bool:
         key = self.storage.settings["prefix"] + data["filename"]

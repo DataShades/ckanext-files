@@ -14,9 +14,9 @@ from typing_extensions import TypedDict
 import ckan.plugins.toolkit as tk
 from ckan.config.declaration import Declaration, Key
 
-from ckanext.files import exceptions, types, utils
+from ckanext.files import exceptions, types
 from ckanext.files.base import Manager, Storage, Uploader
-from ckanext.files.types import Capability
+from ckanext.files.shared import Capability
 
 GCAdditionalData = TypedDict("GCAdditionalData", {})
 
@@ -36,7 +36,7 @@ class GoogleCloudUploader(Uploader):
     storage: GoogleCloudStorage
 
     required_options = ["bucket"]
-    capabilities = utils.combine_capabilities(
+    capabilities = Capability.combine(
         Capability.CREATE,
         Capability.MULTIPART_UPLOAD,
     )
@@ -262,7 +262,7 @@ class GoogleCloudUploader(Uploader):
 class GoogleCloudManager(Manager):
     storage: GoogleCloudStorage
     required_options = ["bucket"]
-    capabilities = utils.combine_capabilities(Capability.REMOVE)
+    capabilities = Capability.combine(Capability.REMOVE)
 
     def remove(self, data: types.MinimalStorageData) -> bool:
         filepath = os.path.join(str(self.storage.settings["path"]), data["filename"])

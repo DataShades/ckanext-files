@@ -12,7 +12,6 @@ from ckan.types import Context
 
 from ckanext.files import exceptions, shared
 from ckanext.files.model import File, Owner
-from ckanext.files.types import Capability
 
 from . import schema
 
@@ -101,7 +100,7 @@ def files_file_create(context: Context, data_dict: dict[str, Any]) -> dict[str, 
     except exceptions.UnknownStorageError as err:
         raise tk.ValidationError({"storage": [str(err)]})  # noqa: B904
 
-    if not storage.supports(Capability.CREATE):
+    if not storage.supports(shared.Capability.CREATE):
         raise tk.ValidationError({"storage": ["Operation is not supported"]})
 
     filename = secure_filename(data_dict["name"])
@@ -129,7 +128,9 @@ def files_file_create(context: Context, data_dict: dict[str, Any]) -> dict[str, 
 
 
 def _ensure_name(
-    data_dict: dict[str, Any], name_field: str = "name", upload_field: str = "upload"
+    data_dict: dict[str, Any],
+    name_field: str = "name",
+    upload_field: str = "upload",
 ):
     if name_field in data_dict:
         return
@@ -180,7 +181,7 @@ def files_file_delete(context: Context, data_dict: dict[str, Any]) -> bool:
         raise tk.ObjectNotFound("file")
 
     storage = shared.get_storage(fileobj.storage)
-    if not storage.supports(Capability.REMOVE):
+    if not storage.supports(shared.Capability.REMOVE):
         raise tk.ValidationError({"storage": ["Operation is not supported"]})
 
     try:
@@ -240,7 +241,7 @@ def files_upload_initialize(
     except exceptions.UnknownStorageError as err:
         raise tk.ValidationError({"storage": [str(err)]})  # noqa: B904
 
-    if not storage.supports(Capability.MULTIPART_UPLOAD):
+    if not storage.supports(shared.Capability.MULTIPART_UPLOAD):
         raise tk.ValidationError({"storage": ["Operation is not supported"]})
 
     filename = secure_filename(data_dict["name"])

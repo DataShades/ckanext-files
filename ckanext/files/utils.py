@@ -70,6 +70,9 @@ class Registry(object):
     def __iter__(self):
         return iter(self.members)
 
+    def __getitem__(self, key: str):
+        return self.members[key]
+
     def reset(self):
         """Remove all members from registry."""
 

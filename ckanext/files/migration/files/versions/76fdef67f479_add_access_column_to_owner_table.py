@@ -17,7 +17,7 @@ depends_on = None
 
 
 def upgrade():
-    op.add_column("files_owner", sa.Column("access", sa.Text, server_default="'full'"))
+    op.add_column("files_owner", sa.Column("access", sa.Text, nullable=False))
 
 
 def downgrade():

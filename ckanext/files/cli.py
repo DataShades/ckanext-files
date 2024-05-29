@@ -1,5 +1,5 @@
 import os
-
+import textwrap
 import click
 
 import ckan.plugins.toolkit as tk
@@ -23,10 +23,11 @@ def files():
 
 
 @files.command()
-def adapters():
+@click.option("-v", "--verbose", is_flag=True)
+def adapters(verbose: bool):
     """Show all awailable storage adapters."""
     for name in sorted(base.adapters):
-        adapter = base.adapters.get(name)
+        adapter = base.adapters[name]
         click.secho(
             "{} - {}:{}".format(
                 click.style(name, bold=True),
@@ -34,6 +35,7 @@ def adapters():
                 adapter.__name__,
             ),
         )
+
 
 
 @files.command()

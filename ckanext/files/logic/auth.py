@@ -56,9 +56,13 @@ def files_manage_files(context, data_dict):
 def files_owns_file(context, data_dict):
     # type: (types.Any, dict[str, types.Any]) -> types.Any
     user = _get_user(context)
+    is_manager = authz.is_authorized_boolean("files_manage_files", context, data_dict)
     is_owner = bool(user and _is_owner(user.id, data_dict["id"]))
 
-    return {"success": is_owner, "msg": "Not an owner of the file"}
+    return {
+        "success": is_owner or is_manager,
+        "msg": "Not an owner of the file",
+    }
 
 
 @auth

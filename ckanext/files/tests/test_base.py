@@ -7,6 +7,7 @@ from werkzeug.datastructures import FileStorage
 
 from ckanext.files import base, exceptions, utils
 from ckanext.files.storage import RedisStorage
+from ckanext.files.types import Capability
 
 from datetime import datetime  # isort: skip # noqa: F401
 
@@ -172,15 +173,15 @@ class TestReader:
 
 
 class RemovingManager(base.Manager):
-    capabilities = utils.combine_capabilities(base.Capability.REMOVE)
+    capabilities = utils.combine_capabilities(Capability.REMOVE)
 
 
 class StreamingReader(base.Reader):
-    capabilities = utils.combine_capabilities(base.Capability.STREAM)
+    capabilities = utils.combine_capabilities(Capability.STREAM)
 
 
 class SimpleUploader(base.Uploader):
-    capabilities = utils.combine_capabilities(base.Capability.CREATE)
+    capabilities = utils.combine_capabilities(Capability.CREATE)
 
 
 class Storage(base.Storage):
@@ -199,9 +200,9 @@ class TestStorage:
         """Storage combine capabilities of its services."""
         storage = Storage()
         assert storage.capabilities == utils.combine_capabilities(
-            base.Capability.REMOVE,
-            base.Capability.STREAM,
-            base.Capability.CREATE,
+            Capability.REMOVE,
+            Capability.STREAM,
+            Capability.CREATE,
         )
 
     def test_settings(self, faker):
@@ -226,19 +227,19 @@ class TestStorage:
 
         storage = Storage()
 
-        assert storage.supports(base.Capability.CREATE)
+        assert storage.supports(Capability.CREATE)
         assert storage.supports(
             utils.combine_capabilities(
-                base.Capability.REMOVE,
-                base.Capability.STREAM,
+                Capability.REMOVE,
+                Capability.STREAM,
             ),
         )
 
-        assert not storage.supports(base.Capability.MULTIPART_UPLOAD)
+        assert not storage.supports(Capability.MULTIPART_UPLOAD)
         assert not storage.supports(
             utils.combine_capabilities(
-                base.Capability.REMOVE,
-                base.Capability.MULTIPART_UPLOAD,
+                Capability.REMOVE,
+                Capability.MULTIPART_UPLOAD,
             ),
         )
 

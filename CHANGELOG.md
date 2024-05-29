@@ -8,13 +8,22 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 <!-- insertion marker -->
 ## Unreleased
 
-<small>[Compare with latest](https://github.com/DataShades/ckanext-files/compare/v0.3.0...HEAD)</small>
+<small>[Compare with latest](https://github.com/DataShades/ckanext-files/compare/v0.3.1...HEAD)</small>
+
+### Code Refactoring
+
+- remove support of CKAN pre v2.10 ([3e70bc2](https://github.com/DataShades/ckanext-files/commit/3e70bc27440a9c21560c50e3c744b247f2087e90) by Sergey Motornyuk).
+- UnsupportedOperationError constructed with adapter type instead of name ([55d038d](https://github.com/DataShades/ckanext-files/commit/55d038d52e3dcfc09fb259122456079a197f4be8) by Sergey Motornyuk).
+
+<!-- insertion marker -->
+## [v0.3.1](https://github.com/DataShades/ckanext-files/releases/tag/v0.3.1) - 2024-05-22
+
+<small>[Compare with v0.3.0](https://github.com/DataShades/ckanext-files/compare/v0.3.0...v0.3.1)</small>
 
 ### Features
 
 - generic_download view ([d000446](https://github.com/DataShades/ckanext-files/commit/d0004464f12ba76aac2531f33dad72247b1a62ca) by Sergey Motornyuk).
 
-<!-- insertion marker -->
 ## [v0.3.0](https://github.com/DataShades/ckanext-files/releases/tag/v0.3.0) - 2024-05-16
 
 <small>[Compare with v0.0.6](https://github.com/DataShades/ckanext-files/compare/v0.0.6...v0.3.0)</small>

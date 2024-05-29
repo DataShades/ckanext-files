@@ -11,16 +11,14 @@ from ckan.logic import validate
 from ckan.types import Context
 
 from ckanext.files import exceptions, shared
-from ckanext.files.base import Capability
 from ckanext.files.model import File, Owner
+from ckanext.files.types import Capability
 
 from . import schema
 
-from ckanext.files import types  # isort: skip # noqa: F401
-
 
 def _flat_mask(data: dict[str, Any]) -> dict[tuple[Any, ...], Any]:
-    result = {}  # type: dict[tuple[types.Any], types.Any]
+    result: dict[tuple[Any, ...], Any] = {}
 
     for k, v in data.items():
         if isinstance(v, dict):
@@ -54,7 +52,7 @@ def files_file_search_by_user(
 
     q = q.filter(sa.and_(Owner.owner_type == "user", Owner.owner_id == user.id))
 
-    inspector = sa.inspect(File)  # type: types.Any
+    inspector: Any = sa.inspect(File)
     columns = inspector.columns
 
     for mask in ["storage_data", "plugin_data"]:
@@ -130,8 +128,9 @@ def files_file_create(context: Context, data_dict: dict[str, Any]) -> dict[str, 
     return fileobj.dictize(context)
 
 
-def _ensure_name(data_dict, name_field="name", upload_field="upload"):
-    # type: (dict[str, types.Any], str, str) -> None
+def _ensure_name(
+    data_dict: dict[str, Any], name_field: str = "name", upload_field: str = "upload"
+):
     if name_field in data_dict:
         return
     name = data_dict[upload_field].filename
@@ -148,8 +147,7 @@ def _ensure_name(data_dict, name_field="name", upload_field="upload"):
     data_dict[name_field] = name
 
 
-def _add_owner(context, item_type, item_id):
-    # type: (types.Any, str, str) -> None
+def _add_owner(context: Context, item_type: str, item_id: str):
     user = model.User.get(context.get("user", ""))
     if user:
         owner = Owner(
@@ -162,8 +160,7 @@ def _add_owner(context, item_type, item_id):
         context["session"].add(owner)
 
 
-def _delete_owners(context, item_type, item_id):
-    # type: (types.Any, str, str) -> None
+def _delete_owners(context: Context, item_type: str, item_id: str):
     stmt = sa.delete(Owner).where(
         sa.and_(
             Owner.item_type == item_type,
@@ -216,9 +213,9 @@ def files_file_show(context: Context, data_dict: dict[str, Any]) -> dict[str, An
 def files_file_rename(context: Context, data_dict: dict[str, Any]) -> dict[str, Any]:
     tk.check_access("files_file_rename", context, data_dict)
 
-    fileobj = (
+    fileobj: File | None = (
         context["session"].query(File).filter(File.id == data_dict["id"]).one_or_none()
-    )  # type: File | None
+    )
     if not fileobj:
         raise tk.ObjectNotFound("file")
 
@@ -312,7 +309,6 @@ def files_upload_complete(
     context: Context,
     data_dict: dict[str, Any],
 ) -> dict[str, Any]:
-    # type: (types.Any, dict[str, types.Any]) -> dict[str, types.Any]
     tk.check_access("files_upload_complete", context, data_dict)
 
     extras = data_dict.get("__extras", {})

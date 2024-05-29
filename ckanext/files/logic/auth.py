@@ -12,7 +12,6 @@ from ckanext.files.model import Owner
 
 
 def _get_user(context: Context) -> model.User | None:
-    # type: (types.Any) -> model.User | None
     if "auth_user_obj" in context:
         return cast(model.User, context["auth_user_obj"])
 
@@ -24,8 +23,7 @@ def _get_user(context: Context) -> model.User | None:
     return model.User.get(context["user"])
 
 
-def _is_owner(user_id, file_id):
-    # type: (str, str) -> bool
+def _is_owner(user_id: str, file_id: str) -> bool:
     stmt = Owner.owners_of(file_id, "file").where(
         sa.and_(
             Owner.owner_type == "user",

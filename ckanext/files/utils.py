@@ -129,26 +129,23 @@ def ensure_size(upload: types.Upload, max_size: int) -> int:
     return filesize
 
 
-def combine_capabilities(
-    *capabilities: types.CapabilityCluster | types.CapabilityUnit,
-) -> types.CapabilityCluster:
+def combine_capabilities(*capabilities: types.Capability) -> types.Capability:
     """Combine multiple capabilities.
 
     Example:
     >>> cluster = combine_capabilities(Capability.CREATE, Capability.REMOVE)
     """
 
-    result = 0
+    result = types.Capability(0)
     for capability in capabilities:
         result |= capability
 
-    return types.CapabilityCluster(result)
+    return result
 
 
 def exclude_capabilities(
-    capabilities: types.CapabilityCluster,
-    *exclude: types.CapabilityCluster | types.CapabilityUnit,
-) -> types.CapabilityCluster:
+    capabilities: types.Capability, *exclude: types.Capability
+) -> types.Capability:
     """Remove capabilities from the cluster
 
     Example:
@@ -156,7 +153,7 @@ def exclude_capabilities(
     """
 
     for capability in exclude:
-        capabilities = types.CapabilityCluster(capabilities & ~capability)
+        capabilities = capabilities & ~capability
 
     return capabilities
 

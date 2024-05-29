@@ -3,6 +3,7 @@ import hashlib
 import json
 import os
 from io import BytesIO
+from typing import Any
 from uuid import UUID
 
 import pytest
@@ -27,8 +28,7 @@ def upload_progress():
 
 
 @pytest.fixture()
-def storage():
-    # type: () -> gc.GoogleCloudStorage
+def storage() -> gc.GoogleCloudStorage:
     credentials_file = os.path.join(
         os.path.dirname(__file__),
         "fake_creds.json",
@@ -55,14 +55,10 @@ def mocked_token(responses):
     )
 
 
-def encode(content):
-    # type: (bytes) -> str
+def encode(content: bytes) -> str:
     digest = hashlib.md5(content).digest()
 
-    if six.PY3:
-        return base64.encodebytes(digest).decode().strip()
-
-    return base64.encodestring(digest).strip()
+    return base64.encodebytes(digest).decode().strip()
 
 
 @pytest.fixture()
@@ -76,12 +72,11 @@ def mocked_session_url():
 
 @pytest.fixture()
 def mocked_upload_initialize(
-    responses,
-    mocked_session_url,
+    responses: Any,
+    mocked_session_url: Any,
     mocked_token,
-    upload_progress,
+    upload_progress: dict[str, Any],
 ):
-    # type: (types.Any, types.Any, types.Any, dict[str, types.Any]) -> None
     def post_callback(request):
         upload_progress["size"] = int(request.headers.get("x-upload-content-length", 0))
         upload_progress["name"] = json.loads(request.body)["name"]
@@ -97,11 +92,10 @@ def mocked_upload_initialize(
 
 
 @pytest.fixture()
-def mocked_upload_update(responses, mocked_session_url, upload_progress):
-    # type: (types.Any, types.Any, dict[str, types.Any]) -> None
-
-    def put_callback(request):
-        # type: (types.Any) -> types.Any
+def mocked_upload_update(
+    responses: Any, mocked_session_url: Any, upload_progress: dict[str, Any]
+):
+    def put_callback(request: Any) -> Any:
 
         content_range = request.headers.get("content-range")
         headers = {}
@@ -158,14 +152,12 @@ def mocked_upload_update(responses, mocked_session_url, upload_progress):
 
 @pytest.fixture()
 def mocked_upload(mocked_upload_initialize, mocked_upload_update):
-    # type: (types.Any, types.Any) -> None
     pass
 
 
 class TestUploader:
     @pytest.mark.usefixtures("mocked_token", "mocked_upload")
-    def test_result(self, storage, faker):
-        # type: (gc.GoogleCloudStorage, Faker) -> None
+    def test_result(self, storage: gc.GoogleCloudStorage, faker: Faker):
         content = faker.binary(100)
         result = storage.upload("", FileStorage(BytesIO(content)), {})
 
@@ -176,20 +168,17 @@ class TestUploader:
 
 @pytest.mark.usefixtures("with_plugins")
 class TestMultipartUploader:
-    def test_initialization_invalid(self, storage, faker):
-        # type: (gc.GoogleCloudStorage, Faker) -> None
+    def test_initialization_invalid(self, storage: gc.GoogleCloudStorage, faker: Faker):
         with pytest.raises(tk.ValidationError):
             storage.initialize_multipart_upload(faker.file_name(), {})
 
-    def test_initialization_large(self, storage, faker):
-        # type: (gc.GoogleCloudStorage, Faker) -> None
+    def test_initialization_large(self, storage: gc.GoogleCloudStorage, faker: Faker):
         storage.settings["max_size"] = 5
         with pytest.raises(exceptions.LargeUploadError):
             storage.initialize_multipart_upload(faker.file_name(), {"size": 10})
 
     @pytest.mark.usefixtures("mocked_upload_initialize")
     def test_initialization(self, storage, faker):
-        # type: (gc.GoogleCloudStorage, Faker) -> None
         content = b"hello world"
         data = storage.initialize_multipart_upload(
             faker.file_name(),
@@ -201,7 +190,6 @@ class TestMultipartUploader:
 
     @pytest.mark.usefixtures("mocked_upload_initialize")
     def test_update_invalid(self, storage, faker):
-        # type: (gc.GoogleCloudStorage, Faker) -> None
         content = b"hello world"
         data = storage.initialize_multipart_upload(
             faker.file_name(),
@@ -212,7 +200,6 @@ class TestMultipartUploader:
 
     @pytest.mark.usefixtures("mocked_upload")
     def test_update(self, storage, faker):
-        # type: (gc.GoogleCloudStorage, Faker) -> None
         content = faker.binary(256 * 1024 * 2)
         data = storage.initialize_multipart_upload(
             faker.file_name(),
@@ -249,7 +236,6 @@ class TestMultipartUploader:
 
     @pytest.mark.usefixtures("mocked_upload")
     def test_complete(self, storage, faker):
-        # type: (gc.GoogleCloudStorage, Faker) -> None
         content = b"hello world"
         data = storage.initialize_multipart_upload(
             faker.file_name(),
@@ -269,7 +255,6 @@ class TestMultipartUploader:
 
     @pytest.mark.usefixtures("mocked_upload")
     def test_show(self, storage, faker):
-        # type: (gc.GoogleCloudStorage, Faker) -> None
         content = b"hello world"
 
         data = storage.initialize_multipart_upload(
@@ -291,7 +276,6 @@ class TestMultipartUploader:
 class TestManager:
     @pytest.mark.usefixtures("mocked_upload")
     def test_removal(self, storage, responses):
-        # type: (gc.GoogleCloudStorage, types.Any) -> None
         result = storage.upload("", FileStorage(), {})
         name = os.path.join(storage.settings["path"], result["filename"])
 
@@ -307,7 +291,6 @@ class TestManager:
 
     @pytest.mark.usefixtures("mocked_upload")
     def test_removal_missing(self, storage, responses):
-        # type: (gc.GoogleCloudStorage, types.Any) -> None
         result = storage.upload("", FileStorage(), {})
         name = os.path.join(storage.settings["path"], result["filename"])
 
@@ -327,6 +310,5 @@ class TestManager:
 
 class TestStorage:
     def test_missing_path(self, tmp_path):
-        # type: (str) -> None
         with pytest.raises(exceptions.InvalidStorageConfigurationError):
             gc.GoogleCloudStorage(bucket=TEST_BUCKET, credentials_file="/not-real")

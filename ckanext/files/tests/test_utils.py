@@ -3,7 +3,8 @@ from io import BytesIO
 import pytest
 from werkzeug.datastructures import FileStorage
 
-from ckanext.files import base, exceptions, utils
+from ckanext.files import exceptions, utils
+from ckanext.files.types import Capability
 
 from faker import Faker  # isort: skip # noqa: F401
 
@@ -61,22 +62,22 @@ class TestCombineCapabilities:
         """Combination of unit with itself leaves a single unit."""
 
         first = utils.combine_capabilities(
-            base.Capability.CREATE,
-            base.Capability.CREATE,
+            Capability.CREATE,
+            Capability.CREATE,
         )
-        second = utils.combine_capabilities(base.Capability.CREATE)
+        second = utils.combine_capabilities(Capability.CREATE)
         assert first == second
 
     def test_commutative_combination(self):
         """Order of combination does not change the result"""
 
         first = utils.combine_capabilities(
-            base.Capability.CREATE,
-            base.Capability.REMOVE,
+            Capability.CREATE,
+            Capability.REMOVE,
         )
         second = utils.combine_capabilities(
-            base.Capability.REMOVE,
-            base.Capability.CREATE,
+            Capability.REMOVE,
+            Capability.CREATE,
         )
         assert first == second
 
@@ -84,22 +85,22 @@ class TestCombineCapabilities:
         """Rearranging the combination sequence does not change the result."""
 
         first = utils.combine_capabilities(
-            utils.combine_capabilities(base.Capability.CREATE, base.Capability.REMOVE),
-            base.Capability.MULTIPART_UPLOAD,
+            utils.combine_capabilities(Capability.CREATE, Capability.REMOVE),
+            Capability.MULTIPART_UPLOAD,
         )
         second = utils.combine_capabilities(
             utils.combine_capabilities(
-                base.Capability.CREATE,
-                base.Capability.MULTIPART_UPLOAD,
+                Capability.CREATE,
+                Capability.MULTIPART_UPLOAD,
             ),
-            base.Capability.REMOVE,
+            Capability.REMOVE,
         )
         third = utils.combine_capabilities(
             utils.combine_capabilities(
-                base.Capability.REMOVE,
-                base.Capability.MULTIPART_UPLOAD,
+                Capability.REMOVE,
+                Capability.MULTIPART_UPLOAD,
             ),
-            base.Capability.CREATE,
+            Capability.CREATE,
         )
 
         assert first == second == third
@@ -108,20 +109,20 @@ class TestCombineCapabilities:
         """Clusters can be combined with the same result as individual units."""
 
         first = utils.combine_capabilities(
-            base.Capability.CREATE,
-            base.Capability.REMOVE,
+            Capability.CREATE,
+            Capability.REMOVE,
         )
         second = utils.combine_capabilities(
-            base.Capability.MULTIPART_UPLOAD,
-            base.Capability.STREAM,
+            Capability.MULTIPART_UPLOAD,
+            Capability.STREAM,
         )
 
         clusters = utils.combine_capabilities(first, second)
         units = utils.combine_capabilities(
-            base.Capability.CREATE,
-            base.Capability.REMOVE,
-            base.Capability.MULTIPART_UPLOAD,
-            base.Capability.STREAM,
+            Capability.CREATE,
+            Capability.REMOVE,
+            Capability.MULTIPART_UPLOAD,
+            Capability.STREAM,
         )
         assert clusters == units
 
@@ -131,56 +132,55 @@ class TestExcludeCapabilities:
         """Nothing changes when non existing unit excluded."""
 
         cluster = utils.combine_capabilities(
-            base.Capability.CREATE,
-            base.Capability.REMOVE,
+            Capability.CREATE,
+            Capability.REMOVE,
         )
 
         assert (
-            utils.exclude_capabilities(cluster, base.Capability.MULTIPART_UPLOAD)
-            == cluster
+            utils.exclude_capabilities(cluster, Capability.MULTIPART_UPLOAD) == cluster
         )
 
     def test_exclusion_of_single_unit(self):
         """Single unit exclusion leaves all other units inside cluster."""
 
         cluster = utils.combine_capabilities(
-            base.Capability.CREATE,
-            base.Capability.REMOVE,
+            Capability.CREATE,
+            Capability.REMOVE,
         )
 
         assert utils.exclude_capabilities(
             cluster,
-            base.Capability.CREATE,
-        ) == utils.combine_capabilities(base.Capability.REMOVE)
+            Capability.CREATE,
+        ) == utils.combine_capabilities(Capability.REMOVE)
 
     def test_multi_unit_exclusion(self):
         """Multiple units can be excluded at once."""
 
         cluster = utils.combine_capabilities(
-            base.Capability.CREATE,
-            base.Capability.REMOVE,
-            base.Capability.STREAM,
+            Capability.CREATE,
+            Capability.REMOVE,
+            Capability.STREAM,
         )
         assert utils.exclude_capabilities(
             cluster,
-            base.Capability.REMOVE,
-            base.Capability.CREATE,
-        ) == utils.combine_capabilities(base.Capability.STREAM)
+            Capability.REMOVE,
+            Capability.CREATE,
+        ) == utils.combine_capabilities(Capability.STREAM)
 
     def test_exclusion_of_cluster(self):
         """The whole cluster can be excluded at once."""
 
         cluster = utils.combine_capabilities(
-            base.Capability.CREATE,
-            base.Capability.REMOVE,
-            base.Capability.STREAM,
+            Capability.CREATE,
+            Capability.REMOVE,
+            Capability.STREAM,
         )
 
         empty = utils.exclude_capabilities(
             cluster,
-            utils.combine_capabilities(base.Capability.CREATE, base.Capability.STREAM),
+            utils.combine_capabilities(Capability.CREATE, Capability.STREAM),
         )
-        assert empty == utils.combine_capabilities(base.Capability.REMOVE)
+        assert empty == utils.combine_capabilities(Capability.REMOVE)
 
 
 class TestParseFilesize:

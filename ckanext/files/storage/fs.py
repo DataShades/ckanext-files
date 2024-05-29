@@ -6,21 +6,16 @@ from typing import IO, Any
 
 import magic
 import six
+from typing_extensions import TypedDict
 from werkzeug.datastructures import FileStorage
 
 import ckan.plugins.toolkit as tk
+from ckan.config.declaration import Declaration, Key
 
 from ckanext.files import exceptions, types, utils
-from ckanext.files.base import (
-    Capability,
-    HashingReader,
-    Manager,
-    Reader,
-    Storage,
-    Uploader,
-)
+from ckanext.files.base import HashingReader, Manager, Reader, Storage, Uploader
 
-FsAdditionalData = types.TypedDict("FsAdditionalData", {})
+FsAdditionalData = TypedDict("FsAdditionalData", {})
 
 
 class FsStorageData(FsAdditionalData, types.MinimalStorageData):
@@ -34,8 +29,8 @@ CHUNK_SIZE = 16384
 class FileSystemUploader(Uploader):
     required_options = ["path"]
     capabilities = utils.combine_capabilities(
-        Capability.CREATE,
-        Capability.MULTIPART_UPLOAD,
+        types.Capability.CREATE,
+        types.Capability.MULTIPART_UPLOAD,
     )
 
     def upload(
@@ -176,7 +171,9 @@ class FileSystemUploader(Uploader):
 
 class FileSystemManager(Manager):
     required_options = ["path"]
-    capabilities = utils.combine_capabilities(Capability.REMOVE, Capability.ANALYZE)
+    capabilities = utils.combine_capabilities(
+        types.Capability.REMOVE, types.Capability.ANALYZE
+    )
 
     def remove(self, data: types.MinimalStorageData) -> bool:
         filepath = os.path.join(str(self.storage.settings["path"]), data["filename"])
@@ -207,7 +204,7 @@ class FileSystemManager(Manager):
 
 class FileSystemReader(Reader):
     required_options = ["path"]
-    capabilities = utils.combine_capabilities(Capability.STREAM)
+    capabilities = utils.combine_capabilities(types.Capability.STREAM)
 
     def stream(self, data: types.MinimalStorageData) -> IO[bytes]:
         filepath = os.path.join(str(self.storage.settings["path"]), data["filename"])
@@ -244,7 +241,7 @@ class FileSystemStorage(Storage):
         super(FileSystemStorage, self).__init__(**settings)
 
     @classmethod
-    def declare_config_options(cls, declaration: types.Declaration, key: types.Key):
+    def declare_config_options(cls, declaration: Declaration, key: Key):
         super().declare_config_options(declaration, key)
         declaration.declare(key.path).required().set_description(
             "Path to the folder where uploaded data will be stored.",
@@ -260,11 +257,7 @@ class PublicFileSystemStorage(FileSystemStorage):
         super(PublicFileSystemStorage, self).__init__(**settings)
 
     @classmethod
-    def declare_config_options(
-        cls,
-        declaration: types.Declaration,
-        key: types.Key,
-    ) -> None:
+    def declare_config_options(cls, declaration: Declaration, key: Key) -> None:
         super().declare_config_options(declaration, key)
         declaration.declare(key.public_root).required().set_description(
             "URL of the storage folder."

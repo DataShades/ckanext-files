@@ -3,25 +3,18 @@ from __future__ import annotations
 from io import BytesIO
 from typing import IO, Any, cast
 
+import redis
 from redis import ResponseError
+from typing_extensions import TypedDict
 
 import ckan.plugins.toolkit as tk
+from ckan.config.declaration import Declaration, Key
 from ckan.lib.redis import connect_to_redis
 
 from ckanext.files import exceptions, types, utils
-from ckanext.files.base import (
-    Capability,
-    HashingReader,
-    Manager,
-    Reader,
-    Storage,
-    Uploader,
-)
+from ckanext.files.base import HashingReader, Manager, Reader, Storage, Uploader
 
-import redis  # isort: skip # noqa: F401
-
-
-RedisAdditionalData = types.TypedDict("RedisAdditionalData", {})
+RedisAdditionalData = TypedDict("RedisAdditionalData", {})
 
 
 class RedisStorageData(RedisAdditionalData, types.MinimalStorageData):
@@ -33,9 +26,9 @@ class RedisUploader(Uploader):
 
     required_options = ["prefix"]
     capabilities = utils.combine_capabilities(
-        Capability.CREATE,
-        Capability.COPY,
-        Capability.MOVE,
+        types.Capability.CREATE,
+        types.Capability.COPY,
+        types.Capability.MOVE,
     )
 
     def upload(
@@ -66,7 +59,7 @@ class RedisReader(Reader):
     storage: RedisStorage
 
     required_options = ["prefix"]
-    capabilities = utils.combine_capabilities(Capability.STREAM)
+    capabilities = utils.combine_capabilities(types.Capability.STREAM)
 
     def stream(self, data: types.MinimalStorageData) -> IO[bytes]:
         return BytesIO(self.content(data))
@@ -84,7 +77,9 @@ class RedisManager(Manager):
     storage: RedisStorage
 
     required_options = ["prefix"]
-    capabilities = utils.combine_capabilities(Capability.REMOVE, Capability.EXISTS)
+    capabilities = utils.combine_capabilities(
+        types.Capability.REMOVE, types.Capability.EXISTS
+    )
 
     def remove(self, data: RedisStorageData) -> bool:
         key = self.storage.settings["prefix"] + data["filename"]
@@ -155,7 +150,7 @@ class RedisStorage(Storage):
         self.redis: redis.Redis = connect_to_redis()
 
     @classmethod
-    def declare_config_options(cls, declaration: types.Declaration, key: types.Key):
+    def declare_config_options(cls, declaration: Declaration, key: Key):
         super().declare_config_options(declaration, key)
         declaration.declare(key.prefix, _default_prefix()).set_description(
             "Static prefix of the Redis key generated for every upload.",

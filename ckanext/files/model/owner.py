@@ -2,11 +2,11 @@ from __future__ import annotations
 
 import sqlalchemy as sa
 from sqlalchemy.orm import Mapped
+from sqlalchemy.sql.expression import Select
 
 from ckan.lib.dictization import table_dictize
 from ckan.model.types import make_uuid
-
-from ckanext.files import types
+from ckan.types import Context
 
 from .base import Base
 
@@ -33,20 +33,18 @@ class Owner(Base):  # type: ignore
     owner_type: Mapped[str]
     access: Mapped[str]
 
-    def dictize(self, context):
-        # type: (Any) -> dict[str, Any]
+    def dictize(self, context: Context):
         return table_dictize(self, context)
 
     @classmethod
-    def owners_of(cls, id: str, type: str) -> types.Select:
+    def owners_of(cls, id: str, type: str) -> Select:
         """List owners of the given item."""
         return sa.select(cls).where(
             sa.and_(cls.item_type == type, cls.item_id == id),
         )
 
     @classmethod
-    def owned_by(cls, id: str, type: str) -> types.Select:
-        # type: (str, str) -> types.Select
+    def owned_by(cls, id: str, type: str) -> Select:
         """List records with given owner."""
         return sa.select(cls).where(
             sa.and_(cls.owner_type == type, cls.owner_id == id),

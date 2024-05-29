@@ -4,8 +4,8 @@ from typing import Any
 
 import ckan.plugins as p
 import ckan.plugins.toolkit as tk
-import ckan.types as types
 from ckan.common import CKANConfig
+from ckan.types import SignalMapping
 
 from ckanext.collection.interfaces import CollectionFactory, ICollection
 from ckanext.file_manager.collection import FileManagerCollection
@@ -26,7 +26,7 @@ class FileManagerPlugin(p.SingletonPlugin):
 
     # ISignal
 
-    def get_signal_subscriptions(self) -> types.SignalMapping:
+    def get_signal_subscriptions(self) -> SignalMapping:
         return {
             tk.signals.ckanext.signal("ap_main:collect_config_sections"): [
                 collect_config_sections_subs,

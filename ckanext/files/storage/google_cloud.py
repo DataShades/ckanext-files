@@ -9,13 +9,16 @@ import requests
 from google.api_core.exceptions import Forbidden
 from google.cloud.storage import Client
 from google.oauth2.service_account import Credentials
+from typing_extensions import TypedDict
 
 import ckan.plugins.toolkit as tk
+from ckan.config.declaration import Declaration, Key
 
 from ckanext.files import exceptions, types, utils
-from ckanext.files.base import Capability, Manager, Storage, Uploader
+from ckanext.files.base import Manager, Storage, Uploader
+from ckanext.files.types import Capability
 
-GCAdditionalData = types.TypedDict("GCAdditionalData", {})
+GCAdditionalData = TypedDict("GCAdditionalData", {})
 
 
 class GCStorageData(GCAdditionalData, types.MinimalStorageData):
@@ -315,7 +318,7 @@ class GoogleCloudStorage(Storage):
         return GoogleCloudManager(self)
 
     @classmethod
-    def declare_config_options(cls, declaration: types.Declaration, key: types.Key):
+    def declare_config_options(cls, declaration: Declaration, key: Key):
         super().declare_config_options(declaration, key)
         declaration.declare(key.path, "").set_description(
             "Path to the folder where uploaded data will be stored.",

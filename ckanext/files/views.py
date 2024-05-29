@@ -9,10 +9,9 @@ from flask.views import MethodView
 
 import ckan.plugins.toolkit as tk
 from ckan.lib.helpers import Page
+from ckan.types import Response
 
 from ckanext.files import exceptions, shared
-
-from ckanext.files import types  # isort: skip # noqa: F401
 
 log = logging.getLogger(__name__)
 bp = Blueprint("files", __name__)
@@ -59,7 +58,7 @@ def get_blueprints():
 
 
 @bp.route("/file/<file_id>/download")
-def generic_download(file_id: str) -> types.Response:
+def generic_download(file_id: str) -> Response:
     tk.check_access("files_file_download", {}, {"id": file_id})
     info = tk.get_action("files_file_show")({}, {"id": file_id})
     storage = shared.get_storage(info["storage"])
@@ -95,13 +94,13 @@ def user(user_id: str, storage: str | None = None) -> str:
     page = tk.h.get_page_number(params)
     start = rows * page - rows
 
-    search_dict = {
+    search_dict: dict[str, Any] = {
         "rows": rows,
         "start": start,
         "user": user_id,
         "sort": params.get("sort", "ctime"),
         "reverse": params.get("reverse", True),
-    }  # type: dict[str, types.Any]
+    }
 
     if storage:
         search_dict["storage"] = storage
@@ -112,7 +111,7 @@ def user(user_id: str, storage: str | None = None) -> str:
         for k, v in err.error_summary.items():
             tk.h.flash_error("{}: {}".format(k, v))
 
-        files = {"count": 0, "results": []}  # type: dict[str, types.Any]
+        files: dict[str, Any] = {"count": 0, "results": []}
 
     pager = Page(
         [],
@@ -123,11 +122,11 @@ def user(user_id: str, storage: str | None = None) -> str:
     )
 
     tpl_names = ["files/user/index.html"]
-    tpl_data = {
+    tpl_data: dict[str, Any] = {
         "user_dict": user_dict,
         "files": files,
         "pager": pager,
-    }  # type: dict[str, types.Any]
+    }
 
     if storage:
         tpl_data["storage"] = storage
@@ -137,7 +136,7 @@ def user(user_id: str, storage: str | None = None) -> str:
 
 
 class DeleteFile(MethodView):
-    def post(self, user_id: str, file_id: str) -> types.Response | str:
+    def post(self, user_id: str, file_id: str) -> Response | str:
         try:
             tk.get_action("files_file_delete")({}, {"id": file_id})
         except tk.NotAuthorized as err:

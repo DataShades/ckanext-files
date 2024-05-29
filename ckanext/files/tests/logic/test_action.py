@@ -1,3 +1,7 @@
+from __future__ import annotations
+
+from typing import Any
+
 import pytest
 
 import ckan.model as model
@@ -5,11 +9,9 @@ from ckan.tests.helpers import call_action
 
 from ckanext.files.model import File
 
-from ckanext.files import types  # isort: skip # noqa: F401
-
 
 @pytest.fixture
-def random_file(create_with_upload, faker):
+def random_file(create_with_upload: Any, faker: Any):
     return create_with_upload(
         faker.binary(10),
         faker.file_name(),
@@ -20,7 +22,7 @@ def random_file(create_with_upload, faker):
 
 @pytest.mark.usefixtures("with_plugins", "clean_db")
 class TestFileCreate:
-    def test_basic_file(self, create_with_upload):
+    def test_basic_file(self, create_with_upload: Any):
         filename = "file.txt"
         result = create_with_upload(
             "hello",
@@ -34,8 +36,7 @@ class TestFileCreate:
 
 @pytest.mark.usefixtures("with_plugins", "clean_db")
 class TestFileDelete:
-    def test_basic_delete(self, random_file):
-        # type: (dict[str, types.Any]) -> None
+    def test_basic_delete(self, random_file: dict[str, Any]):
         q = model.Session.query(File)
         assert q.count() == 1
         call_action("files_file_delete", id=random_file["id"])
@@ -44,8 +45,7 @@ class TestFileDelete:
 
 @pytest.mark.usefixtures("with_plugins", "clean_db")
 class TestFileShow:
-    def test_basic_show(self, random_file):
-        # type: (dict[str, types.Any]) -> None
+    def test_basic_show(self, random_file: dict[str, Any]):
         result = call_action("files_file_show", id=random_file["id"])
         assert result["id"] == random_file["id"]
 

@@ -6,9 +6,10 @@ from typing import Any
 
 import ckan.plugins as p
 import ckan.plugins.toolkit as tk
+from ckan.config.declaration import Declaration, Key
 from ckan.exceptions import CkanConfigurationException
 
-from ckanext.files import base, config, exceptions, interfaces, storage, types
+from ckanext.files import base, config, exceptions, interfaces, storage
 
 
 @tk.blanket.helpers
@@ -23,7 +24,7 @@ class FilesPlugin(p.SingletonPlugin):
 
     p.implements(p.IConfigDeclaration)
 
-    def declare_config_options(self, declaration: types.Declaration, key: types.Key):
+    def declare_config_options(self, declaration: Declaration, key: Key):
         import yaml
 
         here = os.path.dirname(__file__)

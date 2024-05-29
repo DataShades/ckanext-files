@@ -14,7 +14,6 @@ from __future__ import annotations
 import abc
 import copy
 import hashlib
-import itertools
 import os
 import uuid
 from datetime import datetime
@@ -25,6 +24,8 @@ from werkzeug.datastructures import FileStorage
 
 import ckan.plugins.toolkit as tk
 from ckan.common import streaming_response
+from ckan.config.declaration import Declaration, Key
+from ckan.types import Response
 
 from ckanext.files import exceptions, types, utils
 
@@ -124,69 +125,6 @@ class HashingReader:
 
         for _ in self:
             pass
-
-
-class Capability(object):
-    """Enumeration of operations supported by the storage.
-
-    Do not assume internal implementation of this type. Use Storage.supports,
-    utils.combine_capabilities, and utils.exclude_capabilities to check and
-    modify capabilities of the storage.
-
-    Example:
-    >>> read_and_write = utils.combine_capabilities(
-    >>>     Capability.STREAM, Capability.CREATE,
-    >>> )
-    >>> if storage.supports(read_and_write)
-    >>>     ...
-    """
-
-    _counter = itertools.count()
-
-    # create a file as an atomic object
-    CREATE = types.CapabilityUnit(1 << next(_counter))
-
-    # return file content as stream of bytes
-    STREAM = types.CapabilityUnit(1 << next(_counter))
-
-    # make a copy of the file inside the storage
-    COPY = types.CapabilityUnit(1 << next(_counter))
-
-    # remove file from the storage
-    REMOVE = types.CapabilityUnit(1 << next(_counter))
-
-    # create file in 3 stages: initialize, upload(repeatable), complete
-    MULTIPART_UPLOAD = types.CapabilityUnit(1 << next(_counter))
-
-    # move file to a different location inside the storage
-    MOVE = types.CapabilityUnit(1 << next(_counter))
-
-    # check if file exists
-    EXISTS = types.CapabilityUnit(1 << next(_counter))
-
-    # iterate over all files in storage
-    SCAN = types.CapabilityUnit(1 << next(_counter))
-
-    # add content to the existing file
-    APPEND = types.CapabilityUnit(1 << next(_counter))
-
-    # combine multiple files into a new one
-    COMPOSE = types.CapabilityUnit(1 << next(_counter))
-
-    # return specific range of file bytes
-    RANGE = types.CapabilityUnit(1 << next(_counter))
-
-    # return file details from the storage, as if file was uploaded just now
-    ANALYZE = types.CapabilityUnit(1 << next(_counter))
-
-    # make permanent download link
-    PERMANENT_LINK = types.CapabilityUnit(1 << next(_counter))
-
-    # make expiring download link
-    TEMPORAL_LINK = types.CapabilityUnit(1 << next(_counter))
-
-    # make one-time download link
-    ONE_TIME_LINK = types.CapabilityUnit(1 << next(_counter))
 
 
 class OptionChecker(object):
@@ -365,11 +303,7 @@ class Storage(OptionChecker):
         return size
 
     @classmethod
-    def declare_config_options(
-        cls,
-        declaration: types.Declaration,
-        key: types.Key,
-    ) -> None:
+    def declare_config_options(cls, declaration: Declaration, key: Key) -> None:
         declaration.declare(key.max_size, 0).append_validators(
             "files_parse_filesize",
         ).set_description(
@@ -381,7 +315,7 @@ class Storage(OptionChecker):
             "Descriptive name of the storage used for debugging.",
         )
 
-    def compute_capabilities(self) -> types.CapabilityCluster:
+    def compute_capabilities(self) -> types.Capability:
         return utils.combine_capabilities(
             self.uploader.capabilities,
             self.manager.capabilities,
@@ -397,10 +331,7 @@ class Storage(OptionChecker):
     def make_reader(self):
         return Reader(self)
 
-    def supports(
-        self,
-        operation: types.CapabilityCluster | types.CapabilityUnit,
-    ) -> bool:
+    def supports(self, operation: types.Capability) -> bool:
         return (self.capabilities & operation) == operation
 
     def compute_name(
@@ -435,7 +366,7 @@ class Storage(OptionChecker):
         upload: types.Upload,
         extras: dict[str, Any],
     ) -> types.MinimalStorageData:
-        if not self.supports(Capability.CREATE):
+        if not self.supports(types.Capability.CREATE):
             raise exceptions.UnsupportedOperationError("upload", type(self))
 
         if self.max_size:
@@ -471,37 +402,37 @@ class Storage(OptionChecker):
         )
 
     def exists(self, data: types.MinimalStorageData) -> bool:
-        if not self.supports(Capability.EXISTS):
+        if not self.supports(types.Capability.EXISTS):
             raise exceptions.UnsupportedOperationError("exists", type(self))
 
         return self.manager.exists(data)
 
     def remove(self, data: types.MinimalStorageData) -> bool:
-        if not self.supports(Capability.REMOVE):
+        if not self.supports(types.Capability.REMOVE):
             raise exceptions.UnsupportedOperationError("remove", type(self))
 
         return self.manager.remove(data)
 
     def scan(self) -> Iterable[str]:
-        if not self.supports(Capability.SCAN):
+        if not self.supports(types.Capability.SCAN):
             raise exceptions.UnsupportedOperationError("scan", type(self))
 
         return self.manager.scan()
 
     def analyze(self, filename: str) -> types.MinimalStorageData:
-        if not self.supports(Capability.ANALYZE):
+        if not self.supports(types.Capability.ANALYZE):
             raise exceptions.UnsupportedOperationError("analyze", type(self))
 
         return self.manager.analyze(filename)
 
     def stream(self, data: types.MinimalStorageData) -> IO[bytes]:
-        if not self.supports(Capability.STREAM):
+        if not self.supports(types.Capability.STREAM):
             raise exceptions.UnsupportedOperationError("stream", type(self))
 
         return self.reader.stream(data)
 
     def content(self, data: types.MinimalStorageData) -> bytes:
-        if not self.supports(Capability.STREAM):
+        if not self.supports(types.Capability.STREAM):
             raise exceptions.UnsupportedOperationError("content", type(self))
 
         return self.reader.content(data)
@@ -513,10 +444,12 @@ class Storage(OptionChecker):
         name: str,
         extras: dict[str, Any],
     ) -> types.MinimalStorageData:
-        if storage is self and self.supports(Capability.COPY):
+        if storage is self and self.supports(types.Capability.COPY):
             return self.manager.copy(data, name, extras)
 
-        if self.supports(Capability.STREAM) and storage.supports(Capability.CREATE):
+        if self.supports(types.Capability.STREAM) and storage.supports(
+            types.Capability.CREATE
+        ):
             return storage.upload(name, FileStorage(self.stream(data)), extras)
 
         raise exceptions.UnsupportedOperationError("copy", type(self))
@@ -528,12 +461,14 @@ class Storage(OptionChecker):
         name: str,
         extras: dict[str, Any],
     ) -> types.MinimalStorageData:
-        if storage is self and self.supports(Capability.MOVE):
+        if storage is self and self.supports(types.Capability.MOVE):
             return self.manager.move(data, name, extras)
 
         if self.supports(
-            utils.combine_capabilities(Capability.STREAM, Capability.REMOVE),
-        ) and storage.supports(Capability.CREATE):
+            utils.combine_capabilities(
+                types.Capability.STREAM, types.Capability.REMOVE
+            ),
+        ) and storage.supports(types.Capability.CREATE):
             result = storage.upload(name, FileStorage(self.stream(data)), extras)
             storage.remove(data)
             return result
@@ -546,17 +481,17 @@ class Storage(OptionChecker):
         extras: dict[str, Any],
         link_type: Literal["permanent", "temporal", "one-time", None] = None,
     ) -> str:
-        if self.supports(Capability.PERMANENT_LINK) and (
+        if self.supports(types.Capability.PERMANENT_LINK) and (
             not link_type or link_type == "permanent"
         ):
             return self.reader.permanent_link(data)
 
-        if self.supports(Capability.TEMPORAL_LINK) and (
+        if self.supports(types.Capability.TEMPORAL_LINK) and (
             not link_type or link_type == "temporal"
         ):
             return self.reader.temporal_link(data)
 
-        if self.supports(Capability.ONE_TIME_LINK) and (
+        if self.supports(types.Capability.ONE_TIME_LINK) and (
             not link_type or link_type == "one-time"
         ):
             return self.reader.one_time_link(data)
@@ -567,14 +502,14 @@ class Storage(OptionChecker):
         self,
         name: str,
         data: types.MinimalStorageData,
-    ) -> types.Response:
+    ) -> Response:
         """Return Flask response for generic file download."""
         try:
             return tk.redirect_to(self.link(data, {}))
         except exceptions.UnsupportedOperationError:
             pass
 
-        if self.supports(Capability.STREAM):
+        if self.supports(types.Capability.STREAM):
             resp = streaming_response(self.stream(data), data["content_type"])
             resp.headers["content-disposition"] = "attachment; filename={}".format(name)
             return resp

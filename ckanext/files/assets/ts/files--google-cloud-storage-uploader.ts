@@ -20,7 +20,7 @@ namespace ckan {
           request.open("PUT", info.storage_data.session_url);
           request.setRequestHeader(
             "content-range",
-            `bytes ${start}-${start + part.size - 1}/${info.storage_data.size}`,
+            `bytes ${start}-${start + part.size - 1}/${info.size}`,
           );
           request.send(part);
 
@@ -30,7 +30,7 @@ namespace ckan {
           let uploaded;
 
           if ([200, 201].includes(resp.status)) {
-            uploaded = info.storage_data.size;
+            uploaded = info.size;
           } else if (resp.status === 308) {
             const range = resp.getResponseHeader("range");
             uploaded = Number(range.split("=")[1].split("-")[1]) + 1;

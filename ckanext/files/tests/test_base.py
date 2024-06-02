@@ -6,7 +6,7 @@ import pytest
 from werkzeug.datastructures import FileStorage
 
 from ckanext.files import base, exceptions
-from ckanext.files.shared import Capability
+from ckanext.files.shared import Capability, FileData
 from ckanext.files.storage import RedisStorage
 
 from datetime import datetime  # isort: skip # noqa: F401
@@ -299,53 +299,53 @@ class TestStorage:
         with pytest.raises(NotImplementedError):
             storage.move({}, storage, "", {})
 
-    def test_compute_name_uuid(self, faker):
+    def test_compute_location_uuid(self, faker):
         # type: (Faker) -> None
         """`uuid`(default) name strategy produces valid UUID."""
         storage = Storage()
 
         extension = faker.file_extension()
         name = faker.file_name(extension=extension)
-        result = storage.compute_name(name, {})
+        result = storage.compute_location(name, {})
 
         assert uuid.UUID(result)
 
-    def test_compute_name_uuid_prefix(self, faker):
+    def test_compute_location_uuid_prefix(self, faker):
         # type: (Faker) -> None
         """`uuid_prefix` name strategy produces valid UUID."""
         storage = Storage()
 
-        storage.settings["name_strategy"] = "uuid_prefix"
+        storage.settings["location_strategy"] = "uuid_prefix"
         extension = faker.file_extension()
         name = faker.file_name(extension=extension)
-        result = storage.compute_name(name, {})
+        result = storage.compute_location(name, {})
         assert result.endswith(name)
         assert uuid.UUID(result[: -len(name)])
 
-    def test_compute_name_uuid_with_extension(self, faker):
+    def test_compute_location_uuid_with_extension(self, faker):
         # type: (Faker) -> None
         """`uuid_with_extension` name strategy produces valid UUID."""
         storage = Storage()
-        storage.settings["name_strategy"] = "uuid_with_extension"
+        storage.settings["location_strategy"] = "uuid_with_extension"
         extension = faker.file_extension()
         name = faker.file_name(extension=extension)
-        result = storage.compute_name(name, {})
+        result = storage.compute_location(name, {})
 
         assert result.endswith(extension)
         assert uuid.UUID(result[: -len(extension) - 1])
 
-    def test_compute_name_datetime_prefix(self, faker, files_stopped_time):
+    def test_compute_location_datetime_prefix(self, faker, files_stopped_time):
         # type: (Faker, datetime) -> None
         """`datetime_prefix` name strategy produces valid UUID."""
         storage = Storage()
-        storage.settings["name_strategy"] = "datetime_prefix"
+        storage.settings["location_strategy"] = "datetime_prefix"
         extension = faker.file_extension()
         name = faker.file_name(extension=extension)
-        result = storage.compute_name(name, {})
+        result = storage.compute_location(name, {})
 
         assert result == files_stopped_time.isoformat() + name
 
-    def test_compute_name_datetime_with_extension(
+    def test_compute_location_datetime_with_extension(
         self,
         faker,
         files_stopped_time,
@@ -353,20 +353,20 @@ class TestStorage:
         # type: (Faker, datetime) -> None
         """`datetime_with_extension` name strategy produces valid UUID."""
         storage = Storage()
-        storage.settings["name_strategy"] = "datetime_with_extension"
+        storage.settings["location_strategy"] = "datetime_with_extension"
         extension = faker.file_extension()
         name = faker.file_name(extension=extension)
-        result = storage.compute_name(name, {})
+        result = storage.compute_location(name, {})
 
         assert result == files_stopped_time.isoformat() + "." + extension
 
-    def test_compute_name_with_wrong_strategy(self):
+    def test_compute_location_with_wrong_strategy(self):
         # type: () -> None
         """`datetime_with_extension` name strategy produces valid UUID."""
         storage = Storage()
-        storage.settings["name_strategy"] = "wrong_strategy"
+        storage.settings["location_strategy"] = "wrong_strategy"
         with pytest.raises(exceptions.NameStrategyError):
-            storage.compute_name("test", {})
+            storage.compute_location("test", {})
 
     @pytest.mark.usefixtures("with_request_context")
     def test_download_response(self, faker, monkeypatch, mock):
@@ -374,7 +374,7 @@ class TestStorage:
         stream_mock = mock.Mock(return_value="hello")
 
         monkeypatch.setattr(storage, "stream", stream_mock)
-        data = {"content_type": "text/csv"}
+        data = FileData("", content_type="text/csv")
         name = faker.file_name()
         resp = storage.make_download_response(name, data)
 

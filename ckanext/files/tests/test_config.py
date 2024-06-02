@@ -55,7 +55,7 @@ class TestStorages:
             ("test.type", "test"),
             ("test.path", "somepath"),
             ("another.type", "fancy"),
-            ("another.name_strategy", "hello"),
+            ("another.location_strategy", "hello"),
         ]
         for key, value in patches:
             monkeypatch.setitem(ckan_config, config.STORAGE_PREFIX + key, value)
@@ -71,7 +71,7 @@ class TestStorages:
                 },
             ),
             "test": {"type": "test", "path": "somepath"},
-            "another": {"type": "fancy", "name_strategy": "hello"},
+            "another": {"type": "fancy", "location_strategy": "hello"},
         }
 
     @pytest.mark.ckan_config(config.STORAGE_PREFIX + "another", "test")

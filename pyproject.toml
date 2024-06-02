@@ -63,7 +63,7 @@ convention = "conventional"
 parse-trailers = true
 
 [tool.pyright]
-pythonVersion = "3.6"
+pythonVersion = "3.8"
 include = ["ckanext"]
 exclude = [
     "**/test*",

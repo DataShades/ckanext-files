@@ -122,18 +122,15 @@ And that's what you see as result:
 ```json
 {
   "atime": null,
-  "completed": true,
   "ctime": "2024-03-12T22:08:05.185914",
   "id": "7f9a7676-5177-40f0-b610-0b47918fdccc",
   "mtime": null,
   "name": "hello.txt",
   "storage": "my_storage",
-  "storage_data": {
-    "content_type": "text/plain",
-    "filename": "2f51aeff-96a5-4d79-8973-7867527d7f2e",
-    "hash": "5eb63bbbe01eeed093cb22bb8f5acdc3",
-    "size": 11
-  }
+  "content_type": "text/plain",
+  "location": "2f51aeff-96a5-4d79-8973-7867527d7f2e",
+  "hash": "5eb63bbbe01eeed093cb22bb8f5acdc3",
+  "size": 11
 }
 ```
 
@@ -143,11 +140,13 @@ suit its principles.
 
 By default, Redis driver puts the content under the key
 `<PREFIX><FILENAME>`. Pay attention to `FILENAME`. It's the value available as
-`storage_data.filename` in the API response(i.e,
+`location` in the API response(i.e,
 `2f51aeff-96a5-4d79-8973-7867527d7f2e` in our case), not the name of the real
 file you just uploaded.
 
-`PREFIX` can be configured, but we skipped this step and got the default value: `ckanext:files:default:file_content:`. So the final Redis key of our file is `ckanext:files:default:file_content:2f51aeff-96a5-4d79-8973-7867527d7f2e`
+`PREFIX` can be configured, but we skipped this step and got the default value:
+`ckanext:files:default:file_content:`. So the final Redis key of our file is
+`ckanext:files:default:file_content:2f51aeff-96a5-4d79-8973-7867527d7f2e`
 
 ```sh
 redis-cli
@@ -218,18 +217,19 @@ result = storage.upload('file.txt', upload, {})
 
 print(result)
 
-... {'filename': 'd65da0fd-299a-433c-850e-086fdc5ebb7e',
-...  'content_type': None,
-...  'size': 11,
-...  'hash': '5eb63bbbe01eeed093cb22bb8f5acdc3'}
+... FileData{location='d65da0fd-299a-433c-850e-086fdc5ebb7e',
+...  content_type=None,
+...  size=11,
+...  hash='5eb63bbbe01eeed093cb22bb8f5acdc3',
+...  storage_data={})
 
 ```
 
 `result` contains minimal amount of information that is required by storage to
-manage the file. In case of FS storage, it includes `filename`. If you visit
-`/tmp/example` directory, that we specified as a `path` for our storage, you'll
-see there a file with the name matching `filename` from result. And its content
-matches the content of our upload, which is quite an expected outcome.
+manage the file. It includes `location`. If you visit `/tmp/example` directory,
+that we specified as a `path` for our storage, you'll see there a file with the
+name matching `location` from result. And its content matches the content of
+our upload, which is quite an expected outcome.
 
 But let's go back to the shell and try reading file from the python's
 code. We'll pass `result` to the storage's `stream` method, which produces a
@@ -273,13 +273,10 @@ await sandbox.files.upload(
 ...    "ctime": "2024-03-12T23:08:11.291971",
 ...    "mtime": null,
 ...    "atime": null,
-...    "storage_data": {
-...        "filename": "f484d116-cf6f-4238-80e5-905849873be0",
-...        "content_type": "application/octet-stream",
-...        "size": 7,
-...        "hash": "9a0364b9e99bb480dd25e1f0284c8555"
-...    },
-...    "completed": true
+...    "location": "f484d116-cf6f-4238-80e5-905849873be0",
+...    "content_type": "application/octet-stream",
+...    "size": 7,
+...    "hash": "9a0364b9e99bb480dd25e1f0284c8555"
 ... }
 ```
 

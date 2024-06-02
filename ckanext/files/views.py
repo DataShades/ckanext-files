@@ -4,10 +4,12 @@ import logging
 from functools import partial
 from typing import Any
 
+import sqlalchemy as sa
 from flask import Blueprint
 from flask.views import MethodView
 
 import ckan.plugins.toolkit as tk
+from ckan import model
 from ckan.lib.helpers import Page
 from ckan.types import Response
 
@@ -60,11 +62,16 @@ def get_blueprints():
 @bp.route("/file/<file_id>/download")
 def generic_download(file_id: str) -> Response:
     tk.check_access("files_file_download", {}, {"id": file_id})
-    info = tk.get_action("files_file_show")({}, {"id": file_id})
-    storage = shared.get_storage(info["storage"])
+    item = model.Session.execute(
+        sa.select(shared.File).where(shared.File.id == file_id),
+    ).scalar()
+    if not item:
+        raise tk.ObjectNotFound("file")
 
+    storage = shared.get_storage(item.storage)
+    data = shared.FileData.from_file(item)
     try:
-        return storage.make_download_response(info["name"], info["storage_data"])
+        return storage.make_download_response(item.name, data)
     except exceptions.UnsupportedOperationError:
         return tk.abort(405)
 

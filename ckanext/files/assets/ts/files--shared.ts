@@ -40,13 +40,15 @@ namespace ckan {
 
         export namespace adapters {
             export type StorageData = {
-                uploaded: number;
-                size: number;
             };
 
             export type UploadInfo = {
-                id: string;
-                storage_data: StorageData;
+                id: string
+                storage_data: StorageData,
+                location: string,
+                hash: string,
+                content_type: string,
+                size: number
             };
 
             export class Base extends EventTarget {

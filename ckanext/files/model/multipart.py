@@ -14,31 +14,18 @@ from ckan.model.types import make_uuid
 from .base import Base, now
 
 
-class File(Base):  # type: ignore
+class Multipart(Base):  # type: ignore
     __table__ = sa.Table(
-        "files_file",
+        "files_multipart",
         Base.metadata,
         sa.Column("id", sa.UnicodeText, primary_key=True, default=make_uuid),
         sa.Column("name", sa.UnicodeText, nullable=False),
-        sa.Column("location", sa.Text, nullable=False),
-        sa.Column(
-            "content_type",
-            sa.Text,
-            nullable=False,
-            default="application/octet-stream",
-        ),
-        sa.Column("size", sa.Integer, nullable=False, default=0),
-        sa.Column("hash", sa.Text, nullable=False, default=""),
+        sa.Column("location", sa.Text, nullable=False, default=""),
         sa.Column("storage", sa.Text, nullable=False),
-        sa.Column(
-            "ctime",
-            sa.DateTime,
-            nullable=False,
-            default=now,
-            server_default=sa.func.now(),
-        ),
-        sa.Column("mtime", sa.DateTime),
-        sa.Column("atime", sa.DateTime),
+        sa.Column("ctime", sa.DateTime, default=now, server_default=sa.func.now()),
+        sa.Column("size", sa.Integer, default=0),
+        sa.Column("content_type", sa.Text, default=""),
+        sa.Column("hash", sa.Text, default=""),
         sa.Column("storage_data", JSONB, default=dict, server_default="{}"),
         sa.Column("plugin_data", JSONB, default=dict, server_default="{}"),
     )
@@ -46,24 +33,18 @@ class File(Base):  # type: ignore
     id: Mapped[str]
 
     name: Mapped[str]
-    location: Mapped[str]
-    content_type: Mapped[str]
-    size: Mapped[int]
-    hash: Mapped[str]
-
     storage: Mapped[str]
 
     ctime: Mapped[datetime]
-    mtime: Mapped[datetime | None]
-    atime: Mapped[datetime | None]
+    size: Mapped[int]
+    content_type: Mapped[str]
+    hash: Mapped[str]
 
     storage_data: Mapped[dict[str, Any]]
     plugin_data: Mapped[dict[str, Any]]
 
-    completed: Mapped[bool]
-
     def __init__(self, **kwargs: Any):
-        super(File, self).__init__(**kwargs)
+        super(Multipart, self).__init__(**kwargs)
         if not self.id:
             self.id = make_uuid()
 
@@ -76,21 +57,6 @@ class File(Base):  # type: ignore
             result["plugin_data"] = copy.deepcopy(plugin_data)
 
         return result
-
-    def touch(
-        self,
-        access: bool = True,
-        modification: bool = True,
-        moment: datetime | None = None,
-    ):
-        if not moment:
-            moment = now()
-
-        if access:
-            self.atime = moment
-
-        if modification:
-            self.mtime = moment
 
     def patch_data(
         self,
@@ -110,15 +76,3 @@ class File(Base):  # type: ignore
 
         setattr(self, prop, data)
         return data
-
-    @classmethod
-    def by_location(cls, location, storage=None):
-        # type: (str, str | None) -> sa.sql.Select
-        stmt = sa.select(cls).where(
-            cls.location == location,
-        )
-
-        if storage:
-            stmt = stmt.where(cls.storage == storage)
-
-        return stmt

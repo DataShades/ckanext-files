@@ -9,21 +9,13 @@ import requests
 from google.api_core.exceptions import Forbidden
 from google.cloud.storage import Client
 from google.oauth2.service_account import Credentials
-from typing_extensions import TypedDict
 
 import ckan.plugins.toolkit as tk
 from ckan.config.declaration import Declaration, Key
 
 from ckanext.files import exceptions, types
 from ckanext.files.base import Manager, Storage, Uploader
-from ckanext.files.shared import Capability
-
-GCAdditionalData = TypedDict("GCAdditionalData", {})
-
-
-class GCStorageData(GCAdditionalData, types.MinimalStorageData):
-    pass
-
+from ckanext.files.shared import Capability, FileData, MultipartData
 
 RE_RANGE = re.compile(r"bytes=(?P<first_byte>\d+)-(?P<last_byte>\d+)")
 
@@ -43,11 +35,11 @@ class GoogleCloudUploader(Uploader):
 
     def upload(
         self,
-        name: str,
+        location: str,
         upload: types.Upload,
         extras: dict[str, Any],
-    ) -> GCStorageData:
-        filename = self.storage.compute_name(name, extras, upload)
+    ) -> FileData:
+        filename = self.storage.compute_location(location, extras, upload)
         filepath = os.path.join(self.storage.settings["path"], filename)
 
         client = self.storage.client
@@ -55,18 +47,18 @@ class GoogleCloudUploader(Uploader):
 
         blob.upload_from_file(upload.stream)
         filehash = decode(blob.md5_hash)
-        return {
-            "filename": filename,
-            "content_type": upload.content_type,
-            "hash": filehash,
-            "size": blob.size or upload.content_length,
-        }
+        return FileData(
+            filename,
+            blob.size or upload.content_length,
+            upload.content_type,
+            filehash,
+        )
 
     def initialize_multipart_upload(
         self,
-        name: str,
+        location: str,
         extras: dict[str, Any],
-    ) -> dict[str, Any]:
+    ) -> MultipartData:
         schema = {
             "size": [
                 tk.get_validator("not_missing"),
@@ -79,7 +71,7 @@ class GoogleCloudUploader(Uploader):
         if errors:
             raise tk.ValidationError(errors)
 
-        filename = self.storage.compute_name(name, extras)
+        filename = self.storage.compute_location(location, extras)
         filepath = os.path.join(self.storage.settings["path"], filename)
 
         client = self.storage.client
@@ -100,18 +92,20 @@ class GoogleCloudUploader(Uploader):
         if not url:
             raise exceptions.UploadError("Cannot initialize session URL")
 
-        return {
-            "session_url": url,
-            "size": data["size"],
-            "uploaded": 0,
-            "filename": filename,
-        }
+        return MultipartData(
+            filename,
+            data["size"],
+            storage_data={
+                "session_url": url,
+                "uploaded": 0,
+            },
+        )
 
     def update_multipart_upload(
         self,
-        upload_data: dict[str, Any],
+        upload_data: MultipartData,
         extras: dict[str, Any],
-    ) -> dict[str, Any]:
+    ) -> MultipartData:
         schema = {
             "upload": [
                 tk.get_validator("ignore_missing"),
@@ -135,9 +129,9 @@ class GoogleCloudUploader(Uploader):
         if "upload" in data:
             upload: types.Upload = data["upload"]
 
-            first_byte = data.get("position", upload_data["uploaded"])
+            first_byte = data.get("position", upload_data.storage_data["uploaded"])
             last_byte = first_byte + upload.content_length - 1
-            size = upload_data["size"]
+            size = upload_data.size
 
             if last_byte >= size:
                 raise exceptions.UploadOutOfBoundError(last_byte, size)
@@ -148,7 +142,7 @@ class GoogleCloudUploader(Uploader):
                 )
 
             resp = requests.put(
-                upload_data["session_url"],
+                upload_data.storage_data["session_url"],
                 data=upload.stream.read(),
                 headers={
                     "content-range": "bytes {}-{}/{}".format(
@@ -163,8 +157,8 @@ class GoogleCloudUploader(Uploader):
                 raise tk.ValidationError({"upload": [resp.text]})
 
             if "range" not in resp.headers:
-                upload_data["uploaded"] = upload_data["size"]
-                upload_data["result"] = resp.json()
+                upload_data.storage_data["uploaded"] = upload_data.size
+                upload_data.storage_data["result"] = resp.json()
                 return upload_data
 
             range_match = RE_RANGE.match(resp.headers["range"])
@@ -172,10 +166,12 @@ class GoogleCloudUploader(Uploader):
                 raise tk.ValidationError(
                     {"upload": ["Invalid response from Google Cloud"]},
                 )
-            upload_data["uploaded"] = tk.asint(range_match.group("last_byte")) + 1
+            upload_data.storage_data["uploaded"] = (
+                tk.asint(range_match.group("last_byte")) + 1
+            )
 
         elif "uploaded" in data:
-            upload_data["uploaded"] = data["uploaded"]
+            upload_data.storage_data["uploaded"] = data["uploaded"]
 
         else:
             raise tk.ValidationError(
@@ -184,11 +180,11 @@ class GoogleCloudUploader(Uploader):
 
         return upload_data
 
-    def show_multipart_upload(self, upload_data: dict[str, Any]) -> dict[str, Any]:
+    def show_multipart_upload(self, upload_data: MultipartData) -> MultipartData:
         resp = requests.put(
-            upload_data["session_url"],
+            upload_data.storage_data["session_url"],
             headers={
-                "content-range": "bytes */{}".format(upload_data["size"]),
+                "content-range": "bytes */{}".format(upload_data.size),
                 "content-length": "0",
             },
         )
@@ -207,12 +203,14 @@ class GoogleCloudUploader(Uploader):
                             ],
                         },
                     )
-                upload_data["uploaded"] = tk.asint(range_match.group("last_byte")) + 1
+                upload_data.storage_data["uploaded"] = (
+                    tk.asint(range_match.group("last_byte")) + 1
+                )
             else:
-                upload_data["uploaded"] = 0
+                upload_data.storage_data["uploaded"] = 0
         elif resp.status_code in [200, 201]:
-            upload_data["uploaded"] = upload_data["size"]
-            upload_data["result"] = resp.json()
+            upload_data.storage_data["uploaded"] = upload_data.size
+            upload_data.storage_data["result"] = resp.json()
 
         else:
             raise tk.ValidationError(
@@ -230,33 +228,33 @@ class GoogleCloudUploader(Uploader):
 
     def complete_multipart_upload(
         self,
-        upload_data: dict[str, Any],
+        upload_data: MultipartData,
         extras: dict[str, Any],
-    ) -> GCStorageData:
+    ) -> FileData:
         upload_data = self.show_multipart_upload(upload_data)
-        if upload_data["uploaded"] != upload_data["size"]:
+        if upload_data.storage_data["uploaded"] != upload_data.size:
             raise tk.ValidationError(
                 {
                     "size": [
                         "Actual filesize {} does not match expected {}".format(
-                            upload_data["uploaded"],
-                            upload_data["size"],
+                            upload_data.storage_data["uploaded"],
+                            upload_data.size,
                         ),
                     ],
                 },
             )
 
-        filehash = decode(upload_data["result"]["md5Hash"])
+        filehash = decode(upload_data.storage_data["result"]["md5Hash"])
 
-        return {
-            "filename": os.path.relpath(
-                upload_data["result"]["name"],
+        return FileData(
+            os.path.relpath(
+                upload_data.storage_data["result"]["name"],
                 self.storage.settings["path"],
             ),
-            "hash": filehash,
-            "content_type": upload_data["result"]["contentType"],
-            "size": upload_data["size"],
-        }
+            upload_data.size,
+            upload_data.storage_data["result"]["contentType"],
+            filehash,
+        )
 
 
 class GoogleCloudManager(Manager):
@@ -264,8 +262,8 @@ class GoogleCloudManager(Manager):
     required_options = ["bucket"]
     capabilities = Capability.combine(Capability.REMOVE)
 
-    def remove(self, data: types.MinimalStorageData) -> bool:
-        filepath = os.path.join(str(self.storage.settings["path"]), data["filename"])
+    def remove(self, data: FileData) -> bool:
+        filepath = os.path.join(str(self.storage.settings["path"]), data.location)
         client: Client = self.storage.client
         blob = client.bucket(self.storage.settings["bucket"]).blob(filepath)
 

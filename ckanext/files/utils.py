@@ -1,7 +1,7 @@
 """Internal utilities of the extension.
 
 Do not use this module outside of the extension and do not import any other
-internal modules except for types and exceptions. Only independent tools are
+internal module except for types and exceptions. Only independent tools are
 stored here, to avoid import cycles.
 
 """
@@ -121,6 +121,9 @@ class Capability(enum.Flag):
             result = result & ~capability
         return result
 
+    def can(self, operation: Capability) -> bool:
+        return (self & operation) == operation
+
 
 class Registry(Generic[T]):
     """Mutable collection of objects.
@@ -199,6 +202,7 @@ def parse_filesize(value: str) -> int:
 def make_upload(
     value: (
         FileStorage
+        | types.Upload
         | tempfile.SpooledTemporaryFile[Any]
         | str
         | bytes
@@ -223,7 +227,7 @@ def make_upload(
             size = value.file.tell()
             value.file.seek(0)
 
-            return FileStorage(
+            return types.Upload(
                 value.file,
                 value.filename,
                 content_type=mime,
@@ -243,7 +247,7 @@ def make_upload(
         size = value.tell()
         value.seek(0)
 
-        return FileStorage(value, "", content_type=mime, content_length=size)
+        return types.Upload(value, "", content_type=mime, content_length=size)
 
     if isinstance(value, six.text_type):
         value = value.encode()
@@ -257,6 +261,6 @@ def make_upload(
         size = value.tell()
         value.seek(0)
 
-        return FileStorage(value, content_type=mime, content_length=size)
+        return types.Upload(value, content_type=mime, content_length=size)
 
     raise TypeError(type(value))

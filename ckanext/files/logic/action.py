@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import dataclasses
 from typing import Any
 
 import sqlalchemy as sa
@@ -11,7 +12,7 @@ from ckan.logic import validate
 from ckan.types import Context
 
 from ckanext.files import exceptions, shared
-from ckanext.files.model import File, Owner
+from ckanext.files.model import File, Multipart, Owner
 
 from . import schema
 
@@ -91,8 +92,6 @@ def files_file_search_by_user(
 @validate(schema.file_create)
 def files_file_create(context: Context, data_dict: dict[str, Any]) -> dict[str, Any]:
     tk.check_access("files_file_create", context, data_dict)
-    _ensure_name(data_dict)
-
     extras = data_dict.get("__extras", {})
 
     try:
@@ -104,6 +103,7 @@ def files_file_create(context: Context, data_dict: dict[str, Any]) -> dict[str, 
         raise tk.ValidationError({"storage": ["Operation is not supported"]})
 
     filename = secure_filename(data_dict["name"])
+
     try:
         storage_data = storage.upload(
             filename,
@@ -117,35 +117,14 @@ def files_file_create(context: Context, data_dict: dict[str, Any]) -> dict[str, 
         name=filename,
         storage=data_dict["storage"],
         storage_data=storage_data,
-        completed=True,
     )
+    storage_data.into_file(fileobj)
     context["session"].add(fileobj)
 
     _add_owner(context, "file", fileobj.id)
     context["session"].commit()
 
     return fileobj.dictize(context)
-
-
-def _ensure_name(
-    data_dict: dict[str, Any],
-    name_field: str = "name",
-    upload_field: str = "upload",
-):
-    if name_field in data_dict:
-        return
-    name = data_dict[upload_field].filename
-    if not name:
-        raise tk.ValidationError(
-            {
-                name_field: [
-                    "Name is missing and cannot be deduced from {}".format(
-                        upload_field,
-                    ),
-                ],
-            },
-        )
-    data_dict[name_field] = name
 
 
 def _add_owner(context: Context, item_type: str, item_id: str):
@@ -172,11 +151,13 @@ def _delete_owners(context: Context, item_type: str, item_id: str):
 
 
 @validate(schema.file_delete)
-def files_file_delete(context: Context, data_dict: dict[str, Any]) -> bool:
+def files_file_delete(context: Context, data_dict: dict[str, Any]) -> dict[str, Any]:
     tk.check_access("files_file_delete", context, data_dict)
 
     data_dict["id"]
-    fileobj = context["session"].query(File).filter_by(id=data_dict["id"]).one_or_none()
+    fileobj: File | None = (
+        context["session"].query(File).filter_by(id=data_dict["id"]).one_or_none()
+    )
     if not fileobj:
         raise tk.ObjectNotFound("file")
 
@@ -185,7 +166,7 @@ def files_file_delete(context: Context, data_dict: dict[str, Any]) -> bool:
         raise tk.ValidationError({"storage": ["Operation is not supported"]})
 
     try:
-        storage.remove(fileobj.storage_data)
+        storage.remove(shared.FileData.from_file(fileobj))
     except exceptions.PermissionError as err:
         raise tk.NotAuthorized(str(err))  # noqa: B904
 
@@ -201,7 +182,7 @@ def files_file_delete(context: Context, data_dict: dict[str, Any]) -> bool:
 def files_file_show(context: Context, data_dict: dict[str, Any]) -> dict[str, Any]:
     tk.check_access("files_file_show", context, data_dict)
 
-    fileobj = (
+    fileobj: File | None = (
         context["session"].query(File).filter(File.id == data_dict["id"]).one_or_none()
     )
     if not fileobj:
@@ -233,7 +214,6 @@ def files_upload_initialize(
     data_dict: dict[str, Any],
 ) -> dict[str, Any]:
     tk.check_access("files_upload_initialize", context, data_dict)
-    _ensure_name(data_dict)
     extras = data_dict.get("__extras", {})
 
     try:
@@ -253,11 +233,12 @@ def files_upload_initialize(
     except exceptions.UploadError as err:
         raise tk.ValidationError({"upload": [str(err)]})  # noqa: B904
 
-    fileobj = File(
+    fileobj = Multipart(
         name=filename,
         storage=data_dict["storage"],
-        storage_data=storage_data,
     )
+    storage_data.into_multipart(fileobj)
+
     context["session"].add(fileobj)
     _add_owner(context, "file", fileobj.id)
     context["session"].commit()
@@ -277,7 +258,7 @@ def files_upload_show(context: Context, data_dict: dict[str, Any]) -> dict[str, 
     storage = shared.get_storage(file_dict["storage"])
     storage_data = storage.show_multipart_upload(file_dict["storage_data"])
 
-    return dict(file_dict, storage_data=storage_data)
+    return dict(file_dict, storage_data=dataclasses.asdict(storage_data))
 
 
 @validate(schema.upload_update)
@@ -286,17 +267,19 @@ def files_upload_update(context: Context, data_dict: dict[str, Any]) -> dict[str
 
     extras = data_dict.get("__extras", {})
 
-    fileobj = context["session"].query(File).filter_by(id=data_dict["id"]).one_or_none()
+    fileobj: Multipart | None = (
+        context["session"].query(Multipart).filter_by(id=data_dict["id"]).one_or_none()
+    )
     if not fileobj:
         raise tk.ObjectNotFound("upload")
 
     storage = shared.get_storage(fileobj.storage)
 
     try:
-        fileobj.storage_data = storage.update_multipart_upload(
-            fileobj.storage_data,
+        storage.update_multipart_upload(
+            shared.MultipartData.from_mulltipart(fileobj),
             extras,
-        )
+        ).into_multipart(fileobj)
     except exceptions.UploadError as err:
         raise tk.ValidationError({"upload": [str(err)]})  # noqa: B904
 
@@ -315,21 +298,28 @@ def files_upload_complete(
     extras = data_dict.get("__extras", {})
 
     data_dict["id"]
-    fileobj = context["session"].query(File).filter_by(id=data_dict["id"]).one_or_none()
+    fileobj = (
+        context["session"].query(Multipart).filter_by(id=data_dict["id"]).one_or_none()
+    )
     if not fileobj:
         raise tk.ObjectNotFound("upload")
 
     storage = shared.get_storage(fileobj.storage)
 
+    result = File(
+        name=fileobj.name,
+        storage=data_dict["storage"],
+    )
+
     try:
-        fileobj.storage_data = storage.complete_multipart_upload(
-            fileobj.storage_data,
+        storage.complete_multipart_upload(
+            shared.MultipartData.from_mulltipart(fileobj),
             extras,
-        )
+        ).into_file(result)
     except exceptions.UploadError as err:
         raise tk.ValidationError({"upload": [str(err)]})  # noqa: B904
-
-    fileobj.completed = True
+    context["session"].add(result)
+    context["session"].delete(fileobj)
     context["session"].commit()
 
-    return fileobj.dictize(context)
+    return result.dictize(context)

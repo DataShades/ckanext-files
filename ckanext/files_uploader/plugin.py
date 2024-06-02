@@ -99,7 +99,7 @@ class ResourceUploader(uploader.ResourceUpload):
         )
 
     def _file_location(self, id: str) -> str:
-        return self.storage.compute_name(id, {"resource_id": id}, None)
+        return self.storage.compute_location(id, {"resource_id": id}, None)
 
     def upload(self, id: str, max_size: int = 10) -> None:
         # If a filename has been provided (a file is being uploaded)
@@ -138,7 +138,7 @@ class ResourceUploader(uploader.ResourceUpload):
 
 
 class ImageStorage(fs.FileSystemStorage):
-    def compute_name(
+    def compute_location(
         self,
         name: str,
         extras: dict[str, Any],
@@ -163,7 +163,7 @@ class ImageManager(fs.FileSystemManager):
 
 
 class ResourceStorage(fs.FileSystemStorage):
-    def compute_name(
+    def compute_location(
         self,
         name: str,
         extras: dict[str, Any],

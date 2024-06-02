@@ -1,6 +1,8 @@
 """Types for the extension.
 """
 
+from __future__ import annotations
+
 from typing_extensions import TypedDict
 from werkzeug.datastructures import FileStorage as Upload
 

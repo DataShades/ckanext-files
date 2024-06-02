@@ -106,9 +106,9 @@ def scan(
             fileobj = File(
                 name=os.path.basename(name),
                 storage=storage_name,
-                storage_data=data,
-                completed=True,
             )
+            data.into_file(fileobj)
+
             model.Session.add(fileobj)
 
             if stepfather:

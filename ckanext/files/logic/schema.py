@@ -11,12 +11,13 @@ def file_create(
     default: ValidatorFactory,
     files_into_upload: Validator,
     not_missing: Validator,
+    files_ensure_name: ValidatorFactory,
 ) -> Schema:
     # name is checked inside action, using "upload" as source if empty
     return {
         "name": [ignore_empty, unicode_safe],
         "storage": [default(config.default_storage()), unicode_safe],
-        "upload": [not_missing, files_into_upload],
+        "upload": [not_missing, files_into_upload, files_ensure_name("name")],
     }
 
 
@@ -75,13 +76,12 @@ def file_rename(not_empty: Validator, unicode_safe: Validator) -> Schema:
 
 @validator_args
 def upload_initialize(
-    ignore_empty: Validator,
+    not_empty: Validator,
     unicode_safe: Validator,
     default: ValidatorFactory,
 ) -> Schema:
-    # name is checked inside action, using "upload" as source if empty
     return {
-        "name": [ignore_empty, unicode_safe],
+        "name": [not_empty, unicode_safe],
         "storage": [default(config.default_storage()), unicode_safe],
     }
 

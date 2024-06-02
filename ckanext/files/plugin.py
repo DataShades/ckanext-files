@@ -17,6 +17,7 @@ from ckanext.files import base, config, exceptions, interfaces, storage
 @tk.blanket.actions
 @tk.blanket.auth_functions
 @tk.blanket.cli
+@tk.blanket.blueprints
 class FilesPlugin(p.SingletonPlugin):
     p.implements(p.IConfigurable)
     p.implements(p.IConfigurer, inherit=True)

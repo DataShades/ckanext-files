@@ -22,7 +22,12 @@ class Multipart(Base):  # type: ignore
         sa.Column("name", sa.UnicodeText, nullable=False),
         sa.Column("location", sa.Text, nullable=False, default=""),
         sa.Column("storage", sa.Text, nullable=False),
-        sa.Column("ctime", sa.DateTime, default=now, server_default=sa.func.now()),
+        sa.Column(
+            "ctime",
+            sa.DateTime(timezone=True),
+            default=now,
+            server_default=sa.func.now(),
+        ),
         sa.Column("size", sa.Integer, default=0),
         sa.Column("content_type", sa.Text, default=""),
         sa.Column("hash", sa.Text, default=""),

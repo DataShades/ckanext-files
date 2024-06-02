@@ -32,13 +32,13 @@ class File(Base):  # type: ignore
         sa.Column("storage", sa.Text, nullable=False),
         sa.Column(
             "ctime",
-            sa.DateTime,
+            sa.DateTime(timezone=True),
             nullable=False,
             default=now,
             server_default=sa.func.now(),
         ),
-        sa.Column("mtime", sa.DateTime),
-        sa.Column("atime", sa.DateTime),
+        sa.Column("mtime", sa.DateTime(timezone=True)),
+        sa.Column("atime", sa.DateTime(timezone=True)),
         sa.Column("storage_data", JSONB, default=dict, server_default="{}"),
         sa.Column("plugin_data", JSONB, default=dict, server_default="{}"),
     )

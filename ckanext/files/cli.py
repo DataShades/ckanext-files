@@ -68,32 +68,42 @@ def adapters(verbose: bool):
 
 
 @files.command()
-def storages():
+@click.option("-v", "--verbose", is_flag=True, help="Show storage's details")
+def storages(verbose: bool):
     """Show all configured storages."""
     for name, settings in config.storages().items():
         click.secho("{}: {}".format(click.style(name, bold=True), settings["type"]))
+        if verbose:
+            storage = shared.get_storage(name)
+            click.echo(f"\tSupports: {storage.capabilities}")
+            click.echo(f"\tDoes not support: {storage.unsupported_operations()}")
 
 
 @files.command()
 @click.option("-s", "--storage-name", help="Name of the configured storage")
 @click.option(
-    "-o",
-    "--orphans-only",
-    help="Show only files not registered in DB",
+    "-u",
+    "--untracked-only",
+    help="Show only untracked files(not recorded in DB)",
     is_flag=True,
 )
-@click.option("-m", "--materialize", help="Register orphans in DB", is_flag=True)
-@click.option("-a", "--adopt-by", help="Attach orphans to specified user")
+@click.option(
+    "-t",
+    "--track",
+    help="Track untracked files by creating record in DB",
+    is_flag=True,
+)
+@click.option("-a", "--adopt-by", help="Attach untracked to specified user")
 def scan(
     storage_name: str | None,
-    orphans_only: bool,
+    untracked_only: bool,
     adopt_by: str | None,
-    materialize: bool,
+    track: bool,
 ):
     """Iterate over all files available in storage.
 
-    This command can be used to locate "orphans", that are not registered in
-    DB, but exist in storage.
+    This command can be used to locate untracked files, that are not registered
+    in DB, but exist in storage.
 
     """
     storage_name = storage_name or config.default_storage()
@@ -108,16 +118,16 @@ def scan(
     stepfather = model.User.get(adopt_by)
 
     for name in files:
-        is_orphan = not model.Session.query(
+        is_untracked = not model.Session.query(
             File.by_location(name, storage_name).exists(),
         ).scalar()
 
-        if orphans_only and not is_orphan:
+        if untracked_only and not is_untracked:
             continue
 
         click.echo(name)
 
-        if materialize and is_orphan:
+        if track and is_untracked:
             try:
                 data = storage.analyze(name)
             except exceptions.UnsupportedOperationError as err:

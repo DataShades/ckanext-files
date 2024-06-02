@@ -14,6 +14,7 @@ and attach them to datasets, resources, etc.
   * [Usage in code](#usage-in-code)
   * [Usage in browser](#usage-in-browser)
   * [Multi-storage](#multi-storage)
+  * [Tracked and untracked files](#tracked-and-untracked-files)
 * [Configuration](#configuration)
 
 
@@ -60,7 +61,7 @@ To install ckanext-files:
 
 Before uploading files, you have to configure a **storage**. Storage defines
 the *adapter* used for uploads(i.e, where and how data will be stored:
-filesystem, cloud, DB, etc.), add, depending on the adapter, a few specific
+filesystem, cloud, DB, etc.), and, depending on the adapter, a few specific
 options. For example, filesystem adapter likely requires a path to the folder
 where uploads are stored. DB adapter may need DB connection parameters. Cloud
 adapter most likely will not work without an API key. These additional options
@@ -84,9 +85,8 @@ conflicts. Technically, adapter name can use any character, including spaces,
 newlines and emoji.
 
 
-If you accidentally make a typo in the driver's name, because of config
-validation, any CKAN CLI command will produce an error message with the list of
-available drivers:
+If you make a typo in the adapter's name, any CKAN CLI command will produce an
+error message with the list of available drivers:
 
 ```sh
 Invalid configuration values provided:
@@ -133,8 +133,8 @@ call's output in the command `ckan files stream ID`:
 ckan files stream e21162ab-abfb-476c-b8c5-5fe7cb89eca0
 ```
 
-Alternatively, we can use Redis CLI and to get the content of the file. Note,
-you cannot get the content via CKAN API, because it's JSON-based and streaming
+Alternatively, we can use Redis CLI to get the content of the file. Note, you
+cannot get the content via CKAN API, because it's JSON-based and streaming
 files doesn't suit its principles.
 
 By default, Redis driver puts the content under the key
@@ -142,8 +142,8 @@ By default, Redis driver puts the content under the key
 `location` in the API response(i.e, `24d27fb9-a5f0-42f6-aaa3-7dcb599a0d46` in
 our case). It's different from the `id`(ID used by DB to uniquely identify file
 record) and `name`(human readable name of the file). In our scenario,
-`location` location looks like UUID because of the internal details of Redis
-adapter implementation. But different adapters may use more path-like value,
+`location` looks like UUID because of the internal details of Redis adapter
+implementation. But different adapters may use more path-like value,
 i.e. something similar to `path/to/folder/hello.txt`.
 
 `PREFIX` can be configured, but we skipped this step and got the default value:
@@ -329,8 +329,9 @@ sandbox.client.call("POST", "files_file_delete", {
 
 ### Multi-storage
 
-It's possible to use multiple storages at the same time and specify which one
-you want to use when uploading a file. Up until now we used the following storage options:
+It's possible to configure multiple storages at once and specify which one you
+want to use for the individual file upload. Up until now we used the following
+storage options:
 
 * `ckanext.files.storage.default.type`
 * `ckanext.files.storage.default.path`
@@ -403,6 +404,98 @@ await sandbox.files.upload(
   uploader,
 )
 ```
+
+### Tracked and untracked files
+
+There is a difference between creating files via action:
+
+```python
+tk.get_action("files_file_create")(
+    {"ignore_auth": True},
+    {"upload": "hello", "name": "hello.txt"}
+)
+```
+
+and via direct call to `Storage.upload`:
+
+```python
+from ckanext.files.shared import get_storage, make_upload
+
+storage = get_storage()
+storage.upload("hello.txt", make_upload("hello"), {})
+```
+
+The former snippet creates a *tracked* file: file uploaded to the storage and
+its details are saved to database.
+
+The latter snippet creates an *untracked* file: file uploaded to the storage,
+but its details are not saved anywhere.
+
+Untracked files can be used to achieve specific goals. For example, imagine a
+storage adapter that writes files to the specified ZIP archive. You can create
+an interface, that initializes such storage for *an existing ZIP resource* and
+uploads files into it. You don't need a separate record in DB for every
+uploaded file, because all of them go into the resource, that is already stored
+in DB.
+
+But such use-cases are pretty specific, so prefer to use API if you are not
+sure, what you need. The main reason to use tracked files is their
+discoverability: you can use `files_file_search` API action to list all the
+tracked files and optionally filter them by storage, location, content_type,
+etc:
+
+```sh
+ckanapi action files_file_search
+
+... {
+...   "count": 123,
+...   "results": [
+...     {
+...       "atime": null,
+...       "content_type": "text/plain",
+...       "ctime": "2024-06-02T14:53:12.345358+00:00",
+...       "hash": "5eb63bbbe01eeed093cb22bb8f5acdc3",
+...       "id": "67a0dc8f-be91-48cd-bc8a-9934e12a48d0",
+...       "location": "25c01077-c2cf-484b-a417-f231bb6b448b",
+...       "mtime": null,
+...       "name": "hello.txt",
+...       "size": 11,
+...       "storage": "default",
+...       "storage_data": {}
+...     },
+...     ...
+...   ]
+... }
+
+ckanapi action files_file_search size:5 rows=1
+
+... {
+...   "count": 2,
+...   "results": [
+...     {
+...       "atime": null,
+...       "content_type": "text/plain",
+...       "ctime": "2024-06-02T14:53:12.345358+00:00",
+...       "hash": "5eb63bbbe01eeed093cb22bb8f5acdc3",
+...       "id": "67a0dc8f-be91-48cd-bc8a-9934e12a48d0",
+...       "location": "25c01077-c2cf-484b-a417-f231bb6b448b",
+...       "mtime": null,
+...       "name": "hello.txt",
+...       "size": 5,
+...       "storage": "default",
+...       "storage_data": {}
+...     }
+...   ]
+... }
+
+ckanapi action files_file_search content_type=application/pdf
+
+... {
+...   "count": 0,
+...   "results": []
+... }
+```
+
 
 
 ## Configuration

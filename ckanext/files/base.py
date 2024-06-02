@@ -290,6 +290,25 @@ class Manager(StorageService):
 
         raise NotImplementedError
 
+    def compose(
+        self,
+        datas: Iterable[FileData],
+        location: str,
+        extras: dict[str, Any],
+    ) -> FileData:
+        """Combine multipe file inside the storage into a new one."""
+
+        raise NotImplementedError
+
+    def append(
+        self,
+        data: FileData,
+        upload: types.Upload,
+        extras: dict[str, Any],
+    ) -> FileData:
+        """Append content to existing file."""
+        raise NotImplementedError
+
     def copy(
         self,
         data: FileData,
@@ -399,6 +418,9 @@ class Storage(OptionChecker):
 
     def supports(self, operation: utils.Capability) -> bool:
         return self.capabilities.can(operation)
+
+    def unsupported_operations(self):
+        return utils.Capability.combine(*utils.Capability).exclude(self.capabilities)
 
     def compute_location(
         self,
@@ -520,6 +542,30 @@ class Storage(OptionChecker):
             )
 
         raise exceptions.UnsupportedOperationError("copy", type(self))
+
+    def compose(
+        self,
+        storage: Storage,
+        location: str,
+        extras: dict[str, Any],
+        *datas: FileData,
+    ) -> FileData:
+        if storage is self and self.supports(utils.Capability.COMPOSE):
+            return self.manager.compose(datas, location, extras)
+
+        raise exceptions.UnsupportedOperationError("compose", type(self))
+
+    def append(
+        self,
+        data: FileData,
+        storage: Storage,
+        upload: types.Upload,
+        extras: dict[str, Any],
+    ) -> FileData:
+        if storage is self and self.supports(utils.Capability.APPEND):
+            return self.manager.append(data, upload, extras)
+
+        raise exceptions.UnsupportedOperationError("compose", type(self))
 
     def move(
         self,

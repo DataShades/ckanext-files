@@ -3,7 +3,8 @@ from __future__ import annotations
 import copy
 import logging
 import os
-from typing import IO, Any
+import shutil
+from typing import IO, Any, Iterable
 
 import magic
 
@@ -163,8 +164,103 @@ class FileSystemManager(Manager):
     required_options = ["path"]
     capabilities = shared.Capability.combine(
         shared.Capability.REMOVE,
+        shared.Capability.SCAN,
+        shared.Capability.EXISTS,
         shared.Capability.ANALYZE,
+        shared.Capability.COPY,
+        shared.Capability.MOVE,
+        shared.Capability.COMPOSE,
+        shared.Capability.APPEND,
     )
+
+    def compose(
+        self,
+        datas: Iterable[FileData],
+        location: str,
+        extras: dict[str, Any],
+    ) -> FileData:
+        """Combine multipe file inside the storage into a new one."""
+
+        safe_location = self.storage.compute_location(location, extras)
+        dest = os.path.join(str(self.storage.settings["path"]), safe_location)
+        if os.path.exists(dest):
+            raise exceptions.ExistingFileError(self.storage.settings["name"], dest)
+
+        sources: list[str] = []
+        for data in datas:
+            src = os.path.join(str(self.storage.settings["path"]), data.location)
+
+            if not os.path.exists(src):
+                raise exceptions.MissingFileError(self.storage.settings["name"], src)
+            sources.append(src)
+
+        with open(dest, "wb") as to_fd:
+            for src in sources:
+                with open(src, "rb") as from_fd:
+                    shutil.copyfileobj(from_fd, to_fd)
+
+        return self.analyze(dest)
+
+    def append(
+        self,
+        data: FileData,
+        upload: types.Upload,
+        extras: dict[str, Any],
+    ) -> FileData:
+        """Append content to existing file."""
+        dest = os.path.join(str(self.storage.settings["path"]), data.location)
+        with open(dest, "ab") as fd:
+            fd.write(upload.stream.read())
+
+        return self.analyze(dest)
+
+    def copy(
+        self,
+        data: FileData,
+        location: str,
+        extras: dict[str, Any],
+    ) -> FileData:
+        """Copy file inside the storage."""
+        safe_location = self.storage.compute_location(location, extras)
+        src = os.path.join(str(self.storage.settings["path"]), data.location)
+        dest = os.path.join(str(self.storage.settings["path"]), safe_location)
+
+        if not os.path.exists(src):
+            raise exceptions.MissingFileError(self.storage.settings["name"], src)
+
+        if os.path.exists(dest):
+            raise exceptions.ExistingFileError(self.storage.settings["name"], dest)
+
+        shutil.copy(src, dest)
+        new_data = copy.deepcopy(data)
+        new_data.location = safe_location
+        return new_data
+
+    def move(
+        self,
+        data: FileData,
+        location: str,
+        extras: dict[str, Any],
+    ) -> FileData:
+        """Move file to a different location inside the storage."""
+        safe_location = self.storage.compute_location(location, extras)
+        src = os.path.join(str(self.storage.settings["path"]), data.location)
+        dest = os.path.join(str(self.storage.settings["path"]), safe_location)
+
+        if not os.path.exists(src):
+            raise exceptions.MissingFileError(self.storage.settings["name"], src)
+
+        if os.path.exists(dest):
+            raise exceptions.ExistingFileError(self.storage.settings["name"], dest)
+
+        shutil.move(src, dest)
+        new_data = copy.deepcopy(data)
+        new_data.location = safe_location
+        return new_data
+
+    def exists(self, data: FileData) -> bool:
+        filepath = os.path.join(str(self.storage.settings["path"]), data.location)
+        return os.path.exists(filepath)
 
     def remove(self, data: FileData) -> bool:
         filepath = os.path.join(str(self.storage.settings["path"]), data.location)
@@ -173,6 +269,13 @@ class FileSystemManager(Manager):
 
         os.remove(filepath)
         return True
+
+    def scan(self) -> Iterable[str]:
+        path = self.storage.settings["path"]
+        for entry in os.scandir(path):
+            if not entry.is_file():
+                continue
+            yield entry.name
 
     def analyze(self, filename: str) -> FileData:
         """Return all details about filename."""

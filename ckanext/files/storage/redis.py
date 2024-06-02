@@ -130,6 +130,12 @@ class RedisManager(Manager):
         src = self.storage.settings["prefix"] + data.location
         dest = self.storage.settings["prefix"] + safe_location
 
+        if not self.storage.redis.exists(src):
+            raise exceptions.MissingFileError(self.storage.settings["name"], src)
+
+        if self.storage.redis.exists(dest):
+            raise exceptions.ExistingFileError(self.storage.settings["name"], dest)
+
         self.storage.redis.rename(src, dest)
         new_data = copy.deepcopy(data)
         new_data.location = safe_location

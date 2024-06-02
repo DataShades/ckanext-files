@@ -14,15 +14,15 @@ import mimetypes
 import re
 import tempfile
 from io import BytesIO
-from typing import Any, Callable, Generic, TypeVar, cast
+from typing import Any, TypeVar, cast
 
 import magic
+from typing_extensions import Generic
 from werkzeug.datastructures import FileStorage
 
 from ckanext.files import exceptions, types
 
 T = TypeVar("T")
-TC = TypeVar("TC", bound=Callable[..., Any])
 
 RE_FILESIZE = re.compile(r"^(?P<size>\d+(?:\.\d+)?)\s*(?P<unit>\w*)$")
 
@@ -60,7 +60,6 @@ class Capability(enum.Flag):
     >>> )
     >>> if storage.supports(read_and_write)
     >>>     ...
-
     """
 
     NONE = 0

@@ -72,6 +72,12 @@ def files_file_search_by_user(
 
 
 @tk.auth_disallow_anonymous_access
+def files_file_search(context: Context, data_dict: dict[str, Any]) -> AuthResult:
+    """Only file manager can search files."""
+    return authz.is_authorized("files_manage_files", context, data_dict)
+
+
+@tk.auth_disallow_anonymous_access
 def files_file_create(context: Context, data_dict: dict[str, Any]) -> AuthResult:
     return authz.is_authorized("files_manage_files", context, data_dict)
 

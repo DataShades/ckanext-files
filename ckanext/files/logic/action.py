@@ -89,6 +89,65 @@ def files_file_search_by_user(
     return {"count": total, "results": [f.dictize(context) for f in q]}
 
 
+@tk.side_effect_free
+@validate(schema.file_search)
+def files_file_search(
+    context: Context,
+    data_dict: dict[str, Any],
+) -> dict[str, Any]:
+    tk.check_access("files_file_search", context, data_dict)
+    sess = context["session"]
+
+    stmt = sa.select(File).join(
+        Owner,
+        sa.and_(File.id == Owner.item_id, Owner.item_type == "file"),
+    )
+
+    inspector: Any = sa.inspect(File)
+    columns = inspector.columns
+
+    for mask in ["storage_data", "plugin_data"]:
+        if mask in data_dict:
+            for k, v in _flat_mask(data_dict[mask]).items():
+                field = columns[mask]
+                for segment in k:
+                    field = field[segment]
+
+                stmt = stmt.where(field.astext == v)
+
+    for k, v in data_dict.get("__extras", {}).items():
+        if k not in columns:
+            continue
+        if not isinstance(v, columns[k].type.python_type):
+            continue
+
+        stmt = stmt.where(columns[k] == v)
+
+    total = sess.scalar(sa.select(sa.func.count()).select_from(stmt))
+
+    parts = data_dict["sort"].split(".")
+    sort = parts[0]
+    sort_path = parts[1:]
+
+    if sort not in columns:
+        raise tk.ValidationError({"sort": ["Unknown sort column"]})
+
+    column = columns[sort]
+
+    if sort_path and sort == "storage_data":
+        for part in sort_path:
+            column = column[part]
+
+    if data_dict["reverse"]:
+        column = column.desc()
+
+    stmt = stmt.order_by(column)
+
+    stmt = stmt.limit(data_dict["rows"]).offset(data_dict["start"])
+
+    return {"count": total, "results": [f.dictize(context) for f in sess.scalars(stmt)]}
+
+
 @validate(schema.file_create)
 def files_file_create(context: Context, data_dict: dict[str, Any]) -> dict[str, Any]:
     tk.check_access("files_file_create", context, data_dict)

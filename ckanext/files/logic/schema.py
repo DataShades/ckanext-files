@@ -34,7 +34,6 @@ def _base_file_search(
         "rows": [default(10), int_validator],
         "sort": [default("name"), unicode_safe],
         "reverse": [boolean_validator],
-        "storage": [ignore_empty, unicode_safe],
         "storage_data": [ignore_empty],
         "plugin_data": [ignore_empty],
     }
@@ -49,6 +48,12 @@ def file_search_by_user(
 ) -> Schema:
     schema = _base_file_search()
     schema["user"] = [ignore_missing, ignore_not_sysadmin, unicode_safe]
+    return schema
+
+
+@validator_args
+def file_search() -> Schema:
+    schema = _base_file_search()
     return schema
 
 

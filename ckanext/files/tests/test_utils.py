@@ -13,14 +13,18 @@ def test_registry(faker):
     # type: (Faker) -> None
     """Brief test of registry functionality."""
 
-    registry = utils.Registry()
+    registry = utils.Registry[object]()
     key = faker.word()
     value = object()
 
     assert registry.get(key) is None
+    with pytest.raises(KeyError):
+        registry[key]
 
     registry.register(key, value)
     assert registry.get(key) is value
+    assert registry[key] is value
+
     assert list(registry) == [key]
 
     registry.reset()
@@ -44,7 +48,7 @@ class TestEnsureSize:
             utils.ensure_size(upload, 5)
 
 
-class TestCombineCapabilities:
+class TestCapabilities:
     def test_reflexive_combination(self):
         """Combination of unit with itself leaves a single unit."""
 
@@ -53,7 +57,7 @@ class TestCombineCapabilities:
             Capability.CREATE,
         )
         second = Capability.combine(Capability.CREATE)
-        assert first == second
+        assert first is second
 
     def test_commutative_combination(self):
         """Order of combination does not change the result"""
@@ -66,7 +70,7 @@ class TestCombineCapabilities:
             Capability.REMOVE,
             Capability.CREATE,
         )
-        assert first == second
+        assert first is second
 
     def test_associative_combination(self):
         """Rearranging the combination sequence does not change the result."""
@@ -111,19 +115,16 @@ class TestCombineCapabilities:
             Capability.MULTIPART_UPLOAD,
             Capability.STREAM,
         )
-        assert clusters == units
+        assert clusters is units
 
-
-class TestExcludeCapabilities:
     def test_not_intersecting_exclusion(self):
-        """Nothing changes when non existing unit excluded."""
-
+        """Nothing changes when non-existing unit excluded."""
         cluster = Capability.combine(
             Capability.CREATE,
             Capability.REMOVE,
         )
 
-        assert Capability.exclude(cluster, Capability.MULTIPART_UPLOAD) == cluster
+        assert Capability.exclude(cluster, Capability.MULTIPART_UPLOAD) is cluster
 
     def test_exclusion_of_single_unit(self):
         """Single unit exclusion leaves all other units inside cluster."""
@@ -136,7 +137,7 @@ class TestExcludeCapabilities:
         assert Capability.exclude(
             cluster,
             Capability.CREATE,
-        ) == Capability.combine(Capability.REMOVE)
+        ) is Capability.combine(Capability.REMOVE)
 
     def test_multi_unit_exclusion(self):
         """Multiple units can be excluded at once."""
@@ -166,6 +167,24 @@ class TestExcludeCapabilities:
             Capability.combine(Capability.CREATE, Capability.STREAM),
         )
         assert empty == Capability.combine(Capability.REMOVE)
+
+    def test_can_single_capability(self):
+        """Individual capabilites are identified in cluster."""
+        cluster = Capability.combine(Capability.CREATE, Capability.REMOVE)
+        assert cluster.can(Capability.CREATE)
+        assert cluster.can(Capability.REMOVE)
+        assert not cluster.can(Capability.STREAM)
+
+    def test_can_cluster_capability(self):
+        """Cluster capabilites are identified in cluster."""
+        cluster = Capability.combine(
+            Capability.CREATE,
+            Capability.REMOVE,
+            Capability.STREAM,
+        )
+
+        assert cluster.can(Capability.combine(Capability.CREATE, Capability.REMOVE))
+        assert not cluster.can(Capability.combine(Capability.CREATE, Capability.MOVE))
 
 
 class TestParseFilesize:

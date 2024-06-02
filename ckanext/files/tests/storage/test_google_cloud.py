@@ -10,21 +10,19 @@ from urllib.parse import quote_plus
 from uuid import UUID
 
 import pytest
-from werkzeug.datastructures import FileStorage
 
 import ckan.plugins.toolkit as tk
 
-from ckanext.files import exceptions
+from ckanext.files import exceptions, shared
 from ckanext.files.storage import google_cloud as gc
 
 from faker import Faker  # isort: skip # noqa: F401
-from ckanext.files import types  # isort: skip # noqa: F401
 
 TEST_BUCKET = "ld-bq-test"
 
 
 @pytest.fixture()
-def upload_progress():
+def upload_progress() -> dict[str, Any]:
     return {"size": 0, "uploaded": 0, "content": b"", "name": ""}
 
 
@@ -153,7 +151,7 @@ def mocked_upload_update(
 
 
 @pytest.fixture()
-def mocked_upload(mocked_upload_initialize, mocked_upload_update):
+def mocked_upload(mocked_upload_initialize: Any, mocked_upload_update: Any):
     pass
 
 
@@ -161,7 +159,7 @@ class TestUploader:
     @pytest.mark.usefixtures("mocked_token", "mocked_upload")
     def test_result(self, storage: gc.GoogleCloudStorage, faker: Faker):
         content = faker.binary(100)
-        result = storage.upload("", FileStorage(BytesIO(content)), {})
+        result = storage.upload("", shared.make_upload(BytesIO(content)), {})
 
         assert UUID(result.location)
         assert result.size == len(content)
@@ -211,12 +209,12 @@ class TestMultipartUploader:
         with pytest.raises(tk.ValidationError):
             storage.update_multipart_upload(
                 data,
-                {"upload": FileStorage(BytesIO(content[:5]))},
+                {"upload": shared.make_upload(BytesIO(content[:5]))},
             )
 
         data = storage.update_multipart_upload(
             data,
-            {"upload": FileStorage(BytesIO(content[: 256 * 1024]))},
+            {"upload": shared.make_upload(BytesIO(content[: 256 * 1024]))},
         )
 
         assert data.size == len(content)
@@ -225,13 +223,13 @@ class TestMultipartUploader:
         with pytest.raises(exceptions.UploadOutOfBoundError):
             storage.update_multipart_upload(
                 data,
-                {"upload": FileStorage(BytesIO(content))},
+                {"upload": shared.make_upload(BytesIO(content))},
             )
 
         missing_size = data.size - data.storage_data["uploaded"]
         data = storage.update_multipart_upload(
             data,
-            {"upload": FileStorage(BytesIO(content[-missing_size:]))},
+            {"upload": shared.make_upload(BytesIO(content[-missing_size:]))},
         )
         assert data.size == len(content)
         assert data.storage_data["uploaded"] == len(content)
@@ -249,7 +247,7 @@ class TestMultipartUploader:
 
         data = storage.update_multipart_upload(
             data,
-            {"upload": FileStorage(BytesIO(content))},
+            {"upload": shared.make_upload(BytesIO(content))},
         )
         data = storage.complete_multipart_upload(data, {})
         assert data.size == len(content)
@@ -267,7 +265,7 @@ class TestMultipartUploader:
 
         data = storage.update_multipart_upload(
             data,
-            {"upload": FileStorage(BytesIO(content))},
+            {"upload": shared.make_upload(BytesIO(content))},
         )
         assert storage.show_multipart_upload(data) == data
 
@@ -278,7 +276,7 @@ class TestMultipartUploader:
 class TestManager:
     @pytest.mark.usefixtures("mocked_upload")
     def test_removal(self, storage: gc.GoogleCloudStorage, responses: Any):
-        result = storage.upload("", FileStorage(), {})
+        result = storage.upload("", shared.make_upload(""), {})
         name = os.path.join(storage.settings["path"], result.location)
 
         object_url = (
@@ -293,7 +291,7 @@ class TestManager:
 
     @pytest.mark.usefixtures("mocked_upload")
     def test_removal_missing(self, storage: gc.GoogleCloudStorage, responses: Any):
-        result = storage.upload("", FileStorage(), {})
+        result = storage.upload("", shared.make_upload(""), {})
         name = os.path.join(storage.settings["path"], result.location)
 
         object_url = (

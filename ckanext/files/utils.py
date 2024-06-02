@@ -9,18 +9,19 @@ stored here, to avoid import cycles.
 from __future__ import annotations
 
 import contextlib
+import dataclasses
 import enum
 import mimetypes
 import re
 import tempfile
 from io import BytesIO
-from typing import Any, TypeVar, cast
+from typing import IO, Any, TypeVar, cast
 
 import magic
 from typing_extensions import Generic
 from werkzeug.datastructures import FileStorage
 
-from ckanext.files import exceptions, types
+from ckanext.files import exceptions
 
 T = TypeVar("T")
 
@@ -45,6 +46,14 @@ UNITS = cast(
         "tib": 2**40,
     },
 )
+
+
+@dataclasses.dataclass
+class Upload:
+    stream: IO[bytes]
+    filename: str
+    size: int
+    type: str
 
 
 class Capability(enum.Flag):
@@ -163,14 +172,10 @@ class Registry(Generic[T]):
         return self.members.get(name)
 
 
-def ensure_size(upload: types.Upload, max_size: int) -> int:
+def ensure_size(upload: Upload, max_size: int) -> int:
     """Return filesize or rise an exception if it exceedes max_size."""
 
-    filesize = upload.content_length
-    if not filesize:
-        upload.stream.seek(0, 2)
-        filesize = upload.stream.tell()
-        upload.stream.seek(0)
+    filesize = upload.size
 
     if filesize > max_size:
         raise exceptions.LargeUploadError(filesize, max_size)
@@ -200,7 +205,7 @@ def parse_filesize(value: str) -> int:
 def make_upload(
     value: (
         FileStorage
-        | types.Upload
+        | Upload
         | tempfile.SpooledTemporaryFile[Any]
         | str
         | bytes
@@ -208,9 +213,12 @@ def make_upload(
         | BytesIO
         | Any
     ),
-) -> types.Upload:
-    """Convert value into werkzeug.FileStorage object"""
-    with contextlib.suppress(ImportError):
+) -> Upload:
+    """Convert value into Upload object"""
+    if isinstance(value, Upload):
+        return value
+
+    with contextlib.suppress(ImportError):  # pragma: no cover
         import cgi
 
         if isinstance(value, cgi.FieldStorage):
@@ -225,19 +233,29 @@ def make_upload(
             size = value.file.tell()
             value.file.seek(0)
 
-            return types.Upload(
+            return Upload(
                 value.file,
                 value.filename,
-                content_type=mime,
-                content_length=size,
+                size,
+                mime,
             )
 
     if isinstance(value, FileStorage):
-        if not value.content_length:
+        name: str = value.filename or value.name or ""
+
+        if value.content_length:
+            size = value.content_length
+        else:
             value.stream.seek(0, 2)
-            value.headers["content-length"] = str(value.stream.tell())
+            size = value.stream.tell()
             value.stream.seek(0)
-        return value
+
+        mime, _encoding = mimetypes.guess_type(name)
+        if not mime:
+            mime = magic.from_buffer(value.stream.read(1024), True)
+            value.stream.seek(0)
+
+        return Upload(value.stream, name, size, mime)
 
     if isinstance(value, tempfile.SpooledTemporaryFile):
         mime = magic.from_buffer(value.read(1024), True)
@@ -245,7 +263,7 @@ def make_upload(
         size = value.tell()
         value.seek(0)
 
-        return types.Upload(value, "", content_type=mime, content_length=size)
+        return Upload(value, value.name or "", size, mime)
 
     if isinstance(value, str):
         value = value.encode()
@@ -259,6 +277,6 @@ def make_upload(
         size = value.tell()
         value.seek(0)
 
-        return types.Upload(value, content_type=mime, content_length=size)
+        return Upload(value, "", size, mime)
 
     raise TypeError(type(value))

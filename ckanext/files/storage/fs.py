@@ -4,6 +4,7 @@ import copy
 import logging
 import os
 import shutil
+from io import BytesIO
 from typing import IO, Any, Iterable
 
 import magic
@@ -11,7 +12,7 @@ import magic
 import ckan.plugins.toolkit as tk
 from ckan.config.declaration import Declaration, Key
 
-from ckanext.files import exceptions, shared, types, utils
+from ckanext.files import exceptions, shared, utils
 from ckanext.files.base import (
     FileData,
     HashingReader,
@@ -36,7 +37,7 @@ class FileSystemUploader(Uploader):
     def upload(
         self,
         location: str,
-        upload: types.Upload,
+        upload: utils.Upload,
         extras: dict[str, Any],
     ) -> FileData:
         filename = self.storage.compute_location(location, extras, upload)
@@ -51,7 +52,7 @@ class FileSystemUploader(Uploader):
         return FileData(
             filename,
             os.path.getsize(filepath),
-            upload.content_type,
+            upload.type,
             reader.get_hash(),
         )
 
@@ -72,7 +73,12 @@ class FileSystemUploader(Uploader):
         if errors:
             raise tk.ValidationError(errors)
 
-        upload = types.Upload(content_length=data["size"])
+        upload = utils.Upload(
+            BytesIO(),
+            location,
+            data["size"],
+            "application/octet-stream",
+        )
 
         max_size = self.storage.max_size
         if max_size:
@@ -113,9 +119,9 @@ class FileSystemUploader(Uploader):
             raise tk.ValidationError(errors)
 
         data.setdefault("position", upload_data.storage_data["uploaded"])
-        upload: types.Upload = data["upload"]
+        upload: utils.Upload = data["upload"]
 
-        expected_size = data["position"] + upload.content_length
+        expected_size = data["position"] + upload.size
         if expected_size > upload_data.size:
             raise exceptions.UploadOutOfBoundError(expected_size, upload_data.size)
 
@@ -204,7 +210,7 @@ class FileSystemManager(Manager):
     def append(
         self,
         data: FileData,
-        upload: types.Upload,
+        upload: utils.Upload,
         extras: dict[str, Any],
     ) -> FileData:
         """Append content to existing file."""

@@ -4,11 +4,10 @@ from io import BytesIO
 from uuid import UUID
 
 import pytest
-from werkzeug.datastructures import FileStorage
 
 import ckan.plugins.toolkit as tk
 
-from ckanext.files import exceptions
+from ckanext.files import exceptions, shared
 from ckanext.files.storage import fs
 
 from faker import Faker  # isort: skip # noqa: F401
@@ -23,7 +22,7 @@ def storage(clean_redis, tmp_path):
 class TestUploader:
     def test_key(self, storage: fs.FileSystemStorage):
         # type: (fs.FileSystemStorage) -> None
-        result = storage.upload("", FileStorage(), {})
+        result = storage.upload("", shared.make_upload(""), {})
 
         assert UUID(result.location)
         assert result.size == 0
@@ -36,7 +35,7 @@ class TestUploader:
     def test_content(self, storage: fs.FileSystemStorage, faker: Faker):
         # type: (fs.FileSystemStorage, Faker) -> None
         content = faker.binary(100)
-        result = storage.upload("", FileStorage(BytesIO(content)), {})
+        result = storage.upload("", shared.make_upload(BytesIO(content)), {})
 
         assert result.size == 100
 
@@ -45,11 +44,11 @@ class TestUploader:
 
     def test_hash(self, storage: fs.FileSystemStorage, faker: Faker):
         # type: (fs.FileSystemStorage, Faker) -> None
-        result = storage.upload("", FileStorage(), {})
+        result = storage.upload("", shared.make_upload(""), {})
         assert result.hash == hashlib.md5().hexdigest()
 
         content = faker.binary(100)
-        result = storage.upload("", FileStorage(BytesIO(content)), {})
+        result = storage.upload("", shared.make_upload(BytesIO(content)), {})
         assert result.hash == hashlib.md5(content).hexdigest()
 
 
@@ -96,14 +95,14 @@ class TestMultipartUploader:
 
         data = storage.update_multipart_upload(
             data,
-            {"upload": FileStorage(BytesIO(content[:5]))},
+            {"upload": shared.make_upload(BytesIO(content[:5]))},
         )
         assert data.size == len(content)
         assert data.storage_data["uploaded"] == 5
 
         data = storage.update_multipart_upload(
             data,
-            {"upload": FileStorage(BytesIO(content[:5])), "position": 3},
+            {"upload": shared.make_upload(BytesIO(content[:5])), "position": 3},
         )
         assert data.size == len(content)
         assert data.storage_data["uploaded"] == 8
@@ -111,13 +110,13 @@ class TestMultipartUploader:
         with pytest.raises(exceptions.UploadOutOfBoundError):
             storage.update_multipart_upload(
                 data,
-                {"upload": FileStorage(BytesIO(content))},
+                {"upload": shared.make_upload(BytesIO(content))},
             )
 
         missing_size = data.size - data.storage_data["uploaded"]
         data = storage.update_multipart_upload(
             data,
-            {"upload": FileStorage(BytesIO(content[-missing_size:]))},
+            {"upload": shared.make_upload(BytesIO(content[-missing_size:]))},
         )
         assert data.size == len(content)
         assert data.storage_data["uploaded"] == len(content)
@@ -135,7 +134,7 @@ class TestMultipartUploader:
 
         data = storage.update_multipart_upload(
             data,
-            {"upload": FileStorage(BytesIO(content))},
+            {"upload": shared.make_upload(BytesIO(content))},
         )
         data = storage.complete_multipart_upload(data, {})
         assert data.size == len(content)
@@ -153,7 +152,7 @@ class TestMultipartUploader:
 
         data = storage.update_multipart_upload(
             data,
-            {"upload": FileStorage(BytesIO(content))},
+            {"upload": shared.make_upload(BytesIO(content))},
         )
         assert storage.show_multipart_upload(data) == data
 
@@ -164,7 +163,7 @@ class TestMultipartUploader:
 class TestManager:
     def test_removal(self, storage: fs.FileSystemStorage):
         # type: (fs.FileSystemStorage) -> None
-        result = storage.upload("", FileStorage(), {})
+        result = storage.upload("", shared.make_upload(""), {})
         filepath = os.path.join(storage.settings["path"], result.location)
         assert os.path.exists(filepath)
 
@@ -173,7 +172,7 @@ class TestManager:
 
     def test_removal_missing(self, storage: fs.FileSystemStorage):
         # type: (fs.FileSystemStorage) -> None
-        result = storage.upload("", FileStorage(), {})
+        result = storage.upload("", shared.make_upload(""), {})
         assert storage.remove(result)
         assert not storage.remove(result)
 
@@ -182,7 +181,7 @@ class TestReader:
     def test_stream(self, storage: fs.FileSystemStorage, faker: Faker):
         # type: (fs.FileSystemStorage, Faker) -> None
         data = faker.binary(100)
-        result = storage.upload("", FileStorage(BytesIO(data)), {})
+        result = storage.upload("", shared.make_upload(BytesIO(data)), {})
 
         stream = storage.stream(result)
 
@@ -191,7 +190,7 @@ class TestReader:
     def test_content(self, storage: fs.FileSystemStorage, faker: Faker):
         # type: (fs.FileSystemStorage, Faker) -> None
         data = faker.binary(100)
-        result = storage.upload("", FileStorage(BytesIO(data)), {})
+        result = storage.upload("", shared.make_upload(BytesIO(data)), {})
 
         content = storage.content(result)
 
@@ -199,7 +198,7 @@ class TestReader:
 
     def test_missing(self, storage: fs.FileSystemStorage, faker: Faker):
         # type: (fs.FileSystemStorage, Faker) -> None
-        result = storage.upload("", FileStorage(), {})
+        result = storage.upload("", shared.make_upload(""), {})
         result.location += faker.uuid4()
 
         with pytest.raises(exceptions.MissingFileError):

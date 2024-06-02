@@ -8,12 +8,13 @@ from ckanext.files.base import (
     get_storage,
 )
 from ckanext.files.model import File, Multipart, Owner
-from ckanext.files.utils import Capability, make_upload
+from ckanext.files.utils import Capability, Upload, make_upload
 
 __all__ = [
     "get_storage",
     "make_upload",
     "Storage",
+    "Upload",
     "Uploader",
     "Reader",
     "Manager",

@@ -4,9 +4,8 @@ from typing import Any
 from uuid import UUID
 
 import pytest
-from werkzeug.datastructures import FileStorage
 
-from ckanext.files import exceptions
+from ckanext.files import exceptions, shared
 from ckanext.files.storage import redis
 
 from faker import Faker  # isort: skip # noqa: F401
@@ -20,7 +19,7 @@ def storage(clean_redis: Any):
 class TestUploader:
     def test_key(self, storage: redis.RedisStorage):
         # type: (redis.RedisStorage) -> None
-        result = storage.upload("", FileStorage(), {})
+        result = storage.upload("", shared.make_upload(""), {})
 
         assert UUID(result.location)
         assert result.size == 0
@@ -31,7 +30,7 @@ class TestUploader:
     def test_content(self, storage: redis.RedisStorage, faker):
         # type: (redis.RedisStorage, Faker) -> None
         content = faker.binary(100)
-        result = storage.upload("", FileStorage(BytesIO(content)), {})
+        result = storage.upload("", shared.make_upload(BytesIO(content)), {})
 
         assert result.size == 100
 
@@ -40,17 +39,17 @@ class TestUploader:
 
     def test_hash(self, storage: redis.RedisStorage, faker):
         # type: (redis.RedisStorage, Faker) -> None
-        result = storage.upload("", FileStorage(), {})
+        result = storage.upload("", shared.make_upload(""), {})
         assert result.hash == hashlib.md5().hexdigest()
 
         content = faker.binary(100)
-        result = storage.upload("", FileStorage(BytesIO(content)), {})
+        result = storage.upload("", shared.make_upload(BytesIO(content)), {})
         assert result.hash == hashlib.md5(content).hexdigest()
 
     def test_copy(self, storage: redis.RedisStorage, faker):
         # type: (redis.RedisStorage, Faker) -> None
         content = faker.binary(100)
-        original = storage.upload("", FileStorage(BytesIO(content)), {})
+        original = storage.upload("", shared.make_upload(BytesIO(content)), {})
         copy = storage.copy(original, storage, faker.file_name(), {})
 
         assert copy.location != original.location
@@ -59,7 +58,7 @@ class TestUploader:
     def test_move(self, storage: redis.RedisStorage, faker):
         # type: (redis.RedisStorage, Faker) -> None
         content = faker.binary(100)
-        original = storage.upload("", FileStorage(BytesIO(content)), {})
+        original = storage.upload("", shared.make_upload(BytesIO(content)), {})
         copy = storage.move(original, storage, faker.file_name(), {})
 
         with pytest.raises(exceptions.MissingFileError):
@@ -71,7 +70,7 @@ class TestUploader:
 class TestManager:
     def test_removal(self, storage: redis.RedisStorage):
         # type: (redis.RedisStorage) -> None
-        result = storage.upload("", FileStorage(), {})
+        result = storage.upload("", shared.make_upload(""), {})
         key = storage.settings["prefix"] + result.location
 
         assert storage.redis.exists(key)
@@ -81,7 +80,7 @@ class TestManager:
 
     def test_exists(self, storage: redis.RedisStorage):
         # type: (redis.RedisStorage) -> None
-        result = storage.upload("", FileStorage(), {})
+        result = storage.upload("", shared.make_upload(""), {})
 
         assert storage.exists(result)
         storage.remove(result)
@@ -92,7 +91,7 @@ class TestReader:
     def test_stream(self, storage: redis.RedisStorage, faker):
         # type: (redis.RedisStorage, Faker) -> None
         data = faker.binary(100)
-        result = storage.upload("", FileStorage(BytesIO(data)), {})
+        result = storage.upload("", shared.make_upload(BytesIO(data)), {})
 
         stream = storage.stream(result)
 
@@ -101,7 +100,7 @@ class TestReader:
     def test_content(self, storage: redis.RedisStorage, faker):
         # type: (redis.RedisStorage, Faker) -> None
         data = faker.binary(100)
-        result = storage.upload("", FileStorage(BytesIO(data)), {})
+        result = storage.upload("", shared.make_upload(BytesIO(data)), {})
 
         content = storage.content(result)
 
@@ -109,7 +108,7 @@ class TestReader:
 
     def test_missing(self, storage: redis.RedisStorage, faker):
         # type: (redis.RedisStorage, Faker) -> None
-        result = storage.upload("", FileStorage(), {})
+        result = storage.upload("", shared.make_upload(""), {})
         result.location += faker.uuid4()
 
         with pytest.raises(exceptions.MissingFileError):

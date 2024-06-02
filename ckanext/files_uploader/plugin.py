@@ -12,10 +12,9 @@ from ckan import model
 from ckan.lib import uploader
 from ckan.types import PResourceUploader, PUploader
 
+from ckanext.files import interfaces, shared, utils
 from ckanext.files.model import File
 from ckanext.files.storage import fs
-
-from ckanext.files import types, interfaces, shared  # isort: skip # noqa: F401
 
 
 class FilesUploaderPlugin(p.SingletonPlugin):
@@ -142,7 +141,7 @@ class ImageStorage(fs.FileSystemStorage):
         self,
         name: str,
         extras: dict[str, Any],
-        upload: types.Upload | None = None,
+        upload: utils.Upload | None = None,
     ) -> str:
         return os.path.join("storage", "uploads", extras["object_type"], name)
 
@@ -167,7 +166,7 @@ class ResourceStorage(fs.FileSystemStorage):
         self,
         name: str,
         extras: dict[str, Any],
-        upload: types.Upload | None = None,
+        upload: utils.Upload | None = None,
     ) -> str:
         res_id = extras["resource_id"]
         return os.path.join("resources", res_id[0:3], res_id[3:6], res_id[6:])

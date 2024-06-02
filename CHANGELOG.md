@@ -10,6 +10,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 <small>[Compare with latest](https://github.com/DataShades/ckanext-files/compare/v0.3.1...HEAD)</small>
 
+### Features
+
+- add files_file_search action ([b8e8b4c](https://github.com/DataShades/ckanext-files/commit/b8e8b4c638ce4ae1159f47e7ccd62f021550b1e5) by Sergey Motornyuk).
+- File.get method ([591ec48](https://github.com/DataShades/ckanext-files/commit/591ec48d4043caf486570faa4af586b11c31f6e9) by Sergey Motornyuk).
+- get_storage without arguments returns default storage ([571e021](https://github.com/DataShades/ckanext-files/commit/571e021c44c4d719431c05a837bd6336b1896249) by Sergey Motornyuk).
+- use timezone-aware date columns in model ([ae91cc7](https://github.com/DataShades/ckanext-files/commit/ae91cc79ae3b5e52098232fa9dc294c72942ea0d) by Sergey Motornyuk).
+
 ### Code Refactoring
 
 - move hash, size, location(former filename) and content_type to the top level of file entity ([45a2679](https://github.com/DataShades/ckanext-files/commit/45a2679498a874ca6c2a00d154dd73a0bc394b29) by Sergey Motornyuk).

@@ -5,11 +5,11 @@ from typing import Any
 import ckan.plugins.toolkit as tk
 from ckan.types import Context, FlattenDataDict, FlattenErrorDict, FlattenKey
 
-from ckanext.files import types, utils
+from ckanext.files import utils
 
 
-def files_into_upload(value: Any) -> types.Upload:
-    """Convert value into werkzeug.FileStorage object"""
+def files_into_upload(value: Any) -> utils.Upload:
+    """Convert value into Upload object"""
     try:
         return utils.make_upload(value)
 

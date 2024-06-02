@@ -27,7 +27,7 @@ from ckan.common import streaming_response
 from ckan.config.declaration import Declaration, Key
 from ckan.types import Response
 
-from ckanext.files import config, exceptions, model, types, utils
+from ckanext.files import config, exceptions, model, utils
 
 CHUNK_SIZE = 16 * 1024
 
@@ -241,7 +241,7 @@ class Uploader(StorageService):
     def upload(
         self,
         location: str,
-        upload: types.Upload,
+        upload: utils.Upload,
         extras: dict[str, Any],
     ) -> FileData:
         """Upload file using single stream."""
@@ -303,7 +303,7 @@ class Manager(StorageService):
     def append(
         self,
         data: FileData,
-        upload: types.Upload,
+        upload: utils.Upload,
         extras: dict[str, Any],
     ) -> FileData:
         """Append content to existing file."""
@@ -426,7 +426,7 @@ class Storage(OptionChecker):
         self,
         name: str,
         extras: dict[str, Any],
-        upload: types.Upload | None = None,
+        upload: utils.Upload | None = None,
     ) -> str:
         strategy = self.settings.get("location_strategy", "uuid")
         if strategy == "uuid":
@@ -451,7 +451,7 @@ class Storage(OptionChecker):
     def upload(
         self,
         location: str,
-        upload: types.Upload,
+        upload: utils.Upload,
         extras: dict[str, Any],
     ) -> FileData:
         if not self.supports(utils.Capability.CREATE):
@@ -559,7 +559,7 @@ class Storage(OptionChecker):
         self,
         data: FileData,
         storage: Storage,
-        upload: types.Upload,
+        upload: utils.Upload,
         extras: dict[str, Any],
     ) -> FileData:
         if storage is self and self.supports(utils.Capability.APPEND):

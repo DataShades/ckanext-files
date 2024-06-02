@@ -1,12 +1,12 @@
 import hashlib
 import uuid
 from io import BytesIO
+from typing import Any
 
 import pytest
-from werkzeug.datastructures import FileStorage
 
 from ckanext.files import base, exceptions
-from ckanext.files.shared import Capability, FileData
+from ckanext.files.shared import Capability, FileData, MultipartData, make_upload
 from ckanext.files.storage import RedisStorage
 
 from datetime import datetime  # isort: skip # noqa: F401
@@ -131,19 +131,19 @@ class TestUploader:
         """Abstract methods raise exception."""
 
         with pytest.raises(NotImplementedError):
-            uploader.upload(faker.file_name(), FileStorage(), {})
+            uploader.upload(faker.file_name(), make_upload(""), {})
 
         with pytest.raises(NotImplementedError):
             uploader.initialize_multipart_upload(faker.file_name(), {})
 
         with pytest.raises(NotImplementedError):
-            uploader.show_multipart_upload({})
+            uploader.show_multipart_upload(MultipartData())
 
         with pytest.raises(NotImplementedError):
-            uploader.update_multipart_upload({}, {})
+            uploader.update_multipart_upload(MultipartData(), {})
 
         with pytest.raises(NotImplementedError):
-            uploader.complete_multipart_upload({}, {})
+            uploader.complete_multipart_upload(MultipartData(), {})
 
 
 class TestManager:
@@ -156,7 +156,7 @@ class TestManager:
         """Abstract methods raise exception."""
 
         with pytest.raises(NotImplementedError):
-            manager.remove({})
+            manager.remove(FileData(""))
 
 
 class TestReader:
@@ -169,7 +169,7 @@ class TestReader:
         """Abstract methods raise exception."""
 
         with pytest.raises(NotImplementedError):
-            reader.stream({})
+            reader.stream(FileData(""))
 
 
 class RemovingManager(base.Manager):
@@ -246,19 +246,19 @@ class TestStorage:
     def test_not_supported_methods(self, faker):
         # type: (Faker) -> None
         with pytest.raises(exceptions.UnsupportedOperationError):
-            base.Storage().upload(faker.file_name(), FileStorage(), {})
+            base.Storage().upload(faker.file_name(), make_upload(""), {})
 
         with pytest.raises(exceptions.UnsupportedOperationError):
-            base.Storage().stream({})
+            base.Storage().stream(FileData(""))
 
         with pytest.raises(exceptions.UnsupportedOperationError):
-            base.Storage().remove({})
+            base.Storage().remove(FileData(""))
 
         with pytest.raises(exceptions.UnsupportedOperationError):
-            base.Storage().copy({}, base.Storage(), "", {})
+            base.Storage().copy(FileData(""), base.Storage(), "", {})
 
         with pytest.raises(exceptions.UnsupportedOperationError):
-            base.Storage().move({}, base.Storage(), "", {})
+            base.Storage().move(FileData(""), base.Storage(), "", {})
 
     def test_upload_checks_max_size(self, faker):
         # type: (Faker) -> None
@@ -267,7 +267,7 @@ class TestStorage:
         with pytest.raises(exceptions.LargeUploadError):
             storage.upload(
                 faker.file_name(),
-                FileStorage(BytesIO(faker.binary(20))),
+                make_upload(BytesIO(faker.binary(20))),
                 {},
             )
 
@@ -276,28 +276,28 @@ class TestStorage:
         """Storage raises an error if upload is not implemented."""
         storage = Storage()
         with pytest.raises(NotImplementedError):
-            storage.upload(faker.file_name(), FileStorage(), {})
+            storage.upload(faker.file_name(), make_upload(""), {})
 
         with pytest.raises(NotImplementedError):
             storage.initialize_multipart_upload(faker.file_name(), {})
 
         with pytest.raises(NotImplementedError):
-            storage.show_multipart_upload({})
+            storage.show_multipart_upload(MultipartData())
 
         with pytest.raises(NotImplementedError):
-            storage.update_multipart_upload({}, {})
+            storage.update_multipart_upload(MultipartData(), {})
 
         with pytest.raises(NotImplementedError):
-            storage.complete_multipart_upload({}, {})
+            storage.complete_multipart_upload(MultipartData(), {})
 
         with pytest.raises(NotImplementedError):
-            storage.remove({})
+            storage.remove(FileData(""))
 
         with pytest.raises(NotImplementedError):
-            storage.copy({}, storage, "", {})
+            storage.copy(FileData(""), storage, "", {})
 
         with pytest.raises(NotImplementedError):
-            storage.move({}, storage, "", {})
+            storage.move(FileData(""), storage, "", {})
 
     def test_compute_location_uuid(self, faker):
         # type: (Faker) -> None
@@ -369,7 +369,7 @@ class TestStorage:
             storage.compute_location("test", {})
 
     @pytest.mark.usefixtures("with_request_context")
-    def test_download_response(self, faker, monkeypatch, mock):
+    def test_download_response(self, faker: Faker, monkeypatch: Any, mock: Any):
         storage = Storage()
         stream_mock = mock.Mock(return_value="hello")
 

@@ -13,9 +13,9 @@ from google.oauth2.service_account import Credentials
 import ckan.plugins.toolkit as tk
 from ckan.config.declaration import Declaration, Key
 
-from ckanext.files import exceptions, types
+from ckanext.files import exceptions
 from ckanext.files.base import Manager, Storage, Uploader
-from ckanext.files.shared import Capability, FileData, MultipartData
+from ckanext.files.shared import Capability, FileData, MultipartData, Upload
 
 RE_RANGE = re.compile(r"bytes=(?P<first_byte>\d+)-(?P<last_byte>\d+)")
 
@@ -36,7 +36,7 @@ class GoogleCloudUploader(Uploader):
     def upload(
         self,
         location: str,
-        upload: types.Upload,
+        upload: Upload,
         extras: dict[str, Any],
     ) -> FileData:
         filename = self.storage.compute_location(location, extras, upload)
@@ -49,8 +49,8 @@ class GoogleCloudUploader(Uploader):
         filehash = decode(blob.md5_hash)
         return FileData(
             filename,
-            blob.size or upload.content_length,
-            upload.content_type,
+            blob.size or upload.size,
+            upload.type,
             filehash,
         )
 
@@ -127,16 +127,16 @@ class GoogleCloudUploader(Uploader):
             raise tk.ValidationError(errors)
 
         if "upload" in data:
-            upload: types.Upload = data["upload"]
+            upload: Upload = data["upload"]
 
             first_byte = data.get("position", upload_data.storage_data["uploaded"])
-            last_byte = first_byte + upload.content_length - 1
+            last_byte = first_byte + upload.size - 1
             size = upload_data.size
 
             if last_byte >= size:
                 raise exceptions.UploadOutOfBoundError(last_byte, size)
 
-            if upload.content_length < 256 * 1024 and last_byte < size - 1:
+            if upload.size < 256 * 1024 and last_byte < size - 1:
                 raise tk.ValidationError(
                     {"upload": ["Only the final part can be smaller than 256KiB"]},
                 )

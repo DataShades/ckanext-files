@@ -11,7 +11,7 @@ import ckan.plugins.toolkit as tk
 from ckan.config.declaration import Declaration, Key
 from ckan.lib.redis import connect_to_redis
 
-from ckanext.files import exceptions, types
+from ckanext.files import exceptions
 from ckanext.files.base import HashingReader
 from ckanext.files.shared import (
     Capability,
@@ -19,6 +19,7 @@ from ckanext.files.shared import (
     Manager,
     Reader,
     Storage,
+    Upload,
     Uploader,
 )
 
@@ -36,7 +37,7 @@ class RedisUploader(Uploader):
     def upload(
         self,
         location: str,
-        upload: types.Upload,
+        upload: Upload,
         extras: dict[str, Any],
     ) -> FileData:
         safe_location = self.storage.compute_location(location, extras, upload)
@@ -52,7 +53,7 @@ class RedisUploader(Uploader):
         return FileData(
             safe_location,
             reader.position,
-            upload.content_type,
+            upload.type,
             reader.get_hash(),
         )
 

@@ -1,9 +1,10 @@
+import tempfile
 from io import BytesIO
 
 import pytest
 from werkzeug.datastructures import FileStorage
 
-from ckanext.files import exceptions, utils
+from ckanext.files import exceptions, shared, utils
 from ckanext.files.shared import Capability
 
 from faker import Faker  # isort: skip # noqa: F401
@@ -36,12 +37,12 @@ class TestEnsureSize:
     def test_empty(self):
         """Filesize identified even if it's not set initially."""
 
-        assert utils.ensure_size(FileStorage(), 0) == 0
+        assert utils.ensure_size(shared.make_upload(""), 0) == 0
 
     def test_not_empty(self):
         """Big files cause exception."""
 
-        upload = FileStorage(BytesIO(b" " * 10))
+        upload = shared.make_upload(BytesIO(b" " * 10))
         assert utils.ensure_size(upload, 15) == 10
 
         with pytest.raises(exceptions.LargeUploadError):
@@ -235,3 +236,42 @@ class TestParseFilesize:
 
         with pytest.raises(ValueError):
             utils.parse_filesize("1PB")
+
+
+class TestMakeUpload:
+    def test_file_storage(self):
+        """FileStorage instances returned as-is."""
+        upload = utils.make_upload(FileStorage())
+        assert isinstance(upload, shared.Upload)
+
+    def test_tempfile(self):
+        """Temp files converted into Upload."""
+        fd = tempfile.SpooledTemporaryFile()
+        fd.write(b"hello")
+        fd.seek(0)
+        upload = utils.make_upload(fd)
+        assert isinstance(upload, utils.Upload)
+        assert upload.stream.read() == b"hello"
+
+    def test_str(self, faker):
+        # type: (Faker) -> None
+        """Strings converted into Upload."""
+        string = faker.pystr()
+        upload = utils.make_upload(string)
+
+        assert isinstance(upload, shared.Upload)
+        assert upload.stream.read() == string.encode()
+
+    def test_bytes(self, faker):
+        # type: (Faker) -> None
+        """Bytes converted into Upload."""
+        binary = faker.binary(100)
+        upload = utils.make_upload(binary)
+
+        assert isinstance(upload, shared.Upload)
+        assert upload.stream.read() == binary
+
+    def test_wrong_type(self):
+        """Any unexpected value causes an exception."""
+        with pytest.raises(TypeError):
+            utils.make_upload(123)

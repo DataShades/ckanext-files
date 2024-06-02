@@ -7,7 +7,9 @@ from typing import Any, Literal
 import sqlalchemy as sa
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped
+from typing_extensions import Self
 
+from ckan import model
 from ckan.lib.dictization import table_dictize
 from ckan.model.types import make_uuid
 
@@ -66,6 +68,10 @@ class File(Base):  # type: ignore
         super(File, self).__init__(**kwargs)
         if not self.id:
             self.id = make_uuid()
+
+    @classmethod
+    def get(cls, file_id: str) -> Self | None:
+        return model.Session.scalar(sa.select(cls).where(cls.id == file_id))
 
     def dictize(self, context: Any) -> dict[str, Any]:
         result = table_dictize(self, context)

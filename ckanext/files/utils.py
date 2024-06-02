@@ -17,7 +17,6 @@ from io import BytesIO
 from typing import Any, Callable, Generic, TypeVar, cast
 
 import magic
-import six
 from werkzeug.datastructures import FileStorage
 
 from ckanext.files import exceptions, types
@@ -249,7 +248,7 @@ def make_upload(
 
         return types.Upload(value, "", content_type=mime, content_length=size)
 
-    if isinstance(value, six.text_type):
+    if isinstance(value, str):
         value = value.encode()
 
     if isinstance(value, (bytes, bytearray)):

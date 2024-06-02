@@ -17,13 +17,34 @@ __all__ = [
 ]
 
 
-def get_commands():
-    return [files]
-
-
 @click.group(short_help="ckanext-files CLI commands")
 def files():
     pass
+
+
+@files.command()
+@click.argument("file_id")
+def stream(file_id: str):
+    """Stream content of the file."""
+    file = shared.File.get(file_id)
+    if not file:
+        tk.error_shout("File not found")
+        raise click.Abort()
+
+    try:
+        storage = shared.get_storage(file.storage)
+    except exceptions.UnknownStorageError as err:
+        tk.error_shout(err)
+        raise click.Abort() from err
+
+    try:
+        content_stream = storage.stream(shared.FileData.from_file(file))
+    except exceptions.UnsupportedOperationError as err:
+        tk.error_shout(err)
+        raise click.Abort() from err
+
+    while chunk := content_stream.read(1024 * 256):
+        click.echo(chunk, nl=False)
 
 
 @files.command()

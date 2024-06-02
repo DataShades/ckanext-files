@@ -4,7 +4,6 @@ from unittest import mock as _mock
 
 import pytest
 import pytz
-import six
 from freezegun import freeze_time
 from responses import RequestsMock
 from werkzeug.datastructures import FileStorage
@@ -77,7 +76,7 @@ def create_with_upload(ckan_config, monkeypatch, tmpdir):
         action = kwargs.pop("action", "resource_create")
         field = kwargs.pop("upload_field_name", "upload")
         test_file = BytesIO()
-        if isinstance(data, six.text_type):
+        if isinstance(data, str):
             data = data.encode()
         test_file.write(data)
         test_file.seek(0)

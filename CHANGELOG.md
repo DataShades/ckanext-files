@@ -12,6 +12,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Code Refactoring
 
+- move hash, size, location(former filename) and content_type to the top level of file entity ([45a2679](https://github.com/DataShades/ckanext-files/commit/45a2679498a874ca6c2a00d154dd73a0bc394b29) by Sergey Motornyuk).
+- extract File.completed==False into Multipart model ([d90d786](https://github.com/DataShades/ckanext-files/commit/d90d78684829291976a71384a49b40e66234386b) by Sergey Motornyuk).
+- use dataclasses instead of dict in storage ([4965568](https://github.com/DataShades/ckanext-files/commit/4965568e22e7a36672c96a26e88e73c21f056730) by Sergey Motornyuk).
+- storage_from_settings renamed to make_storage ([08fd767](https://github.com/DataShades/ckanext-files/commit/08fd76751ba1cb778a4c819613388be25bc099c6) by Sergey Motornyuk).
+- transform combine_capabilities and exclude_capabilities into Capability methods ([73d32d4](https://github.com/DataShades/ckanext-files/commit/73d32d4d9f18b7e2b75fbf985eb29e73eed4183b) by Sergey Motornyuk).
+- replace CapabilityCluster and CapabilityUnit with Capability ([16d3b7e](https://github.com/DataShades/ckanext-files/commit/16d3b7e39cee430e4ae2d2d48256a70827b4c26d) by Sergey Motornyuk).
+- remove re-imported types from ckanext.files.types ([4b9e870](https://github.com/DataShades/ckanext-files/commit/4b9e870dcced1d3bffc39719dec8afcada96a913) by Sergey Motornyuk).
 - remove support of CKAN pre v2.10 ([3e70bc2](https://github.com/DataShades/ckanext-files/commit/3e70bc27440a9c21560c50e3c744b247f2087e90) by Sergey Motornyuk).
 - UnsupportedOperationError constructed with adapter type instead of name ([55d038d](https://github.com/DataShades/ckanext-files/commit/55d038d52e3dcfc09fb259122456079a197f4be8) by Sergey Motornyuk).
 

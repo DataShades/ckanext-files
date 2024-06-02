@@ -5,28 +5,33 @@
 Files as first-class citizens of CKAN. Upload, manage, remove files directly
 and attach them to datasets, resources, etc.
 
+## Content
+
+* [Requirements](#requirements)
+* [Installation](#installation)
+* [Usage](#usage)
+  * [Configure the storage](#configure-the-storage)
+  * [Usage in code](#usage-in-code)
+  * [Usage in browser](#usage-in-browser)
+  * [Multi-storage](#multi-storage)
+* [Configuration](#configuration)
+
+
 ## Requirements
 
 Compatibility with core CKAN versions:
 
 | CKAN version | Compatible? |
 |--------------|-------------|
-| 2.8          | yes         |
-| 2.9          | yes         |
+| 2.9          | no          |
 | 2.10         | yes         |
+| 2.11         | yes         |
 | master       | yes         |
 
-CKAN v2.8 and v2.9 are supported by ckanext-files v0.2. Starting from v1.0 this
-extension switches to CKAN support policy of two latest CKAN releases. I.e,
-ckanext-files v1.0 supports only CKAN v2.10 and v2.11.
 
-v0.* will not receive any new major features, only bug-fixes and small
-improvements.
-
-It's recommended to install the extension via pip, so you probably have all the
-requirements pinned already. If you are using GitHub version of this extension,
-stick to the vX.Y.Z tags to avoid breaking changes. Check the changelog before
-upgrading the extension.
+It's recommended to install the extension via pip. If you are using GitHub
+version of this extension, stick to the vX.Y.Z tags to avoid breaking
+changes. Check the changelog before upgrading the extension.
 
 ## Installation
 
@@ -37,7 +42,7 @@ To install ckanext-files:
    # minimal installation
    pip install ckanext-files
 
-   # Google Cloud Storage support
+   # with Google Cloud Storage support
    pip install 'ckanext-files[gcs]'
    ```
 
@@ -46,75 +51,61 @@ To install ckanext-files:
 
 1. Run DB migrations
    ```sh
-   # CKAN >= v2.9
    ckan db upgrade -p files
-
-   # CKAN == v2.8
-   paster --plugin=ckanext-files files -c ckan.ini initdb
    ```
 
 ## Usage
 
 ### Configure the storage
 
-Before uploading any file, you have to configure a named **storage**. Tell
-extension which driver to use(i.e, where and how data will be stored), add few
-storage specific settings and you are ready to go. Let's start from the Redis
-driver, because it has minimal requirements in terms of configuration.
+Before uploading files, you have to configure a **storage**. Storage defines
+the *adapter* used for uploads(i.e, where and how data will be stored:
+filesystem, cloud, DB, etc.), add, depending on the adapter, a few specific
+options. For example, filesystem adapter likely requires a path to the folder
+where uploads are stored. DB adapter may need DB connection parameters. Cloud
+adapter most likely will not work without an API key. These additional options
+are specific to adapter and you have to check its documentation to find out
+what are the possible options.
+
+Let's start from the Redis adapter, because it has minimal requirements in terms
+of configuration.
 
 Add the following line to the CKAN config file:
 
 ```ini
-ckanext.files.storage.my_storage.type = files:redis
+ckanext.files.storage.default.type = files:redis
 ```
 
-Look at this option. The prefix `ckanext.files.storage.` will be the same for
-every configuration option related to storage. Then comes `my_storage`. It's a
-name of your storage. It doesn't change the behavior of the storage, but
-determines how options are grouped together and helps you to use multiple
-storages simultaneously. For example the following configuration adds two
-different storages:`first_storage` with `prefix` set to `first:` and
-`second_storage` with prefix set to `second:`:
+The name of adapter is `files:redis`. It follows recommended naming convention
+for adapters:`<EXTENSION>:<TYPE>`. You can tell from the name above that we are
+using adapter defined in the `files` extension with `redis` type. But this
+naming convention is not enforced and its only purpose is avoiding name
+conflicts. Technically, adapter name can use any character, including spaces,
+newlines and emoji.
 
-```ini
-ckanext.files.storage.first_storage.type = files:redis
-ckanext.files.storage.second_storage.type = files:redis
 
-ckanext.files.storage.first_storage.prefix = first:
-ckanext.files.storage.second_storage.prefix = second:
-```
-
-Our storage is called `my_storage` and after the storage's name comes option's
-name `type`. And it's value `files:redis`. `type` option tells us which driver
-we are going to use for the storage. `files:redis` is the name of the driver.
-
-The recommended format of the driver name is
-`<EXTENSION_NAME>:<STORAGE_TYPE>`. But this format is not enforced, so you can
-see any value there. If you accidentally make a typo in the driver's name,
-starting from v2.10 CKAN will show you an error message on startup with the
-list of available drivers:
+If you accidentally make a typo in the driver's name, because of config
+validation, any CKAN CLI command will produce an error message with the list of
+available drivers:
 
 ```sh
 Invalid configuration values provided:
-ckanext.files.storage.my_storage.type: Value must be one of ['files:bq_google_cloud_storage', 'files:fs', 'files:public_fs', 'files:redis', 'files:google_cloud_storage']
+ckanext.files.storage.default.type: Value must be one of ['files:fs', 'files:public_fs', 'files:redis']
 Aborted!
 ```
 
 Storage is configured, so we can actually upload the file. Let's use
 [ckanapi](https://github.com/ckan/ckanapi) for this task. Files are created via
-`files_file_create` API action and this time we have to pass 3 parameters into it:
+    `files_file_create` API action and this time we have to pass 2 parameters into
+it:
 
 * `name`: the name of uploaded file
 * `upload`: content of the file
-* `storage`: name of the storage that stores the file(we just configured `my_storage`)
 
 The final command is here:
 
 ```sh
-ckanapi action files_file_create \
-    name=hello.txt \
-    upload='hello world' \
-    storage=my_storage
+ckanapi action files_file_create name=hello.txt upload='hello world'
 ```
 
 And that's what you see as result:
@@ -122,52 +113,54 @@ And that's what you see as result:
 ```json
 {
   "atime": null,
-  "ctime": "2024-03-12T22:08:05.185914",
-  "id": "7f9a7676-5177-40f0-b610-0b47918fdccc",
+  "content_type": "text/plain",
+  "ctime": "2024-06-02T15:02:14.819117+00:00",
+  "hash": "5eb63bbbe01eeed093cb22bb8f5acdc3",
+  "id": "e21162ab-abfb-476c-b8c5-5fe7cb89eca0",
+  "location": "24d27fb9-a5f0-42f6-aaa3-7dcb599a0d46",
   "mtime": null,
   "name": "hello.txt",
-  "storage": "my_storage",
-  "content_type": "text/plain",
-  "location": "2f51aeff-96a5-4d79-8973-7867527d7f2e",
-  "hash": "5eb63bbbe01eeed093cb22bb8f5acdc3",
-  "size": 11
+  "size": 11,
+  "storage": "default",
+  "storage_data": {}
 }
 ```
 
-Now go to Redis CLI and check the content of the file. Note, you cannot get the
-content via CKAN API, because it's JSON-based and downloading files doesn't
-suit its principles.
+Content of the file can be checked via CKAN CLI. Use `id` from the last API
+call's output in the command `ckan files stream ID`:
+
+```sh
+ckan files stream e21162ab-abfb-476c-b8c5-5fe7cb89eca0
+```
+
+Alternatively, we can use Redis CLI and to get the content of the file. Note,
+you cannot get the content via CKAN API, because it's JSON-based and streaming
+files doesn't suit its principles.
 
 By default, Redis driver puts the content under the key
-`<PREFIX><FILENAME>`. Pay attention to `FILENAME`. It's the value available as
-`location` in the API response(i.e,
-`2f51aeff-96a5-4d79-8973-7867527d7f2e` in our case), not the name of the real
-file you just uploaded.
+`<PREFIX><LOCATION>`. Pay attention to `LOCATION`. It's the value available as
+`location` in the API response(i.e, `24d27fb9-a5f0-42f6-aaa3-7dcb599a0d46` in
+our case). It's different from the `id`(ID used by DB to uniquely identify file
+record) and `name`(human readable name of the file). In our scenario,
+`location` location looks like UUID because of the internal details of Redis
+adapter implementation. But different adapters may use more path-like value,
+i.e. something similar to `path/to/folder/hello.txt`.
 
 `PREFIX` can be configured, but we skipped this step and got the default value:
 `ckanext:files:default:file_content:`. So the final Redis key of our file is
-`ckanext:files:default:file_content:2f51aeff-96a5-4d79-8973-7867527d7f2e`
+`ckanext:files:default:file_content:24d27fb9-a5f0-42f6-aaa3-7dcb599a0d46`
 
-```sh
+```redis
 redis-cli
 
-127.0.0.1:6379> GET ckanext:files:default:file_content:2f51aeff-96a5-4d79-8973-7867527d7f2e
+127.0.0.1:6379> GET ckanext:files:default:file_content:24d27fb9-a5f0-42f6-aaa3-7dcb599a0d46
 "hello world"
-
 ```
 
-And before we moved further, let's remove the file, using ID we got when it was created:
+And before we moved further, let's remove the file, using its `id`:
 
 ```sh
-ckanapi action files_file_delete id=7f9a7676-5177-40f0-b610-0b47918fdccc
-
-# ... response from api
-
-redis-cli
-
-127.0.0.1:6379> GET ckanext:files:default:file_content:2f51aeff-96a5-4d79-8973-7867527d7f2e
-(nil)
-
+ckanapi action files_file_delete id=e21162ab-abfb-476c-b8c5-5fe7cb89eca0
 ```
 
 ### Usage in code
@@ -176,16 +169,11 @@ If you are writing the code and you want to interact with the storage directly,
 without the API layer, you can do it via a number of public functions of the
 extension.
 
-Let's configure filesystem storage first. This time we are going to use the
-storage name `default`. This is "default" storage name - if you haven't
-specified explicitely the name of the storage when working with it(calling API
-actions, for example), `default` storage is used. So it's better to create this
-storage instead of making fancy names.
-
-Filesystem driver has a mandatory option `path` that controls path, where files
-are stored. If path does not exist, storage will raise an exception by
-default. But it can also create missing path if you enable `create_path`
-option. Here's our final version of settings:
+Let's configure filesystem storage first. Filesystem driver has a mandatory
+option `path` that controls filesystem location, where files are stored. If
+path does not exist, storage will raise an exception by default. But it can
+also create missing path if you enable `create_path` option. Here's our final
+version of settings:
 
 ```ini
 ckanext.files.storage.default.type = files:fs
@@ -198,38 +186,58 @@ create an instance of the storage:
 
 ```python
 from ckanext.files.shared import get_storage
-storage = get_storage('default')
+storage = get_storage()
 ```
 
 Because you have all configuration in place, the rest is fairly
 straightforward. We will upload the file, read it's content and remove it from
 the CKAN shell.
 
-Uploading is the most challenging step. As CKAN is based on Flask, we have to
-upload files as Flask does. For it we are going to create an instance of `werkzeug.datastructures.FileStorage` and pass bytes stream to its constructor. After that, we can pass the object into storage's `upload` method and specify the name of the upload.
+To create the file, `storage.upload` method must be called with 3 parameters:
+
+* the human readable name of the file
+* special steam-like object with content of the file
+* dictionary with extra parameters that are consumed by the storage adapter
+
+You can use any string as the first parameter. The last parameter is not used
+by `files:fs` adapter, so we'll use an empty dictionary. And the only
+problematic parameter is the "special stream-like object". To make things
+simpler, ckanext-files has `ckanext.files.shared.make_upload` function, that
+accepts a number of different types(`str`, `bytes`,
+`werkzeug.datastructures.FileStorage`) and converts them into expected format.
+
 
 ```python
-from werkzeug.datastructures import FileStorage
-from io import BytesIO
+from ckanext.files.shared import make_upload
 
-upload = FileStorage(BytesIO(b'hello world'))
+upload = make_upload("hello world")
 result = storage.upload('file.txt', upload, {})
 
 print(result)
 
-... FileData{location='d65da0fd-299a-433c-850e-086fdc5ebb7e',
-...  content_type=None,
-...  size=11,
-...  hash='5eb63bbbe01eeed093cb22bb8f5acdc3',
-...  storage_data={})
-
+... FileData(
+...     location='60b385e7-8137-496c-bb1d-6ae4d7963ab3',
+...     size=11,
+...     content_type='text/plain',
+...     hash='5eb63bbbe01eeed093cb22bb8f5acdc3',
+...     storage_data={}
+... )
 ```
 
-`result` contains minimal amount of information that is required by storage to
-manage the file. It includes `location`. If you visit `/tmp/example` directory,
-that we specified as a `path` for our storage, you'll see there a file with the
-name matching `location` from result. And its content matches the content of
-our upload, which is quite an expected outcome.
+`result` is an instance of `ckanext.files.shared.FileData` dataclass. It
+contains all the information that is required by storage to manage the file.
+
+`result` object has `location` attribute that shows the name of the file
+*relative* to the `path` option specified in the storage configuration. If you
+visit `/tmp/example` directory, which was specified as a `path` for the storage,
+you'll see there a file with the name matching `location` from result. And its
+content matches the content of our upload, which is quite an expected outcome.
+
+```sh
+cat /tmp/example/60b385e7-8137-496c-bb1d-6ae4d7963ab3
+
+... hello world
+```
 
 But let's go back to the shell and try reading file from the python's
 code. We'll pass `result` to the storage's `stream` method, which produces a
@@ -238,6 +246,25 @@ work with the buffer just as we usually do with IO streams:
 
 ```python
 buffer = storage.stream(result)
+content = buffer.read()
+print(content)
+
+... b'hello world'
+```
+
+In most cases, storage only needs a location of the file object to read it. So,
+if you don't have `result` generated during the upload, you still can read the
+file as long as you have its location. But remember, that some storage adapters
+may require additional information, and the following example must be adapted
+depending on the adapter:
+
+```python
+from ckanext.files.shared import FileData
+
+location = "60b385e7-8137-496c-bb1d-6ae4d7963ab3"
+data = FileData(location)
+
+buffer = storage.stream(data)
 content = buffer.read()
 print(content)
 
@@ -263,20 +290,21 @@ accepts `File` object for upload(the same object you can get from the
 ```js
 sandbox = ckan.sandbox()
 await sandbox.files.upload(
-  new File(["content"], "file.txt")
+  new File(["content"], "file.txt", {type: "text/plain"})
 )
 
 ... {
-...    "id": "d6fa3096-613a-4b16-a0eb-b7a6ec91d690",
-...    "name": "file.txt",
-...    "storage": "default",
-...    "ctime": "2024-03-12T23:08:11.291971",
-...    "mtime": null,
-...    "atime": null,
-...    "location": "f484d116-cf6f-4238-80e5-905849873be0",
-...    "content_type": "application/octet-stream",
-...    "size": 7,
-...    "hash": "9a0364b9e99bb480dd25e1f0284c8555"
+...     "id": "18cdaa65-5eed-4078-89a8-469b137627ce",
+...     "name": "file.txt",
+...     "location": "b53907c3-8434-4dee-9a9e-6c4d3055d200",
+...     "content_type": "text/plain",
+...     "size": 7,
+...     "hash": "9a0364b9e99bb480dd25e1f0284c8555",
+...     "storage": "default",
+...     "ctime": "2024-06-02T16:12:27.902055+00:00",
+...     "mtime": null,
+...     "atime": null,
+...     "storage_data": {}
 ... }
 ```
 
@@ -285,55 +313,112 @@ If you are still using FS storage configured in previous section, switch to
 
 ```sh
 ls /tmp/example
-... f484d116-cf6f-4238-80e5-905849873be0
+... b53907c3-8434-4dee-9a9e-6c4d3055d200
 
-cat f484d116-cf6f-4238-80e5-905849873be0
+cat b53907c3-8434-4dee-9a9e-6c4d3055d200
 ... content
 ```
 
 And, as usually, let's remove file using the ID from the `upload` promise:
 
 ```js
-sandbox.client.call('POST', 'files_file_delete', {
-  id: 'd6fa3096-613a-4b16-a0eb-b7a6ec91d690'
+sandbox.client.call("POST", "files_file_delete", {
+  id: "18cdaa65-5eed-4078-89a8-469b137627ce"
 })
 ```
 
-### UI
+### Multi-storage
 
-This extension provides a basic UI as an example and it's recommended to build
-your own UI if you need it. But we can still use default functionality for
-testing. Open the `/user/<YOUR USERNAME>/files` page of CKAN application in the
-browser.
+It's possible to use multiple storages at the same time and specify which one
+you want to use when uploading a file. Up until now we used the following storage options:
 
-![Empty files page](screenshots/1.png)
+* `ckanext.files.storage.default.type`
+* `ckanext.files.storage.default.path`
+* `ckanext.files.storage.default.create_path`
 
-Choose the file
+All of them have a common prefix `ckanext.files.storage.default.` and it's a
+key for using multiple storages simultaneously.
 
-![Selected file](screenshots/2.png)
+Every option of the storage follows the pattern:
+`ckanext.files.storage.<STORAGE_NAME>.<OPTION>`. As all the options above
+contain `default` on position of `<STORAGE_NAME>`, they are related to the
+`default` storage.
 
-Click on play button(the one with triangle icon) and wait a bit. If nothing
-changes, check JS console, it can show some errors when storage is not properly
-configured.
+If you want to configure a storage with the name `custom` change the
+configuration of storage:
 
-![Uploaded file](screenshots/3.png)
+```ini
+ckanext.files.storage.custom.type = files:fs
+ckanext.files.storage.custom.path = /tmp/example
+ckanext.files.storage.custom.create_path = true
+```
 
-When upload finished, reload the page to see uploaded file.
+And, if you want to use Redis-based storage named `memory` and filesystem-based
+storage named `default`, use the following configuration:
 
-![Reloaded page with a single upload](screenshots/4.png)
+```ini
+ckanext.files.storage.memory.type = files:redis
+
+ckanext.files.storage.default.type = files:fs
+ckanext.files.storage.default.path = /tmp/example
+ckanext.files.storage.default.create_path = true
+```
+
+The `default` storage is special. ckanext-files use it by default, as name
+suggests. If you remove configuration for the `default` storage and try to
+create a file, you'll see the following error:
+
+```sh
+ckanapi action files_file_create name=hello.txt upload='hello world'
+
+... ckan.logic.ValidationError: None - {'storage': ['Storage default is not configured']}
+```
+
+Storage **default** is not configured. That's why we need `default`
+configuration. But if you want to use a different storage or you don't want to
+add the `default` storage, you can always specify the name of the storage you
+are going to use.
+
+When using API actions, add `storage` parameter to the call:
+
+```sh
+ckanapi action files_file_create name=hello.txt upload='hello world' storage=memory
+```
+
+When writing python code, pass storage name to `get_storage` function:
+```python
+storage = get_storage("memory")
+```
+
+When writing JS code, make a `Standard` uploader with the custom storage name
+and pass this uploader to `upload` function:
+
+```js
+const sandbox = ckan.sandbox()
+const file = new File(["content"], "file.txt", {type: "text/plain"})
+const uploader = sandbox.files.makeUploader('Standard', {storage: "memory"})
+
+await sandbox.files.upload(
+  file,
+  uploader,
+)
+```
+
 
 ## Configuration
 
 There are two types of config options for ckanext-files:
-* Global configuration affects the common behavior of the extension
-* Storage configuration changes behavior of the specific storage and never
-  affects anything outside of the storage
 
-Depending on the type of the storage, available options for storage change. For
-example, `files:fs` storage type requires `path` option that controls
-filesystem path where uploads are stored. `files:redis` storage type accepts
-`prefix` option that defines Redis' key prefix of files stored in Redis. All
-storage specific options always have form
+* Global: affects the behavior of the extension and every available storage
+  adapter.
+* Storage configuration: changes behavior of the specific storage and never
+  affects anything outside of the storage.
+
+Depending on the type of the storage, available options are quite
+different. For example, `files:fs` storage type requires `path` option that
+controls filesystem path where uploads are stored. `files:redis` storage type
+accepts `prefix` option that defines Redis' key prefix of files stored in
+Redis. All storage specific options always have form
 `ckanext.files.storage.<STORAGE>.<OPTION>`:
 
 ```ini

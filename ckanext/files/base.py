@@ -27,7 +27,7 @@ from ckan.common import streaming_response
 from ckan.config.declaration import Declaration, Key
 from ckan.types import Response
 
-from ckanext.files import exceptions, model, types, utils
+from ckanext.files import config, exceptions, model, types, utils
 
 CHUNK_SIZE = 16 * 1024
 
@@ -108,15 +108,22 @@ def make_storage(name: str, settings: dict[str, Any]) -> Storage:
     return adapter(**settings)
 
 
-def get_storage(name: str) -> Storage:
+def get_storage(name: str | None = None) -> Storage:
     """Return existing storage instance.
 
     Storages are initialized when plugin is loaded. As result, this function
     always returns the same storage object for the given name.
 
+    If no name specified, default storage is returned.
+
     Example:
-    >>> storage = get_storage("default")
+    >>> default_storage = get_storage()
+    >>> storage = get_storage("storage name")
+
     """
+
+    if name is None:
+        name = config.default_storage()
 
     storage = storages.get(name)
 

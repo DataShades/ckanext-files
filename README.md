@@ -31,8 +31,8 @@ Compatibility with core CKAN versions:
 
 
 It's recommended to install the extension via pip. If you are using GitHub
-version of this extension, stick to the vX.Y.Z tags to avoid breaking
-changes. Check the changelog before upgrading the extension.
+version of the extension, stick to the vX.Y.Z tags to avoid breaking
+changes. Check the [changelog](CHANGELOG.md) before upgrading the extension.
 
 ## Installation
 
@@ -60,7 +60,7 @@ To install ckanext-files:
 ### Configure the storage
 
 Before uploading files, you have to configure a **storage**. Storage defines
-the *adapter* used for uploads(i.e, where and how data will be stored:
+the **adapter** used for uploads(i.e, where and how data will be stored:
 filesystem, cloud, DB, etc.), and, depending on the adapter, a few specific
 options. For example, filesystem adapter likely requires a path to the folder
 where uploads are stored. DB adapter may need DB connection parameters. Cloud
@@ -86,7 +86,7 @@ newlines and emoji.
 
 
 If you make a typo in the adapter's name, any CKAN CLI command will produce an
-error message with the list of available drivers:
+error message with the list of available adapters:
 
 ```sh
 Invalid configuration values provided:
@@ -137,7 +137,7 @@ Alternatively, we can use Redis CLI to get the content of the file. Note, you
 cannot get the content via CKAN API, because it's JSON-based and streaming
 files doesn't suit its principles.
 
-By default, Redis driver puts the content under the key
+By default, Redis adapter puts the content under the key
 `<PREFIX><LOCATION>`. Pay attention to `LOCATION`. It's the value available as
 `location` in the API response(i.e, `24d27fb9-a5f0-42f6-aaa3-7dcb599a0d46` in
 our case). It's different from the `id`(ID used by DB to uniquely identify file
@@ -169,7 +169,7 @@ If you are writing the code and you want to interact with the storage directly,
 without the API layer, you can do it via a number of public functions of the
 extension.
 
-Let's configure filesystem storage first. Filesystem driver has a mandatory
+Let's configure filesystem storage first. Filesystem adapter has a mandatory
 option `path` that controls filesystem location, where files are stored. If
 path does not exist, storage will raise an exception by default. But it can
 also create missing path if you enable `create_path` option. Here's our final
@@ -200,7 +200,7 @@ To create the file, `storage.upload` method must be called with 3 parameters:
 * dictionary with extra parameters that are consumed by the storage adapter
 
 You can use any string as the first parameter. The last parameter is not used
-by `files:fs` adapter, so we'll use an empty dictionary. And the only
+by `files:fs` adapter, so we'll pass an empty dictionary. And the only
 problematic parameter is the "special stream-like object". To make things
 simpler, ckanext-files has `ckanext.files.shared.make_upload` function, that
 accepts a number of different types(`str`, `bytes`,
@@ -225,7 +225,7 @@ print(result)
 ```
 
 `result` is an instance of `ckanext.files.shared.FileData` dataclass. It
-contains all the information that is required by storage to manage the file.
+contains all the information required by storage to manage the file.
 
 `result` object has `location` attribute that shows the name of the file
 *relative* to the `path` option specified in the storage configuration. If you
@@ -376,9 +376,9 @@ ckanapi action files_file_create name=hello.txt upload='hello world'
 ```
 
 Storage **default** is not configured. That's why we need `default`
-configuration. But if you want to use a different storage or you don't want to
-add the `default` storage, you can always specify the name of the storage you
-are going to use.
+configuration. But if you want to upload a file into a different storage or you
+don't want to add the `default` storage at all, you can always specify
+explicitly the name of the storage you are going to use.
 
 When using API actions, add `storage` parameter to the call:
 
@@ -397,7 +397,7 @@ and pass this uploader to `upload` function:
 ```js
 const sandbox = ckan.sandbox()
 const file = new File(["content"], "file.txt", {type: "text/plain"})
-const uploader = sandbox.files.makeUploader('Standard', {storage: "memory"})
+const uploader = sandbox.files.makeUploader("Standard", {storage: "memory"})
 
 await sandbox.files.upload(
   file,
@@ -496,7 +496,38 @@ ckanapi action files_file_search content_type=application/pdf
 ... }
 ```
 
+As for untracked files, their discoverability depends on the storage
+adapters. Some of them, `files:fs` for example, can scan the storage and locate
+all uploaded files, both thacked and untracked. If you have `files:fs` storage
+configured as `default`, use the following command to scan its content:
 
+```sh
+ckan files scan
+```
+
+If you want to scan a different storage, specify its name via
+`-s/--storage-name` option. Remember, that some storage adapters do not support
+scanning.
+
+```sh
+ckan files scan -s memory
+```
+
+If you want to see untracked files only, add `-u/--untracked-only` flag.
+
+```sh
+ckan files scan -u
+```
+
+If you want to track any untracked files, by creating a DB record for every
+such file, add `-t/--track` flag. After that you'll be able to discover
+previously untracked files via `files_file_search` API action. Most usable this
+option will be during the migration, when you are configuring a new storage,
+that points to an existing location with files.
+
+```sh
+ckan files scan -t
+```
 
 ## Configuration
 
@@ -528,16 +559,10 @@ storage type can be found in the dedicated section of the storage type.
 # Default storage used for upload when no explicit storage specified
 # (optional, default: default)
 ckanext.files.default_storage = default
-
-# Configuration of the named storage.
-# (optional, default: )
-ckanext.files.storage.<NAME>.<OPTION> =
-
 ```
 
-Starting from CKAN v2.10 you can check all available options for the storage
-type via config declarations CLI. First, add the storage type to the config
-file:
+All available options for the storage type can be checked via config
+declarations CLI. First, add the storage type to the config file:
 
 ```ini
 ckanext.files.storage.xxx.type = files:redis
@@ -551,7 +576,7 @@ ckan config declaration files -d
 ```
 
 Because redis storage adapter is enabled, you'll see all the options
-regsitered by redis driver alongside with the global options:
+regsitered by Redis adapter alongside with the global options:
 
 
 ```ini

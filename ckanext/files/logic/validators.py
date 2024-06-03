@@ -35,7 +35,7 @@ def files_parse_filesize(value: Any) -> int:
 
 
 def files_ensure_name(name_field: str):
-    """Apply to upload field to guess filename where `name_field` is empty."""
+    """Apply to Upload to guess filename where `name_field` is empty."""
 
     def validator(
         key: FlattenKey,

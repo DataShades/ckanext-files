@@ -1,5 +1,8 @@
+from __future__ import annotations
+
 from datetime import datetime
 from io import BytesIO
+from typing import Any, cast
 from unittest import mock as _mock
 
 import pytest
@@ -11,7 +14,7 @@ from werkzeug.datastructures import FileStorage
 from ckan.lib.redis import connect_to_redis
 from ckan.tests.helpers import call_action
 
-from typing import Any  # isort: skip # noqa: F401
+call_action: Any
 
 
 @pytest.fixture()
@@ -99,16 +102,16 @@ def reset_redis():
         Return number of removed records.
         """
         conn = connect_to_redis()
-        keys = conn.keys(pattern)
+        keys = cast(Any, conn.keys(pattern))
         if keys:
-            return conn.delete(*keys)
+            return cast(int, conn.delete(*keys))
         return 0
 
     return cleaner
 
 
 @pytest.fixture()
-def clean_redis(reset_redis):
+def clean_redis(reset_redis: Any):
     """Remove all keys from Redis.
     This fixture removes all the records from Redis::
         @pytest.mark.usefixtures("clean_redis")

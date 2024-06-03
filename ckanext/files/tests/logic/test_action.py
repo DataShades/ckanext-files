@@ -9,6 +9,8 @@ from ckan.tests.helpers import call_action
 
 from ckanext.files.model import File
 
+call_action: Any
+
 
 @pytest.fixture
 def random_file(create_with_upload: Any, faker: Any):

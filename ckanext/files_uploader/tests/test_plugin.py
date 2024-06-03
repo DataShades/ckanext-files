@@ -1,6 +1,10 @@
+from __future__ import annotations
+
 import os
+from typing import Any, cast
 
 import pytest
+from faker import Faker
 
 from ckan.tests import factories
 from ckan.tests.helpers import call_action
@@ -8,9 +12,11 @@ from ckan.tests.helpers import call_action
 from ckanext.files.base import get_storage
 from ckanext.files.exceptions import UnknownStorageError
 
+call_action: Any
+
 
 @pytest.fixture()
-def with_files_uploader(monkeypatch, tmpdir, ckan_config):
+def with_files_uploader(monkeypatch: Any, tmpdir: Any, ckan_config: dict[str, Any]):
     monkeypatch.setitem(
         ckan_config,
         "ckanext.files.storage.resource.type",
@@ -28,8 +34,8 @@ def with_files_uploader(monkeypatch, tmpdir, ckan_config):
 class SharedTests:
     @pytest.mark.ckan_config("ckan.upload.group.mimetypes", "application/octet-stream")
     @pytest.mark.ckan_config("ckan.upload.group.types", "application")
-    def test_group_upload(self, tmpdir, create_with_upload, faker):
-        user = factories.User()
+    def test_group_upload(self, tmpdir: Any, create_with_upload: Any, faker: Faker):
+        user = cast("dict[str, Any]", factories.User())
         group = create_with_upload(
             faker.binary(10),
             "image.png",
@@ -50,9 +56,9 @@ class SharedTests:
 
         assert os.path.exists(filepath)
 
-    def test_resource_upload_goes_to_fs(self, tmpdir, create_with_upload):
+    def test_resource_upload_goes_to_fs(self, tmpdir: Any, create_with_upload: Any):
         content = "hello world"
-        package = factories.Dataset()
+        package = cast("dict[str, Any]", factories.Dataset())
         resource = create_with_upload(content, "file.txt", package_id=package["id"])
 
         filepath = os.path.join(
@@ -67,9 +73,9 @@ class SharedTests:
         with open(filepath, "r") as src:
             assert src.read() == content
 
-    def test_resource_download(self, app, create_with_upload):
+    def test_resource_download(self, app: Any, create_with_upload: Any):
         content = "hello world"
-        package = factories.Dataset()
+        package = cast("dict[str, Any]", factories.Dataset())
         resource = create_with_upload(content, "file.txt", package_id=package["id"])
 
         resp = app.get(
@@ -77,11 +83,16 @@ class SharedTests:
         )
         assert resp.body == content
 
-    def test_resource_deletion(self, create_with_upload, faker, tmpdir):
+    def test_resource_deletion(
+        self,
+        create_with_upload: Any,
+        faker: Faker,
+        tmpdir: Any,
+    ):
         """Files are kept in system when resource is deleted but removed when
         `clear_upload` field added to resource."""
 
-        package = factories.Dataset()
+        package = cast("dict[str, Any]", factories.Dataset())
         resource = create_with_upload(
             faker.binary(10),
             "file.txt",

@@ -15,10 +15,9 @@ import mimetypes
 import re
 import tempfile
 from io import BytesIO
-from typing import IO, Any, TypeVar, cast
+from typing import IO, Any, Generic, TypeVar, cast
 
 import magic
-from typing_extensions import Generic
 from werkzeug.datastructures import FileStorage
 
 from ckanext.files import exceptions

@@ -15,7 +15,6 @@ from ckan.config.declaration import Declaration, Key
 from ckanext.files import exceptions, shared, utils
 from ckanext.files.base import (
     FileData,
-    HashingReader,
     Manager,
     MultipartData,
     Reader,
@@ -27,7 +26,7 @@ log = logging.getLogger(__name__)
 CHUNK_SIZE = 16384
 
 
-class FileSystemUploader(Uploader):
+class FsUploader(Uploader):
     required_options = ["path"]
     capabilities = shared.Capability.combine(
         shared.Capability.CREATE,
@@ -40,18 +39,21 @@ class FileSystemUploader(Uploader):
         upload: utils.Upload,
         extras: dict[str, Any],
     ) -> FileData:
-        filename = self.storage.compute_location(location, extras, upload)
-        filepath = os.path.join(self.storage.settings["path"], filename)
+        location = self.storage.compute_location(location, extras, upload)
+        dest = os.path.join(self.storage.settings["path"], location)
 
-        os.makedirs(os.path.dirname(filepath), exist_ok=True)
-        reader = HashingReader(upload.stream)
-        with open(filepath, "wb") as dest:
+        if os.path.exists(dest):
+            raise exceptions.ExistingFileError(self.storage.settings["name"], dest)
+
+        os.makedirs(os.path.dirname(dest), exist_ok=True)
+        reader = utils.HashingReader(upload.stream)
+        with open(dest, "wb") as fd:
             for chunk in reader:
-                dest.write(chunk)
+                fd.write(chunk)
 
         return FileData(
-            filename,
-            os.path.getsize(filepath),
+            location,
+            os.path.getsize(dest),
             upload.type,
             reader.get_hash(),
         )
@@ -93,15 +95,15 @@ class FileSystemUploader(Uploader):
         )
         return result
 
-    def show_multipart_upload(self, upload_data: MultipartData) -> MultipartData:
-        return upload_data
+    def show_multipart_upload(self, data: MultipartData) -> MultipartData:
+        return data
 
     def update_multipart_upload(
         self,
-        upload_data: MultipartData,
+        data: MultipartData,
         extras: dict[str, Any],
     ) -> MultipartData:
-        upload_data = copy.deepcopy(upload_data)
+        data = copy.deepcopy(data)
         schema = {
             "position": [
                 tk.get_validator("ignore_missing"),
@@ -113,60 +115,60 @@ class FileSystemUploader(Uploader):
             ],
             "__extras": [tk.get_validator("ignore")],
         }
-        data, errors = tk.navl_validate(extras, schema)
+        valid_extras, errors = tk.navl_validate(extras, schema)
 
         if errors:
             raise tk.ValidationError(errors)
 
-        data.setdefault("position", upload_data.storage_data["uploaded"])
-        upload: utils.Upload = data["upload"]
+        valid_extras.setdefault("position", data.storage_data["uploaded"])
+        upload: utils.Upload = valid_extras["upload"]
 
-        expected_size = data["position"] + upload.size
-        if expected_size > upload_data.size:
-            raise exceptions.UploadOutOfBoundError(expected_size, upload_data.size)
+        expected_size = valid_extras["position"] + upload.size
+        if expected_size > data.size:
+            raise exceptions.UploadOutOfBoundError(expected_size, data.size)
 
         filepath = os.path.join(
             str(self.storage.settings["path"]),
-            upload_data.location,
+            data.location,
         )
         with open(filepath, "rb+") as dest:
-            dest.seek(data["position"])
+            dest.seek(valid_extras["position"])
             dest.write(upload.stream.read())
 
-        upload_data.storage_data["uploaded"] = os.path.getsize(filepath)
-        return upload_data
+        data.storage_data["uploaded"] = os.path.getsize(filepath)
+        return data
 
     def complete_multipart_upload(
         self,
-        upload_data: MultipartData,
+        data: MultipartData,
         extras: dict[str, Any],
     ) -> FileData:
         filepath = os.path.join(
             str(self.storage.settings["path"]),
-            upload_data.location,
+            data.location,
         )
         size = os.path.getsize(filepath)
-        if size != upload_data.size:
+        if size != data.size:
             raise tk.ValidationError(
                 {
                     "size": [
                         "Actual filesize {} does not match expected {}".format(
                             size,
-                            upload_data.size,
+                            data.size,
                         ),
                     ],
                 },
             )
 
         with open(filepath, "rb") as src:
-            reader = HashingReader(src)
+            reader = utils.HashingReader(src)
             content_type = magic.from_buffer(next(reader, b""), True)
             reader.exhaust()
 
-        return FileData(upload_data.location, size, content_type, reader.get_hash())
+        return FileData(data.location, size, content_type, reader.get_hash())
 
 
-class FileSystemManager(Manager):
+class FsManager(Manager):
     required_options = ["path"]
     capabilities = shared.Capability.combine(
         shared.Capability.REMOVE,
@@ -187,8 +189,8 @@ class FileSystemManager(Manager):
     ) -> FileData:
         """Combine multipe file inside the storage into a new one."""
 
-        safe_location = self.storage.compute_location(location, extras)
-        dest = os.path.join(str(self.storage.settings["path"]), safe_location)
+        location = self.storage.compute_location(location, extras)
+        dest = os.path.join(str(self.storage.settings["path"]), location)
         if os.path.exists(dest):
             raise exceptions.ExistingFileError(self.storage.settings["name"], dest)
 
@@ -227,9 +229,9 @@ class FileSystemManager(Manager):
         extras: dict[str, Any],
     ) -> FileData:
         """Copy file inside the storage."""
-        safe_location = self.storage.compute_location(location, extras)
+        location = self.storage.compute_location(location, extras)
         src = os.path.join(str(self.storage.settings["path"]), data.location)
-        dest = os.path.join(str(self.storage.settings["path"]), safe_location)
+        dest = os.path.join(str(self.storage.settings["path"]), location)
 
         if not os.path.exists(src):
             raise exceptions.MissingFileError(self.storage.settings["name"], src)
@@ -239,7 +241,7 @@ class FileSystemManager(Manager):
 
         shutil.copy(src, dest)
         new_data = copy.deepcopy(data)
-        new_data.location = safe_location
+        new_data.location = location
         return new_data
 
     def move(
@@ -249,9 +251,9 @@ class FileSystemManager(Manager):
         extras: dict[str, Any],
     ) -> FileData:
         """Move file to a different location inside the storage."""
-        safe_location = self.storage.compute_location(location, extras)
+        location = self.storage.compute_location(location, extras)
         src = os.path.join(str(self.storage.settings["path"]), data.location)
-        dest = os.path.join(str(self.storage.settings["path"]), safe_location)
+        dest = os.path.join(str(self.storage.settings["path"]), location)
 
         if not os.path.exists(src):
             raise exceptions.MissingFileError(self.storage.settings["name"], src)
@@ -261,7 +263,7 @@ class FileSystemManager(Manager):
 
         shutil.move(src, dest)
         new_data = copy.deepcopy(data)
-        new_data.location = safe_location
+        new_data.location = location
         return new_data
 
     def exists(self, data: FileData) -> bool:
@@ -290,7 +292,7 @@ class FileSystemManager(Manager):
             raise exceptions.MissingFileError(self.storage.settings["name"], filepath)
 
         with open(filepath, "rb") as src:
-            reader = HashingReader(src)
+            reader = utils.HashingReader(src)
             content_type = magic.from_buffer(next(reader, b""), True)
             reader.exhaust()
 
@@ -302,7 +304,7 @@ class FileSystemManager(Manager):
         )
 
 
-class FileSystemReader(Reader):
+class FsReader(Reader):
     required_options = ["path"]
     capabilities = shared.Capability.combine(shared.Capability.STREAM)
 
@@ -314,17 +316,17 @@ class FileSystemReader(Reader):
         return open(filepath, "rb")
 
 
-class FileSystemStorage(Storage):
+class FsStorage(Storage):
     """Store files in local filesystem."""
 
     def make_uploader(self):
-        return FileSystemUploader(self)
+        return FsUploader(self)
 
     def make_reader(self):
-        return FileSystemReader(self)
+        return FsReader(self)
 
     def make_manager(self):
-        return FileSystemManager(self)
+        return FsManager(self)
 
     def __init__(self, **settings: Any) -> None:
         path = self.ensure_option(settings, "path")
@@ -338,7 +340,7 @@ class FileSystemStorage(Storage):
                     "path `{}` does not exist".format(path),
                 )
 
-        super(FileSystemStorage, self).__init__(**settings)
+        super(FsStorage, self).__init__(**settings)
 
     @classmethod
     def declare_config_options(cls, declaration: Declaration, key: Key):
@@ -351,7 +353,7 @@ class FileSystemStorage(Storage):
         )
 
 
-class PublicFileSystemStorage(FileSystemStorage):
+class PublicFileSystemStorage(FsStorage):
     def __init__(self, **settings: Any) -> None:
         self.ensure_option(settings, "public_root")
         super(PublicFileSystemStorage, self).__init__(**settings)

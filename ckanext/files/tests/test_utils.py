@@ -1,17 +1,60 @@
+import hashlib
 import tempfile
 from io import BytesIO
 
 import pytest
+from faker import Faker
 from werkzeug.datastructures import FileStorage
 
 from ckanext.files import exceptions, shared, utils
 from ckanext.files.shared import Capability
 
-from faker import Faker  # isort: skip # noqa: F401
+
+class TestHasingReader:
+    def test_empty_hash(self):
+        """Empty reader produces the hash of empty string and doesn't add any
+        default bytes.
+
+        """
+
+        reader = utils.HashingReader(BytesIO())
+        reader.exhaust()
+
+        assert reader.get_hash() == hashlib.md5().hexdigest()
+
+    def test_hash(self, faker: Faker):
+        """Reader's hash is based on the stream content."""
+
+        content = faker.binary(100)
+        expected = hashlib.md5(content).hexdigest()
+
+        reader = utils.HashingReader(BytesIO(content))
+
+        output = b""
+        for chunk in reader:
+            output += chunk
+
+        assert output == content
+        assert reader.get_hash() == expected
+
+    def test_reset(self, faker: Faker):
+        """Resetting the reader makes it reusable"""
+        stream = BytesIO(faker.binary(100))
+        reader = utils.HashingReader(stream)
+
+        reader.exhaust()
+
+        first_hash = reader.get_hash()
+        assert stream.tell() == 100
+
+        reader.reset()
+        assert stream.tell() == 0
+
+        reader.exhaust()
+        assert reader.get_hash() == first_hash
 
 
-def test_registry(faker):
-    # type: (Faker) -> None
+def test_registry(faker: Faker):
     """Brief test of registry functionality."""
 
     registry = utils.Registry[object]()
@@ -220,8 +263,7 @@ class TestParseFilesize:
             ("58 kib", 59392),
         ],
     )
-    def test_valid_sizes(self, value, size):
-        # type: (str, int) -> None
+    def test_valid_sizes(self, value: str, size: int):
         """Human-readable filesize is parsed into number of bytes."""
 
         assert utils.parse_filesize(value) == size
@@ -253,8 +295,7 @@ class TestMakeUpload:
         assert isinstance(upload, utils.Upload)
         assert upload.stream.read() == b"hello"
 
-    def test_str(self, faker):
-        # type: (Faker) -> None
+    def test_str(self, faker: Faker):
         """Strings converted into Upload."""
         string = faker.pystr()
         upload = utils.make_upload(string)
@@ -262,8 +303,7 @@ class TestMakeUpload:
         assert isinstance(upload, shared.Upload)
         assert upload.stream.read() == string.encode()
 
-    def test_bytes(self, faker):
-        # type: (Faker) -> None
+    def test_bytes(self, faker: Faker):
         """Bytes converted into Upload."""
         binary = faker.binary(100)
         upload = utils.make_upload(binary)

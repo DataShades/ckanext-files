@@ -136,22 +136,22 @@ class ResourceUploader(uploader.ResourceUpload):
             )
 
 
-class ImageStorage(fs.FileSystemStorage):
+class ImageStorage(fs.FsStorage):
     def compute_location(
         self,
-        name: str,
+        location: str,
         extras: dict[str, Any],
         upload: utils.Upload | None = None,
     ) -> str:
-        return os.path.join("storage", "uploads", extras["object_type"], name)
+        return os.path.join("storage", "uploads", extras["object_type"], location)
 
     def make_manager(self):
         return ImageManager(self)
 
 
-class ImageManager(fs.FileSystemManager):
+class ImageManager(fs.FsManager):
     capabilities = shared.Capability.combine(
-        fs.FileSystemManager.capabilities,
+        fs.FsManager.capabilities,
         shared.Capability.SCAN,
     )
 
@@ -161,10 +161,10 @@ class ImageManager(fs.FileSystemManager):
             yield os.path.relpath(name, path)
 
 
-class ResourceStorage(fs.FileSystemStorage):
+class ResourceStorage(fs.FsStorage):
     def compute_location(
         self,
-        name: str,
+        location: str,
         extras: dict[str, Any],
         upload: utils.Upload | None = None,
     ) -> str:
@@ -175,9 +175,9 @@ class ResourceStorage(fs.FileSystemStorage):
         return ResourceManager(self)
 
 
-class ResourceManager(fs.FileSystemManager):
+class ResourceManager(fs.FsManager):
     capabilities = shared.Capability.combine(
-        fs.FileSystemManager.capabilities,
+        fs.FsManager.capabilities,
         shared.Capability.SCAN,
     )
 

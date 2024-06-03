@@ -10,13 +10,12 @@ from urllib.parse import quote_plus
 from uuid import UUID
 
 import pytest
+from faker import Faker
 
 import ckan.plugins.toolkit as tk
 
 from ckanext.files import exceptions, shared
 from ckanext.files.storage import google_cloud as gc
-
-from faker import Faker  # isort: skip # noqa: F401
 
 TEST_BUCKET = "ld-bq-test"
 

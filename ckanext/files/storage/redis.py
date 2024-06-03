@@ -12,7 +12,6 @@ from ckan.config.declaration import Declaration, Key
 from ckan.lib.redis import connect_to_redis
 
 from ckanext.files import exceptions
-from ckanext.files.base import HashingReader
 from ckanext.files.shared import (
     Capability,
     FileData,
@@ -22,6 +21,7 @@ from ckanext.files.shared import (
     Upload,
     Uploader,
 )
+from ckanext.files.utils import HashingReader
 
 
 class RedisUploader(Uploader):

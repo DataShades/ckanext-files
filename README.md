@@ -575,9 +575,8 @@ plugin.
 ckan config declaration files -d
 ```
 
-Because redis storage adapter is enabled, you'll see all the options
+Because Redis storage adapter is enabled, you'll see all the options
 regsitered by Redis adapter alongside with the global options:
-
 
 ```ini
 ## ckanext-files ###############################################################

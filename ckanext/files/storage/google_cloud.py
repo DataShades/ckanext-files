@@ -103,7 +103,7 @@ class GoogleCloudUploader(Uploader):
 
     def update_multipart_upload(
         self,
-        upload_data: MultipartData,
+        data: MultipartData,
         extras: dict[str, Any],
     ) -> MultipartData:
         schema = {
@@ -121,17 +121,17 @@ class GoogleCloudUploader(Uploader):
             ],
             "__extras": [tk.get_validator("ignore")],
         }
-        data, errors = tk.navl_validate(extras, schema)
+        valid_data, errors = tk.navl_validate(extras, schema)
 
         if errors:
             raise tk.ValidationError(errors)
 
-        if "upload" in data:
-            upload: Upload = data["upload"]
+        if "upload" in valid_data:
+            upload: Upload = valid_data["upload"]
 
-            first_byte = data.get("position", upload_data.storage_data["uploaded"])
+            first_byte = valid_data.get("position", data.storage_data["uploaded"])
             last_byte = first_byte + upload.size - 1
-            size = upload_data.size
+            size = data.size
 
             if last_byte >= size:
                 raise exceptions.UploadOutOfBoundError(last_byte, size)
@@ -142,7 +142,7 @@ class GoogleCloudUploader(Uploader):
                 )
 
             resp = requests.put(
-                upload_data.storage_data["session_url"],
+                data.storage_data["session_url"],
                 data=upload.stream.read(),
                 headers={
                     "content-range": "bytes {}-{}/{}".format(
@@ -157,34 +157,32 @@ class GoogleCloudUploader(Uploader):
                 raise tk.ValidationError({"upload": [resp.text]})
 
             if "range" not in resp.headers:
-                upload_data.storage_data["uploaded"] = upload_data.size
-                upload_data.storage_data["result"] = resp.json()
-                return upload_data
+                data.storage_data["uploaded"] = data.size
+                data.storage_data["result"] = resp.json()
+                return data
 
             range_match = RE_RANGE.match(resp.headers["range"])
             if not range_match:
                 raise tk.ValidationError(
                     {"upload": ["Invalid response from Google Cloud"]},
                 )
-            upload_data.storage_data["uploaded"] = (
-                tk.asint(range_match.group("last_byte")) + 1
-            )
+            data.storage_data["uploaded"] = tk.asint(range_match.group("last_byte")) + 1
 
-        elif "uploaded" in data:
-            upload_data.storage_data["uploaded"] = data["uploaded"]
+        elif "uploaded" in valid_data:
+            data.storage_data["uploaded"] = valid_data["uploaded"]
 
         else:
             raise tk.ValidationError(
                 {"upload": ["Either upload or uploaded must be specified"]},
             )
 
-        return upload_data
+        return data
 
-    def show_multipart_upload(self, upload_data: MultipartData) -> MultipartData:
+    def show_multipart_upload(self, data: MultipartData) -> MultipartData:
         resp = requests.put(
-            upload_data.storage_data["session_url"],
+            data.storage_data["session_url"],
             headers={
-                "content-range": "bytes */{}".format(upload_data.size),
+                "content-range": "bytes */{}".format(data.size),
                 "content-length": "0",
             },
         )
@@ -203,14 +201,14 @@ class GoogleCloudUploader(Uploader):
                             ],
                         },
                     )
-                upload_data.storage_data["uploaded"] = (
+                data.storage_data["uploaded"] = (
                     tk.asint(range_match.group("last_byte")) + 1
                 )
             else:
-                upload_data.storage_data["uploaded"] = 0
+                data.storage_data["uploaded"] = 0
         elif resp.status_code in [200, 201]:
-            upload_data.storage_data["uploaded"] = upload_data.size
-            upload_data.storage_data["result"] = resp.json()
+            data.storage_data["uploaded"] = data.size
+            data.storage_data["result"] = resp.json()
 
         else:
             raise tk.ValidationError(
@@ -224,35 +222,35 @@ class GoogleCloudUploader(Uploader):
                 },
             )
 
-        return upload_data
+        return data
 
     def complete_multipart_upload(
         self,
-        upload_data: MultipartData,
+        data: MultipartData,
         extras: dict[str, Any],
     ) -> FileData:
-        upload_data = self.show_multipart_upload(upload_data)
-        if upload_data.storage_data["uploaded"] != upload_data.size:
+        data = self.show_multipart_upload(data)
+        if data.storage_data["uploaded"] != data.size:
             raise tk.ValidationError(
                 {
                     "size": [
                         "Actual filesize {} does not match expected {}".format(
-                            upload_data.storage_data["uploaded"],
-                            upload_data.size,
+                            data.storage_data["uploaded"],
+                            data.size,
                         ),
                     ],
                 },
             )
 
-        filehash = decode(upload_data.storage_data["result"]["md5Hash"])
+        filehash = decode(data.storage_data["result"]["md5Hash"])
 
         return FileData(
             os.path.relpath(
-                upload_data.storage_data["result"]["name"],
+                data.storage_data["result"]["name"],
                 self.storage.settings["path"],
             ),
-            upload_data.size,
-            upload_data.storage_data["result"]["contentType"],
+            data.size,
+            data.storage_data["result"]["contentType"],
             filehash,
         )
 

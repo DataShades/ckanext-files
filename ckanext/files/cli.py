@@ -38,7 +38,7 @@ def stream(file_id: str):
         raise click.Abort() from err
 
     try:
-        content_stream = storage.stream(shared.FileData.from_file(file))
+        content_stream = storage.stream(shared.FileData.from_model(file))
     except exceptions.UnsupportedOperationError as err:
         tk.error_shout(err)
         raise click.Abort() from err
@@ -138,7 +138,7 @@ def scan(
                 name=os.path.basename(name),
                 storage=storage_name,
             )
-            data.into_file(fileobj)
+            data.into_model(fileobj)
 
             model.Session.add(fileobj)
 

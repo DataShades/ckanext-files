@@ -69,7 +69,7 @@ def generic_download(file_id: str) -> Response:
         raise tk.ObjectNotFound("file")
 
     storage = shared.get_storage(item.storage)
-    data = shared.FileData.from_file(item)
+    data = shared.FileData.from_model(item)
     try:
         return storage.make_download_response(item.name, data)
     except exceptions.UnsupportedOperationError:

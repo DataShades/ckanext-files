@@ -177,7 +177,7 @@ def files_file_create(context: Context, data_dict: dict[str, Any]) -> dict[str, 
         storage=data_dict["storage"],
         storage_data=storage_data,
     )
-    storage_data.into_file(fileobj)
+    storage_data.into_model(fileobj)
     context["session"].add(fileobj)
 
     _add_owner(context, "file", fileobj.id)
@@ -225,7 +225,7 @@ def files_file_delete(context: Context, data_dict: dict[str, Any]) -> dict[str, 
         raise tk.ValidationError({"storage": ["Operation is not supported"]})
 
     try:
-        storage.remove(shared.FileData.from_file(fileobj))
+        storage.remove(shared.FileData.from_model(fileobj))
     except exceptions.PermissionError as err:
         raise tk.NotAuthorized(str(err))  # noqa: B904
 
@@ -296,7 +296,7 @@ def files_upload_initialize(
         name=filename,
         storage=data_dict["storage"],
     )
-    storage_data.into_multipart(fileobj)
+    storage_data.into_model(fileobj)
 
     context["session"].add(fileobj)
     _add_owner(context, "file", fileobj.id)
@@ -336,9 +336,9 @@ def files_upload_update(context: Context, data_dict: dict[str, Any]) -> dict[str
 
     try:
         storage.update_multipart_upload(
-            shared.MultipartData.from_mulltipart(fileobj),
+            shared.MultipartData.from_model(fileobj),
             extras,
-        ).into_multipart(fileobj)
+        ).into_model(fileobj)
     except exceptions.UploadError as err:
         raise tk.ValidationError({"upload": [str(err)]})  # noqa: B904
 
@@ -372,9 +372,9 @@ def files_upload_complete(
 
     try:
         storage.complete_multipart_upload(
-            shared.MultipartData.from_mulltipart(fileobj),
+            shared.MultipartData.from_model(fileobj),
             extras,
-        ).into_file(result)
+        ).into_model(result)
     except exceptions.UploadError as err:
         raise tk.ValidationError({"upload": [str(err)]})  # noqa: B904
     context["session"].add(result)

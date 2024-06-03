@@ -11,6 +11,7 @@ from __future__ import annotations
 import contextlib
 import dataclasses
 import enum
+import hashlib
 import mimetypes
 import re
 import tempfile
@@ -25,6 +26,8 @@ from ckanext.files import exceptions
 T = TypeVar("T")
 
 RE_FILESIZE = re.compile(r"^(?P<size>\d+(?:\.\d+)?)\s*(?P<unit>\w*)$")
+CHUNK_SIZE = 16 * 1024
+CHECKSUM_ALGORITHM = "md5"
 
 UNITS = cast(
     "dict[str, int]",
@@ -53,6 +56,64 @@ class Upload:
     filename: str
     size: int
     type: str
+
+    def hashing_reader(self, **kwargs: Any) -> HashingReader:
+        return HashingReader(self.stream, **kwargs)
+
+
+class HashingReader:
+    """IO stream wrapper that computes content hash while stream is consumed.
+
+    Example:
+
+    >>> reader = HashingReader(readable_stream)
+    >>> for chunk in reader:
+    >>>     ...
+    >>> print(f"Hash: {reader.get_hash()}")
+
+    """
+
+    def __init__(
+        self,
+        stream: IO[bytes],
+        chunk_size: int = CHUNK_SIZE,
+        algorithm: str = CHECKSUM_ALGORITHM,
+    ) -> None:
+        self.stream = stream
+        self.chunk_size = chunk_size
+        self.algorithm = algorithm
+        self.hashsum = hashlib.new(algorithm)
+        self.position = 0
+
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        chunk = self.stream.read(self.chunk_size)
+        if not chunk:
+            raise StopIteration
+
+        self.position += len(chunk)
+        self.hashsum.update(chunk)
+        return chunk
+
+    next = __next__
+
+    def reset(self):
+        """Rewind underlying stream and reset hash to initial state."""
+        self.position = 0
+        self.hashsum = hashlib.new(self.algorithm)
+        self.stream.seek(0)
+
+    def get_hash(self):
+        """Get content hash as a string."""
+        return self.hashsum.hexdigest()
+
+    def exhaust(self):
+        """Exhaust internal stream to compute final version of content hash."""
+
+        for _ in self:
+            pass
 
 
 class Capability(enum.Flag):
@@ -174,12 +235,10 @@ class Registry(Generic[T]):
 def ensure_size(upload: Upload, max_size: int) -> int:
     """Return filesize or rise an exception if it exceedes max_size."""
 
-    filesize = upload.size
+    if upload.size > max_size:
+        raise exceptions.LargeUploadError(upload.size, max_size)
 
-    if filesize > max_size:
-        raise exceptions.LargeUploadError(filesize, max_size)
-
-    return filesize
+    return upload.size
 
 
 def parse_filesize(value: str) -> int:
@@ -240,29 +299,10 @@ def make_upload(
             )
 
     if isinstance(value, FileStorage):
-        name: str = value.filename or value.name or ""
-
-        if value.content_length:
-            size = value.content_length
-        else:
-            value.stream.seek(0, 2)
-            size = value.stream.tell()
-            value.stream.seek(0)
-
-        mime, _encoding = mimetypes.guess_type(name)
-        if not mime:
-            mime = magic.from_buffer(value.stream.read(1024), True)
-            value.stream.seek(0)
-
-        return Upload(value.stream, name, size, mime)
+        return _file_storage_as_upload(value)
 
     if isinstance(value, tempfile.SpooledTemporaryFile):
-        mime = magic.from_buffer(value.read(1024), True)
-        value.seek(0, 2)
-        size = value.tell()
-        value.seek(0)
-
-        return Upload(value, value.name or "", size, mime)
+        return _tempfile_as_upload(value)
 
     if isinstance(value, str):
         value = value.encode()
@@ -279,3 +319,30 @@ def make_upload(
         return Upload(value, "", size, mime)
 
     raise TypeError(type(value))
+
+
+def _file_storage_as_upload(value: FileStorage):
+    name: str = value.filename or value.name or ""
+
+    if value.content_length:
+        size = value.content_length
+    else:
+        value.stream.seek(0, 2)
+        size = value.stream.tell()
+        value.stream.seek(0)
+
+    mime, _encoding = mimetypes.guess_type(name)
+    if not mime:
+        mime = magic.from_buffer(value.stream.read(1024), True)
+        value.stream.seek(0)
+
+    return Upload(value.stream, name, size, mime)
+
+
+def _tempfile_as_upload(value: tempfile.SpooledTemporaryFile[bytes]):
+    mime = magic.from_buffer(value.read(1024), True)
+    value.seek(0, 2)
+    size = value.tell()
+    value.seek(0)
+
+    return Upload(value, value.name or "", size, mime)

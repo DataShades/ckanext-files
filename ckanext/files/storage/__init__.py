@@ -1,4 +1,4 @@
-from .fs import FileSystemStorage, PublicFileSystemStorage
+from .fs import FsStorage, PublicFileSystemStorage
 from .redis import RedisStorage
 
 try:
@@ -7,7 +7,7 @@ except ImportError:  # pragma: no cover
     pass
 
 __all__ = [
-    "FileSystemStorage",
+    "FsStorage",
     "GoogleCloudStorage",
     "PublicFileSystemStorage",
     "RedisStorage",

@@ -112,15 +112,15 @@ def files_upload_show(context: Context, data_dict: dict[str, Any]) -> AuthResult
 
 
 @tk.auth_disallow_anonymous_access
-def files_upload_initialize(context: Context, data_dict: dict[str, Any]) -> AuthResult:
+def files_multipart_start(context: Context, data_dict: dict[str, Any]) -> AuthResult:
     return authz.is_authorized("files_file_create", context, data_dict)
 
 
 @tk.auth_disallow_anonymous_access
-def files_upload_update(context: Context, data_dict: dict[str, Any]) -> AuthResult:
+def files_multipart_update(context: Context, data_dict: dict[str, Any]) -> AuthResult:
     return authz.is_authorized("files_owns_file", context, data_dict)
 
 
 @tk.auth_disallow_anonymous_access
-def files_upload_complete(context: Context, data_dict: dict[str, Any]) -> AuthResult:
+def files_multipart_complete(context: Context, data_dict: dict[str, Any]) -> AuthResult:
     return authz.is_authorized("files_owns_file", context, data_dict)

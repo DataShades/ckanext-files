@@ -69,7 +69,7 @@ def mocked_session_url():
 
 
 @pytest.fixture()
-def mocked_upload_initialize(
+def mocked_multipart_start(
     responses: Any,
     mocked_session_url: Any,
     mocked_token: Any,
@@ -90,7 +90,7 @@ def mocked_upload_initialize(
 
 
 @pytest.fixture()
-def mocked_upload_update(
+def mocked_multipart_update(
     responses: Any,
     mocked_session_url: Any,
     upload_progress: dict[str, Any],
@@ -150,7 +150,7 @@ def mocked_upload_update(
 
 
 @pytest.fixture()
-def mocked_upload(mocked_upload_initialize: Any, mocked_upload_update: Any):
+def mocked_upload(mocked_multipart_start: Any, mocked_multipart_update: Any):
     pass
 
 
@@ -176,7 +176,7 @@ class TestMultipartUploader:
         with pytest.raises(exceptions.LargeUploadError):
             storage.initialize_multipart_upload(faker.file_name(), {"size": 10})
 
-    @pytest.mark.usefixtures("mocked_upload_initialize")
+    @pytest.mark.usefixtures("mocked_multipart_start")
     def test_initialization(self, storage: gc.GoogleCloudStorage, faker: Faker):
         content = b"hello world"
         data = storage.initialize_multipart_upload(
@@ -187,7 +187,7 @@ class TestMultipartUploader:
         assert data.storage_data["uploaded"] == 0
         assert data.storage_data["session_url"]
 
-    @pytest.mark.usefixtures("mocked_upload_initialize")
+    @pytest.mark.usefixtures("mocked_multipart_start")
     def test_update_invalid(self, storage: gc.GoogleCloudStorage, faker: Faker):
         content = b"hello world"
         data = storage.initialize_multipart_upload(

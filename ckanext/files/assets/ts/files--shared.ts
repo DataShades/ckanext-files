@@ -39,8 +39,7 @@ namespace ckan {
         ckan.sandbox.extend({ files: { upload, makeUploader } });
 
         export namespace adapters {
-            export type StorageData = {
-            };
+            export type StorageData = {[key: string]: any};
 
             export type UploadInfo = {
                 id: string
@@ -186,7 +185,7 @@ namespace ckan {
 
             export class Multipart extends Base {
                 static defaultSettings = { chunkSize: 1024 * 1024 * 5 };
-                protected initializeAction = "files_upload_initialize";
+                protected initializeAction = "files_multipart_start";
 
                 private _active = new Set<File>();
 
@@ -238,7 +237,7 @@ namespace ckan {
                 }
 
                 async _doUpload(file: File, info: UploadInfo) {
-                    let start = info.storage_data.uploaded || 0;
+                    let start = info.storage_data["uploaded"] || 0;
 
                     while (start < file.size) {
                         if (!this._active.has(file)) {
@@ -352,7 +351,7 @@ namespace ckan {
                     request.open(
                         "POST",
                         this.sandbox.client.url(
-                            "/api/action/files_upload_update",
+                            "/api/action/files_multipart_update",
                         ),
                     );
 
@@ -382,7 +381,7 @@ namespace ckan {
                     return new Promise((done, fail) =>
                         this.sandbox.client.call(
                             "POST",
-                            "files_upload_complete",
+                            "files_multipart_complete",
                             Object.assign(
                                 {},
                                 this.settings.completePayload || {},

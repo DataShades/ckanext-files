@@ -80,7 +80,7 @@ def file_rename(not_empty: Validator, unicode_safe: Validator) -> Schema:
 
 
 @validator_args
-def upload_initialize(
+def multipart_start(
     not_empty: Validator,
     unicode_safe: Validator,
     default: ValidatorFactory,
@@ -99,14 +99,14 @@ def upload_show(not_empty: Validator, unicode_safe: Validator) -> Schema:
 
 
 @validator_args
-def upload_update(not_empty: Validator, unicode_safe: Validator) -> Schema:
+def multipart_update(not_empty: Validator, unicode_safe: Validator) -> Schema:
     return {
         "id": [not_empty, unicode_safe],
     }
 
 
 @validator_args
-def upload_complete(not_empty: Validator, unicode_safe: Validator) -> Schema:
+def multipart_complete(not_empty: Validator, unicode_safe: Validator) -> Schema:
     return {
         "id": [not_empty, unicode_safe],
     }

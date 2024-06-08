@@ -267,12 +267,12 @@ def files_file_rename(context: Context, data_dict: dict[str, Any]) -> dict[str, 
     return fileobj.dictize(context)
 
 
-@validate(schema.upload_initialize)
-def files_upload_initialize(
+@validate(schema.multipart_start)
+def files_multipart_start(
     context: Context,
     data_dict: dict[str, Any],
 ) -> dict[str, Any]:
-    tk.check_access("files_upload_initialize", context, data_dict)
+    tk.check_access("files_multipart_start", context, data_dict)
     extras = data_dict.get("__extras", {})
 
     try:
@@ -320,9 +320,12 @@ def files_upload_show(context: Context, data_dict: dict[str, Any]) -> dict[str, 
     return dict(file_dict, storage_data=dataclasses.asdict(storage_data))
 
 
-@validate(schema.upload_update)
-def files_upload_update(context: Context, data_dict: dict[str, Any]) -> dict[str, Any]:
-    tk.check_access("files_upload_update", context, data_dict)
+@validate(schema.multipart_update)
+def files_multipart_update(
+    context: Context,
+    data_dict: dict[str, Any],
+) -> dict[str, Any]:
+    tk.check_access("files_multipart_update", context, data_dict)
 
     extras = data_dict.get("__extras", {})
 
@@ -347,12 +350,12 @@ def files_upload_update(context: Context, data_dict: dict[str, Any]) -> dict[str
     return fileobj.dictize(context)
 
 
-@validate(schema.upload_complete)
-def files_upload_complete(
+@validate(schema.multipart_complete)
+def files_multipart_complete(
     context: Context,
     data_dict: dict[str, Any],
 ) -> dict[str, Any]:
-    tk.check_access("files_upload_complete", context, data_dict)
+    tk.check_access("files_multipart_complete", context, data_dict)
     sess = context["session"]
     extras = data_dict.get("__extras", {})
 

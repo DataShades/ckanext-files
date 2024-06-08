@@ -45,7 +45,7 @@ namespace ckan {
           return new Promise((done, fail) => {
             this.sandbox.client.call(
               "POST",
-              "files_upload_update",
+              "files_multipart_update",
               {
                 id: info.id,
                 uploaded,

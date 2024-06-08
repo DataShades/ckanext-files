@@ -107,6 +107,6 @@ def _initialize_storages():
         try:
             storage = base.make_storage(name, settings)
         except exceptions.UnknownAdapterError as err:
-            raise CkanConfigurationException(str(err))  # noqa: B904
+            raise CkanConfigurationException(str(err)) from err
 
         base.storages.register(name, storage)

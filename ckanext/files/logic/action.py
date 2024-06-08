@@ -156,7 +156,7 @@ def files_file_create(context: Context, data_dict: dict[str, Any]) -> dict[str, 
     try:
         storage = shared.get_storage(data_dict["storage"])
     except exceptions.UnknownStorageError as err:
-        raise tk.ValidationError({"storage": [str(err)]})  # noqa: B904
+        raise tk.ValidationError({"storage": [str(err)]}) from err
 
     if not storage.supports(shared.Capability.CREATE):
         raise tk.ValidationError({"storage": ["Operation is not supported"]})
@@ -170,7 +170,7 @@ def files_file_create(context: Context, data_dict: dict[str, Any]) -> dict[str, 
             extras,
         )
     except exceptions.UploadError as err:
-        raise tk.ValidationError({"upload": [str(err)]})  # noqa: B904
+        raise tk.ValidationError({"upload": [str(err)]}) from err
 
     fileobj = File(
         name=filename,
@@ -227,7 +227,7 @@ def files_file_delete(context: Context, data_dict: dict[str, Any]) -> dict[str, 
     try:
         storage.remove(shared.FileData.from_model(fileobj))
     except exceptions.PermissionError as err:
-        raise tk.NotAuthorized(str(err))  # noqa: B904
+        raise tk.NotAuthorized(str(err)) from err
 
     _delete_owners(context, "file", fileobj.id)
     context["session"].delete(fileobj)
@@ -278,9 +278,9 @@ def files_upload_initialize(
     try:
         storage = shared.get_storage(data_dict["storage"])
     except exceptions.UnknownStorageError as err:
-        raise tk.ValidationError({"storage": [str(err)]})  # noqa: B904
+        raise tk.ValidationError({"storage": [str(err)]}) from err
 
-    if not storage.supports(shared.Capability.MULTIPART_UPLOAD):
+    if not storage.supports(shared.Capability.MULTIPART):
         raise tk.ValidationError({"storage": ["Operation is not supported"]})
 
     filename = secure_filename(data_dict["name"])
@@ -290,7 +290,7 @@ def files_upload_initialize(
             extras,
         )
     except exceptions.UploadError as err:
-        raise tk.ValidationError({"upload": [str(err)]})  # noqa: B904
+        raise tk.ValidationError({"upload": [str(err)]}) from err
 
     fileobj = Multipart(
         name=filename,
@@ -299,7 +299,7 @@ def files_upload_initialize(
     storage_data.into_model(fileobj)
 
     context["session"].add(fileobj)
-    _add_owner(context, "file", fileobj.id)
+    _add_owner(context, "multipart", fileobj.id)
     context["session"].commit()
 
     return fileobj.dictize(context)
@@ -340,7 +340,7 @@ def files_upload_update(context: Context, data_dict: dict[str, Any]) -> dict[str
             extras,
         ).into_model(fileobj)
     except exceptions.UploadError as err:
-        raise tk.ValidationError({"upload": [str(err)]})  # noqa: B904
+        raise tk.ValidationError({"upload": [str(err)]}) from err
 
     context["session"].commit()
 
@@ -353,7 +353,7 @@ def files_upload_complete(
     data_dict: dict[str, Any],
 ) -> dict[str, Any]:
     tk.check_access("files_upload_complete", context, data_dict)
-
+    sess = context["session"]
     extras = data_dict.get("__extras", {})
 
     data_dict["id"]
@@ -376,9 +376,14 @@ def files_upload_complete(
             extras,
         ).into_model(result)
     except exceptions.UploadError as err:
-        raise tk.ValidationError({"upload": [str(err)]})  # noqa: B904
-    context["session"].add(result)
-    context["session"].delete(fileobj)
-    context["session"].commit()
+        raise tk.ValidationError({"upload": [str(err)]}) from err
+
+    sess.query(Owner).where(
+        Owner.item_type == "multipart",
+        Owner.item_id == fileobj.id,
+    ).update({"item_id": result.id, "item_type": "file"})
+    sess.add(result)
+    sess.delete(fileobj)
+    sess.commit()
 
     return result.dictize(context)

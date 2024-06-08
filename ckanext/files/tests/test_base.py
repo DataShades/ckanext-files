@@ -178,11 +178,11 @@ class TestStorage:
             ),
         )
 
-        assert not storage.supports(Capability.MULTIPART_UPLOAD)
+        assert not storage.supports(Capability.MULTIPART)
         assert not storage.supports(
             Capability.combine(
                 Capability.REMOVE,
-                Capability.MULTIPART_UPLOAD,
+                Capability.MULTIPART,
             ),
         )
 

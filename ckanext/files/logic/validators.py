@@ -15,11 +15,11 @@ def files_into_upload(value: Any) -> utils.Upload:
 
     except TypeError as err:
         msg = "Unsupported source type: {}".format(err)
-        raise tk.Invalid(msg)  # noqa: B904
+        raise tk.Invalid(msg) from err
 
     except ValueError as err:
         msg = "Wrong file: {}".format(err)
-        raise tk.Invalid(msg)  # noqa: B904
+        raise tk.Invalid(msg) from err
 
 
 def files_parse_filesize(value: Any) -> int:
@@ -30,8 +30,8 @@ def files_parse_filesize(value: Any) -> int:
 
     try:
         return utils.parse_filesize(value)
-    except ValueError:
-        raise tk.Invalid("Wrong filesize string: {}".format(value))  # noqa: B904
+    except ValueError as err:
+        raise tk.Invalid("Wrong filesize string: {}".format(value)) from err
 
 
 def files_ensure_name(name_field: str):

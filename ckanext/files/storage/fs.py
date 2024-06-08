@@ -30,7 +30,7 @@ class FsUploader(Uploader):
     required_options = ["path"]
     capabilities = shared.Capability.combine(
         shared.Capability.CREATE,
-        shared.Capability.MULTIPART_UPLOAD,
+        shared.Capability.MULTIPART,
     )
 
     def upload(

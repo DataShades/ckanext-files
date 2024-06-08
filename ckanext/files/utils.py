@@ -142,7 +142,7 @@ class Capability(enum.Flag):
     # remove file from the storage
     REMOVE = enum.auto()
     # create file in 3 stages: initialize, upload(repeatable), complete
-    MULTIPART_UPLOAD = enum.auto()
+    MULTIPART = enum.auto()
     # move file to a different location inside the storage
     MOVE = enum.auto()
     # check if file exists

@@ -1,5 +1,4 @@
 import pytest
-from faker import Faker  # pytest: skip # noqa: F401
 
 import ckan.plugins.toolkit as tk
 

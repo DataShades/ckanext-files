@@ -113,7 +113,7 @@ def scan(
         files = storage.scan()
     except exceptions.UnsupportedOperationError as err:
         tk.error_shout(err)
-        raise click.Abort()  # noqa: B904
+        raise click.Abort() from err
 
     stepfather = model.User.get(adopt_by)
 
@@ -132,7 +132,7 @@ def scan(
                 data = storage.analyze(name)
             except exceptions.UnsupportedOperationError as err:
                 tk.error_shout(err)
-                raise click.Abort()  # noqa: B904
+                raise click.Abort() from err
 
             fileobj = File(
                 name=os.path.basename(name),

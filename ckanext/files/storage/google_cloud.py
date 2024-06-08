@@ -30,7 +30,7 @@ class GoogleCloudUploader(Uploader):
     required_options = ["bucket"]
     capabilities = Capability.combine(
         Capability.CREATE,
-        Capability.MULTIPART_UPLOAD,
+        Capability.MULTIPART,
     )
 
     def upload(
@@ -268,21 +268,21 @@ class GoogleCloudManager(Manager):
         try:
             exists = blob.exists()
         except Forbidden as err:
-            raise exceptions.PermissionError(  # noqa: B904
+            raise exceptions.PermissionError(
                 type(self),
                 "exists",
                 str(err),
-            )
+            ) from err
 
         if exists:
             try:
                 blob.delete()
             except Forbidden as err:
-                raise exceptions.PermissionError(  # noqa: B904
+                raise exceptions.PermissionError(
                     type(self),
                     "remove",
                     str(err),
-                )
+                ) from err
             return True
         return False
 
@@ -299,11 +299,11 @@ class GoogleCloudStorage(Storage):
         if credentials_file:
             try:
                 credentials = Credentials.from_service_account_file(credentials_file)
-            except IOError:
-                raise exceptions.InvalidStorageConfigurationError(  # noqa: B904
+            except IOError as err:
+                raise exceptions.InvalidStorageConfigurationError(
                     type(self),
                     "file `{}` does not exist".format(credentials_file),
-                )
+                ) from err
 
         self.client = Client(credentials=credentials)
 

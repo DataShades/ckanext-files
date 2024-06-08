@@ -121,19 +121,19 @@ class TestCapabilities:
 
         first = Capability.combine(
             Capability.combine(Capability.CREATE, Capability.REMOVE),
-            Capability.MULTIPART_UPLOAD,
+            Capability.MULTIPART,
         )
         second = Capability.combine(
             Capability.combine(
                 Capability.CREATE,
-                Capability.MULTIPART_UPLOAD,
+                Capability.MULTIPART,
             ),
             Capability.REMOVE,
         )
         third = Capability.combine(
             Capability.combine(
                 Capability.REMOVE,
-                Capability.MULTIPART_UPLOAD,
+                Capability.MULTIPART,
             ),
             Capability.CREATE,
         )
@@ -148,7 +148,7 @@ class TestCapabilities:
             Capability.REMOVE,
         )
         second = Capability.combine(
-            Capability.MULTIPART_UPLOAD,
+            Capability.MULTIPART,
             Capability.STREAM,
         )
 
@@ -156,7 +156,7 @@ class TestCapabilities:
         units = Capability.combine(
             Capability.CREATE,
             Capability.REMOVE,
-            Capability.MULTIPART_UPLOAD,
+            Capability.MULTIPART,
             Capability.STREAM,
         )
         assert clusters is units
@@ -168,7 +168,7 @@ class TestCapabilities:
             Capability.REMOVE,
         )
 
-        assert Capability.exclude(cluster, Capability.MULTIPART_UPLOAD) is cluster
+        assert Capability.exclude(cluster, Capability.MULTIPART) is cluster
 
     def test_exclusion_of_single_unit(self):
         """Single unit exclusion leaves all other units inside cluster."""

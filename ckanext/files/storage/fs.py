@@ -58,7 +58,7 @@ class FsUploader(Uploader):
             reader.get_hash(),
         )
 
-    def initialize_multipart_upload(
+    def multipart_start(
         self,
         location: str,
         extras: dict[str, Any],
@@ -95,10 +95,10 @@ class FsUploader(Uploader):
         )
         return result
 
-    def show_multipart_upload(self, data: MultipartData) -> MultipartData:
+    def multipart_show(self, data: MultipartData) -> MultipartData:
         return data
 
-    def update_multipart_upload(
+    def multipart_update(
         self,
         data: MultipartData,
         extras: dict[str, Any],
@@ -138,7 +138,7 @@ class FsUploader(Uploader):
         data.storage_data["uploaded"] = os.path.getsize(filepath)
         return data
 
-    def complete_multipart_upload(
+    def multipart_complete(
         self,
         data: MultipartData,
         extras: dict[str, Any],

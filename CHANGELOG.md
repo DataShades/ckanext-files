@@ -19,6 +19,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Code Refactoring
 
+- rename files_upload_* actions to files_multipart_*(initialize changed to start) ([6493a1d](https://github.com/DataShades/ckanext-files/commit/6493a1d5cb8225346d5414914d73a8ca3b9276b7) by Sergey Motornyuk).
+- rename MULTIPART_UPLOAD capability to MULTIPART ([20d01bf](https://github.com/DataShades/ckanext-files/commit/20d01bf32eb52a91f734627664a2ab265238dcdb) by Sergey Motornyuk).
+- use custom dataclass for Upload instead of werkzeug.datastructures.FileStorage ([78ae63b](https://github.com/DataShades/ckanext-files/commit/78ae63b79d63c095313af6e90a5c583f6d0678d6) by Sergey Motornyuk).
 - move hash, size, location(former filename) and content_type to the top level of file entity ([45a2679](https://github.com/DataShades/ckanext-files/commit/45a2679498a874ca6c2a00d154dd73a0bc394b29) by Sergey Motornyuk).
 - extract File.completed==False into Multipart model ([d90d786](https://github.com/DataShades/ckanext-files/commit/d90d78684829291976a71384a49b40e66234386b) by Sergey Motornyuk).
 - use dataclasses instead of dict in storage ([4965568](https://github.com/DataShades/ckanext-files/commit/4965568e22e7a36672c96a26e88e73c21f056730) by Sergey Motornyuk).

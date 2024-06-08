@@ -17,30 +17,17 @@ import dataclasses
 import os
 import uuid
 from datetime import datetime
-from typing import IO, Any, Generic, Iterable, Literal, Protocol, TypeVar
+from typing import IO, Any, Generic, Iterable, Literal
 
 import pytz
 
-import ckan.plugins.toolkit as tk
-from ckan.common import streaming_response
 from ckan.config.declaration import Declaration, Key
-from ckan.types import Response
 
 from ckanext.files import config, exceptions, model, utils
+from ckanext.files.types import TFileModel
 
 adapters: utils.Registry[type[Storage]] = utils.Registry({})
 storages: utils.Registry[Storage] = utils.Registry({})
-
-
-class PFileModel(Protocol):
-    location: str
-    size: int
-    content_type: str
-    hash: str
-    storage_data: dict[str, Any]
-
-
-TFileModel = TypeVar("TFileModel", bound=PFileModel)
 
 
 @dataclasses.dataclass
@@ -194,7 +181,7 @@ class Uploader(StorageService):
 
         raise NotImplementedError
 
-    def initialize_multipart_upload(
+    def multipart_start(
         self,
         location: str,
         extras: dict[str, Any],
@@ -204,11 +191,11 @@ class Uploader(StorageService):
         raise NotImplementedError
 
     # TODO: rename to refresh or something
-    def show_multipart_upload(self, data: MultipartData) -> MultipartData:
+    def multipart_show(self, data: MultipartData) -> MultipartData:
         """Show details of the incomplete upload."""
         raise NotImplementedError
 
-    def update_multipart_upload(
+    def multipart_update(
         self,
         data: MultipartData,
         extras: dict[str, Any],
@@ -216,7 +203,7 @@ class Uploader(StorageService):
         """Add data to the incomplete upload."""
         raise NotImplementedError
 
-    def complete_multipart_upload(
+    def multipart_complete(
         self,
         data: MultipartData,
         extras: dict[str, Any],
@@ -291,15 +278,15 @@ class Reader(StorageService):
         """Return file content as a single byte object."""
         return self.stream(data).read()
 
-    def permanent_link(self, data: FileData) -> str:
+    def permanent_link(self, data: FileData, extras: dict[str, Any]) -> str:
         """Return permanent download link."""
         raise NotImplementedError
 
-    def temporal_link(self, data: FileData) -> str:
+    def temporal_link(self, data: FileData, extras: dict[str, Any]) -> str:
         """Return temporal download link."""
         raise NotImplementedError
 
-    def one_time_link(self, data: FileData) -> str:
+    def one_time_link(self, data: FileData, extras: dict[str, Any]) -> str:
         """Return one-time download link."""
         raise NotImplementedError
 
@@ -404,29 +391,29 @@ class Storage(OptionChecker, abc.ABC):
 
         return self.uploader.upload(location, upload, extras)
 
-    def initialize_multipart_upload(
+    def multipart_start(
         self,
         name: str,
         extras: dict[str, Any],
     ) -> MultipartData:
-        return self.uploader.initialize_multipart_upload(name, extras)
+        return self.uploader.multipart_start(name, extras)
 
-    def show_multipart_upload(self, upload_data: MultipartData) -> MultipartData:
-        return self.uploader.show_multipart_upload(upload_data)
+    def multipart_show(self, upload_data: MultipartData) -> MultipartData:
+        return self.uploader.multipart_show(upload_data)
 
-    def update_multipart_upload(
+    def multipart_update(
         self,
         upload_data: MultipartData,
         extras: dict[str, Any],
     ) -> MultipartData:
-        return self.uploader.update_multipart_upload(upload_data, extras)
+        return self.uploader.multipart_update(upload_data, extras)
 
-    def complete_multipart_upload(
+    def multipart_complete(
         self,
         upload_data: MultipartData,
         extras: dict[str, Any],
     ) -> FileData:
-        return self.uploader.complete_multipart_upload(upload_data, extras)
+        return self.uploader.multipart_complete(upload_data, extras)
 
     def exists(self, data: FileData) -> bool:
         if not self.supports(utils.Capability.EXISTS):
@@ -555,34 +542,16 @@ class Storage(OptionChecker, abc.ABC):
         if self.supports(utils.Capability.PERMANENT_LINK) and (
             not link_type or link_type == "permanent"
         ):
-            return self.reader.permanent_link(data)
+            return self.reader.permanent_link(data, extras)
 
         if self.supports(utils.Capability.TEMPORAL_LINK) and (
             not link_type or link_type == "temporal"
         ):
-            return self.reader.temporal_link(data)
+            return self.reader.temporal_link(data, extras)
 
         if self.supports(utils.Capability.ONE_TIME_LINK) and (
             not link_type or link_type == "one-time"
         ):
-            return self.reader.one_time_link(data)
+            return self.reader.one_time_link(data, extras)
 
         raise exceptions.UnsupportedOperationError("link", type(self))
-
-    def make_download_response(
-        self,
-        name: str,
-        data: FileData,
-    ) -> Response:
-        """Return Flask response for generic file download."""
-        try:
-            return tk.redirect_to(self.link(data, {}))
-        except exceptions.UnsupportedOperationError:
-            pass
-
-        if self.supports(utils.Capability.STREAM):
-            resp = streaming_response(self.stream(data), data.content_type)
-            resp.headers["content-disposition"] = "attachment; filename={}".format(name)
-            return resp
-
-        raise exceptions.UnsupportedOperationError("download response", type(self))

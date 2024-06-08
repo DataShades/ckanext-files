@@ -10,6 +10,7 @@ from flask.views import MethodView
 
 import ckan.plugins.toolkit as tk
 from ckan import model
+from ckan.common import streaming_response
 from ckan.lib.helpers import Page
 from ckan.types import Response
 
@@ -70,10 +71,20 @@ def generic_download(file_id: str) -> Response:
 
     storage = shared.get_storage(item.storage)
     data = shared.FileData.from_model(item)
+
     try:
-        return storage.make_download_response(item.name, data)
+        return tk.redirect_to(storage.link(data, {}))
     except exceptions.UnsupportedOperationError:
-        return tk.abort(405)
+        pass
+
+    if storage.supports(shared.Capability.STREAM):
+        resp = streaming_response(storage.stream(data), data.content_type)
+        resp.headers["content-disposition"] = "attachment; filename={}".format(
+            item.name,
+        )
+        return resp
+
+    return tk.abort(422, "File is not downloadable")
 
 
 def _pager_url(*args: Any, **kwargs: Any) -> str:

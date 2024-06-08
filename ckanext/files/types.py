@@ -3,4 +3,17 @@
 
 from __future__ import annotations
 
-__all__ = []
+from typing import Any, Protocol, TypeVar
+
+__all__ = ["PFileModel", "TFileModel"]
+
+
+class PFileModel(Protocol):
+    location: str
+    size: int
+    content_type: str
+    hash: str
+    storage_data: dict[str, Any]
+
+
+TFileModel = TypeVar("TFileModel", bound=PFileModel)

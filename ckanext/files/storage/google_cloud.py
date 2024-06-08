@@ -54,7 +54,7 @@ class GoogleCloudUploader(Uploader):
             filehash,
         )
 
-    def initialize_multipart_upload(
+    def multipart_start(
         self,
         location: str,
         extras: dict[str, Any],
@@ -101,7 +101,7 @@ class GoogleCloudUploader(Uploader):
             },
         )
 
-    def update_multipart_upload(
+    def multipart_update(
         self,
         data: MultipartData,
         extras: dict[str, Any],
@@ -178,7 +178,7 @@ class GoogleCloudUploader(Uploader):
 
         return data
 
-    def show_multipart_upload(self, data: MultipartData) -> MultipartData:
+    def multipart_show(self, data: MultipartData) -> MultipartData:
         resp = requests.put(
             data.storage_data["session_url"],
             headers={
@@ -224,12 +224,12 @@ class GoogleCloudUploader(Uploader):
 
         return data
 
-    def complete_multipart_upload(
+    def multipart_complete(
         self,
         data: MultipartData,
         extras: dict[str, Any],
     ) -> FileData:
-        data = self.show_multipart_upload(data)
+        data = self.multipart_show(data)
         if data.storage_data["uploaded"] != data.size:
             raise tk.ValidationError(
                 {

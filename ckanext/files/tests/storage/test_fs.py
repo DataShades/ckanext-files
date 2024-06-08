@@ -52,16 +52,16 @@ class TestUploader:
 class TestMultipartUploader:
     def test_initialization_invalid(self, storage: fs.FsStorage, faker: Faker):
         with pytest.raises(tk.ValidationError):
-            storage.initialize_multipart_upload(faker.file_name(), {})
+            storage.multipart_start(faker.file_name(), {})
 
     def test_initialization_large(self, storage: fs.FsStorage, faker: Faker):
         storage.settings["max_size"] = 5
         with pytest.raises(exceptions.LargeUploadError):
-            storage.initialize_multipart_upload(faker.file_name(), {"size": 10})
+            storage.multipart_start(faker.file_name(), {"size": 10})
 
     def test_initialization(self, storage: fs.FsStorage, faker: Faker):
         content = b"hello world"
-        data = storage.initialize_multipart_upload(
+        data = storage.multipart_start(
             faker.file_name(),
             {"size": len(content)},
         )
@@ -70,28 +70,28 @@ class TestMultipartUploader:
 
     def test_update_invalid(self, storage: fs.FsStorage, faker: Faker):
         content = b"hello world"
-        data = storage.initialize_multipart_upload(
+        data = storage.multipart_start(
             faker.file_name(),
             {"size": len(content)},
         )
         with pytest.raises(tk.ValidationError):
-            storage.update_multipart_upload(data, {})
+            storage.multipart_update(data, {})
 
     def test_update(self, storage: fs.FsStorage, faker: Faker):
         content = b"hello world"
-        data = storage.initialize_multipart_upload(
+        data = storage.multipart_start(
             faker.file_name(),
             {"size": len(content)},
         )
 
-        data = storage.update_multipart_upload(
+        data = storage.multipart_update(
             data,
             {"upload": shared.make_upload(BytesIO(content[:5]))},
         )
         assert data.size == len(content)
         assert data.storage_data["uploaded"] == 5
 
-        data = storage.update_multipart_upload(
+        data = storage.multipart_update(
             data,
             {"upload": shared.make_upload(BytesIO(content[:5])), "position": 3},
         )
@@ -99,13 +99,13 @@ class TestMultipartUploader:
         assert data.storage_data["uploaded"] == 8
 
         with pytest.raises(exceptions.UploadOutOfBoundError):
-            storage.update_multipart_upload(
+            storage.multipart_update(
                 data,
                 {"upload": shared.make_upload(BytesIO(content))},
             )
 
         missing_size = data.size - data.storage_data["uploaded"]
-        data = storage.update_multipart_upload(
+        data = storage.multipart_update(
             data,
             {"upload": shared.make_upload(BytesIO(content[-missing_size:]))},
         )
@@ -114,39 +114,39 @@ class TestMultipartUploader:
 
     def test_complete(self, storage: fs.FsStorage, faker: Faker):
         content = b"hello world"
-        data = storage.initialize_multipart_upload(
+        data = storage.multipart_start(
             faker.file_name(),
             {"size": len(content)},
         )
 
         with pytest.raises(tk.ValidationError):
-            storage.complete_multipart_upload(data, {})
+            storage.multipart_complete(data, {})
 
-        data = storage.update_multipart_upload(
+        data = storage.multipart_update(
             data,
             {"upload": shared.make_upload(BytesIO(content))},
         )
-        data = storage.complete_multipart_upload(data, {})
+        data = storage.multipart_complete(data, {})
         assert data.size == len(content)
         assert data.hash == hashlib.md5(content).hexdigest()
 
     def test_show(self, storage: fs.FsStorage, faker: Faker):
         content = b"hello world"
 
-        data = storage.initialize_multipart_upload(
+        data = storage.multipart_start(
             faker.file_name(),
             {"size": len(content)},
         )
-        assert storage.show_multipart_upload(data) == data
+        assert storage.multipart_show(data) == data
 
-        data = storage.update_multipart_upload(
+        data = storage.multipart_update(
             data,
             {"upload": shared.make_upload(BytesIO(content))},
         )
-        assert storage.show_multipart_upload(data) == data
+        assert storage.multipart_show(data) == data
 
-        storage.complete_multipart_upload(data, {})
-        assert storage.show_multipart_upload(data) == data
+        storage.multipart_complete(data, {})
+        assert storage.multipart_show(data) == data
 
 
 class TestManager:

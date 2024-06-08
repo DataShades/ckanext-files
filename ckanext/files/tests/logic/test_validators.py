@@ -1,4 +1,5 @@
 import pytest
+from faker import Faker
 
 import ckan.plugins.toolkit as tk
 
@@ -13,8 +14,7 @@ class TestIntoUpload:
 
 
 class TestParseFilesize:
-    def test_int(self, faker):
-        # type: (Faker) -> None
+    def test_int(self, faker: Faker):
         """Numbers are not changed by validator."""
 
         value = faker.pyint()

@@ -3,7 +3,6 @@ from __future__ import annotations
 import uuid
 from datetime import datetime
 from io import BytesIO
-from typing import Any
 
 import pytest
 from faker import Faker
@@ -81,16 +80,16 @@ class TestUploader:
             uploader.upload(faker.file_name(), make_upload(""), {})
 
         with pytest.raises(NotImplementedError):
-            uploader.initialize_multipart_upload(faker.file_name(), {})
+            uploader.multipart_start(faker.file_name(), {})
 
         with pytest.raises(NotImplementedError):
-            uploader.show_multipart_upload(MultipartData())
+            uploader.multipart_show(MultipartData())
 
         with pytest.raises(NotImplementedError):
-            uploader.update_multipart_upload(MultipartData(), {})
+            uploader.multipart_update(MultipartData(), {})
 
         with pytest.raises(NotImplementedError):
-            uploader.complete_multipart_upload(MultipartData(), {})
+            uploader.multipart_complete(MultipartData(), {})
 
 
 class TestManager:
@@ -219,16 +218,16 @@ class TestStorage:
             storage.upload(faker.file_name(), make_upload(""), {})
 
         with pytest.raises(NotImplementedError):
-            storage.initialize_multipart_upload(faker.file_name(), {})
+            storage.multipart_start(faker.file_name(), {})
 
         with pytest.raises(NotImplementedError):
-            storage.show_multipart_upload(MultipartData())
+            storage.multipart_show(MultipartData())
 
         with pytest.raises(NotImplementedError):
-            storage.update_multipart_upload(MultipartData(), {})
+            storage.multipart_update(MultipartData(), {})
 
         with pytest.raises(NotImplementedError):
-            storage.complete_multipart_upload(MultipartData(), {})
+            storage.multipart_complete(MultipartData(), {})
 
         with pytest.raises(NotImplementedError):
             storage.remove(FileData(""))
@@ -305,24 +304,3 @@ class TestStorage:
         storage.settings["location_strategy"] = "wrong_strategy"
         with pytest.raises(exceptions.NameStrategyError):
             storage.compute_location("test", {})
-
-    @pytest.mark.usefixtures("with_request_context")
-    def test_download_response(self, faker: Faker, monkeypatch: Any, mock: Any):
-        storage = Storage()
-        stream_mock = mock.Mock(return_value="hello")
-
-        monkeypatch.setattr(storage, "stream", stream_mock)
-        data = FileData("", content_type="text/csv")
-        name = faker.file_name()
-        resp = storage.make_download_response(name, data)
-
-        assert resp.data == b"hello"
-        assert stream_mock.called_once_with(data)
-
-        url = faker.url()
-        link_mock = mock.Mock(return_value=url)
-        monkeypatch.setattr(storage, "link", link_mock)
-        resp = storage.make_download_response(name, data)
-
-        assert resp.headers["location"] == url
-        assert link_mock.called_once_with(data, {})

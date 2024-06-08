@@ -285,7 +285,7 @@ def files_multipart_start(
 
     filename = secure_filename(data_dict["name"])
     try:
-        storage_data = storage.initialize_multipart_upload(
+        storage_data = storage.multipart_start(
             filename,
             extras,
         )
@@ -315,7 +315,7 @@ def files_upload_show(context: Context, data_dict: dict[str, Any]) -> dict[str, 
         raise tk.ObjectNotFound("upload")
 
     storage = shared.get_storage(file_dict["storage"])
-    storage_data = storage.show_multipart_upload(file_dict["storage_data"])
+    storage_data = storage.multipart_show(file_dict["storage_data"])
 
     return dict(file_dict, storage_data=dataclasses.asdict(storage_data))
 
@@ -338,7 +338,7 @@ def files_multipart_update(
     storage = shared.get_storage(fileobj.storage)
 
     try:
-        storage.update_multipart_upload(
+        storage.multipart_update(
             shared.MultipartData.from_model(fileobj),
             extras,
         ).into_model(fileobj)
@@ -374,7 +374,7 @@ def files_multipart_complete(
     )
 
     try:
-        storage.complete_multipart_upload(
+        storage.multipart_complete(
             shared.MultipartData.from_model(fileobj),
             extras,
         ).into_model(result)

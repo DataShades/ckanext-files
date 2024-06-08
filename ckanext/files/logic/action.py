@@ -167,7 +167,7 @@ def files_file_create(context: Context, data_dict: dict[str, Any]) -> dict[str, 
         storage_data = storage.upload(
             filename,
             data_dict["upload"],
-            extras,
+            **extras,
         )
     except exceptions.UploadError as err:
         raise tk.ValidationError({"upload": [str(err)]}) from err
@@ -287,7 +287,7 @@ def files_multipart_start(
     try:
         storage_data = storage.multipart_start(
             filename,
-            extras,
+            **extras,
         )
     except exceptions.UploadError as err:
         raise tk.ValidationError({"upload": [str(err)]}) from err
@@ -340,7 +340,7 @@ def files_multipart_update(
     try:
         storage.multipart_update(
             shared.MultipartData.from_model(fileobj),
-            extras,
+            **extras,
         ).into_model(fileobj)
     except exceptions.UploadError as err:
         raise tk.ValidationError({"upload": [str(err)]}) from err
@@ -376,7 +376,7 @@ def files_multipart_complete(
     try:
         storage.multipart_complete(
             shared.MultipartData.from_model(fileobj),
-            extras,
+            **extras,
         ).into_model(result)
     except exceptions.UploadError as err:
         raise tk.ValidationError({"upload": [str(err)]}) from err

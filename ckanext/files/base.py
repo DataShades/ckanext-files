@@ -191,7 +191,11 @@ class Uploader(StorageService):
         raise NotImplementedError
 
     # TODO: rename to refresh or something
-    def multipart_show(self, data: MultipartData) -> MultipartData:
+    def multipart_show(
+        self,
+        data: MultipartData,
+        extras: dict[str, Any],
+    ) -> MultipartData:
         """Show details of the incomplete upload."""
         raise NotImplementedError
 
@@ -214,11 +218,11 @@ class Uploader(StorageService):
 
 
 class Manager(StorageService):
-    def remove(self, data: FileData) -> bool:
+    def remove(self, data: FileData, extras: dict[str, Any]) -> bool:
         """Remove file from the storage."""
         raise NotImplementedError
 
-    def exists(self, data: FileData) -> bool:
+    def exists(self, data: FileData, extras: dict[str, Any]) -> bool:
         """Check if file exists in the storage."""
         raise NotImplementedError
 
@@ -260,23 +264,23 @@ class Manager(StorageService):
         """Move file to a different location inside the storage."""
         raise NotImplementedError
 
-    def scan(self) -> Iterable[str]:
+    def scan(self, extras: dict[str, Any]) -> Iterable[str]:
         """List all locations(filenames) in storage."""
         raise NotImplementedError
 
-    def analyze(self, filename: str) -> FileData:
+    def analyze(self, location: str, extras: dict[str, Any]) -> FileData:
         """Return all details about filename."""
         raise NotImplementedError
 
 
 class Reader(StorageService):
-    def stream(self, data: FileData) -> IO[bytes]:
+    def stream(self, data: FileData, extras: dict[str, Any]) -> IO[bytes]:
         """Return byte-stream of the file content."""
         raise NotImplementedError
 
-    def content(self, data: FileData) -> bytes:
+    def content(self, data: FileData, extras: dict[str, Any]) -> bytes:
         """Return file content as a single byte object."""
-        return self.stream(data).read()
+        return self.stream(data, extras).read()
 
     def permanent_link(self, data: FileData, extras: dict[str, Any]) -> str:
         """Return permanent download link."""
@@ -350,8 +354,9 @@ class Storage(OptionChecker, abc.ABC):
     def compute_location(
         self,
         location: str,
-        extras: dict[str, Any],
         upload: utils.Upload | None = None,
+        /,
+        **kwargs: Any,
     ) -> str:
         strategy = self.settings.get("location_strategy", "uuid")
 
@@ -377,89 +382,88 @@ class Storage(OptionChecker, abc.ABC):
 
         raise exceptions.NameStrategyError(strategy)
 
-    def upload(
-        self,
-        location: str,
-        upload: utils.Upload,
-        extras: dict[str, Any],
-    ) -> FileData:
+    def upload(self, location: str, upload: utils.Upload, /, **kwargs: Any) -> FileData:
         if not self.supports(utils.Capability.CREATE):
             raise exceptions.UnsupportedOperationError("upload", type(self))
 
         if self.max_size:
             utils.ensure_size(upload, self.max_size)
 
-        return self.uploader.upload(location, upload, extras)
+        return self.uploader.upload(location, upload, kwargs)
 
-    def multipart_start(
+    def multipart_start(self, name: str, /, **kwargs: Any) -> MultipartData:
+        return self.uploader.multipart_start(name, kwargs)
+
+    def multipart_show(
         self,
-        name: str,
-        extras: dict[str, Any],
+        upload_data: MultipartData,
+        /,
+        **kwargs: Any,
     ) -> MultipartData:
-        return self.uploader.multipart_start(name, extras)
-
-    def multipart_show(self, upload_data: MultipartData) -> MultipartData:
-        return self.uploader.multipart_show(upload_data)
+        return self.uploader.multipart_show(upload_data, kwargs)
 
     def multipart_update(
         self,
         upload_data: MultipartData,
-        extras: dict[str, Any],
+        /,
+        **kwargs: Any,
     ) -> MultipartData:
-        return self.uploader.multipart_update(upload_data, extras)
+        return self.uploader.multipart_update(upload_data, kwargs)
 
     def multipart_complete(
         self,
         upload_data: MultipartData,
-        extras: dict[str, Any],
+        /,
+        **kwargs: Any,
     ) -> FileData:
-        return self.uploader.multipart_complete(upload_data, extras)
+        return self.uploader.multipart_complete(upload_data, kwargs)
 
-    def exists(self, data: FileData) -> bool:
+    def exists(self, data: FileData, /, **kwargs: Any) -> bool:
         if not self.supports(utils.Capability.EXISTS):
             raise exceptions.UnsupportedOperationError("exists", type(self))
 
-        return self.manager.exists(data)
+        return self.manager.exists(data, kwargs)
 
-    def remove(self, data: FileData) -> bool:
+    def remove(self, data: FileData, /, **kwargs: Any) -> bool:
         if not self.supports(utils.Capability.REMOVE):
             raise exceptions.UnsupportedOperationError("remove", type(self))
 
-        return self.manager.remove(data)
+        return self.manager.remove(data, kwargs)
 
-    def scan(self) -> Iterable[str]:
+    def scan(self, **kwargs: Any) -> Iterable[str]:
         if not self.supports(utils.Capability.SCAN):
             raise exceptions.UnsupportedOperationError("scan", type(self))
 
-        return self.manager.scan()
+        return self.manager.scan(kwargs)
 
-    def analyze(self, filename: str) -> FileData:
+    def analyze(self, location: str, /, **kwargs: Any) -> FileData:
         if not self.supports(utils.Capability.ANALYZE):
             raise exceptions.UnsupportedOperationError("analyze", type(self))
 
-        return self.manager.analyze(filename)
+        return self.manager.analyze(location, kwargs)
 
-    def stream(self, data: FileData) -> IO[bytes]:
+    def stream(self, data: FileData, /, **kwargs: Any) -> IO[bytes]:
         if not self.supports(utils.Capability.STREAM):
             raise exceptions.UnsupportedOperationError("stream", type(self))
 
-        return self.reader.stream(data)
+        return self.reader.stream(data, kwargs)
 
-    def content(self, data: FileData) -> bytes:
+    def content(self, data: FileData, /, **kwargs: Any) -> bytes:
         if not self.supports(utils.Capability.STREAM):
             raise exceptions.UnsupportedOperationError("content", type(self))
 
-        return self.reader.content(data)
+        return self.reader.content(data, kwargs)
 
     def copy(
         self,
         data: FileData,
         storage: Storage,
         location: str,
-        extras: dict[str, Any],
+        /,
+        **kwargs: Any,
     ) -> FileData:
         if storage is self and self.supports(utils.Capability.COPY):
-            return self.manager.copy(data, location, extras)
+            return self.manager.copy(data, location, kwargs)
 
         if self.supports(utils.Capability.STREAM) and storage.supports(
             utils.Capability.CREATE,
@@ -467,7 +471,7 @@ class Storage(OptionChecker, abc.ABC):
             return storage.upload(
                 location,
                 utils.make_upload(self.stream(data)),
-                extras,
+                **kwargs,
             )
 
         raise exceptions.UnsupportedOperationError("copy", type(self))
@@ -476,21 +480,22 @@ class Storage(OptionChecker, abc.ABC):
         self,
         storage: Storage,
         location: str,
-        extras: dict[str, Any],
+        /,
         *datas: FileData,
+        **kwargs: Any,
     ) -> FileData:
         if storage is self and self.supports(utils.Capability.COMPOSE):
-            return self.manager.compose(datas, location, extras)
+            return self.manager.compose(datas, location, kwargs)
 
         if self.supports(utils.Capability.STREAM) and storage.supports(
             utils.Capability.combine(utils.Capability.CREATE, utils.Capability.APPEND),
         ):
-            dest_data = storage.upload(location, utils.make_upload(""), extras)
+            dest_data = storage.upload(location, utils.make_upload(""), **kwargs)
             for data in datas:
                 dest_data = storage.append(
                     dest_data,
                     utils.make_upload(self.stream(data)),
-                    extras,
+                    **kwargs,
                 )
             return dest_data
 
@@ -500,10 +505,11 @@ class Storage(OptionChecker, abc.ABC):
         self,
         data: FileData,
         upload: utils.Upload,
-        extras: dict[str, Any],
+        /,
+        **kwargs: Any,
     ) -> FileData:
         if self.supports(utils.Capability.APPEND):
-            return self.manager.append(data, upload, extras)
+            return self.manager.append(data, upload, kwargs)
 
         raise exceptions.UnsupportedOperationError("append", type(self))
 
@@ -512,10 +518,11 @@ class Storage(OptionChecker, abc.ABC):
         data: FileData,
         storage: Storage,
         location: str,
-        extras: dict[str, Any],
+        /,
+        **kwargs: Any,
     ) -> FileData:
         if storage is self and self.supports(utils.Capability.MOVE):
-            return self.manager.move(data, location, extras)
+            return self.manager.move(data, location, kwargs)
 
         if self.supports(
             utils.Capability.combine(
@@ -526,7 +533,7 @@ class Storage(OptionChecker, abc.ABC):
             result = storage.upload(
                 location,
                 utils.make_upload(self.stream(data)),
-                extras,
+                **kwargs,
             )
             storage.remove(data)
             return result
@@ -536,22 +543,23 @@ class Storage(OptionChecker, abc.ABC):
     def link(
         self,
         data: FileData,
-        extras: dict[str, Any],
         link_type: Literal["permanent", "temporal", "one-time", None] = None,
+        /,
+        **kwargs: Any,
     ) -> str:
         if self.supports(utils.Capability.PERMANENT_LINK) and (
             not link_type or link_type == "permanent"
         ):
-            return self.reader.permanent_link(data, extras)
+            return self.reader.permanent_link(data, kwargs)
 
         if self.supports(utils.Capability.TEMPORAL_LINK) and (
             not link_type or link_type == "temporal"
         ):
-            return self.reader.temporal_link(data, extras)
+            return self.reader.temporal_link(data, kwargs)
 
         if self.supports(utils.Capability.ONE_TIME_LINK) and (
             not link_type or link_type == "one-time"
         ):
-            return self.reader.one_time_link(data, extras)
+            return self.reader.one_time_link(data, kwargs)
 
         raise exceptions.UnsupportedOperationError("link", type(self))

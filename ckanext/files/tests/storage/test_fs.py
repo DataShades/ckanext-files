@@ -20,7 +20,7 @@ def storage(tmp_path: Path):
 
 class TestUploader:
     def test_key(self, storage: fs.FsStorage):
-        result = storage.upload("", shared.make_upload(""), {})
+        result = storage.upload("", shared.make_upload(""))
 
         assert UUID(result.location)
         assert result.size == 0
@@ -32,7 +32,7 @@ class TestUploader:
 
     def test_content(self, storage: fs.FsStorage, faker: Faker):
         content = faker.binary(100)
-        result = storage.upload("", shared.make_upload(BytesIO(content)), {})
+        result = storage.upload("", shared.make_upload(BytesIO(content)))
 
         assert result.size == 100
 
@@ -40,11 +40,11 @@ class TestUploader:
         assert open(filepath, "rb").read() == content
 
     def test_hash(self, storage: fs.FsStorage, faker: Faker):
-        result = storage.upload("", shared.make_upload(""), {})
+        result = storage.upload("", shared.make_upload(""))
         assert result.hash == hashlib.md5().hexdigest()
 
         content = faker.binary(100)
-        result = storage.upload("", shared.make_upload(BytesIO(content)), {})
+        result = storage.upload("", shared.make_upload(BytesIO(content)))
         assert result.hash == hashlib.md5(content).hexdigest()
 
 
@@ -52,106 +52,89 @@ class TestUploader:
 class TestMultipartUploader:
     def test_initialization_invalid(self, storage: fs.FsStorage, faker: Faker):
         with pytest.raises(tk.ValidationError):
-            storage.multipart_start(faker.file_name(), {})
+            storage.multipart_start(faker.file_name())
 
     def test_initialization_large(self, storage: fs.FsStorage, faker: Faker):
         storage.settings["max_size"] = 5
         with pytest.raises(exceptions.LargeUploadError):
-            storage.multipart_start(faker.file_name(), {"size": 10})
+            storage.multipart_start(faker.file_name(), size=10)
 
     def test_initialization(self, storage: fs.FsStorage, faker: Faker):
         content = b"hello world"
-        data = storage.multipart_start(
-            faker.file_name(),
-            {"size": len(content)},
-        )
+        data = storage.multipart_start(faker.file_name(), size=len(content))
         assert data.size == len(content)
         assert data.storage_data["uploaded"] == 0
 
     def test_update_invalid(self, storage: fs.FsStorage, faker: Faker):
         content = b"hello world"
-        data = storage.multipart_start(
-            faker.file_name(),
-            {"size": len(content)},
-        )
+        data = storage.multipart_start(faker.file_name(), size=len(content))
         with pytest.raises(tk.ValidationError):
-            storage.multipart_update(data, {})
+            storage.multipart_update(data)
 
     def test_update(self, storage: fs.FsStorage, faker: Faker):
         content = b"hello world"
-        data = storage.multipart_start(
-            faker.file_name(),
-            {"size": len(content)},
-        )
+        data = storage.multipart_start(faker.file_name(), size=len(content))
 
         data = storage.multipart_update(
             data,
-            {"upload": shared.make_upload(BytesIO(content[:5]))},
+            upload=shared.make_upload(BytesIO(content[:5])),
         )
         assert data.size == len(content)
         assert data.storage_data["uploaded"] == 5
 
         data = storage.multipart_update(
             data,
-            {"upload": shared.make_upload(BytesIO(content[:5])), "position": 3},
+            upload=shared.make_upload(BytesIO(content[:5])),
+            position=3,
         )
         assert data.size == len(content)
         assert data.storage_data["uploaded"] == 8
 
         with pytest.raises(exceptions.UploadOutOfBoundError):
-            storage.multipart_update(
-                data,
-                {"upload": shared.make_upload(BytesIO(content))},
-            )
+            storage.multipart_update(data, upload=shared.make_upload(BytesIO(content)))
 
         missing_size = data.size - data.storage_data["uploaded"]
         data = storage.multipart_update(
             data,
-            {"upload": shared.make_upload(BytesIO(content[-missing_size:]))},
+            upload=shared.make_upload(BytesIO(content[-missing_size:])),
         )
         assert data.size == len(content)
         assert data.storage_data["uploaded"] == len(content)
 
     def test_complete(self, storage: fs.FsStorage, faker: Faker):
         content = b"hello world"
-        data = storage.multipart_start(
-            faker.file_name(),
-            {"size": len(content)},
-        )
+        data = storage.multipart_start(faker.file_name(), size=len(content))
 
         with pytest.raises(tk.ValidationError):
-            storage.multipart_complete(data, {})
+            storage.multipart_complete(data)
 
         data = storage.multipart_update(
             data,
-            {"upload": shared.make_upload(BytesIO(content))},
+            upload=shared.make_upload(BytesIO(content)),
         )
-        data = storage.multipart_complete(data, {})
+        data = storage.multipart_complete(data)
         assert data.size == len(content)
         assert data.hash == hashlib.md5(content).hexdigest()
 
     def test_show(self, storage: fs.FsStorage, faker: Faker):
         content = b"hello world"
 
-        data = storage.multipart_start(
-            faker.file_name(),
-            {"size": len(content)},
-        )
+        data = storage.multipart_start(faker.file_name(), size=len(content))
         assert storage.multipart_show(data) == data
 
         data = storage.multipart_update(
             data,
-            {"upload": shared.make_upload(BytesIO(content))},
+            upload=shared.make_upload(BytesIO(content)),
         )
         assert storage.multipart_show(data) == data
 
-        storage.multipart_complete(data, {})
+        storage.multipart_complete(data)
         assert storage.multipart_show(data) == data
 
 
 class TestManager:
     def test_removal(self, storage: fs.FsStorage):
-        result = storage.upload("", shared.make_upload(""), {})
+        result = storage.upload("", shared.make_upload(""))
         filepath = os.path.join(storage.settings["path"], result.location)
         assert os.path.exists(filepath)
 
@@ -159,7 +142,7 @@ class TestManager:
         assert not os.path.exists(filepath)
 
     def test_removal_missing(self, storage: fs.FsStorage):
-        result = storage.upload("", shared.make_upload(""), {})
+        result = storage.upload("", shared.make_upload(""))
         assert storage.remove(result)
         assert not storage.remove(result)
 
@@ -167,7 +150,7 @@ class TestManager:
 class TestReader:
     def test_stream(self, storage: fs.FsStorage, faker: Faker):
         data = faker.binary(100)
-        result = storage.upload("", shared.make_upload(BytesIO(data)), {})
+        result = storage.upload("", shared.make_upload(BytesIO(data)))
 
         stream = storage.stream(result)
 
@@ -175,14 +158,14 @@ class TestReader:
 
     def test_content(self, storage: fs.FsStorage, faker: Faker):
         data = faker.binary(100)
-        result = storage.upload("", shared.make_upload(BytesIO(data)), {})
+        result = storage.upload("", shared.make_upload(BytesIO(data)))
 
         content = storage.content(result)
 
         assert content == data
 
     def test_missing(self, storage: fs.FsStorage, faker: Faker):
-        result = storage.upload("", shared.make_upload(""), {})
+        result = storage.upload("", shared.make_upload(""))
         result.location += faker.uuid4()
 
         with pytest.raises(exceptions.MissingFileError):

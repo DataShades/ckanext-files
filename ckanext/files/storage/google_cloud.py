@@ -39,7 +39,7 @@ class GoogleCloudUploader(Uploader):
         upload: Upload,
         extras: dict[str, Any],
     ) -> FileData:
-        filename = self.storage.compute_location(location, extras, upload)
+        filename = self.storage.compute_location(location, upload, **extras)
         filepath = os.path.join(self.storage.settings["path"], filename)
 
         client = self.storage.client
@@ -71,7 +71,7 @@ class GoogleCloudUploader(Uploader):
         if errors:
             raise tk.ValidationError(errors)
 
-        filename = self.storage.compute_location(location, extras)
+        filename = self.storage.compute_location(location, **extras)
         filepath = os.path.join(self.storage.settings["path"], filename)
 
         client = self.storage.client
@@ -178,7 +178,11 @@ class GoogleCloudUploader(Uploader):
 
         return data
 
-    def multipart_show(self, data: MultipartData) -> MultipartData:
+    def multipart_show(
+        self,
+        data: MultipartData,
+        extras: dict[str, Any],
+    ) -> MultipartData:
         resp = requests.put(
             data.storage_data["session_url"],
             headers={
@@ -229,7 +233,7 @@ class GoogleCloudUploader(Uploader):
         data: MultipartData,
         extras: dict[str, Any],
     ) -> FileData:
-        data = self.multipart_show(data)
+        data = self.multipart_show(data, extras)
         if data.storage_data["uploaded"] != data.size:
             raise tk.ValidationError(
                 {
@@ -260,7 +264,7 @@ class GoogleCloudManager(Manager):
     required_options = ["bucket"]
     capabilities = Capability.combine(Capability.REMOVE)
 
-    def remove(self, data: FileData) -> bool:
+    def remove(self, data: FileData, extras: dict[str, Any]) -> bool:
         filepath = os.path.join(str(self.storage.settings["path"]), data.location)
         client: Client = self.storage.client
         blob = client.bucket(self.storage.settings["bucket"]).blob(filepath)

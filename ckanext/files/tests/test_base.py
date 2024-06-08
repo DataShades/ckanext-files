@@ -83,7 +83,7 @@ class TestUploader:
             uploader.multipart_start(faker.file_name(), {})
 
         with pytest.raises(NotImplementedError):
-            uploader.multipart_show(MultipartData())
+            uploader.multipart_show(MultipartData(), {})
 
         with pytest.raises(NotImplementedError):
             uploader.multipart_update(MultipartData(), {})
@@ -101,7 +101,7 @@ class TestManager:
         """Abstract methods raise exception."""
 
         with pytest.raises(NotImplementedError):
-            manager.remove(FileData(""))
+            manager.remove(FileData(""), {})
 
 
 class TestReader:
@@ -113,7 +113,7 @@ class TestReader:
         """Abstract methods raise exception."""
 
         with pytest.raises(NotImplementedError):
-            reader.stream(FileData(""))
+            reader.stream(FileData(""), {})
 
 
 class RemovingManager(base.Manager):
@@ -187,7 +187,7 @@ class TestStorage:
 
     def test_not_supported_methods(self, faker: Faker):
         with pytest.raises(exceptions.UnsupportedOperationError):
-            base.Storage().upload(faker.file_name(), make_upload(""), {})
+            base.Storage().upload(faker.file_name(), make_upload(""))
 
         with pytest.raises(exceptions.UnsupportedOperationError):
             base.Storage().stream(FileData(""))
@@ -196,47 +196,43 @@ class TestStorage:
             base.Storage().remove(FileData(""))
 
         with pytest.raises(exceptions.UnsupportedOperationError):
-            base.Storage().copy(FileData(""), base.Storage(), "", {})
+            base.Storage().copy(FileData(""), base.Storage(), "")
 
         with pytest.raises(exceptions.UnsupportedOperationError):
-            base.Storage().move(FileData(""), base.Storage(), "", {})
+            base.Storage().move(FileData(""), base.Storage(), "")
 
     def test_upload_checks_max_size(self, faker: Faker):
         """Storage raises an error if upload exceeds max size."""
         storage = Storage(max_size=10)
         with pytest.raises(exceptions.LargeUploadError):
-            storage.upload(
-                faker.file_name(),
-                make_upload(BytesIO(faker.binary(20))),
-                {},
-            )
+            storage.upload(faker.file_name(), make_upload(BytesIO(faker.binary(20))))
 
     def test_not_implemented_methods(self, faker: Faker):
         """Storage raises an error if upload is not implemented."""
         storage = Storage()
         with pytest.raises(NotImplementedError):
-            storage.upload(faker.file_name(), make_upload(""), {})
+            storage.upload(faker.file_name(), make_upload(""))
 
         with pytest.raises(NotImplementedError):
-            storage.multipart_start(faker.file_name(), {})
+            storage.multipart_start(faker.file_name())
 
         with pytest.raises(NotImplementedError):
             storage.multipart_show(MultipartData())
 
         with pytest.raises(NotImplementedError):
-            storage.multipart_update(MultipartData(), {})
+            storage.multipart_update(MultipartData())
 
         with pytest.raises(NotImplementedError):
-            storage.multipart_complete(MultipartData(), {})
+            storage.multipart_complete(MultipartData())
 
         with pytest.raises(NotImplementedError):
             storage.remove(FileData(""))
 
         with pytest.raises(NotImplementedError):
-            storage.copy(FileData(""), storage, "", {})
+            storage.copy(FileData(""), storage, "")
 
         with pytest.raises(NotImplementedError):
-            storage.move(FileData(""), storage, "", {})
+            storage.move(FileData(""), storage, "")
 
     def test_compute_location_uuid(self, faker: Faker):
         """`uuid`(default) name strategy produces valid UUID."""
@@ -244,7 +240,7 @@ class TestStorage:
 
         extension = faker.file_extension()
         name = faker.file_name(extension=extension)
-        result = storage.compute_location(name, {})
+        result = storage.compute_location(name)
 
         assert uuid.UUID(result)
 
@@ -255,7 +251,7 @@ class TestStorage:
         storage.settings["location_strategy"] = "uuid_prefix"
         extension = faker.file_extension()
         name = faker.file_name(extension=extension)
-        result = storage.compute_location(name, {})
+        result = storage.compute_location(name)
         assert result.endswith(name)
         assert uuid.UUID(result[: -len(name)])
 
@@ -265,7 +261,7 @@ class TestStorage:
         storage.settings["location_strategy"] = "uuid_with_extension"
         extension = faker.file_extension()
         name = faker.file_name(extension=extension)
-        result = storage.compute_location(name, {})
+        result = storage.compute_location(name)
 
         assert result.endswith(extension)
         assert uuid.UUID(result[: -len(extension) - 1])
@@ -280,7 +276,7 @@ class TestStorage:
         storage.settings["location_strategy"] = "datetime_prefix"
         extension = faker.file_extension()
         name = faker.file_name(extension=extension)
-        result = storage.compute_location(name, {})
+        result = storage.compute_location(name)
 
         assert result == files_stopped_time.isoformat() + name
 
@@ -294,7 +290,7 @@ class TestStorage:
         storage.settings["location_strategy"] = "datetime_with_extension"
         extension = faker.file_extension()
         name = faker.file_name(extension=extension)
-        result = storage.compute_location(name, {})
+        result = storage.compute_location(name)
 
         assert result == files_stopped_time.isoformat() + "." + extension
 
@@ -303,4 +299,4 @@ class TestStorage:
         storage = Storage()
         storage.settings["location_strategy"] = "wrong_strategy"
         with pytest.raises(exceptions.NameStrategyError):
-            storage.compute_location("test", {})
+            storage.compute_location("test")

@@ -39,7 +39,7 @@ class FsUploader(Uploader):
         upload: utils.Upload,
         extras: dict[str, Any],
     ) -> FileData:
-        location = self.storage.compute_location(location, extras, upload)
+        location = self.storage.compute_location(location, upload, **extras)
         dest = os.path.join(self.storage.settings["path"], location)
 
         if os.path.exists(dest):
@@ -95,7 +95,11 @@ class FsUploader(Uploader):
         )
         return result
 
-    def multipart_show(self, data: MultipartData) -> MultipartData:
+    def multipart_show(
+        self,
+        data: MultipartData,
+        extras: dict[str, Any],
+    ) -> MultipartData:
         return data
 
     def multipart_update(
@@ -189,7 +193,7 @@ class FsManager(Manager):
     ) -> FileData:
         """Combine multipe file inside the storage into a new one."""
 
-        location = self.storage.compute_location(location, extras)
+        location = self.storage.compute_location(location, **extras)
         dest = os.path.join(str(self.storage.settings["path"]), location)
         if os.path.exists(dest):
             raise exceptions.ExistingFileError(self.storage.settings["name"], dest)
@@ -207,7 +211,7 @@ class FsManager(Manager):
                 with open(src, "rb") as from_fd:
                     shutil.copyfileobj(from_fd, to_fd)
 
-        return self.analyze(dest)
+        return self.analyze(dest, extras)
 
     def append(
         self,
@@ -220,7 +224,7 @@ class FsManager(Manager):
         with open(dest, "ab") as fd:
             fd.write(upload.stream.read())
 
-        return self.analyze(dest)
+        return self.analyze(dest, extras)
 
     def copy(
         self,
@@ -229,7 +233,7 @@ class FsManager(Manager):
         extras: dict[str, Any],
     ) -> FileData:
         """Copy file inside the storage."""
-        location = self.storage.compute_location(location, extras)
+        location = self.storage.compute_location(location, **extras)
         src = os.path.join(str(self.storage.settings["path"]), data.location)
         dest = os.path.join(str(self.storage.settings["path"]), location)
 
@@ -251,7 +255,7 @@ class FsManager(Manager):
         extras: dict[str, Any],
     ) -> FileData:
         """Move file to a different location inside the storage."""
-        location = self.storage.compute_location(location, extras)
+        location = self.storage.compute_location(location, **extras)
         src = os.path.join(str(self.storage.settings["path"]), data.location)
         dest = os.path.join(str(self.storage.settings["path"]), location)
 
@@ -266,11 +270,11 @@ class FsManager(Manager):
         new_data.location = location
         return new_data
 
-    def exists(self, data: FileData) -> bool:
+    def exists(self, data: FileData, extras: dict[str, Any]) -> bool:
         filepath = os.path.join(str(self.storage.settings["path"]), data.location)
         return os.path.exists(filepath)
 
-    def remove(self, data: FileData) -> bool:
+    def remove(self, data: FileData, extras: dict[str, Any]) -> bool:
         filepath = os.path.join(str(self.storage.settings["path"]), data.location)
         if not os.path.exists(filepath):
             return False
@@ -278,16 +282,16 @@ class FsManager(Manager):
         os.remove(filepath)
         return True
 
-    def scan(self) -> Iterable[str]:
+    def scan(self, extras: dict[str, Any]) -> Iterable[str]:
         path = self.storage.settings["path"]
         for entry in os.scandir(path):
             if not entry.is_file():
                 continue
             yield entry.name
 
-    def analyze(self, filename: str) -> FileData:
+    def analyze(self, location: str, extras: dict[str, Any]) -> FileData:
         """Return all details about filename."""
-        filepath = os.path.join(str(self.storage.settings["path"]), filename)
+        filepath = os.path.join(str(self.storage.settings["path"]), location)
         if not os.path.exists(filepath):
             raise exceptions.MissingFileError(self.storage.settings["name"], filepath)
 
@@ -297,7 +301,7 @@ class FsManager(Manager):
             reader.exhaust()
 
         return FileData(
-            filename,
+            location,
             size=os.path.getsize(filepath),
             content_type=content_type,
             hash=reader.get_hash(),
@@ -308,7 +312,7 @@ class FsReader(Reader):
     required_options = ["path"]
     capabilities = shared.Capability.combine(shared.Capability.STREAM)
 
-    def stream(self, data: FileData) -> IO[bytes]:
+    def stream(self, data: FileData, extras: dict[str, Any]) -> IO[bytes]:
         filepath = os.path.join(str(self.storage.settings["path"]), data.location)
         if not os.path.exists(filepath):
             raise exceptions.MissingFileError(self.storage.settings["name"], filepath)

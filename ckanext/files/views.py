@@ -73,7 +73,7 @@ def generic_download(file_id: str) -> Response:
     data = shared.FileData.from_model(item)
 
     try:
-        return tk.redirect_to(storage.link(data, {}))
+        return tk.redirect_to(storage.link(data))
     except exceptions.UnsupportedOperationError:
         pass
 

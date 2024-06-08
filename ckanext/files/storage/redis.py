@@ -40,7 +40,7 @@ class RedisUploader(Uploader):
         upload: Upload,
         extras: dict[str, Any],
     ) -> FileData:
-        safe_location = self.storage.compute_location(location, extras, upload)
+        safe_location = self.storage.compute_location(location, upload, **extras)
         key = self.storage.settings["prefix"] + safe_location
 
         self.storage.redis.delete(key)
@@ -64,10 +64,10 @@ class RedisReader(Reader):
     required_options = ["prefix"]
     capabilities = Capability.combine(Capability.STREAM)
 
-    def stream(self, data: FileData) -> IO[bytes]:
-        return BytesIO(self.content(data))
+    def stream(self, data: FileData, extras: dict[str, Any]) -> IO[bytes]:
+        return BytesIO(self.content(data, extras))
 
-    def content(self, data: FileData) -> bytes:
+    def content(self, data: FileData, extras: dict[str, Any]) -> bytes:
         key = self.storage.settings["prefix"] + data.location
         value = cast("bytes | None", self.storage.redis.get(key))
         if value is None:
@@ -82,12 +82,12 @@ class RedisManager(Manager):
     required_options = ["prefix"]
     capabilities = Capability.combine(Capability.REMOVE, Capability.EXISTS)
 
-    def remove(self, data: FileData) -> bool:
+    def remove(self, data: FileData, extras: dict[str, Any]) -> bool:
         key = self.storage.settings["prefix"] + data.location
         self.storage.redis.delete(key)
         return True
 
-    def exists(self, data: FileData) -> bool:
+    def exists(self, data: FileData, extras: dict[str, Any]) -> bool:
         key = self.storage.settings["prefix"] + data.location
         return bool(self.storage.redis.exists(key))
 
@@ -97,7 +97,7 @@ class RedisManager(Manager):
         location: str,
         extras: dict[str, Any],
     ) -> FileData:
-        safe_location = self.storage.compute_location(location, extras)
+        safe_location = self.storage.compute_location(location, **extras)
         src: str = self.storage.settings["prefix"] + data.location
         dest: str = self.storage.settings["prefix"] + safe_location
 
@@ -126,7 +126,7 @@ class RedisManager(Manager):
         location: str,
         extras: dict[str, Any],
     ) -> FileData:
-        safe_location = self.storage.compute_location(location, extras)
+        safe_location = self.storage.compute_location(location, **extras)
 
         src = self.storage.settings["prefix"] + data.location
         dest = self.storage.settings["prefix"] + safe_location

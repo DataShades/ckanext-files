@@ -158,7 +158,7 @@ class TestUploader:
     @pytest.mark.usefixtures("mocked_token", "mocked_upload")
     def test_result(self, storage: gc.GoogleCloudStorage, faker: Faker):
         content = faker.binary(100)
-        result = storage.upload("", shared.make_upload(BytesIO(content)), {})
+        result = storage.upload("", shared.make_upload(BytesIO(content)))
 
         assert UUID(result.location)
         assert result.size == len(content)
@@ -169,20 +169,17 @@ class TestUploader:
 class TestMultipartUploader:
     def test_initialization_invalid(self, storage: gc.GoogleCloudStorage, faker: Faker):
         with pytest.raises(tk.ValidationError):
-            storage.multipart_start(faker.file_name(), {})
+            storage.multipart_start(faker.file_name())
 
     def test_initialization_large(self, storage: gc.GoogleCloudStorage, faker: Faker):
         storage.settings["max_size"] = 5
         with pytest.raises(exceptions.LargeUploadError):
-            storage.multipart_start(faker.file_name(), {"size": 10})
+            storage.multipart_start(faker.file_name(), size=10)
 
     @pytest.mark.usefixtures("mocked_multipart_start")
     def test_initialization(self, storage: gc.GoogleCloudStorage, faker: Faker):
         content = b"hello world"
-        data = storage.multipart_start(
-            faker.file_name(),
-            {"size": len(content)},
-        )
+        data = storage.multipart_start(faker.file_name(), size=len(content))
         assert data.size == len(content)
         assert data.storage_data["uploaded"] == 0
         assert data.storage_data["session_url"]
@@ -190,45 +187,36 @@ class TestMultipartUploader:
     @pytest.mark.usefixtures("mocked_multipart_start")
     def test_update_invalid(self, storage: gc.GoogleCloudStorage, faker: Faker):
         content = b"hello world"
-        data = storage.multipart_start(
-            faker.file_name(),
-            {"size": len(content)},
-        )
+        data = storage.multipart_start(faker.file_name(), size=len(content))
         with pytest.raises(tk.ValidationError):
-            storage.multipart_update(data, {})
+            storage.multipart_update(data)
 
     @pytest.mark.usefixtures("mocked_upload")
     def test_update(self, storage: gc.GoogleCloudStorage, faker: Faker):
         content = faker.binary(256 * 1024 * 2)
-        data = storage.multipart_start(
-            faker.file_name(),
-            {"size": len(content)},
-        )
+        data = storage.multipart_start(faker.file_name(), size=len(content))
 
         with pytest.raises(tk.ValidationError):
             storage.multipart_update(
                 data,
-                {"upload": shared.make_upload(BytesIO(content[:5]))},
+                upload=shared.make_upload(BytesIO(content[:5])),
             )
 
         data = storage.multipart_update(
             data,
-            {"upload": shared.make_upload(BytesIO(content[: 256 * 1024]))},
+            upload=shared.make_upload(BytesIO(content[: 256 * 1024])),
         )
 
         assert data.size == len(content)
         assert data.storage_data["uploaded"] == 256 * 1024
 
         with pytest.raises(exceptions.UploadOutOfBoundError):
-            storage.multipart_update(
-                data,
-                {"upload": shared.make_upload(BytesIO(content))},
-            )
+            storage.multipart_update(data, upload=shared.make_upload(BytesIO(content)))
 
         missing_size = data.size - data.storage_data["uploaded"]
         data = storage.multipart_update(
             data,
-            {"upload": shared.make_upload(BytesIO(content[-missing_size:]))},
+            upload=shared.make_upload(BytesIO(content[-missing_size:])),
         )
         assert data.size == len(content)
         assert data.storage_data["uploaded"] == len(content)
@@ -236,19 +224,16 @@ class TestMultipartUploader:
     @pytest.mark.usefixtures("mocked_upload")
     def test_complete(self, storage: gc.GoogleCloudStorage, faker: Faker):
         content = b"hello world"
-        data = storage.multipart_start(
-            faker.file_name(),
-            {"size": len(content)},
-        )
+        data = storage.multipart_start(faker.file_name(), size=len(content))
 
         with pytest.raises(tk.ValidationError):
-            storage.multipart_complete(data, {})
+            storage.multipart_complete(data)
 
         data = storage.multipart_update(
             data,
-            {"upload": shared.make_upload(BytesIO(content))},
+            upload=shared.make_upload(BytesIO(content)),
         )
-        data = storage.multipart_complete(data, {})
+        data = storage.multipart_complete(data)
         assert data.size == len(content)
         assert data.hash == hashlib.md5(content).hexdigest()
 
@@ -256,26 +241,23 @@ class TestMultipartUploader:
     def test_show(self, storage: gc.GoogleCloudStorage, faker: Faker):
         content = b"hello world"
 
-        data = storage.multipart_start(
-            faker.file_name(),
-            {"size": len(content)},
-        )
+        data = storage.multipart_start(faker.file_name(), size=len(content))
         assert storage.multipart_show(data) == data
 
         data = storage.multipart_update(
             data,
-            {"upload": shared.make_upload(BytesIO(content))},
+            upload=shared.make_upload(BytesIO(content)),
         )
         assert storage.multipart_show(data) == data
 
-        storage.multipart_complete(data, {})
+        storage.multipart_complete(data)
         assert storage.multipart_show(data) == data
 
 
 class TestManager:
     @pytest.mark.usefixtures("mocked_upload")
     def test_removal(self, storage: gc.GoogleCloudStorage, responses: Any):
-        result = storage.upload("", shared.make_upload(""), {})
+        result = storage.upload("", shared.make_upload(""))
         name = os.path.join(storage.settings["path"], result.location)
 
         object_url = (
@@ -290,7 +272,7 @@ class TestManager:
 
     @pytest.mark.usefixtures("mocked_upload")
     def test_removal_missing(self, storage: gc.GoogleCloudStorage, responses: Any):
-        result = storage.upload("", shared.make_upload(""), {})
+        result = storage.upload("", shared.make_upload(""))
         name = os.path.join(storage.settings["path"], result.location)
 
         object_url = (

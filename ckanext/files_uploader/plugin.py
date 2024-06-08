@@ -98,7 +98,7 @@ class ResourceUploader(uploader.ResourceUpload):
         )
 
     def _file_location(self, id: str) -> str:
-        return self.storage.compute_location(id, {"resource_id": id}, None)
+        return self.storage.compute_location(id, None, resource_id=id)
 
     def upload(self, id: str, max_size: int = 10) -> None:
         # If a filename has been provided (a file is being uploaded)
@@ -140,10 +140,10 @@ class ImageStorage(fs.FsStorage):
     def compute_location(
         self,
         location: str,
-        extras: dict[str, Any],
         upload: utils.Upload | None = None,
+        **kwargs: Any,
     ) -> str:
-        return os.path.join("storage", "uploads", extras["object_type"], location)
+        return os.path.join("storage", "uploads", kwargs["object_type"], location)
 
     def make_manager(self):
         return ImageManager(self)
@@ -155,7 +155,7 @@ class ImageManager(fs.FsManager):
         shared.Capability.SCAN,
     )
 
-    def scan(self) -> Iterable[str]:
+    def scan(self, extras: dict[str, Any]) -> Iterable[str]:
         path = self.storage.settings["path"]
         for name in glob.iglob(os.path.join(path, "uploads", "*", "*")):
             yield os.path.relpath(name, path)
@@ -165,10 +165,10 @@ class ResourceStorage(fs.FsStorage):
     def compute_location(
         self,
         location: str,
-        extras: dict[str, Any],
         upload: utils.Upload | None = None,
+        **kwargs: Any,
     ) -> str:
-        res_id = extras["resource_id"]
+        res_id = kwargs["resource_id"]
         return os.path.join("resources", res_id[0:3], res_id[3:6], res_id[6:])
 
     def make_manager(self):
@@ -181,7 +181,7 @@ class ResourceManager(fs.FsManager):
         shared.Capability.SCAN,
     )
 
-    def scan(self) -> Iterable[str]:
+    def scan(self, extras: dict[str, Any]) -> Iterable[str]:
         path = self.storage.settings["path"]
         for name in glob.iglob(os.path.join(path, "resources", "???", "???", "*")):
             yield os.path.relpath(name, path)

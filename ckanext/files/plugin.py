@@ -21,7 +21,7 @@ from ckanext.files import base, config, exceptions, interfaces, storage
 class FilesPlugin(p.SingletonPlugin):
     p.implements(p.IConfigurable)
     p.implements(p.IConfigurer, inherit=True)
-    p.implements(interfaces.IFiles)
+    p.implements(interfaces.IFiles, inherit=True)
 
     p.implements(p.IConfigDeclaration)
 

@@ -2,13 +2,12 @@ from __future__ import annotations
 
 from typing import Any, cast
 
-import sqlalchemy as sa
-
 import ckan.plugins.toolkit as tk
 from ckan import authz, model
 from ckan.types import AuthResult, Context
 
-from ckanext.files.model import Owner
+from ckanext.files import utils
+from ckanext.files.model import File, Multipart
 
 
 def _get_user(context: Context) -> model.User | None:
@@ -23,15 +22,14 @@ def _get_user(context: Context) -> model.User | None:
     return model.User.get(context["user"])
 
 
-def _is_owner(user_id: str, file_id: str) -> bool:
-    stmt = Owner.owners_of(file_id, "file").where(
-        sa.and_(
-            Owner.owner_type == "user",
-            Owner.owner_id == user_id,
-            Owner.access == Owner.ACCESS_FULL,
-        ),
-    )
-    return model.Session.query(stmt.exists()).scalar()
+def _get_file(context: Context, file_id: str, completed: bool):
+    if "files_file" not in context:
+        context["files_file"] = model.Session.get(  # type: ignore
+            File if completed else Multipart,
+            file_id,
+        )
+
+    return context["files_file"]  # type: ignore
 
 
 @tk.auth_disallow_anonymous_access
@@ -41,14 +39,67 @@ def files_manage_files(context: Context, data_dict: dict[str, Any]) -> AuthResul
 
 @tk.auth_disallow_anonymous_access
 def files_owns_file(context: Context, data_dict: dict[str, Any]) -> AuthResult:
+    if authz.is_authorized_boolean("files_manage_files", context, data_dict):
+        return {"success": True}
+
     user = _get_user(context)
-    is_manager = authz.is_authorized_boolean("files_manage_files", context, data_dict)
-    is_owner = bool(user and _is_owner(user.id, data_dict["id"]))
+    if not user:
+        return {
+            "success": False,
+            "msg": "Not an owner of the file",
+        }
+
+    file = _get_file(context, data_dict["id"], data_dict.get("completed", True))
+    if not file or not file.owner_info:
+        return {
+            "success": False,
+            "msg": "Not an owner of the file",
+        }
 
     return {
-        "success": is_owner or is_manager,
+        "success": file.owner_info.owner_type == "user"
+        and file.owner_info.owner_id == user.id,
         "msg": "Not an owner of the file",
     }
+
+
+@tk.auth_disallow_anonymous_access
+def files_edit_file(context: Context, data_dict: dict[str, Any]) -> AuthResult:
+    result = utils.is_allowed(
+        context,
+        _get_file(context, data_dict["id"], data_dict.get("completed", True)),
+        "update",
+    )
+    if result is None:
+        return authz.is_authorized("files_owns_file", context, data_dict)
+
+    return {"success": result, "msg": "Not allowed to edit file"}
+
+
+@tk.auth_disallow_anonymous_access
+def files_read_file(context: Context, data_dict: dict[str, Any]) -> AuthResult:
+    result = utils.is_allowed(
+        context,
+        _get_file(context, data_dict["id"], data_dict.get("completed", True)),
+        "show",
+    )
+    if result is None:
+        return authz.is_authorized("files_edit_file", context, data_dict)
+
+    return {"success": result, "msg": "Not allowed to read file"}
+
+
+@tk.auth_disallow_anonymous_access
+def files_delete_file(context: Context, data_dict: dict[str, Any]) -> AuthResult:
+    result = utils.is_allowed(
+        context,
+        _get_file(context, data_dict["id"], data_dict.get("completed", True)),
+        "delete",
+    )
+    if result is None:
+        return authz.is_authorized("files_edit_file", context, data_dict)
+
+    return {"success": result, "msg": "Not allowed to delete file"}
 
 
 @tk.auth_disallow_anonymous_access
@@ -71,56 +122,67 @@ def files_file_search_by_user(
     }
 
 
-@tk.auth_disallow_anonymous_access
 def files_file_search(context: Context, data_dict: dict[str, Any]) -> AuthResult:
     """Only file manager can search files."""
     return authz.is_authorized("files_manage_files", context, data_dict)
 
 
-@tk.auth_disallow_anonymous_access
 def files_file_create(context: Context, data_dict: dict[str, Any]) -> AuthResult:
     return authz.is_authorized("files_manage_files", context, data_dict)
 
 
-@tk.auth_disallow_anonymous_access
 def files_file_delete(context: Context, data_dict: dict[str, Any]) -> AuthResult:
     """Only owner can remove files."""
-    return authz.is_authorized("files_owns_file", context, data_dict)
+    return authz.is_authorized("files_delete_file", context, data_dict)
 
 
-@tk.auth_disallow_anonymous_access
 def files_file_show(context: Context, data_dict: dict[str, Any]) -> AuthResult:
     """Only owner can view files."""
-    return authz.is_authorized("files_owns_file", context, data_dict)
+    return authz.is_authorized("files_read_file", context, data_dict)
 
 
-@tk.auth_disallow_anonymous_access
 def files_file_download(context: Context, data_dict: dict[str, Any]) -> AuthResult:
     """Only owner can download files."""
-    return authz.is_authorized("files_owns_file", context, data_dict)
+    return authz.is_authorized("files_read_file", context, data_dict)
 
 
-@tk.auth_disallow_anonymous_access
 def files_file_rename(context: Context, data_dict: dict[str, Any]) -> AuthResult:
     """Only owner can rename files."""
-    return authz.is_authorized("files_owns_file", context, data_dict)
+    return authz.is_authorized("files_edit_file", context, data_dict)
 
 
-@tk.auth_disallow_anonymous_access
 def files_multipart_refresh(context: Context, data_dict: dict[str, Any]) -> AuthResult:
-    return authz.is_authorized("files_owns_file", context, data_dict)
+    return authz.is_authorized(
+        "files_edit_file",
+        context,
+        dict(data_dict, completed=False),
+    )
 
 
-@tk.auth_disallow_anonymous_access
 def files_multipart_start(context: Context, data_dict: dict[str, Any]) -> AuthResult:
-    return authz.is_authorized("files_file_create", context, data_dict)
+    return authz.is_authorized(
+        "files_file_create",
+        context,
+        dict(data_dict, completed=False),
+    )
 
 
-@tk.auth_disallow_anonymous_access
 def files_multipart_update(context: Context, data_dict: dict[str, Any]) -> AuthResult:
-    return authz.is_authorized("files_owns_file", context, data_dict)
+    return authz.is_authorized(
+        "files_edit_file",
+        context,
+        dict(data_dict, completed=False),
+    )
 
 
-@tk.auth_disallow_anonymous_access
 def files_multipart_complete(context: Context, data_dict: dict[str, Any]) -> AuthResult:
-    return authz.is_authorized("files_owns_file", context, data_dict)
+    return authz.is_authorized(
+        "files_edit_file",
+        context,
+        dict(data_dict, completed=False),
+    )
+
+
+def files_transfer_ownership(context: Context, data_dict: dict[str, Any]) -> AuthResult:
+    """Only file manager can transfer ownership."""
+    return authz.is_authorized("files_manage_files", context, data_dict)

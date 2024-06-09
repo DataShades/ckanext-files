@@ -1,8 +1,8 @@
 """Internal utilities of the extension.
 
 Do not use this module outside of the extension and do not import any other
-internal module except for types and exceptions. Only independent tools are
-stored here, to avoid import cycles.
+internal module except for types, config, interfaces and exceptions. Only independent
+tools are stored here, to avoid import cycles.
 
 """
 
@@ -21,7 +21,12 @@ from typing import IO, Any, Generic, TypeVar, cast
 import magic
 from werkzeug.datastructures import FileStorage
 
-from ckanext.files import exceptions
+import ckan.plugins as p
+import ckan.plugins.toolkit as tk
+from ckan import model
+from ckan.types import Context
+
+from ckanext.files import config, exceptions, interfaces, types
 
 T = TypeVar("T")
 
@@ -376,3 +381,48 @@ def _tempfile_as_upload(value: tempfile.SpooledTemporaryFile[bytes]):
     value.seek(0)
 
     return Upload(value, value.name or "", size, mime)
+
+
+def materialize_owner(owner_type: str, owner_id: str) -> Any:
+    """Transform owner details into owner entity."""
+
+    not_exist = object()
+
+    for plugin in p.PluginImplementations(interfaces.IFiles):
+        owner = plugin.files_materialize_owner(owner_type, owner_id, not_exist)
+        if owner is not_exist:
+            return None
+
+        if owner is not None:
+            return owner
+
+    for mapper in model.registry.mappers:
+        cls = mapper.class_
+        if hasattr(cls, "__table__") and cls.__table__.name == owner_type:
+            return model.Session.get(cls, owner_id)
+
+    raise TypeError(owner_type)
+
+
+def is_allowed(context: Context, file: Any, operation: types.AuthOperation) -> Any:
+    """Decide if user is allowed to perform operation on file."""
+    info = file.owner_info
+
+    if info and info.owner_type in config.cascade_access():
+        try:
+            tk.check_access(
+                f"{info.owner_type}_{operation}",
+                context,
+                {"id": info.owner_id},
+            )
+
+        except tk.NotAuthorized:
+            return False
+
+        except ValueError:
+            pass
+
+    for plugin in p.PluginImplementations(interfaces.IFiles):
+        result = plugin.files_is_allowed(context, file, operation)
+        if result is not None:
+            return result

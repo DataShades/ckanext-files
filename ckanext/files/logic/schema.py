@@ -133,3 +133,18 @@ def multipart_complete(not_empty: Validator, unicode_safe: Validator) -> Schema:
     return {
         "id": [not_empty, unicode_safe],
     }
+
+
+@validator_args
+def transfer_ownership(
+    not_empty: Validator,
+    boolean_validator: Validator,
+    default: ValidatorFactory,
+    unicode_safe: Validator,
+) -> Schema:
+    return {
+        "id": [not_empty, unicode_safe],
+        "completed": [default(True), boolean_validator],
+        "owner_id": [not_empty, unicode_safe],
+        "owner_type": [not_empty, unicode_safe],
+    }

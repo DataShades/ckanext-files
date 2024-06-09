@@ -19,7 +19,7 @@ from ckanext.files.storage import fs
 
 class FilesUploaderPlugin(p.SingletonPlugin):
     p.implements(p.IUploader)
-    p.implements(interfaces.IFiles)
+    p.implements(interfaces.IFiles, inherit=True)
 
     def files_get_storage_adapters(self) -> dict[str, type[shared.Storage]]:
         return {

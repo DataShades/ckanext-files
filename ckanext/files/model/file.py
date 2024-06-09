@@ -6,14 +6,17 @@ from typing import Any, Literal
 
 import sqlalchemy as sa
 from sqlalchemy.dialects.postgresql import JSONB
-from sqlalchemy.orm import Mapped
-from typing_extensions import Self
+from sqlalchemy.orm import Mapped, foreign, relationship
 
-from ckan import model
 from ckan.lib.dictization import table_dictize
 from ckan.model.types import make_uuid
 
+from ckanext.files import utils
+
 from .base import Base, now
+from .owner import Owner
+
+foreign: Any
 
 
 class File(Base):  # type: ignore
@@ -64,14 +67,29 @@ class File(Base):  # type: ignore
 
     completed: Mapped[bool]
 
+    owner_info: Mapped[Owner | None] = relationship(
+        Owner,
+        primaryjoin=sa.and_(
+            foreign(Owner.item_id) == __table__.c.id,
+            foreign(Owner.item_type) == "file",
+        ),
+        uselist=False,
+        cascade="delete, delete-orphan",
+        lazy="joined",
+    )  # type: ignore
+
+    @property
+    def owner(self) -> Any | None:
+        owner = self.owner_info
+        if not owner:
+            return None
+
+        return utils.materialize_owner(owner.owner_type, owner.owner_id)
+
     def __init__(self, **kwargs: Any):
         super(File, self).__init__(**kwargs)
         if not self.id:
             self.id = make_uuid()
-
-    @classmethod
-    def get(cls, file_id: str) -> Self | None:
-        return model.Session.scalar(sa.select(cls).where(cls.id == file_id))
 
     def dictize(self, context: Any) -> dict[str, Any]:
         result = table_dictize(self, context)

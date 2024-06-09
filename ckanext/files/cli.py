@@ -26,7 +26,7 @@ def files():
 @click.argument("file_id")
 def stream(file_id: str):
     """Stream content of the file."""
-    file = shared.File.get(file_id)
+    file = model.Session.get(shared.File, file_id)
     if not file:
         tk.error_shout("File not found")
         raise click.Abort()
@@ -148,7 +148,6 @@ def scan(
                     item_type="file",
                     owner_id=stepfather.id,
                     owner_type="user",
-                    access=Owner.ACCESS_FULL,
                 )
                 model.Session.add(owner)
 

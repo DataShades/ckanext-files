@@ -6,12 +6,17 @@ from typing import Any, Literal
 
 import sqlalchemy as sa
 from sqlalchemy.dialects.postgresql import JSONB
-from sqlalchemy.orm import Mapped
+from sqlalchemy.orm import Mapped, foreign, relationship
 
 from ckan.lib.dictization import table_dictize
 from ckan.model.types import make_uuid
 
+from ckanext.files import utils
+
 from .base import Base, now
+from .owner import Owner
+
+foreign: Any
 
 
 class Multipart(Base):  # type: ignore
@@ -47,6 +52,25 @@ class Multipart(Base):  # type: ignore
 
     storage_data: Mapped[dict[str, Any]]
     plugin_data: Mapped[dict[str, Any]]
+
+    owner_info: Mapped[Owner | None] = relationship(
+        Owner,
+        primaryjoin=sa.and_(
+            foreign(Owner.item_id) == __table__.c.id,
+            foreign(Owner.item_type) == "multipart",
+        ),
+        uselist=False,
+        cascade="delete, delete-orphan",
+        lazy="joined",
+    )  # type: ignore
+
+    @property
+    def owner(self) -> Any | None:
+        owner = self.owner_info
+        if not owner:
+            return None
+
+        return utils.materialize_owner(owner.owner_type, owner.owner_id)
 
     def __init__(self, **kwargs: Any):
         super(Multipart, self).__init__(**kwargs)

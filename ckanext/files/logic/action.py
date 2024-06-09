@@ -189,13 +189,13 @@ def files_file_create(context: Context, data_dict: dict[str, Any]) -> dict[str, 
     storage_data.into_model(fileobj)
     context["session"].add(fileobj)
 
-    _add_owner(context, "file", fileobj.id)
+    _set_user_owner(context, "file", fileobj.id)
     context["session"].commit()
 
     return fileobj.dictize(context)
 
 
-def _add_owner(context: Context, item_type: str, item_id: str):
+def _set_user_owner(context: Context, item_type: str, item_id: str):
     user = model.User.get(context.get("user", ""))
     if user:
         owner = Owner(
@@ -203,7 +203,6 @@ def _add_owner(context: Context, item_type: str, item_id: str):
             item_type=item_type,
             owner_id=user.id,
             owner_type="user",
-            access=Owner.ACCESS_FULL,
         )
         context["session"].add(owner)
 
@@ -222,11 +221,9 @@ def _delete_owners(context: Context, item_type: str, item_id: str):
 def files_file_delete(context: Context, data_dict: dict[str, Any]) -> dict[str, Any]:
     tk.check_access("files_file_delete", context, data_dict)
 
-    fileobj: File | Multipart | None = (
-        context["session"]
-        .query(File if data_dict["completed"] else Multipart)
-        .filter_by(id=data_dict["id"])
-        .one_or_none()
+    fileobj = context["session"].get(
+        File if data_dict["completed"] else Multipart,
+        data_dict["id"],
     )
     if not fileobj:
         raise tk.ObjectNotFound("file")
@@ -257,11 +254,9 @@ def files_file_delete(context: Context, data_dict: dict[str, Any]) -> dict[str, 
 def files_file_show(context: Context, data_dict: dict[str, Any]) -> dict[str, Any]:
     tk.check_access("files_file_show", context, data_dict)
 
-    fileobj: File | Multipart | None = (
-        context["session"]
-        .query(File if data_dict["completed"] else Multipart)
-        .filter_by(id=data_dict["id"])
-        .one_or_none()
+    fileobj = context["session"].get(
+        File if data_dict["completed"] else Multipart,
+        data_dict["id"],
     )
     if not fileobj:
         raise tk.ObjectNotFound("file")
@@ -273,11 +268,9 @@ def files_file_show(context: Context, data_dict: dict[str, Any]) -> dict[str, An
 def files_file_rename(context: Context, data_dict: dict[str, Any]) -> dict[str, Any]:
     tk.check_access("files_file_rename", context, data_dict)
 
-    fileobj: File | Multipart | None = (
-        context["session"]
-        .query(File if data_dict["completed"] else Multipart)
-        .filter_by(id=data_dict["id"])
-        .one_or_none()
+    fileobj = context["session"].get(
+        File if data_dict["completed"] else Multipart,
+        data_dict["id"],
     )
     if not fileobj:
         raise tk.ObjectNotFound("file")
@@ -327,7 +320,7 @@ def files_multipart_start(
     data.into_model(fileobj)
 
     context["session"].add(fileobj)
-    _add_owner(context, "multipart", fileobj.id)
+    _set_user_owner(context, "multipart", fileobj.id)
     context["session"].commit()
 
     return fileobj.dictize(context)
@@ -360,9 +353,7 @@ def files_multipart_update(
 
     extras = data_dict.get("__extras", {})
 
-    fileobj: Multipart | None = (
-        context["session"].query(Multipart).filter_by(id=data_dict["id"]).one_or_none()
-    )
+    fileobj = context["session"].get(Multipart, data_dict["id"])
     if not fileobj:
         raise tk.ObjectNotFound("upload")
 
@@ -391,9 +382,7 @@ def files_multipart_complete(
     extras = data_dict.get("__extras", {})
 
     data_dict["id"]
-    fileobj = (
-        context["session"].query(Multipart).filter_by(id=data_dict["id"]).one_or_none()
-    )
+    fileobj = context["session"].get(Multipart, data_dict["id"])
     if not fileobj:
         raise tk.ObjectNotFound("upload")
 
@@ -421,3 +410,32 @@ def files_multipart_complete(
     sess.commit()
 
     return result.dictize(context)
+
+
+@validate(schema.transfer_ownership)
+def files_transfer_ownership(
+    context: Context,
+    data_dict: dict[str, Any],
+) -> dict[str, Any]:
+    tk.check_access("files_transfer_ownership", context, data_dict)
+    sess = context["session"]
+    fileobj = context["session"].get(
+        File if data_dict["completed"] else Multipart,
+        data_dict["id"],
+    )
+    if not fileobj:
+        raise tk.ObjectNotFound("upload")
+
+    owner = fileobj.owner_info
+    if not owner:
+        owner = Owner(
+            item_id=fileobj.id,
+            item_type="file" if data_dict["completed"] else "multipart",
+        )
+        context["session"].add(owner)
+
+    owner.owner_id = data_dict["owner_id"]
+    owner.owner_type = data_dict["owner_type"]
+    sess.commit()
+
+    return owner.dictize(context)

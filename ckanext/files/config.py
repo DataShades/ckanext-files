@@ -18,6 +18,7 @@ import ckan.plugins.toolkit as tk
 
 DEFAULT_STORAGE = "ckanext.files.default_storage"
 STORAGE_PREFIX = "ckanext.files.storage."
+CASCADE_ACCESS = "ckanext.files.owner.cascade_access"
 
 
 def default_storage() -> str:
@@ -40,3 +41,8 @@ def storages() -> dict[str, dict[str, Any]]:
 
         storages[name][option] = v
     return storages
+
+
+def cascade_access() -> list[str]:
+    """List of owner types that grant automatic access on owned file."""
+    return tk.config[CASCADE_ACCESS]

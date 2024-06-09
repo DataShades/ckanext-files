@@ -12,6 +12,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Features
 
+- optional hash verification for multipart upload ([28e5f69](https://github.com/DataShades/ckanext-files/commit/28e5f6952295afae401faa18fde9fdbb509211e8) by Sergey Motornyuk).
+- add supported_types option for storages to restict upload types ([c5b43ac](https://github.com/DataShades/ckanext-files/commit/c5b43acabe11e2d5c94f5137df5948b0b29ea00c) by Sergey Motornyuk).
 - add files_file_search action ([b8e8b4c](https://github.com/DataShades/ckanext-files/commit/b8e8b4c638ce4ae1159f47e7ccd62f021550b1e5) by Sergey Motornyuk).
 - File.get method ([591ec48](https://github.com/DataShades/ckanext-files/commit/591ec48d4043caf486570faa4af586b11c31f6e9) by Sergey Motornyuk).
 - get_storage without arguments returns default storage ([571e021](https://github.com/DataShades/ckanext-files/commit/571e021c44c4d719431c05a837bd6336b1896249) by Sergey Motornyuk).
@@ -19,6 +21,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Code Refactoring
 
+- add completed flag for rename, show and delete actions for simultaneous file and multipart support. ([10fb202](https://github.com/DataShades/ckanext-files/commit/10fb202a6e8c95dceee9a878a869812a84353219) by Sergey Motornyuk).
+- rename files_upload_show to files_multipart_refresh ([ee2a4df](https://github.com/DataShades/ckanext-files/commit/ee2a4dfdddad4009636590a28b1d664dc321e42e) by Sergey Motornyuk).
+- add kwargs to all Storage methods and extras to all service methods ([1526df1](https://github.com/DataShades/ckanext-files/commit/1526df10f566f02f70d1f0b88369fa5b69a3a815) by Sergey Motornyuk).
+- rename Storage and Uploader *_multipart_upload into multipart_* for consistency with actions ([ddfd111](https://github.com/DataShades/ckanext-files/commit/ddfd11170286f463fe5115103b7357db106a6802) by Sergey Motornyuk).
 - rename files_upload_* actions to files_multipart_*(initialize changed to start) ([6493a1d](https://github.com/DataShades/ckanext-files/commit/6493a1d5cb8225346d5414914d73a8ca3b9276b7) by Sergey Motornyuk).
 - rename MULTIPART_UPLOAD capability to MULTIPART ([20d01bf](https://github.com/DataShades/ckanext-files/commit/20d01bf32eb52a91f734627664a2ab265238dcdb) by Sergey Motornyuk).
 - use custom dataclass for Upload instead of werkzeug.datastructures.FileStorage ([78ae63b](https://github.com/DataShades/ckanext-files/commit/78ae63b79d63c095313af6e90a5c583f6d0678d6) by Sergey Motornyuk).

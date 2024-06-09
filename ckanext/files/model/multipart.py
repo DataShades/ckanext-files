@@ -21,6 +21,9 @@ class Multipart(Base):  # type: ignore
         sa.Column("id", sa.UnicodeText, primary_key=True, default=make_uuid),
         sa.Column("name", sa.UnicodeText, nullable=False),
         sa.Column("location", sa.Text, nullable=False, default=""),
+        sa.Column("content_type", sa.Text, default=""),
+        sa.Column("size", sa.Integer, default=0),
+        sa.Column("hash", sa.Text, default=""),
         sa.Column("storage", sa.Text, nullable=False),
         sa.Column(
             "ctime",
@@ -28,9 +31,6 @@ class Multipart(Base):  # type: ignore
             default=now,
             server_default=sa.func.now(),
         ),
-        sa.Column("size", sa.Integer, default=0),
-        sa.Column("content_type", sa.Text, default=""),
-        sa.Column("hash", sa.Text, default=""),
         sa.Column("storage_data", JSONB, default=dict, server_default="{}"),
         sa.Column("plugin_data", JSONB, default=dict, server_default="{}"),
     )

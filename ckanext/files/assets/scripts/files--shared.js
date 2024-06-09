@@ -203,7 +203,7 @@ var ckan;
                     }));
                 }
                 _showUpload(id) {
-                    return new Promise((done, fail) => this.sandbox.client.call("GET", "files_upload_show", `?id=${id}`, (data) => {
+                    return new Promise((done, fail) => this.sandbox.client.call("GET", "files_multipart_refresh", `?id=${id}`, (data) => {
                         done(data.result);
                     }, (resp) => {
                         fail(typeof resp.responseJSON === "string"

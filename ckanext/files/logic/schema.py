@@ -52,30 +52,49 @@ def file_search_by_user(
 
 
 @validator_args
-def file_search() -> Schema:
+def file_search(default: ValidatorFactory, boolean_validator: Validator) -> Schema:
     schema = _base_file_search()
+    schema["completed"] = [default(True), boolean_validator]
     return schema
 
 
 @validator_args
-def file_delete(not_empty: Validator, unicode_safe: Validator) -> Schema:
+def file_delete(
+    default: ValidatorFactory,
+    boolean_validator: Validator,
+    not_empty: Validator,
+    unicode_safe: Validator,
+) -> Schema:
     return {
         "id": [not_empty, unicode_safe],
+        "completed": [default(True), boolean_validator],
     }
 
 
 @validator_args
-def file_show(not_empty: Validator, unicode_safe: Validator) -> Schema:
+def file_show(
+    default: ValidatorFactory,
+    boolean_validator: Validator,
+    not_empty: Validator,
+    unicode_safe: Validator,
+) -> Schema:
     return {
         "id": [not_empty, unicode_safe],
+        "completed": [default(True), boolean_validator],
     }
 
 
 @validator_args
-def file_rename(not_empty: Validator, unicode_safe: Validator) -> Schema:
+def file_rename(
+    default: ValidatorFactory,
+    boolean_validator: Validator,
+    not_empty: Validator,
+    unicode_safe: Validator,
+) -> Schema:
     return {
         "id": [not_empty, unicode_safe],
         "name": [not_empty, unicode_safe],
+        "completed": [default(True), boolean_validator],
     }
 
 
@@ -84,15 +103,19 @@ def multipart_start(
     not_empty: Validator,
     unicode_safe: Validator,
     default: ValidatorFactory,
+    int_validator: Validator,
 ) -> Schema:
     return {
-        "name": [not_empty, unicode_safe],
         "storage": [default(config.default_storage()), unicode_safe],
+        "name": [not_empty, unicode_safe],
+        "content_type": [not_empty, unicode_safe],
+        "size": [not_empty, int_validator],
+        "hash": [default(""), unicode_safe],
     }
 
 
 @validator_args
-def upload_show(not_empty: Validator, unicode_safe: Validator) -> Schema:
+def multipart_refresh(not_empty: Validator, unicode_safe: Validator) -> Schema:
     return {
         "id": [not_empty, unicode_safe],
     }

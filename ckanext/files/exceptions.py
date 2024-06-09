@@ -5,9 +5,9 @@ subclass.
 
 """
 
-from typing import Any
+from __future__ import annotations
 
-from ckan.lib.formatters import localised_filesize
+from typing import Any
 
 
 class FilesError(Exception):
@@ -134,8 +134,8 @@ class LargeUploadError(UploadError):
 
     def __str__(self):
         return "Upload size {} surpasses max allowed size {}".format(
-            localised_filesize(self.actual_size),
-            localised_filesize(self.max_size),
+            self.actual_size,
+            self.max_size,
         )
 
 
@@ -144,9 +144,58 @@ class UploadOutOfBoundError(LargeUploadError):
 
     def __str__(self):
         return "Upload size {} exceeds expected size {}".format(
-            localised_filesize(self.actual_size),
-            localised_filesize(self.max_size),
+            self.actual_size,
+            self.max_size,
         )
+
+
+class UploadMismatchError(UploadError):
+    """Expected value of file attribute doesn't match the actual value."""
+
+    value_formatter = str
+
+    def __init__(self, attribute: str, actual: Any, expected: Any):
+        self.attribute = attribute
+        self.actual = actual
+        self.expected = expected
+
+    def __str__(self):
+        return "Actual value of {}({}) does not match expected value({})".format(
+            self.attribute,
+            self.value_formatter(self.actual),
+            self.value_formatter(self.expected),
+        )
+
+
+class UploadTypeMismatchError(UploadMismatchError):
+    """Expected value of content type doesn't match the actual value."""
+
+    def __init__(self, actual: Any, expected: Any):
+        super().__init__("content type", actual, expected)
+
+
+class UploadHashMismatchError(UploadMismatchError):
+    """Expected value of hash match the actual value."""
+
+    def __init__(self, actual: Any, expected: Any):
+        super().__init__("content hash", actual, expected)
+
+
+class UploadSizeMismatchError(UploadMismatchError):
+    """Expected value of upload size doesn't match the actual value."""
+
+    def __init__(self, actual: Any, expected: Any):
+        super().__init__("upload size", actual, expected)
+
+
+class WrongUploadTypeError(UploadError):
+    """Storage does not support given MIMEType."""
+
+    def __init__(self, content_type: str):
+        self.content_type = content_type
+
+    def __str__(self):
+        return "Type {} is not supported by storage".format(self.content_type)
 
 
 class NameStrategyError(UploadError):

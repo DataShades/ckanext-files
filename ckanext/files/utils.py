@@ -55,7 +55,7 @@ class Upload:
     stream: IO[bytes]
     filename: str
     size: int
-    type: str
+    content_type: str
 
     def hashing_reader(self, **kwargs: Any) -> HashingReader:
         return HashingReader(self.stream, **kwargs)
@@ -241,6 +241,17 @@ def ensure_size(upload: Upload, max_size: int) -> int:
     return upload.size
 
 
+def ensure_type(upload: Upload, types: list[str]) -> str:
+    """Return content type of upload or rise an exception if type is not supported"""
+
+    maintype, subtype = upload.content_type.split("/")
+    for option in types:
+        if option in [upload.content_type, maintype, subtype]:
+            return upload.content_type
+
+    raise exceptions.WrongUploadTypeError(upload.content_type)
+
+
 def parse_filesize(value: str) -> int:
     """Transform human-readable filesize into an integer.
 
@@ -258,6 +269,25 @@ def parse_filesize(value: str) -> int:
         raise ValueError(value)
 
     return int(float(size) * multiplier)
+
+
+def humanize_filesize(value: int | float) -> str:
+    """Transform an integer into human-readable filesize.
+
+    Example:
+    >>> size = humanize_filesize(10_737_418_240)
+    >>> assert size == "10GiB"
+    >>> size = humanize_filesize(10_418_240)
+    >>> assert size == "9.9MiB"
+    """
+    suffixes = ["B", "KiB", "MiB", "GiB", "TiB", "PiB"]
+    iteration = 0
+    while value > 1024:
+        iteration += 1
+        value /= 1024
+
+    value = int(value * 100) / 100
+    return f"{value:.2g}{suffixes[iteration]}"
 
 
 def make_upload(

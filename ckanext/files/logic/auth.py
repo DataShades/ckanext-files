@@ -107,7 +107,7 @@ def files_file_rename(context: Context, data_dict: dict[str, Any]) -> AuthResult
 
 
 @tk.auth_disallow_anonymous_access
-def files_upload_show(context: Context, data_dict: dict[str, Any]) -> AuthResult:
+def files_multipart_refresh(context: Context, data_dict: dict[str, Any]) -> AuthResult:
     return authz.is_authorized("files_owns_file", context, data_dict)
 
 

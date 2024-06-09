@@ -54,48 +54,29 @@ class FsUploader(Uploader):
         return FileData(
             location,
             os.path.getsize(dest),
-            upload.type,
+            upload.content_type,
             reader.get_hash(),
         )
 
     def multipart_start(
         self,
         location: str,
+        data: MultipartData,
         extras: dict[str, Any],
     ) -> MultipartData:
-        schema: dict[str, Any] = {
-            "size": [
-                tk.get_validator("not_missing"),
-                tk.get_validator("int_validator"),
-            ],
-            "__extras": [tk.get_validator("ignore")],
-        }
-        data, errors = tk.navl_validate(extras, schema)
-
-        if errors:
-            raise tk.ValidationError(errors)
-
         upload = utils.Upload(
             BytesIO(),
             location,
-            data["size"],
-            "application/octet-stream",
+            data.size,
+            data.content_type,
         )
 
-        max_size = self.storage.max_size
-        if max_size:
-            utils.ensure_size(upload, max_size)
+        tmp_result = self.storage.upload(location, upload, **extras)
+        data.location = tmp_result.location
+        data.storage_data = dict(tmp_result.storage_data, uploaded=0)
+        return data
 
-        tmp_result = self.upload(location, upload, data)
-        result = MultipartData(
-            tmp_result.location,
-            data["size"],
-            "application/octet-stream",
-            storage_data={"uploaded": 0},
-        )
-        return result
-
-    def multipart_show(
+    def multipart_refresh(
         self,
         data: MultipartData,
         extras: dict[str, Any],
@@ -153,21 +134,20 @@ class FsUploader(Uploader):
         )
         size = os.path.getsize(filepath)
         if size != data.size:
-            raise tk.ValidationError(
-                {
-                    "size": [
-                        "Actual filesize {} does not match expected {}".format(
-                            size,
-                            data.size,
-                        ),
-                    ],
-                },
-            )
+            raise exceptions.UploadSizeMismatchError(size, data.size)
 
         with open(filepath, "rb") as src:
             reader = utils.HashingReader(src)
             content_type = magic.from_buffer(next(reader, b""), True)
+            if data.content_type and content_type != data.content_type:
+                raise exceptions.UploadTypeMismatchError(
+                    content_type,
+                    data.content_type,
+                )
             reader.exhaust()
+
+        if data.hash and data.hash != reader.get_hash():
+            raise exceptions.UploadHashMismatchError(reader.get_hash(), data.hash)
 
         return FileData(data.location, size, content_type, reader.get_hash())
 
@@ -274,7 +254,7 @@ class FsManager(Manager):
         filepath = os.path.join(str(self.storage.settings["path"]), data.location)
         return os.path.exists(filepath)
 
-    def remove(self, data: FileData, extras: dict[str, Any]) -> bool:
+    def remove(self, data: FileData | MultipartData, extras: dict[str, Any]) -> bool:
         filepath = os.path.join(str(self.storage.settings["path"]), data.location)
         if not os.path.exists(filepath):
             return False

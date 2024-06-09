@@ -167,19 +167,18 @@ class TestUploader:
 
 @pytest.mark.usefixtures("with_plugins")
 class TestMultipartUploader:
-    def test_initialization_invalid(self, storage: gc.GoogleCloudStorage, faker: Faker):
-        with pytest.raises(tk.ValidationError):
-            storage.multipart_start(faker.file_name())
-
     def test_initialization_large(self, storage: gc.GoogleCloudStorage, faker: Faker):
         storage.settings["max_size"] = 5
         with pytest.raises(exceptions.LargeUploadError):
-            storage.multipart_start(faker.file_name(), size=10)
+            storage.multipart_start(faker.file_name(), shared.MultipartData(size=10))
 
     @pytest.mark.usefixtures("mocked_multipart_start")
     def test_initialization(self, storage: gc.GoogleCloudStorage, faker: Faker):
         content = b"hello world"
-        data = storage.multipart_start(faker.file_name(), size=len(content))
+        data = storage.multipart_start(
+            faker.file_name(),
+            shared.MultipartData(size=len(content)),
+        )
         assert data.size == len(content)
         assert data.storage_data["uploaded"] == 0
         assert data.storage_data["session_url"]
@@ -187,14 +186,20 @@ class TestMultipartUploader:
     @pytest.mark.usefixtures("mocked_multipart_start")
     def test_update_invalid(self, storage: gc.GoogleCloudStorage, faker: Faker):
         content = b"hello world"
-        data = storage.multipart_start(faker.file_name(), size=len(content))
+        data = storage.multipart_start(
+            faker.file_name(),
+            shared.MultipartData(size=len(content)),
+        )
         with pytest.raises(tk.ValidationError):
             storage.multipart_update(data)
 
     @pytest.mark.usefixtures("mocked_upload")
     def test_update(self, storage: gc.GoogleCloudStorage, faker: Faker):
         content = faker.binary(256 * 1024 * 2)
-        data = storage.multipart_start(faker.file_name(), size=len(content))
+        data = storage.multipart_start(
+            faker.file_name(),
+            shared.MultipartData(size=len(content)),
+        )
 
         with pytest.raises(tk.ValidationError):
             storage.multipart_update(
@@ -224,9 +229,15 @@ class TestMultipartUploader:
     @pytest.mark.usefixtures("mocked_upload")
     def test_complete(self, storage: gc.GoogleCloudStorage, faker: Faker):
         content = b"hello world"
-        data = storage.multipart_start(faker.file_name(), size=len(content))
+        data = storage.multipart_start(
+            faker.file_name(),
+            shared.MultipartData(
+                content_type="application/octet-stream",
+                size=len(content),
+            ),
+        )
 
-        with pytest.raises(tk.ValidationError):
+        with pytest.raises(exceptions.UploadSizeMismatchError):
             storage.multipart_complete(data)
 
         data = storage.multipart_update(
@@ -241,17 +252,23 @@ class TestMultipartUploader:
     def test_show(self, storage: gc.GoogleCloudStorage, faker: Faker):
         content = b"hello world"
 
-        data = storage.multipart_start(faker.file_name(), size=len(content))
-        assert storage.multipart_show(data) == data
+        data = storage.multipart_start(
+            faker.file_name(),
+            shared.MultipartData(
+                content_type="application/octet-stream",
+                size=len(content),
+            ),
+        )
+        assert storage.multipart_refresh(data) == data
 
         data = storage.multipart_update(
             data,
             upload=shared.make_upload(BytesIO(content)),
         )
-        assert storage.multipart_show(data) == data
+        assert storage.multipart_refresh(data) == data
 
         storage.multipart_complete(data)
-        assert storage.multipart_show(data) == data
+        assert storage.multipart_refresh(data) == data
 
 
 class TestManager:

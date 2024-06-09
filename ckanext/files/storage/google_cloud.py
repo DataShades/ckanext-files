@@ -50,27 +50,16 @@ class GoogleCloudUploader(Uploader):
         return FileData(
             filename,
             blob.size or upload.size,
-            upload.type,
+            upload.content_type,
             filehash,
         )
 
     def multipart_start(
         self,
         location: str,
+        data: MultipartData,
         extras: dict[str, Any],
     ) -> MultipartData:
-        schema = {
-            "size": [
-                tk.get_validator("not_missing"),
-                tk.get_validator("int_validator"),
-            ],
-            "__extras": [tk.get_validator("ignore")],
-        }
-        data, errors = tk.navl_validate(extras, schema)
-
-        if errors:
-            raise tk.ValidationError(errors)
-
         filename = self.storage.compute_location(location, **extras)
         filepath = os.path.join(self.storage.settings["path"], filename)
 
@@ -78,13 +67,13 @@ class GoogleCloudUploader(Uploader):
         blob = client.bucket(self.storage.settings["bucket"]).blob(filepath)
 
         max_size = self.storage.max_size
-        if max_size and data["size"] > max_size:
-            raise exceptions.LargeUploadError(data["size"], max_size)
+        if max_size and data.size > max_size:
+            raise exceptions.LargeUploadError(data.size, max_size)
 
         url = cast(
             str,
             blob.create_resumable_upload_session(
-                size=data["size"],
+                size=data.size,
                 origin=self.storage.settings["resumable_origin"],
             ),
         )
@@ -92,14 +81,13 @@ class GoogleCloudUploader(Uploader):
         if not url:
             raise exceptions.UploadError("Cannot initialize session URL")
 
-        return MultipartData(
-            filename,
-            data["size"],
-            storage_data={
-                "session_url": url,
-                "uploaded": 0,
-            },
+        data.location = filename
+        data.storage_data = dict(
+            data.storage_data,
+            session_url=url,
+            uploaded=0,
         )
+        return data
 
     def multipart_update(
         self,
@@ -178,7 +166,7 @@ class GoogleCloudUploader(Uploader):
 
         return data
 
-    def multipart_show(
+    def multipart_refresh(
         self,
         data: MultipartData,
         extras: dict[str, Any],
@@ -233,20 +221,20 @@ class GoogleCloudUploader(Uploader):
         data: MultipartData,
         extras: dict[str, Any],
     ) -> FileData:
-        data = self.multipart_show(data, extras)
+        data = self.multipart_refresh(data, extras)
         if data.storage_data["uploaded"] != data.size:
-            raise tk.ValidationError(
-                {
-                    "size": [
-                        "Actual filesize {} does not match expected {}".format(
-                            data.storage_data["uploaded"],
-                            data.size,
-                        ),
-                    ],
-                },
+            raise exceptions.UploadSizeMismatchError(
+                data.storage_data["uploaded"],
+                data.size,
             )
 
         filehash = decode(data.storage_data["result"]["md5Hash"])
+        if data.hash and data.hash != filehash:
+            raise exceptions.UploadHashMismatchError(filehash, data.hash)
+
+        content_type = data.storage_data["result"]["contentType"]
+        if data.content_type and content_type != data.content_type:
+            raise exceptions.UploadTypeMismatchError(content_type, data.content_type)
 
         return FileData(
             os.path.relpath(
@@ -254,7 +242,7 @@ class GoogleCloudUploader(Uploader):
                 self.storage.settings["path"],
             ),
             data.size,
-            data.storage_data["result"]["contentType"],
+            content_type,
             filehash,
         )
 
@@ -264,7 +252,10 @@ class GoogleCloudManager(Manager):
     required_options = ["bucket"]
     capabilities = Capability.combine(Capability.REMOVE)
 
-    def remove(self, data: FileData, extras: dict[str, Any]) -> bool:
+    def remove(self, data: FileData | MultipartData, extras: dict[str, Any]) -> bool:
+        if isinstance(data, MultipartData):
+            return False
+
         filepath = os.path.join(str(self.storage.settings["path"]), data.location)
         client: Client = self.storage.client
         blob = client.bucket(self.storage.settings["bucket"]).blob(filepath)

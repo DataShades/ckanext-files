@@ -80,10 +80,10 @@ class TestUploader:
             uploader.upload(faker.file_name(), make_upload(""), {})
 
         with pytest.raises(NotImplementedError):
-            uploader.multipart_start(faker.file_name(), {})
+            uploader.multipart_start(faker.file_name(), MultipartData(), {})
 
         with pytest.raises(NotImplementedError):
-            uploader.multipart_show(MultipartData(), {})
+            uploader.multipart_refresh(MultipartData(), {})
 
         with pytest.raises(NotImplementedError):
             uploader.multipart_update(MultipartData(), {})
@@ -214,10 +214,10 @@ class TestStorage:
             storage.upload(faker.file_name(), make_upload(""))
 
         with pytest.raises(NotImplementedError):
-            storage.multipart_start(faker.file_name())
+            storage.multipart_start(faker.file_name(), MultipartData())
 
         with pytest.raises(NotImplementedError):
-            storage.multipart_show(MultipartData())
+            storage.multipart_refresh(MultipartData())
 
         with pytest.raises(NotImplementedError):
             storage.multipart_update(MultipartData())

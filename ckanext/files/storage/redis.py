@@ -16,6 +16,7 @@ from ckanext.files.shared import (
     Capability,
     FileData,
     Manager,
+    MultipartData,
     Reader,
     Storage,
     Upload,
@@ -53,7 +54,7 @@ class RedisUploader(Uploader):
         return FileData(
             safe_location,
             reader.position,
-            upload.type,
+            upload.content_type,
             reader.get_hash(),
         )
 
@@ -82,7 +83,7 @@ class RedisManager(Manager):
     required_options = ["prefix"]
     capabilities = Capability.combine(Capability.REMOVE, Capability.EXISTS)
 
-    def remove(self, data: FileData, extras: dict[str, Any]) -> bool:
+    def remove(self, data: FileData | MultipartData, extras: dict[str, Any]) -> bool:
         key = self.storage.settings["prefix"] + data.location
         self.storage.redis.delete(key)
         return True

@@ -24,27 +24,17 @@ class TestDefault:
 
 
 class TestStorages:
-    def adapt_to_ckan_version(self, settings: dict[str, Any]) -> dict[str, Any]:
-        """CKAN v2.10 has max_size added to default storage by config
-        declaration.
-
-        """
-
-        settings.setdefault("max_size", 0)
-
-        return settings
-
     def test_empty(self):
         """With no customization we have only storage defined by test.ini"""
 
         assert config.storages() == {
-            "default": self.adapt_to_ckan_version(
-                {
-                    "type": "files:redis",
-                    "prefix": "ckanext:files:test.ckan.net:file_content:",
-                    "name": "default",
-                },
-            ),
+            "default": {
+                "type": "files:redis",
+                "prefix": "ckanext:files:test.ckan.net:file_content:",
+                "name": "default",
+                "supported_types": [],
+                "max_size": 0,
+            },
         }
 
     def test_customized(self, monkeypatch: MonkeyPatch, ckan_config: dict[str, Any]):
@@ -62,15 +52,21 @@ class TestStorages:
         storages = config.storages()
 
         assert storages == {
-            "default": self.adapt_to_ckan_version(
-                {
-                    "type": "files:redis",
-                    "prefix": "ckanext:files:test.ckan.net:file_content:",
-                    "name": "default",
-                },
-            ),
-            "test": {"type": "test", "path": "somepath"},
-            "another": {"type": "fancy", "location_strategy": "hello"},
+            "default": {
+                "type": "files:redis",
+                "prefix": "ckanext:files:test.ckan.net:file_content:",
+                "name": "default",
+                "supported_types": [],
+                "max_size": 0,
+            },
+            "test": {
+                "type": "test",
+                "path": "somepath",
+            },
+            "another": {
+                "type": "fancy",
+                "location_strategy": "hello",
+            },
         }
 
     @pytest.mark.ckan_config(config.STORAGE_PREFIX + "another", "test")
@@ -83,11 +79,11 @@ class TestStorages:
         storages = config.storages()
 
         assert storages == {
-            "default": self.adapt_to_ckan_version(
-                {
-                    "type": "files:redis",
-                    "prefix": "ckanext:files:test.ckan.net:file_content:",
-                    "name": "default",
-                },
-            ),
+            "default": {
+                "type": "files:redis",
+                "prefix": "ckanext:files:test.ckan.net:file_content:",
+                "name": "default",
+                "supported_types": [],
+                "max_size": 0,
+            },
         }

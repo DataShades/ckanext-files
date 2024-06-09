@@ -307,7 +307,7 @@ namespace ckan {
                     return new Promise((done, fail) =>
                         this.sandbox.client.call(
                             "GET",
-                            "files_upload_show",
+                            "files_multipart_refresh",
                             `?id=${id}`,
                             (data: any) => {
                                 done(data.result);

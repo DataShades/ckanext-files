@@ -184,6 +184,7 @@ class Uploader(StorageService):
     def multipart_start(
         self,
         location: str,
+        data: MultipartData,
         extras: dict[str, Any],
     ) -> MultipartData:
         """Prepare everything for multipart(resumable) upload."""
@@ -191,7 +192,7 @@ class Uploader(StorageService):
         raise NotImplementedError
 
     # TODO: rename to refresh or something
-    def multipart_show(
+    def multipart_refresh(
         self,
         data: MultipartData,
         extras: dict[str, Any],
@@ -218,7 +219,7 @@ class Uploader(StorageService):
 
 
 class Manager(StorageService):
-    def remove(self, data: FileData, extras: dict[str, Any]) -> bool:
+    def remove(self, data: FileData | MultipartData, extras: dict[str, Any]) -> bool:
         """Remove file from the storage."""
         raise NotImplementedError
 
@@ -316,6 +317,12 @@ class Storage(OptionChecker, abc.ABC):
         size = self.settings.get("max_size", 0)
         return size
 
+    @property
+    def supported_types(self) -> list[str]:
+        """List of supported MIMEtypes or their parts."""
+
+        return self.settings.get("supported_types", [])
+
     @classmethod
     def declare_config_options(cls, declaration: Declaration, key: Key) -> None:
         declaration.declare(key.max_size, 0).append_validators(
@@ -325,6 +332,11 @@ class Storage(OptionChecker, abc.ABC):
             + "\nSupports size suffixes: 42B, 2M, 24KiB, 1GB."
             + " `0` means no restrictions.",
         )
+        declaration.declare_list(key.supported_types, None).set_description(
+            "Space-separated list of MIME types or just type or subtype part."
+            + "\nExample: text/csv pdf application video jpeg",
+        )
+
         declaration.declare(key.name, key[-1]).set_description(
             "Descriptive name of the storage used for debugging.",
         )
@@ -389,34 +401,28 @@ class Storage(OptionChecker, abc.ABC):
         if self.max_size:
             utils.ensure_size(upload, self.max_size)
 
+        if self.supported_types:
+            utils.ensure_type(upload, self.supported_types)
+
         return self.uploader.upload(location, upload, kwargs)
 
-    def multipart_start(self, name: str, /, **kwargs: Any) -> MultipartData:
-        return self.uploader.multipart_start(name, kwargs)
-
-    def multipart_show(
+    def multipart_start(
         self,
-        upload_data: MultipartData,
+        name: str,
+        data: MultipartData,
         /,
         **kwargs: Any,
     ) -> MultipartData:
-        return self.uploader.multipart_show(upload_data, kwargs)
+        return self.uploader.multipart_start(name, data, kwargs)
 
-    def multipart_update(
-        self,
-        upload_data: MultipartData,
-        /,
-        **kwargs: Any,
-    ) -> MultipartData:
-        return self.uploader.multipart_update(upload_data, kwargs)
+    def multipart_refresh(self, data: MultipartData, /, **kwargs: Any) -> MultipartData:
+        return self.uploader.multipart_refresh(data, kwargs)
 
-    def multipart_complete(
-        self,
-        upload_data: MultipartData,
-        /,
-        **kwargs: Any,
-    ) -> FileData:
-        return self.uploader.multipart_complete(upload_data, kwargs)
+    def multipart_update(self, data: MultipartData, /, **kwargs: Any) -> MultipartData:
+        return self.uploader.multipart_update(data, kwargs)
+
+    def multipart_complete(self, data: MultipartData, /, **kwargs: Any) -> FileData:
+        return self.uploader.multipart_complete(data, kwargs)
 
     def exists(self, data: FileData, /, **kwargs: Any) -> bool:
         if not self.supports(utils.Capability.EXISTS):
@@ -424,7 +430,7 @@ class Storage(OptionChecker, abc.ABC):
 
         return self.manager.exists(data, kwargs)
 
-    def remove(self, data: FileData, /, **kwargs: Any) -> bool:
+    def remove(self, data: FileData | MultipartData, /, **kwargs: Any) -> bool:
         if not self.supports(utils.Capability.REMOVE):
             raise exceptions.UnsupportedOperationError("remove", type(self))
 

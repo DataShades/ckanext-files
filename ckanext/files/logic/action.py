@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import dataclasses
 from typing import Any
 
 import sqlalchemy as sa
@@ -12,6 +11,7 @@ from ckan.logic import validate
 from ckan.types import Context
 
 from ckanext.files import exceptions, shared
+from ckanext.files.base import MultipartData
 from ckanext.files.model import File, Multipart, Owner
 
 from . import schema
@@ -98,12 +98,21 @@ def files_file_search(
     tk.check_access("files_file_search", context, data_dict)
     sess = context["session"]
 
-    stmt = sa.select(File).join(
-        Owner,
-        sa.and_(File.id == Owner.item_id, Owner.item_type == "file"),
-    )
+    if data_dict["completed"]:
+        stmt = sa.select(File).outerjoin(
+            Owner,
+            sa.and_(File.id == Owner.item_id, Owner.item_type == "file"),
+        )
 
-    inspector: Any = sa.inspect(File)
+        inspector: Any = sa.inspect(File)
+    else:
+        stmt = sa.select(Multipart).outerjoin(
+            Owner,
+            sa.and_(Multipart.id == Owner.item_id, Owner.item_type == "multipart"),
+        )
+
+        inspector: Any = sa.inspect(Multipart)
+
     columns = inspector.columns
 
     for mask in ["storage_data", "plugin_data"]:
@@ -213,9 +222,11 @@ def _delete_owners(context: Context, item_type: str, item_id: str):
 def files_file_delete(context: Context, data_dict: dict[str, Any]) -> dict[str, Any]:
     tk.check_access("files_file_delete", context, data_dict)
 
-    data_dict["id"]
-    fileobj: File | None = (
-        context["session"].query(File).filter_by(id=data_dict["id"]).one_or_none()
+    fileobj: File | Multipart | None = (
+        context["session"]
+        .query(File if data_dict["completed"] else Multipart)
+        .filter_by(id=data_dict["id"])
+        .one_or_none()
     )
     if not fileobj:
         raise tk.ObjectNotFound("file")
@@ -224,12 +235,17 @@ def files_file_delete(context: Context, data_dict: dict[str, Any]) -> dict[str, 
     if not storage.supports(shared.Capability.REMOVE):
         raise tk.ValidationError({"storage": ["Operation is not supported"]})
 
+    dc = shared.FileData if data_dict["completed"] else shared.MultipartData
     try:
-        storage.remove(shared.FileData.from_model(fileobj))
+        storage.remove(dc.from_model(fileobj))
     except exceptions.PermissionError as err:
         raise tk.NotAuthorized(str(err)) from err
 
-    _delete_owners(context, "file", fileobj.id)
+    _delete_owners(
+        context,
+        "file" if data_dict["completed"] else "multipart",
+        fileobj.id,
+    )
     context["session"].delete(fileobj)
     context["session"].commit()
 
@@ -241,8 +257,11 @@ def files_file_delete(context: Context, data_dict: dict[str, Any]) -> dict[str, 
 def files_file_show(context: Context, data_dict: dict[str, Any]) -> dict[str, Any]:
     tk.check_access("files_file_show", context, data_dict)
 
-    fileobj: File | None = (
-        context["session"].query(File).filter(File.id == data_dict["id"]).one_or_none()
+    fileobj: File | Multipart | None = (
+        context["session"]
+        .query(File if data_dict["completed"] else Multipart)
+        .filter_by(id=data_dict["id"])
+        .one_or_none()
     )
     if not fileobj:
         raise tk.ObjectNotFound("file")
@@ -254,14 +273,17 @@ def files_file_show(context: Context, data_dict: dict[str, Any]) -> dict[str, An
 def files_file_rename(context: Context, data_dict: dict[str, Any]) -> dict[str, Any]:
     tk.check_access("files_file_rename", context, data_dict)
 
-    fileobj: File | None = (
-        context["session"].query(File).filter(File.id == data_dict["id"]).one_or_none()
+    fileobj: File | Multipart | None = (
+        context["session"]
+        .query(File if data_dict["completed"] else Multipart)
+        .filter_by(id=data_dict["id"])
+        .one_or_none()
     )
     if not fileobj:
         raise tk.ObjectNotFound("file")
 
     fileobj.name = secure_filename(data_dict["name"])
-    fileobj.touch()
+
     context["session"].commit()
 
     return fileobj.dictize(context)
@@ -285,8 +307,14 @@ def files_multipart_start(
 
     filename = secure_filename(data_dict["name"])
     try:
-        storage_data = storage.multipart_start(
+        data = storage.multipart_start(
             filename,
+            MultipartData(
+                filename,
+                data_dict["size"],
+                data_dict["content_type"],
+                data_dict["hash"],
+            ),
             **extras,
         )
     except exceptions.UploadError as err:
@@ -296,7 +324,7 @@ def files_multipart_start(
         name=filename,
         storage=data_dict["storage"],
     )
-    storage_data.into_model(fileobj)
+    data.into_model(fileobj)
 
     context["session"].add(fileobj)
     _add_owner(context, "multipart", fileobj.id)
@@ -305,19 +333,22 @@ def files_multipart_start(
     return fileobj.dictize(context)
 
 
-@tk.side_effect_free
-@validate(schema.upload_show)
-def files_upload_show(context: Context, data_dict: dict[str, Any]) -> dict[str, Any]:
-    tk.check_access("files_upload_show", context, data_dict)
-    file_dict = tk.get_action("files_file_show")(context, data_dict)
+@validate(schema.multipart_refresh)
+def files_multipart_refresh(
+    context: Context,
+    data_dict: dict[str, Any],
+) -> dict[str, Any]:
+    tk.check_access("files_multipart_refresh", context, data_dict)
 
-    if file_dict["completed"]:
-        raise tk.ObjectNotFound("upload")
+    fileobj = context["session"].get(Multipart, data_dict["id"])
+    if not fileobj:
+        raise tk.ObjectNotFound("file")
 
-    storage = shared.get_storage(file_dict["storage"])
-    storage_data = storage.multipart_show(file_dict["storage_data"])
+    storage = shared.get_storage(fileobj.storage)
+    storage.multipart_refresh(MultipartData.from_model(fileobj)).into_model(fileobj)
+    context["session"].commit()
 
-    return dict(file_dict, storage_data=dataclasses.asdict(storage_data))
+    return fileobj.dictize(context)
 
 
 @validate(schema.multipart_update)
@@ -370,7 +401,7 @@ def files_multipart_complete(
 
     result = File(
         name=fileobj.name,
-        storage=data_dict["storage"],
+        storage=fileobj.storage,
     )
 
     try:

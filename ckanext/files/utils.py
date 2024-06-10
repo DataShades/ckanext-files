@@ -16,12 +16,14 @@ import mimetypes
 import re
 import tempfile
 from io import BytesIO
-from typing import IO, Any, Callable, Generic, Literal, TypeVar, cast
+from typing import IO, Any, Callable, Generic, Iterable, Literal, TypeVar, cast
 
 import jwt
 import magic
+from sqlalchemy.orm import Mapper
 from werkzeug.datastructures import FileStorage
 
+import ckan.plugins.toolkit as tk
 from ckan import model
 from ckan.lib.api_token import _get_algorithm, _get_secret  # type: ignore
 
@@ -165,7 +167,17 @@ def get_owner(owner_type: str, owner_id: str):
     if getter := owner_getters.get(owner_type):
         return getter(owner_id)
 
-    for mapper in model.registry.mappers:
+    mappers: Iterable[Mapper]
+    if tk.check_ckan_version("2.11"):
+        mappers = model.registry.mappers
+    else:
+        mappers = cast(
+            Iterable[Mapper],
+            tk.BaseModel._sa_registry.mappers
+            | model.User._sa_class_manager.registry.mappers,  # type: ignore
+        )
+
+    for mapper in mappers:
         cls = mapper.class_
         if hasattr(cls, "__table__") and cls.__table__.name == owner_type:
             return model.Session.get(cls, owner_id)

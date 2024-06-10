@@ -1,7 +1,7 @@
 """Internal utilities of the extension.
 
 Do not use this module outside of the extension and do not import any other
-internal module except for types, config, interfaces and exceptions. Only independent
+internal module except for config and exceptions. Only independent
 tools are stored here, to avoid import cycles.
 
 """
@@ -16,20 +16,13 @@ import mimetypes
 import re
 import tempfile
 from io import BytesIO
-from typing import IO, Any, Generic, TypeVar, cast
+from typing import IO, Any, Generic, Literal, TypeVar, cast
 
 import magic
 from werkzeug.datastructures import FileStorage
 
-import ckan.plugins as p
-import ckan.plugins.toolkit as tk
-from ckan import model
-from ckan.types import Context
-
-from ckanext.files import config, exceptions, interfaces, types
-
 T = TypeVar("T")
-
+AuthOperation = Literal["show", "update", "delete"]
 RE_FILESIZE = re.compile(r"^(?P<size>\d+(?:\.\d+)?)\s*(?P<unit>\w*)$")
 CHUNK_SIZE = 16 * 1024
 CHECKSUM_ALGORITHM = "md5"
@@ -53,6 +46,46 @@ UNITS = cast(
         "tib": 2**40,
     },
 )
+
+
+class Registry(Generic[T]):
+    """Mutable collection of objects.
+
+    Example:
+    >>> col = Registry()
+    >>>
+    >>> col.register("one", 1)
+    >>> assert col.get("one") == 1
+    >>>
+    >>> col.reset()
+    >>> assert col.get("one") is None
+    """
+
+    def __init__(self, members: dict[str, T] | None = None) -> None:
+        if members is None:
+            members = {}
+        self.members = members
+
+    def __iter__(self):
+        return iter(self.members)
+
+    def __getitem__(self, key: str):
+        return self.members[key]
+
+    def reset(self):
+        """Remove all members from registry."""
+
+        self.members.clear()
+
+    def register(self, name: str, member: T) -> None:
+        """Add a member to registry."""
+
+        self.members[name] = member
+
+    def get(self, name: str) -> T | None:
+        """Get an optional member from registry."""
+
+        return self.members.get(name)
 
 
 @dataclasses.dataclass
@@ -197,66 +230,6 @@ class Capability(enum.Flag):
         return (self & operation) == operation
 
 
-class Registry(Generic[T]):
-    """Mutable collection of objects.
-
-    Example:
-    >>> col = Registry()
-    >>>
-    >>> col.register("one", 1)
-    >>> assert col.get("one") == 1
-    >>>
-    >>> col.reset()
-    >>> assert col.get("one") is None
-    """
-
-    def __init__(self, members: dict[str, T] | None = None) -> None:
-        if members is None:
-            members = {}
-        self.members = members
-
-    def __iter__(self):
-        return iter(self.members)
-
-    def __getitem__(self, key: str):
-        return self.members[key]
-
-    def reset(self):
-        """Remove all members from registry."""
-
-        self.members.clear()
-
-    def register(self, name: str, member: T) -> None:
-        """Add a member to registry."""
-
-        self.members[name] = member
-
-    def get(self, name: str) -> T | None:
-        """Get an optional member from registry."""
-
-        return self.members.get(name)
-
-
-def ensure_size(upload: Upload, max_size: int) -> int:
-    """Return filesize or rise an exception if it exceedes max_size."""
-
-    if upload.size > max_size:
-        raise exceptions.LargeUploadError(upload.size, max_size)
-
-    return upload.size
-
-
-def ensure_type(upload: Upload, types: list[str]) -> str:
-    """Return content type of upload or rise an exception if type is not supported"""
-
-    maintype, subtype = upload.content_type.split("/")
-    for option in types:
-        if option in [upload.content_type, maintype, subtype]:
-            return upload.content_type
-
-    raise exceptions.WrongUploadTypeError(upload.content_type)
-
-
 def parse_filesize(value: str) -> int:
     """Transform human-readable filesize into an integer.
 
@@ -381,48 +354,3 @@ def _tempfile_as_upload(value: tempfile.SpooledTemporaryFile[bytes]):
     value.seek(0)
 
     return Upload(value, value.name or "", size, mime)
-
-
-def materialize_owner(owner_type: str, owner_id: str) -> Any:
-    """Transform owner details into owner entity."""
-
-    not_exist = object()
-
-    for plugin in p.PluginImplementations(interfaces.IFiles):
-        owner = plugin.files_materialize_owner(owner_type, owner_id, not_exist)
-        if owner is not_exist:
-            return None
-
-        if owner is not None:
-            return owner
-
-    for mapper in model.registry.mappers:
-        cls = mapper.class_
-        if hasattr(cls, "__table__") and cls.__table__.name == owner_type:
-            return model.Session.get(cls, owner_id)
-
-    raise TypeError(owner_type)
-
-
-def is_allowed(context: Context, file: Any, operation: types.AuthOperation) -> Any:
-    """Decide if user is allowed to perform operation on file."""
-    info = file.owner_info
-
-    if info and info.owner_type in config.cascade_access():
-        try:
-            tk.check_access(
-                f"{info.owner_type}_{operation}",
-                context,
-                {"id": info.owner_id},
-            )
-
-        except tk.NotAuthorized:
-            return False
-
-        except ValueError:
-            pass
-
-    for plugin in p.PluginImplementations(interfaces.IFiles):
-        result = plugin.files_is_allowed(context, file, operation)
-        if result is not None:
-            return result

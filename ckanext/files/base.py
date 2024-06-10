@@ -23,11 +23,31 @@ import pytz
 
 from ckan.config.declaration import Declaration, Key
 
-from ckanext.files import config, exceptions, model, utils
-from ckanext.files.types import TFileModel
+from . import config, exceptions, model, utils
+from .types import TFileModel
 
-adapters: utils.Registry[type[Storage]] = utils.Registry({})
-storages: utils.Registry[Storage] = utils.Registry({})
+adapters = utils.Registry["type[Storage]"]({})
+storages = utils.Registry["Storage"]({})
+
+
+def ensure_size(upload: utils.Upload, max_size: int) -> int:
+    """Return filesize or rise an exception if it exceedes max_size."""
+
+    if upload.size > max_size:
+        raise exceptions.LargeUploadError(upload.size, max_size)
+
+    return upload.size
+
+
+def ensure_type(upload: utils.Upload, types: list[str]) -> str:
+    """Return content type of upload or rise an exception if type is not supported"""
+
+    maintype, subtype = upload.content_type.split("/")
+    for option in types:
+        if option in [upload.content_type, maintype, subtype]:
+            return upload.content_type
+
+    raise exceptions.WrongUploadTypeError(upload.content_type)
 
 
 @dataclasses.dataclass
@@ -399,10 +419,10 @@ class Storage(OptionChecker, abc.ABC):
             raise exceptions.UnsupportedOperationError("upload", type(self))
 
         if self.max_size:
-            utils.ensure_size(upload, self.max_size)
+            ensure_size(upload, self.max_size)
 
         if self.supported_types:
-            utils.ensure_type(upload, self.supported_types)
+            ensure_type(upload, self.supported_types)
 
         return self.uploader.upload(location, upload, kwargs)
 

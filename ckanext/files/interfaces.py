@@ -3,7 +3,7 @@
 
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, Callable
 
 from ckan.plugins import Interface
 from ckan.types import Context
@@ -29,29 +29,18 @@ class IFiles(Interface):
 
         return {}
 
-    def files_materialize_owner(
-        self,
-        owner_type: str,
-        owner_id: str,
-        not_exist: object,
-    ) -> Any:
-        """Return owner entity.
+    def files_register_owner_getters(self) -> dict[str, Callable[[str], Any]]:
+        """Return mapping with lookup functions for owner types.
 
-        If implementation doesn't know how to get owner, return `None`. If
-        implementation knows how to get owner and owner **definitely** does not
-        exist, return `not_exist` parameter.
+        Name of the getter is the name used as `Owner.owner_type`. The getter
+        itself is a function that accepts owner ID and returns optional owner
+        entity.
 
         Example:
-        >>> def files_materialize_owner(self, type, id, not_exist):
-        >>>     if type not in known_types:
-        >>>         return None
-        >>>
-        >>>     if owner := get_known_owner(id):
-        >>>         return owner
-        >>>
-        >>>     return not_exist
+        >>> def files_register_owner_getters(self):
+        >>>     return {"resource": model.Resource.get}
         """
-        return None
+        return {}
 
     def files_is_allowed(
         self,

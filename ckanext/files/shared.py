@@ -8,10 +8,13 @@ from ckanext.files.base import (
     get_storage,
     make_storage,
 )
+from ckanext.files.interfaces import IFiles
 from ckanext.files.model import File, Multipart, Owner
-from ckanext.files.utils import Capability, Upload, make_upload
+from ckanext.files.utils import Capability, HashingReader, Upload, make_upload
 
 __all__ = [
+    "IFiles",
+    "HashingReader",
     "Capability",
     "File",
     "FileData",

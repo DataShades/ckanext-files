@@ -15,6 +15,7 @@ from ckanext.files import exceptions
 from ckanext.files.shared import (
     Capability,
     FileData,
+    HashingReader,
     Manager,
     MultipartData,
     Reader,
@@ -22,7 +23,6 @@ from ckanext.files.shared import (
     Upload,
     Uploader,
 )
-from ckanext.files.utils import HashingReader
 
 
 class RedisUploader(Uploader):

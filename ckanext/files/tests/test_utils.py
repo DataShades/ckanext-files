@@ -6,52 +6,8 @@ import pytest
 from faker import Faker
 from werkzeug.datastructures import FileStorage
 
-from ckanext.files import exceptions, shared, utils
+from ckanext.files import base, exceptions, shared, utils
 from ckanext.files.shared import Capability
-
-
-class TestHasingReader:
-    def test_empty_hash(self):
-        """Empty reader produces the hash of empty string and doesn't add any
-        default bytes.
-
-        """
-
-        reader = utils.HashingReader(BytesIO())
-        reader.exhaust()
-
-        assert reader.get_hash() == hashlib.md5().hexdigest()
-
-    def test_hash(self, faker: Faker):
-        """Reader's hash is based on the stream content."""
-
-        content = faker.binary(100)
-        expected = hashlib.md5(content).hexdigest()
-
-        reader = utils.HashingReader(BytesIO(content))
-
-        output = b""
-        for chunk in reader:
-            output += chunk
-
-        assert output == content
-        assert reader.get_hash() == expected
-
-    def test_reset(self, faker: Faker):
-        """Resetting the reader makes it reusable"""
-        stream = BytesIO(faker.binary(100))
-        reader = utils.HashingReader(stream)
-
-        reader.exhaust()
-
-        first_hash = reader.get_hash()
-        assert stream.tell() == 100
-
-        reader.reset()
-        assert stream.tell() == 0
-
-        reader.exhaust()
-        assert reader.get_hash() == first_hash
 
 
 def test_registry(faker: Faker):
@@ -76,20 +32,64 @@ def test_registry(faker: Faker):
     assert list(registry) == []
 
 
+class TestHasingReader:
+    def test_empty_hash(self):
+        """Empty reader produces the hash of empty string and doesn't add any
+        default bytes.
+
+        """
+
+        reader = shared.HashingReader(BytesIO())
+        reader.exhaust()
+
+        assert reader.get_hash() == hashlib.md5().hexdigest()
+
+    def test_hash(self, faker: Faker):
+        """Reader's hash is based on the stream content."""
+
+        content = faker.binary(100)
+        expected = hashlib.md5(content).hexdigest()
+
+        reader = shared.HashingReader(BytesIO(content))
+
+        output = b""
+        for chunk in reader:
+            output += chunk
+
+        assert output == content
+        assert reader.get_hash() == expected
+
+    def test_reset(self, faker: Faker):
+        """Resetting the reader makes it reusable"""
+        stream = BytesIO(faker.binary(100))
+        reader = shared.HashingReader(stream)
+
+        reader.exhaust()
+
+        first_hash = reader.get_hash()
+        assert stream.tell() == 100
+
+        reader.reset()
+        assert stream.tell() == 0
+
+        reader.exhaust()
+        assert reader.get_hash() == first_hash
+
+
 class TestEnsureSize:
     def test_empty(self):
         """Filesize identified even if it's not set initially."""
 
-        assert utils.ensure_size(shared.make_upload(""), 0) == 0
+        assert base.ensure_size(shared.make_upload(""), 0) == 0
 
     def test_not_empty(self):
         """Big files cause exception."""
 
         upload = shared.make_upload(BytesIO(b" " * 10))
-        assert utils.ensure_size(upload, 15) == 10
+        assert base.ensure_size(upload, 15) == 10
 
         with pytest.raises(exceptions.LargeUploadError):
-            utils.ensure_size(upload, 5)
+            base.ensure_size(upload, 5)
 
 
 class TestCapabilities:
@@ -292,7 +292,7 @@ class TestMakeUpload:
         fd.write(b"hello")
         fd.seek(0)
         upload = utils.make_upload(fd)
-        assert isinstance(upload, utils.Upload)
+        assert isinstance(upload, shared.Upload)
         assert upload.stream.read() == b"hello"
 
     def test_str(self, faker: Faker):

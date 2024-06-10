@@ -9,7 +9,8 @@ import ckan.plugins.toolkit as tk
 from ckan.config.declaration import Declaration, Key
 from ckan.exceptions import CkanConfigurationException
 
-from ckanext.files import base, config, exceptions, interfaces, storage
+from . import base, config, exceptions, interfaces, storage
+from .model.base import owner_getters
 
 
 @tk.blanket.helpers
@@ -79,6 +80,7 @@ class FilesPlugin(p.SingletonPlugin):
     # IConfigurable
     def configure(self, config_: Any):
         _initialize_storages()
+        _register_owner_getters()
 
     # IConfigurer
     def update_config(self, config_: Any):
@@ -110,3 +112,9 @@ def _initialize_storages():
             raise CkanConfigurationException(str(err)) from err
 
         base.storages.register(name, storage)
+
+
+def _register_owner_getters():
+    for plugin in p.PluginImplementations(interfaces.IFiles):
+        for name, getter in plugin.files_register_owner_getters().items():
+            owner_getters.register(name, getter)

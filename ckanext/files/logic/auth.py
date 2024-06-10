@@ -2,11 +2,12 @@ from __future__ import annotations
 
 from typing import Any, cast
 
+import ckan.plugins as p
 import ckan.plugins.toolkit as tk
 from ckan import authz, model
 from ckan.types import AuthResult, Context
 
-from ckanext.files import utils
+from ckanext.files import config, interfaces, types
 from ckanext.files.model import File, Multipart
 
 
@@ -30,6 +31,30 @@ def _get_file(context: Context, file_id: str, completed: bool):
         )
 
     return context["files_file"]  # type: ignore
+
+
+def _is_allowed(context: Context, file: Any, operation: types.AuthOperation) -> Any:
+    """Decide if user is allowed to perform operation on file."""
+    info = file.owner_info
+
+    if info and info.owner_type in config.cascade_access():
+        try:
+            tk.check_access(
+                f"{info.owner_type}_{operation}",
+                context,
+                {"id": info.owner_id},
+            )
+
+        except tk.NotAuthorized:
+            return False
+
+        except ValueError:
+            pass
+
+    for plugin in p.PluginImplementations(interfaces.IFiles):
+        result = plugin.files_is_allowed(context, file, operation)
+        if result is not None:
+            return result
 
 
 @tk.auth_disallow_anonymous_access
@@ -65,7 +90,7 @@ def files_owns_file(context: Context, data_dict: dict[str, Any]) -> AuthResult:
 
 @tk.auth_disallow_anonymous_access
 def files_edit_file(context: Context, data_dict: dict[str, Any]) -> AuthResult:
-    result = utils.is_allowed(
+    result = _is_allowed(
         context,
         _get_file(context, data_dict["id"], data_dict.get("completed", True)),
         "update",
@@ -78,7 +103,7 @@ def files_edit_file(context: Context, data_dict: dict[str, Any]) -> AuthResult:
 
 @tk.auth_disallow_anonymous_access
 def files_read_file(context: Context, data_dict: dict[str, Any]) -> AuthResult:
-    result = utils.is_allowed(
+    result = _is_allowed(
         context,
         _get_file(context, data_dict["id"], data_dict.get("completed", True)),
         "show",
@@ -91,7 +116,7 @@ def files_read_file(context: Context, data_dict: dict[str, Any]) -> AuthResult:
 
 @tk.auth_disallow_anonymous_access
 def files_delete_file(context: Context, data_dict: dict[str, Any]) -> AuthResult:
-    result = utils.is_allowed(
+    result = _is_allowed(
         context,
         _get_file(context, data_dict["id"], data_dict.get("completed", True)),
         "delete",

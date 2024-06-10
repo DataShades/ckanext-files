@@ -12,7 +12,7 @@ import magic
 import ckan.plugins.toolkit as tk
 from ckan.config.declaration import Declaration, Key
 
-from ckanext.files import exceptions, shared, utils
+from ckanext.files import exceptions, shared
 from ckanext.files.base import (
     FileData,
     Manager,
@@ -36,7 +36,7 @@ class FsUploader(Uploader):
     def upload(
         self,
         location: str,
-        upload: utils.Upload,
+        upload: shared.Upload,
         extras: dict[str, Any],
     ) -> FileData:
         location = self.storage.compute_location(location, upload, **extras)
@@ -46,7 +46,7 @@ class FsUploader(Uploader):
             raise exceptions.ExistingFileError(self.storage.settings["name"], dest)
 
         os.makedirs(os.path.dirname(dest), exist_ok=True)
-        reader = utils.HashingReader(upload.stream)
+        reader = shared.HashingReader(upload.stream)
         with open(dest, "wb") as fd:
             for chunk in reader:
                 fd.write(chunk)
@@ -64,7 +64,7 @@ class FsUploader(Uploader):
         data: MultipartData,
         extras: dict[str, Any],
     ) -> MultipartData:
-        upload = utils.Upload(
+        upload = shared.Upload(
             BytesIO(),
             location,
             data.size,
@@ -106,7 +106,7 @@ class FsUploader(Uploader):
             raise tk.ValidationError(errors)
 
         valid_extras.setdefault("position", data.storage_data["uploaded"])
-        upload: utils.Upload = valid_extras["upload"]
+        upload: shared.Upload = valid_extras["upload"]
 
         expected_size = valid_extras["position"] + upload.size
         if expected_size > data.size:
@@ -137,7 +137,7 @@ class FsUploader(Uploader):
             raise exceptions.UploadSizeMismatchError(size, data.size)
 
         with open(filepath, "rb") as src:
-            reader = utils.HashingReader(src)
+            reader = shared.HashingReader(src)
             content_type = magic.from_buffer(next(reader, b""), True)
             if data.content_type and content_type != data.content_type:
                 raise exceptions.UploadTypeMismatchError(
@@ -196,7 +196,7 @@ class FsManager(Manager):
     def append(
         self,
         data: FileData,
-        upload: utils.Upload,
+        upload: shared.Upload,
         extras: dict[str, Any],
     ) -> FileData:
         """Append content to existing file."""
@@ -276,7 +276,7 @@ class FsManager(Manager):
             raise exceptions.MissingFileError(self.storage.settings["name"], filepath)
 
         with open(filepath, "rb") as src:
-            reader = utils.HashingReader(src)
+            reader = shared.HashingReader(src)
             content_type = magic.from_buffer(next(reader, b""), True)
             reader.exhaust()
 

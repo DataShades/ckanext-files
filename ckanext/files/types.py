@@ -3,9 +3,11 @@
 
 from __future__ import annotations
 
-from typing import Any, Literal, Protocol, TypeVar
+from typing import Any, Protocol, TypeVar
 
-__all__ = ["PFileModel", "TFileModel"]
+from .utils import AuthOperation
+
+__all__ = ["PFileModel", "TFileModel", "AuthOperation"]
 
 
 class PFileModel(Protocol):
@@ -17,5 +19,3 @@ class PFileModel(Protocol):
 
 
 TFileModel = TypeVar("TFileModel", bound=PFileModel)
-
-AuthOperation = Literal["show", "update", "delete"]

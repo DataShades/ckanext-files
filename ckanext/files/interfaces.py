@@ -45,10 +45,12 @@ class IFiles(Interface):
     def files_is_allowed(
         self,
         context: Context,
-        file: File | Multipart,
+        file: File | Multipart | None,
+        owner: Any | None,
         operation: types.AuthOperation,
     ) -> bool | None:
-        """Decide if user is allowed to perform operation on file.
+        """Decide if user is allowed to perform operation on file that belongs
+        to owner.
 
         Return True/False if user allowed/not allowed. Return `None` to rely on
         other plugins. If every implementation returns `None`, default logic
@@ -56,9 +58,14 @@ class IFiles(Interface):
         means, that nobody is allowed to do anything with file owner by
         resource, dataset, group, etc.
 
+        For `show`, `update` and `delete` operation, `owner` represents the
+        current owner of the file. For `file_transfer` operation, `owner`
+        represents the entity that will become a new owner of the file. In this
+        case, the current owner can be checked via `file.owner` property.
+
         Example:
-        >>> def files_is_allowed(self, context, file, operation) -> bool | None:
-        >>>     if file.owner_info and file.owner_info == "resource"
+        >>> def files_is_allowed(self, context, file, owner, operation) -> bool | None:
+        >>>     if isinstance(owner, model.Resource):
         >>>         return is_authorized_boolean(
         >>>             f"resource_{operation}",
         >>>             context,

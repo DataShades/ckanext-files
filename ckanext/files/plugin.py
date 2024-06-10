@@ -9,8 +9,7 @@ import ckan.plugins.toolkit as tk
 from ckan.config.declaration import Declaration, Key
 from ckan.exceptions import CkanConfigurationException
 
-from . import base, config, exceptions, interfaces, storage
-from .model.base import owner_getters
+from . import base, config, exceptions, interfaces, storage, utils
 
 
 @tk.blanket.helpers
@@ -117,4 +116,4 @@ def _initialize_storages():
 def _register_owner_getters():
     for plugin in p.PluginImplementations(interfaces.IFiles):
         for name, getter in plugin.files_register_owner_getters().items():
-            owner_getters.register(name, getter)
+            utils.owner_getters.register(name, getter)

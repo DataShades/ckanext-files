@@ -11,7 +11,9 @@ from sqlalchemy.orm import Mapped, foreign, relationship
 from ckan.lib.dictization import table_dictize
 from ckan.model.types import make_uuid
 
-from .base import Base, get_owner, now, owner_getters
+from ckanext.files import utils
+
+from .base import Base, now
 from .owner import Owner
 
 foreign: Any
@@ -68,10 +70,7 @@ class Multipart(Base):  # type: ignore
         if not owner:
             return None
 
-        if getter := owner_getters.get(owner.owner_type):
-            return getter(owner.owner_id)
-
-        return get_owner(owner.owner_type, owner.owner_id)
+        return utils.get_owner(owner.owner_type, owner.owner_id)
 
     def __init__(self, **kwargs: Any):
         super().__init__(**kwargs)

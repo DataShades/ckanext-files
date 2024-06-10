@@ -16,16 +16,17 @@ import mimetypes
 import re
 import tempfile
 from io import BytesIO
-from typing import IO, Any, Generic, Literal, TypeVar, cast
+from typing import IO, Any, Callable, Generic, Literal, TypeVar, cast
 
 import jwt
 import magic
 from werkzeug.datastructures import FileStorage
 
+from ckan import model
 from ckan.lib.api_token import _get_algorithm, _get_secret  # type: ignore
 
 T = TypeVar("T")
-AuthOperation = Literal["show", "update", "delete"]
+AuthOperation = Literal["show", "update", "delete", "file_transfer"]
 RE_FILESIZE = re.compile(r"^(?P<size>\d+(?:\.\d+)?)\s*(?P<unit>\w*)$")
 CHUNK_SIZE = 16 * 1024
 CHECKSUM_ALGORITHM = "md5"
@@ -155,6 +156,21 @@ class HashingReader:
 
         for _ in self:
             pass
+
+
+owner_getters = Registry[Callable[[str], Any]]({})
+
+
+def get_owner(owner_type: str, owner_id: str):
+    if getter := owner_getters.get(owner_type):
+        return getter(owner_id)
+
+    for mapper in model.registry.mappers:
+        cls = mapper.class_
+        if hasattr(cls, "__table__") and cls.__table__.name == owner_type:
+            return model.Session.get(cls, owner_id)
+
+    raise TypeError(owner_type)
 
 
 class Capability(enum.Flag):

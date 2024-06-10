@@ -7,6 +7,11 @@ groups:
         description: |
           Default storage used for upload when no explicit storage specified
 
+      - key: ckanext.files.allow_authenticated_uploads
+        type: bool
+        description: |
+            Any authenticated user can upload files.
+
       - key: ckanext.files.owner.cascade_access
         type: list
         description: |

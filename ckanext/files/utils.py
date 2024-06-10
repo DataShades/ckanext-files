@@ -180,8 +180,11 @@ def get_owner(owner_type: str, owner_id: str):
     for mapper in mappers:
         cls = mapper.class_
         table = getattr(cls, "__table__", None)
+        # do not use `table` in simplified expressions, like `table and
+        # table.name`. Due to table nature it will cause SQL statement
+        # construction instead of truthiness check
         if table is None:
-            table = getattr(cls, "local_table", None)
+            table = getattr(mapper, "local_table", None)
 
         if table is not None and table.name == owner_type:
             return model.Session.get(cls, owner_id)

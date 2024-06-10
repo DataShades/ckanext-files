@@ -133,11 +133,7 @@ class GoogleCloudUploader(Uploader):
                 data.storage_data["session_url"],
                 data=upload.stream.read(),
                 headers={
-                    "content-range": "bytes {}-{}/{}".format(
-                        first_byte,
-                        last_byte,
-                        size,
-                    ),
+                    "content-range": f"bytes {first_byte}-{last_byte}/{size}",
                 },
             )
 
@@ -174,7 +170,7 @@ class GoogleCloudUploader(Uploader):
         resp = requests.put(
             data.storage_data["session_url"],
             headers={
-                "content-range": "bytes */{}".format(data.size),
+                "content-range": f"bytes */{data.size}",
                 "content-length": "0",
             },
         )
@@ -207,9 +203,7 @@ class GoogleCloudUploader(Uploader):
                 {
                     "id": [
                         "Invalid response from Google Cloud:"
-                        + " unexpected status {}".format(
-                            resp.status_code,
-                        ),
+                        + f" unexpected status {resp.status_code}",
                     ],
                 },
             )
@@ -287,17 +281,17 @@ class GoogleCloudStorage(Storage):
         settings["path"] = settings.setdefault("path", "").lstrip("/")
         settings.setdefault("resumable_origin", tk.config["ckan.site_url"])
 
-        super(GoogleCloudStorage, self).__init__(**settings)
+        super().__init__(**settings)
 
         credentials = None
         credentials_file = settings.get("credentials_file", None)
         if credentials_file:
             try:
                 credentials = Credentials.from_service_account_file(credentials_file)
-            except IOError as err:
+            except OSError as err:
                 raise exceptions.InvalidStorageConfigurationError(
                     type(self),
-                    "file `{}` does not exist".format(credentials_file),
+                    f"file `{credentials_file}` does not exist",
                 ) from err
 
         self.client = Client(credentials=credentials)

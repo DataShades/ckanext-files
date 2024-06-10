@@ -70,7 +70,7 @@ class SharedTests:
         )
         assert os.path.exists(filepath)
 
-        with open(filepath, "r") as src:
+        with open(filepath) as src:
             assert src.read() == content
 
     def test_resource_download(self, app: Any, create_with_upload: Any):

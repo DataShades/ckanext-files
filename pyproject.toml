@@ -3,7 +3,7 @@
 # preview = true
 
 [tool.ruff]
-target-version = "py37"
+target-version = "py38"
 
 [tool.ruff.lint]
 select = [
@@ -29,7 +29,7 @@ select = [
        "T20",  # print statements
        # "TID",  # tidier imports
        # "TRY",  # better exceptions
-       # "UP",  # upgrade syntax for newer versions of the language
+       "UP",  # upgrade syntax for newer versions of the language
 ]
 
 ignore = [

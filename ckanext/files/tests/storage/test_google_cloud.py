@@ -63,7 +63,7 @@ def encode(content: bytes) -> str:
 def mocked_session_url():
     return (
         "https://storage.googleapis.com"
-        + "/upload/storage/v1/b/{}/o?".format(TEST_BUCKET)
+        + f"/upload/storage/v1/b/{TEST_BUCKET}/o?"
         + "uploadType=resumable&upload_id=test"
     )
 
@@ -82,9 +82,7 @@ def mocked_multipart_start(
 
     responses.add_callback(
         "POST",
-        "https://storage.googleapis.com/upload/storage/v1/b/{}/o?uploadType=resumable".format(
-            TEST_BUCKET,
-        ),
+        f"https://storage.googleapis.com/upload/storage/v1/b/{TEST_BUCKET}/o?uploadType=resumable",
         callback=post_callback,
     )
 
@@ -118,7 +116,7 @@ def mocked_multipart_update(
                 )
                 if end + 1 < total:
                     status = 308
-                    headers["range"] = "bytes=0-{}".format(end)
+                    headers["range"] = f"bytes=0-{end}"
                 else:
                     status = 200
 
@@ -277,11 +275,7 @@ class TestManager:
         result = storage.upload("", shared.make_upload(""))
         name = os.path.join(storage.settings["path"], result.location)
 
-        object_url = (
-            "https://storage.googleapis.com/storage/v1/b/ld-bq-test/o/{}".format(
-                quote_plus(name),
-            )
-        )
+        object_url = f"https://storage.googleapis.com/storage/v1/b/ld-bq-test/o/{quote_plus(name)}"
         responses.add("GET", object_url, status=200)
         responses.add("DELETE", object_url, status=200)
 
@@ -292,11 +286,7 @@ class TestManager:
         result = storage.upload("", shared.make_upload(""))
         name = os.path.join(storage.settings["path"], result.location)
 
-        object_url = (
-            "https://storage.googleapis.com/storage/v1/b/ld-bq-test/o/{}".format(
-                quote_plus(name),
-            )
-        )
+        object_url = f"https://storage.googleapis.com/storage/v1/b/ld-bq-test/o/{quote_plus(name)}"
         responses.add("GET", object_url, status=200)
         responses.add("GET", object_url, status=404)
 

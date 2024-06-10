@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import logging
-from typing import Callable, Union
+from typing import Callable
 
 from flask import Blueprint, Response
 from flask.views import MethodView
@@ -22,7 +22,7 @@ file_manager.before_request(ap_before_request)
 
 
 class FileManagerView(MethodView):
-    def get(self) -> Union[str, Response]:
+    def get(self) -> str | Response:
         return tk.render(
             "file_manager/list.html",
             extra_vars={

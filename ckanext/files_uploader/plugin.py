@@ -45,7 +45,7 @@ class FilesUploaderPlugin(p.SingletonPlugin):
 class Uploader(uploader.Upload):
     def __init__(self, object_type: str, old_filename: str | None = None) -> None:
         self.storage = shared.get_storage(image_storage_name())
-        super(Uploader, self).__init__(object_type, old_filename)
+        super().__init__(object_type, old_filename)
 
     def upload(self, max_size: int = 2) -> None:
         if hasattr(self, "verify_type"):
@@ -89,7 +89,7 @@ class ResourceUploader(uploader.ResourceUpload):
 
     def __init__(self, resource: dict[str, Any]):
         self.storage = shared.get_storage(resource_storage_name())
-        super(ResourceUploader, self).__init__(resource)
+        super().__init__(resource)
 
     def get_path(self, id: str) -> str:
         return os.path.join(

@@ -50,7 +50,7 @@ class FilesPlugin(p.SingletonPlugin):
                     storage_key.type,
                     settings.get("type"),
                 ).append_validators(
-                    "one_of({})".format(available_adapters),
+                    f"one_of({available_adapters})",
                 ).set_description(
                     "Storage adapter used by the storage",
                 )

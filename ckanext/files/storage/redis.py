@@ -159,7 +159,7 @@ class RedisStorage(Storage):
             "prefix",
             _default_prefix(),
         )
-        super(RedisStorage, self).__init__(**settings)
+        super().__init__(**settings)
         self.redis: redis.Redis = connect_to_redis()
 
     @classmethod

@@ -29,7 +29,7 @@ class UnknownStorageError(StorageError):
         self.storage = storage
 
     def __str__(self):
-        return "Storage {} is not configured".format(self.storage)
+        return f"Storage {self.storage} is not configured"
 
 
 class UnknownAdapterError(StorageError):
@@ -39,7 +39,7 @@ class UnknownAdapterError(StorageError):
         self.adapter = adapter
 
     def __str__(self):
-        return "Storage adapter {} is not registered".format(self.adapter)
+        return f"Storage adapter {self.adapter} is not registered"
 
 
 class UnsupportedOperationError(StorageError):
@@ -50,9 +50,9 @@ class UnsupportedOperationError(StorageError):
         self.adapter = adapter
 
     def __str__(self):
-        return "Operation {} is not supported by storage adapter {}".format(
-            self.operation,
-            self.adapter,
+        return (
+            f"Operation {self.operation} is not supported"
+            + f" by storage adapter {self.adapter}"
         )
 
 
@@ -64,9 +64,9 @@ class InvalidStorageConfigurationError(StorageError):
         self.problem = problem
 
     def __str__(self):
-        return "Cannot initialize storage adapter {} due to following error: {}".format(
-            self.adapter.__name__,
-            self.problem,
+        return (
+            f"Cannot initialize storage adapter {self.adapter.__name__}"
+            + f" due to following error: {self.problem}"
         )
 
 
@@ -91,9 +91,9 @@ class MissingStorageConfigurationError(InvalidStorageConfigurationError):
     """Storage cannot be initialized due to missing option."""
 
     def __init__(self, adapter: type, option: str):
-        return super(MissingStorageConfigurationError, self).__init__(
+        return super().__init__(
             adapter,
-            "{} option is required".format(option),
+            f"{option} option is required",
         )
 
 
@@ -105,9 +105,8 @@ class MissingFileError(StorageError):
         self.filename = filename
 
     def __str__(self):
-        return "File {} does not exist inside storage {}".format(
-            self.filename,
-            self.storage,
+        return (
+            f"File {self.filename} does not exist inside" + f" storage {self.storage}"
         )
 
 
@@ -119,9 +118,8 @@ class ExistingFileError(StorageError):
         self.filename = filename
 
     def __str__(self):
-        return "File {} already exists inside storage {}".format(
-            self.filename,
-            self.storage,
+        return (
+            f"File {self.filename} already exists inside" + f" storage {self.storage}"
         )
 
 
@@ -133,9 +131,9 @@ class LargeUploadError(UploadError):
         self.max_size = max_size
 
     def __str__(self):
-        return "Upload size {} surpasses max allowed size {}".format(
-            self.actual_size,
-            self.max_size,
+        return (
+            f"Upload size {self.actual_size} surpasses"
+            + " max allowed size {self.max_size}"
         )
 
 
@@ -143,9 +141,9 @@ class UploadOutOfBoundError(LargeUploadError):
     """Multipart upload exceeds expected size."""
 
     def __str__(self):
-        return "Upload size {} exceeds expected size {}".format(
-            self.actual_size,
-            self.max_size,
+        return (
+            f"Upload size {self.actual_size} exceeds"
+            + f" expected size {self.max_size}"
         )
 
 
@@ -160,10 +158,11 @@ class UploadMismatchError(UploadError):
         self.expected = expected
 
     def __str__(self):
-        return "Actual value of {}({}) does not match expected value({})".format(
-            self.attribute,
-            self.value_formatter(self.actual),
-            self.value_formatter(self.expected),
+        actual = self.value_formatter(self.actual)
+        expected = self.value_formatter(self.expected)
+        return (
+            f"Actual value of {self.attribute}({actual}) does not"
+            + f" match expected value({expected})"
         )
 
 
@@ -195,7 +194,7 @@ class WrongUploadTypeError(UploadError):
         self.content_type = content_type
 
     def __str__(self):
-        return "Type {} is not supported by storage".format(self.content_type)
+        return f"Type {self.content_type} is not supported by storage"
 
 
 class NameStrategyError(UploadError):
@@ -205,7 +204,7 @@ class NameStrategyError(UploadError):
         self.strategy = strategy
 
     def __str__(self):
-        return "Unknown name strategy {}".format(self.strategy)
+        return f"Unknown name strategy {self.strategy}"
 
 
 class UploadExtrasError(UploadError):
@@ -215,7 +214,7 @@ class UploadExtrasError(UploadError):
         self.extras = extras
 
     def __str__(self):
-        return "Wrong extras: {}".format(self.extras)
+        return f"Wrong extras: {self.extras}"
 
 
 class MissingExtrasError(UploadExtrasError):
@@ -225,4 +224,4 @@ class MissingExtrasError(UploadExtrasError):
         self.key = key
 
     def __str__(self):
-        return "Key {} is missing from upload extras".format(self.key)
+        return f"Key {self.key} is missing from upload extras"

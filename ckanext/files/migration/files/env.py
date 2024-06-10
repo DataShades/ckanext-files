@@ -1,7 +1,3 @@
-# -*- coding: utf-8 -*-
-
-from __future__ import with_statement
-
 import os
 from logging.config import fileConfig
 
@@ -48,7 +44,7 @@ def run_migrations_offline():
         url=url,
         target_metadata=target_metadata,
         literal_binds=True,
-        version_table="{}_alembic_version".format(name),
+        version_table=f"{name}_alembic_version",
     )
 
     with context.begin_transaction():
@@ -72,7 +68,7 @@ def run_migrations_online():
         context.configure(
             connection=connection,
             target_metadata=target_metadata,
-            version_table="{}_alembic_version".format(name),
+            version_table=f"{name}_alembic_version",
         )
 
         with context.begin_transaction():

@@ -54,11 +54,7 @@ def adapters(verbose: bool):
     for name in sorted(base.adapters):
         adapter = base.adapters[name]
         click.secho(
-            "{} - {}:{}".format(
-                click.style(name, bold=True),
-                adapter.__module__,
-                adapter.__name__,
-            ),
+            f"{click.style(name, bold=True)} - {adapter.__module__}:{adapter.__name__}",
         )
         if verbose:
             doc = pydoc.getdoc(adapter)

@@ -88,7 +88,7 @@ class File(Base):  # type: ignore
         return get_owner(owner.owner_type, owner.owner_id)
 
     def __init__(self, **kwargs: Any):
-        super(File, self).__init__(**kwargs)
+        super().__init__(**kwargs)
         if not self.id:
             self.id = make_uuid()
 

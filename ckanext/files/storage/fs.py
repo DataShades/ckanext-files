@@ -321,10 +321,10 @@ class FsStorage(Storage):
             else:
                 raise exceptions.InvalidStorageConfigurationError(
                     type(self),
-                    "path `{}` does not exist".format(path),
+                    f"path `{path}` does not exist",
                 )
 
-        super(FsStorage, self).__init__(**settings)
+        super().__init__(**settings)
 
     @classmethod
     def declare_config_options(cls, declaration: Declaration, key: Key):
@@ -340,7 +340,7 @@ class FsStorage(Storage):
 class PublicFileSystemStorage(FsStorage):
     def __init__(self, **settings: Any) -> None:
         self.ensure_option(settings, "public_root")
-        super(PublicFileSystemStorage, self).__init__(**settings)
+        super().__init__(**settings)
 
     @classmethod
     def declare_config_options(cls, declaration: Declaration, key: Key) -> None:

@@ -29,7 +29,7 @@ def not_found_handler(error: tk.ObjectNotFound) -> tuple[str, int]:
             "error_document_template.html",
             {
                 "code": 404,
-                "content": "Object not found: {}".format(error.message),
+                "content": f"Object not found: {error.message}",
                 "name": "Not found",
             },
         ),
@@ -78,9 +78,7 @@ def generic_download(file_id: str) -> Response:
 
     if storage.supports(shared.Capability.STREAM):
         resp = streaming_response(storage.stream(data), data.content_type)
-        resp.headers["content-disposition"] = "attachment; filename={}".format(
-            item.name,
-        )
+        resp.headers["content-disposition"] = f"attachment; filename={item.name}"
         return resp
 
     return tk.abort(422, "File is not downloadable")
@@ -126,7 +124,7 @@ def user(user_id: str, storage: str | None = None) -> str:
         files = tk.get_action("files_file_search_by_user")({}, search_dict)
     except tk.ValidationError as err:
         for k, v in err.error_summary.items():
-            tk.h.flash_error("{}: {}".format(k, v))
+            tk.h.flash_error(f"{k}: {v}")
 
         files: dict[str, Any] = {"count": 0, "results": []}
 
@@ -147,7 +145,7 @@ def user(user_id: str, storage: str | None = None) -> str:
 
     if storage:
         tpl_data["storage"] = storage
-        tpl_names.insert(0, "files/user/index.{}.html".format(storage))
+        tpl_names.insert(0, f"files/user/index.{storage}.html")
 
     return tk.render(tpl_names, tpl_data)  # type: ignore
 

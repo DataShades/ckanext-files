@@ -141,7 +141,7 @@ def get_storage(name: str | None = None) -> Storage:
     return storage
 
 
-class OptionChecker(object):
+class OptionChecker:
     """Mixin for standard access to required settings.
 
     Example:

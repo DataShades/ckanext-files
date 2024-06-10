@@ -7,6 +7,19 @@ groups:
         description: |
           Default storage used for upload when no explicit storage specified
 
+      - key: ckanext.files.authenticated_uploads.allow
+        type: bool
+        description: |
+            Any authenticated user can upload files.
+
+      - key: ckanext.files.authenticated_uploads.storages
+        type: list
+        default: [default]
+        description: |
+            Names of storages that can by used by non-sysadmin users when
+            authenticated uploads enabled
+
+
       - key: ckanext.files.allow_authenticated_uploads
         type: bool
         description: |

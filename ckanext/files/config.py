@@ -19,7 +19,8 @@ import ckan.plugins.toolkit as tk
 DEFAULT_STORAGE = "ckanext.files.default_storage"
 STORAGE_PREFIX = "ckanext.files.storage."
 CASCADE_ACCESS = "ckanext.files.owner.cascade_access"
-AUTHENTICATED_UPLOADS = "ckanext.files.allow_authenticated_uploads"
+AUTHENTICATED_UPLOADS = "ckanext.files.authenticated_uploads.allow"
+AUTHENTICATED_STORAGES = "ckanext.files.authenticated_uploads.storages"
 
 
 def default_storage() -> str:
@@ -53,3 +54,7 @@ def authenticated_uploads() -> bool:
     """Any authenticated user can upload files."""
 
     return tk.config[AUTHENTICATED_UPLOADS]
+
+
+def authenticated_storages() -> list[str]:
+    return tk.config[AUTHENTICATED_STORAGES]

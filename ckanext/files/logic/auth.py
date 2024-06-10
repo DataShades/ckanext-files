@@ -124,7 +124,10 @@ def files_file_search(context: Context, data_dict: dict[str, Any]) -> AuthResult
 
 @tk.auth_disallow_anonymous_access
 def files_file_create(context: Context, data_dict: dict[str, Any]) -> AuthResult:
-    if config.authenticated_uploads():
+    if (
+        config.authenticated_uploads()
+        and data_dict["storage"] in config.authenticated_storages()
+    ):
         return {"success": True}
 
     return authz.is_authorized("files_manage_files", context, data_dict)

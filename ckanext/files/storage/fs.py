@@ -5,6 +5,7 @@ import logging
 import os
 import shutil
 from io import BytesIO
+from time import time
 from typing import IO, Any, Iterable
 
 import magic
@@ -12,7 +13,7 @@ import magic
 import ckan.plugins.toolkit as tk
 from ckan.config.declaration import Declaration, Key
 
-from ckanext.files import exceptions, shared
+from ckanext.files import exceptions, shared, utils
 from ckanext.files.base import (
     FileData,
     Manager,
@@ -290,7 +291,27 @@ class FsManager(Manager):
 
 class FsReader(Reader):
     required_options = ["path"]
-    capabilities = shared.Capability.combine(shared.Capability.STREAM)
+    capabilities = shared.Capability.combine(
+        shared.Capability.STREAM,
+        shared.Capability.TEMPORAL_LINK,
+    )
+
+    def temporal_link(self, data: FileData, extras: dict[str, Any]) -> str:
+        """Return temporal download link.
+
+        extras["ttl"] controls lifetime of the link(30 seconds by default).
+
+        """
+
+        token = utils.encode_token(
+            {
+                "topic": "download_file",
+                "exp": str(int(time()) + extras.get("ttl", 30)),
+                "storage": self.storage.settings["name"],
+                "location": data.location,
+            },
+        )
+        return tk.url_for("files.token_download", token=token, _external=True)
 
     def stream(self, data: FileData, extras: dict[str, Any]) -> IO[bytes]:
         filepath = os.path.join(str(self.storage.settings["path"]), data.location)

@@ -3,6 +3,29 @@
 Avoid raising python-native exceptions and prefere defining `FilesError`
 subclass.
 
+FilesError
+* StorageError
+* * UnknownAdapterError
+* * UnknownStorageError
+* * UnsupportedOperationError
+* * PermissionError
+* * MissingFileError
+* * ExistingFileError
+* * ExtrasError
+* * * MissingExtrasError
+* * InvalidStorageConfigurationError
+* * * MissingStorageConfigurationError
+* * UploadError
+* * * WrongUploadTypeError
+* * * NameStrategyError
+* * * LargeUploadError
+* * * * UploadOutOfBoundError
+* * * UploadMismatchError
+* * * * UploadTypeMismatchError
+* * * * UploadHashMismatchError
+* * * * UploadSizeMismatchError
+
+
 """
 
 from __future__ import annotations
@@ -207,7 +230,7 @@ class NameStrategyError(UploadError):
         return f"Unknown name strategy {self.strategy}"
 
 
-class UploadExtrasError(UploadError):
+class ExtrasError(StorageError):
     """Wrong extras passed during upload."""
 
     def __init__(self, extras: Any):
@@ -217,11 +240,11 @@ class UploadExtrasError(UploadError):
         return f"Wrong extras: {self.extras}"
 
 
-class MissingExtrasError(UploadExtrasError):
-    """Wrong extras passed during upload."""
+class MissingExtrasError(ExtrasError):
+    """Wrong extras passed to storage method."""
 
     def __init__(self, key: Any):
         self.key = key
 
     def __str__(self):
-        return f"Key {self.key} is missing from upload extras"
+        return f"Key {self.key} is missing from extras"

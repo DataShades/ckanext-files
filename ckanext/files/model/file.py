@@ -105,7 +105,7 @@ class File(Base):  # type: ignore
     def touch(
         self,
         access: bool = True,
-        modification: bool = True,
+        modification: bool = False,
         moment: datetime | None = None,
     ):
         if not moment:

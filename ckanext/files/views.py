@@ -4,6 +4,7 @@ import logging
 from functools import partial
 from typing import Any
 
+import jwt
 from flask import Blueprint
 from flask.views import MethodView
 
@@ -13,7 +14,7 @@ from ckan.common import streaming_response
 from ckan.lib.helpers import Page
 from ckan.types import Response
 
-from ckanext.files import shared
+from ckanext.files import shared, utils
 
 log = logging.getLogger(__name__)
 bp = Blueprint("files", __name__)
@@ -59,7 +60,7 @@ def get_blueprints():
     return [bp]
 
 
-@bp.route("/file/<file_id>/download")
+@bp.route("/file/download/<file_id>")
 def generic_download(file_id: str) -> Response:
     tk.check_access("files_file_download", {}, {"id": file_id})
     item = model.Session.get(shared.File, file_id)
@@ -82,6 +83,53 @@ def generic_download(file_id: str) -> Response:
     if storage.supports(shared.Capability.STREAM):
         resp = streaming_response(storage.stream(data), data.content_type)
         resp.headers["content-disposition"] = f"attachment; filename={item.name}"
+
+        item.touch()
+        model.Session.commit()
+
+        return resp
+
+    return tk.abort(422, "File is not downloadable")
+
+
+@bp.route("/file/token-download/<token>")
+def token_download(token: str) -> Response:
+    try:
+        data = utils.decode_token(token)
+
+    except jwt.ExpiredSignatureError as err:
+        log.debug("Expired file-download token: %s", err)
+        raise tk.ObjectNotFound("file") from err
+
+    except jwt.InvalidTokenError as err:
+        log.debug("Cannot decode file-download token: %s", err)
+        raise tk.ObjectNotFound("file") from err
+
+    if data.get("topic") != "download_file":
+        raise tk.ObjectNotFound("file")
+
+    if "id" in data:
+        item = model.Session.get(shared.File, data["sub"])
+    elif "location" in data:
+        item = model.Session.scalar(
+            shared.File.by_location(data["location"], data.get("storage")),
+        )
+    else:
+        item = None
+
+    if not item:
+        raise tk.ObjectNotFound("file")
+
+    storage = shared.get_storage(item.storage)
+    data = shared.FileData.from_model(item)
+
+    if storage.supports(shared.Capability.STREAM):
+        resp = streaming_response(storage.stream(data), data.content_type)
+        resp.headers["content-disposition"] = f"attachment; filename={item.name}"
+
+        item.touch()
+        model.Session.commit()
+
         return resp
 
     return tk.abort(422, "File is not downloadable")

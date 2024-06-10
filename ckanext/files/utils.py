@@ -18,8 +18,11 @@ import tempfile
 from io import BytesIO
 from typing import IO, Any, Generic, Literal, TypeVar, cast
 
+import jwt
 import magic
 from werkzeug.datastructures import FileStorage
+
+from ckan.lib.api_token import _get_algorithm, _get_secret  # type: ignore
 
 T = TypeVar("T")
 AuthOperation = Literal["show", "update", "delete"]
@@ -357,3 +360,11 @@ def _tempfile_as_upload(value: tempfile.SpooledTemporaryFile[bytes]):
     value.seek(0)
 
     return Upload(value, value.name or "", size, mime)
+
+
+def encode_token(data: dict[str, Any]) -> str:
+    return jwt.encode(data, _get_secret(encode=True), algorithm=_get_algorithm())
+
+
+def decode_token(token: str) -> dict[str, Any]:
+    return jwt.decode(token, _get_secret(encode=False), algorithms=[_get_algorithm()])

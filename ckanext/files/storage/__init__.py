@@ -1,10 +1,10 @@
+import contextlib
+
 from .fs import FsStorage, PublicFileSystemStorage
 from .redis import RedisStorage
 
-try:
+with contextlib.suppress(ImportError):
     from .google_cloud import GoogleCloudStorage
-except ImportError:  # pragma: no cover
-    pass
 
 __all__ = [
     "FsStorage",

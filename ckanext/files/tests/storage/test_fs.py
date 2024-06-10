@@ -37,7 +37,8 @@ class TestUploader:
         assert result.size == 100
 
         filepath = os.path.join(storage.settings["path"], result.location)
-        assert open(filepath, "rb").read() == content
+        with open(filepath, "rb") as src:
+            assert src.read() == content
 
     def test_hash(self, storage: fs.FsStorage, faker: Faker):
         result = storage.upload("", shared.make_upload(""))

@@ -24,7 +24,7 @@ select = [
        # "RET",  # improvements for return statements
        # "RSE",  # improvements for rise statements
        # "S",  # security testing
-       # "SIM",  # simplify code
+       "SIM",  # simplify code
        "T10",  # debugging statements
        "T20",  # print statements
        # "TID",  # tidier imports

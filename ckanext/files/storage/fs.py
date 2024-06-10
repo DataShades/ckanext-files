@@ -297,7 +297,7 @@ class FsReader(Reader):
         if not os.path.exists(filepath):
             raise exceptions.MissingFileError(self.storage.settings["name"], filepath)
 
-        return open(filepath, "rb")
+        return open(filepath, "rb")  # noqa: SIM115
 
 
 class FsStorage(Storage):

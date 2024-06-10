@@ -11,10 +11,9 @@ import ckan.plugins.toolkit as tk
 from ckan import model
 from ckan.common import streaming_response
 from ckan.lib.helpers import Page
-from ckan.tests.helpers import contextlib
 from ckan.types import Response
 
-from ckanext.files import exceptions, shared
+from ckanext.files import shared
 
 log = logging.getLogger(__name__)
 bp = Blueprint("files", __name__)
@@ -70,11 +69,15 @@ def generic_download(file_id: str) -> Response:
     storage = shared.get_storage(item.storage)
     data = shared.FileData.from_model(item)
 
-    with contextlib.suppress(exceptions.UnsupportedOperationError):
-        return tk.redirect_to(storage.public_link(data))
-
-    with contextlib.suppress(exceptions.UnsupportedOperationError):
-        return tk.redirect_to(storage.private_link(data))
+    # do not use permanent link here as it nerver expires and user who got it
+    # once will be able to download file as long as it exists.
+    link = (
+        storage.public_link(data)
+        or storage.one_time_link(data)
+        or storage.temporal_link(data)
+    )
+    if link:
+        return tk.redirect_to(link)
 
     if storage.supports(shared.Capability.STREAM):
         resp = streaming_response(storage.stream(data), data.content_type)

@@ -148,3 +148,34 @@ def transfer_ownership(
         "owner_id": [not_empty, unicode_safe],
         "owner_type": [not_empty, unicode_safe],
     }
+
+
+# @validator_args
+# def link_create(
+#     not_empty: Validator,
+#     int_validator: Validator,
+#     ignore_empty: Validator,
+#     isodate: Validator,
+#     unicode_safe: Validator,
+# ) -> Schema:
+#     return {
+#         "id": [not_empty, unicode_safe],
+#         "etime": [ignore_empty, isodate],
+#         "counter": [ignore_empty, int_validator],
+#     }
+
+
+# @validator_args
+# def link_list(
+#     not_empty: Validator,
+#     unicode_safe: Validator,
+# ) -> Schema:
+#     return {"id": [not_empty, unicode_safe]}
+
+
+# @validator_args
+# def link_delete(
+#     not_empty: Validator,
+#     unicode_safe: Validator,
+# ) -> Schema:
+#     return {"id": [not_empty, unicode_safe]}

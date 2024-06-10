@@ -17,7 +17,7 @@ import dataclasses
 import os
 import uuid
 from datetime import datetime
-from typing import IO, Any, Generic, Iterable, Literal
+from typing import IO, Any, Generic, Iterable
 
 import pytz
 
@@ -569,37 +569,18 @@ class Storage(OptionChecker, abc.ABC):
 
         raise exceptions.UnsupportedOperationError("copy", type(self))
 
-    def public_link(
-        self,
-        data: FileData,
-        /,
-        **kwargs: Any,
-    ) -> str:
+    def public_link(self, data: FileData, /, **kwargs: Any) -> str | None:
         if self.supports(utils.Capability.PUBLIC_LINK):
             return self.reader.public_link(data, kwargs)
 
-        raise exceptions.UnsupportedOperationError("public_link", type(self))
-
-    def private_link(
-        self,
-        data: FileData,
-        link_type: Literal["permanent", "temporal", "one-time"] | None = None,
-        /,
-        **kwargs: Any,
-    ) -> str:
-        if self.supports(utils.Capability.ONE_TIME_LINK) and (
-            not link_type or link_type == "one-time"
-        ):
+    def one_time_link(self, data: FileData, /, **kwargs: Any) -> str | None:
+        if self.supports(utils.Capability.ONE_TIME_LINK):
             return self.reader.one_time_link(data, kwargs)
 
-        if self.supports(utils.Capability.TEMPORAL_LINK) and (
-            not link_type or link_type == "temporal"
-        ):
+    def temporal_link(self, data: FileData, /, **kwargs: Any) -> str | None:
+        if self.supports(utils.Capability.TEMPORAL_LINK):
             return self.reader.temporal_link(data, kwargs)
 
-        if self.supports(utils.Capability.PERMANENT_LINK) and (
-            not link_type or link_type == "permanent"
-        ):
+    def permanent_link(self, data: FileData, /, **kwargs: Any) -> str | None:
+        if self.supports(utils.Capability.PERMANENT_LINK):
             return self.reader.permanent_link(data, kwargs)
-
-        raise exceptions.UnsupportedOperationError("private_link", type(self))

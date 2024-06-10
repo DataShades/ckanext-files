@@ -211,3 +211,22 @@ def files_multipart_complete(context: Context, data_dict: dict[str, Any]) -> Aut
 def files_transfer_ownership(context: Context, data_dict: dict[str, Any]) -> AuthResult:
     """Only file manager can transfer ownership."""
     return authz.is_authorized("files_manage_files", context, data_dict)
+
+
+# def files_link_create(context: Context, data_dict: dict[str, Any]) -> AuthResult:
+#     return authz.is_authorized("files_edit_file", context, data_dict)
+
+
+# def files_link_list(context: Context, data_dict: dict[str, Any]) -> AuthResult:
+#     return authz.is_authorized("files_edit_file", context, data_dict)
+
+
+# def files_link_delete(context: Context, data_dict: dict[str, Any]) -> AuthResult:
+#     link = context["session"].get(Link, data_dict["id"])
+
+#     if link and link.type == "download_file":
+#         return authz.is_authorized(
+#             "files_edit_file", context, {"id": link.data.get("file_id", "")}
+#         )
+
+#     return {"success": False}

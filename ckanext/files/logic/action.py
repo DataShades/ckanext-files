@@ -439,3 +439,20 @@ def files_transfer_ownership(
     sess.commit()
 
     return owner.dictize(context)
+
+
+# @validate(schema.link_create)
+# def files_link_create(context: Context, data_dict: dict[str, Any]) -> dict[str, Any]:
+#     tk.check_access("files_link_create", context, data_dict)
+#     sess = context["session"]
+#     fileobj = context["session"].get(File, data_dict["id"])
+#     if not fileobj:
+#         raise tk.ObjectNotFound("file")
+
+
+#     # "id": [not_empty, unicode_safe],
+#     # "etime": [ignore_empty, isodate],
+#     # "counter": [ignore_empty, int_validator],
+
+#     Link(...)
+#     return owner.dictize(context)

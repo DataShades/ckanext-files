@@ -79,7 +79,8 @@ class GoogleCloudUploader(Uploader):
         )
 
         if not url:
-            raise exceptions.UploadError("Cannot initialize session URL")
+            msg = "Cannot initialize session URL"
+            raise exceptions.UploadError(msg)
 
         data.location = filename
         data.storage_data = dict(

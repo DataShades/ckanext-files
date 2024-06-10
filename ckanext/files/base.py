@@ -338,8 +338,7 @@ class Storage(OptionChecker, abc.ABC):
 
         """
 
-        size = self.settings.get("max_size", 0)
-        return size
+        return self.settings.get("max_size", 0)
 
     @property
     def supported_types(self) -> list[str]:
@@ -579,7 +578,7 @@ class Storage(OptionChecker, abc.ABC):
         if self.supports(utils.Capability.PUBLIC_LINK):
             return self.reader.public_link(data, kwargs)
 
-        raise exceptions.UnsupportedOperationError("public link", type(self))
+        raise exceptions.UnsupportedOperationError("public_link", type(self))
 
     def private_link(
         self,
@@ -603,4 +602,4 @@ class Storage(OptionChecker, abc.ABC):
         ):
             return self.reader.permanent_link(data, kwargs)
 
-        raise exceptions.UnsupportedOperationError("private link", type(self))
+        raise exceptions.UnsupportedOperationError("private_link", type(self))

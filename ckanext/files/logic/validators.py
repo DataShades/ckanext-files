@@ -31,7 +31,8 @@ def files_parse_filesize(value: Any) -> int:
     try:
         return utils.parse_filesize(value)
     except ValueError as err:
-        raise tk.Invalid(f"Wrong filesize string: {value}") from err
+        msg = f"Wrong filesize string: {value}"
+        raise tk.Invalid(msg) from err
 
 
 def files_ensure_name(name_field: str):
@@ -51,6 +52,7 @@ def files_ensure_name(name_field: str):
             data[name_key] = name
             return
 
-        raise tk.Invalid(f"Name is missing and cannot be deduced from {key[-1]}")
+        msg = f"Name is missing and cannot be deduced from {key[-1]}"
+        raise tk.Invalid(msg)
 
     return validator

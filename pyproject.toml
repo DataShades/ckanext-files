@@ -8,7 +8,7 @@ target-version = "py38"
 [tool.ruff.lint]
 select = [
        "B",  # likely bugs and design problems
-       # "BLE",  # do not catch blind exception
+       "BLE",  # do not catch blind exception
        "C40",  # better list/set/dict comprehensions
        "C90",  # check McCabe complexity
        "COM",  # trailing commas
@@ -21,18 +21,19 @@ select = [
        "PT",  # pytest style
        "PIE",  # misc lints
        "Q",  # preferred quoting style
-       # "RET",  # improvements for return statements
+       "RET",  # improvements for return statements
        "RSE",  # improvements for rise statements
        "S",  # security testing
        "SIM",  # simplify code
        "T10",  # debugging statements
        "T20",  # print statements
        "TID",  # tidier imports
-       # "TRY",  # better exceptions
+       "TRY",  # better exceptions
        "UP",  # upgrade syntax for newer versions of the language
 ]
 
 ignore = [
+       "RET503", # don't enforce return-None
        "E712", # comparison to bool: violated by SQLAlchemy filters
        "PT004", # fixture does not return anything, add leading underscore: violated by clean_db
        "PLC1901", # simplify comparison to empty string: violated by SQLAlchemy filters

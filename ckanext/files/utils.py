@@ -262,9 +262,10 @@ def humanize_filesize(value: int | float) -> str:
     """
     suffixes = ["B", "KiB", "MiB", "GiB", "TiB", "PiB"]
     iteration = 0
-    while value > 1024:
+    threshold = 1024
+    while value > threshold:
         iteration += 1
-        value /= 1024
+        value /= threshold
 
     value = int(value * 100) / 100
     return f"{value:.2g}{suffixes[iteration]}"

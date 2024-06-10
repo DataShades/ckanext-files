@@ -91,7 +91,7 @@ def files_file_search_by_user(  # noqa: C901
 
 @tk.side_effect_free
 @validate(schema.file_search)
-def files_file_search(  # noqa: C901
+def files_file_search(  # noqa: C901, PLR0912
     context: Context,
     data_dict: dict[str, Any],
 ) -> dict[str, Any]:

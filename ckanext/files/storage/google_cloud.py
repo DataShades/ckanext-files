@@ -18,6 +18,7 @@ from ckanext.files.base import Manager, Storage, Uploader
 from ckanext.files.shared import Capability, FileData, MultipartData, Upload
 
 RE_RANGE = re.compile(r"bytes=(?P<first_byte>\d+)-(?P<last_byte>\d+)")
+HTTP_RESUME = 308
 
 
 def decode(value: str) -> str:
@@ -180,7 +181,7 @@ class GoogleCloudUploader(Uploader):
         if not resp.ok:
             raise tk.ValidationError({"id": [resp.text]})
 
-        if resp.status_code == 308:
+        if resp.status_code == HTTP_RESUME:
             if "range" in resp.headers:
                 range_match = RE_RANGE.match(resp.headers["range"])
                 if not range_match:

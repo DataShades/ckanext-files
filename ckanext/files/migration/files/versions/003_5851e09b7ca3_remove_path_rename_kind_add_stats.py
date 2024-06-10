@@ -95,13 +95,13 @@ def downgrade():
     stmt = sa.select(*columns)
 
     for id, atime, extras in bind.execute(stmt):
-        extras = dict(extras)
-        path = extras.pop("filename", None)
+        extras_copy = dict(extras)
+        path = extras_copy.pop("filename", None)
         if not path:
             continue
         op.execute(
             sa.update(table)
-            .values(last_access=atime or datetime.now(), extras=extras, path=path)
+            .values(last_access=atime or datetime.now(), extras=extras_copy, path=path)
             .where(table.c.id == id),
         )
 

@@ -17,7 +17,7 @@ select = [
        "F",  # pyflakes
        "G",  # format strings for logging statements
        "N",  # naming conventions
-       # "PL",  # pylint
+       "PL",  # pylint
        "PT",  # pytest style
        "PIE",  # misc lints
        "Q",  # preferred quoting style

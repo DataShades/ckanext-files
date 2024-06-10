@@ -91,7 +91,7 @@ class MissingStorageConfigurationError(InvalidStorageConfigurationError):
     """Storage cannot be initialized due to missing option."""
 
     def __init__(self, adapter: type, option: str):
-        return super().__init__(
+        super().__init__(
             adapter,
             f"{option} option is required",
         )

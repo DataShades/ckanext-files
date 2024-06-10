@@ -135,6 +135,7 @@ class GoogleCloudUploader(Uploader):
                 headers={
                     "content-range": f"bytes {first_byte}-{last_byte}/{size}",
                 },
+                timeout=10,
             )
 
             if not resp.ok:
@@ -173,6 +174,7 @@ class GoogleCloudUploader(Uploader):
                 "content-range": f"bytes */{data.size}",
                 "content-length": "0",
             },
+            timeout=10,
         )
         if not resp.ok:
             raise tk.ValidationError({"id": [resp.text]})

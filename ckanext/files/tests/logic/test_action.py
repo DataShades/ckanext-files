@@ -12,7 +12,7 @@ from ckanext.files.model import File
 call_action: Any
 
 
-@pytest.fixture
+@pytest.fixture()
 def random_file(create_with_upload: Any, faker: Any):
     return create_with_upload(
         faker.binary(10),
@@ -70,7 +70,8 @@ class TestTransferOwnership:
             owner_id=user["id"],
         )
         file = model.Session.get(File, random_file["id"])
-        assert file and file.owner
+        assert file
+        assert file.owner
         assert file.owner.id == user["id"]
 
         call_action(
@@ -80,5 +81,6 @@ class TestTransferOwnership:
             owner_id=package["id"],
         )
         file = model.Session.get(File, random_file["id"])
-        assert file and file.owner
+        assert file
+        assert file.owner
         assert file.owner.id == package["id"]

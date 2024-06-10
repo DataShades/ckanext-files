@@ -31,7 +31,7 @@ def _flat_mask(data: dict[str, Any]) -> dict[tuple[Any, ...], Any]:
 
 @tk.side_effect_free
 @validate(schema.file_search_by_user)
-def files_file_search_by_user(
+def files_file_search_by_user(  # noqa: C901
     context: Context,
     data_dict: dict[str, Any],
 ) -> dict[str, Any]:
@@ -91,7 +91,7 @@ def files_file_search_by_user(
 
 @tk.side_effect_free
 @validate(schema.file_search)
-def files_file_search(
+def files_file_search(  # noqa: C901
     context: Context,
     data_dict: dict[str, Any],
 ) -> dict[str, Any]:

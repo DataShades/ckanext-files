@@ -233,7 +233,7 @@ class TestCapabilities:
 
 class TestParseFilesize:
     @pytest.mark.parametrize(
-        ["value", "size"],
+        ("value", "size"),
         [
             ("1", 1),
             ("1b", 1),
@@ -247,7 +247,6 @@ class TestParseFilesize:
             ("1tib", 2**40),
             ("  117  ", 117),
             ("0.7 mib", 734003),
-            ("1b", 1),
             ("1 kib", 1024),
             ("10.43 kib", 10680),
             ("1024b", 1024),
@@ -270,13 +269,13 @@ class TestParseFilesize:
 
     def test_empty_string(self):
         """Empty string causes an exception"""
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError):  # noqa: PT011
             utils.parse_filesize("")
 
     def test_invalid_multiplier(self):
         """Empty string causes an exception"""
 
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError):  # noqa: PT011
             utils.parse_filesize("1PB")
 
 

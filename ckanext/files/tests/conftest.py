@@ -37,7 +37,7 @@ def files_stopped_time():
         yield now
 
 
-@pytest.fixture
+@pytest.fixture()
 def clean_db(reset_db, migrate_db_for):
     # type: (Any, Any) -> None
 
@@ -56,7 +56,7 @@ class FakeFileStorage(FileStorage):
         super().__init__(stream, filename, "upload")
 
 
-@pytest.fixture
+@pytest.fixture()
 def create_with_upload(ckan_config, monkeypatch, tmpdir):
     # type: (Any, Any, Any) -> Any
     """Reimplementation of original CKAN fixture with better fake storage.

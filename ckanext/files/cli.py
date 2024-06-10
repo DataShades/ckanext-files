@@ -29,19 +29,19 @@ def stream(file_id: str):
     file = model.Session.get(shared.File, file_id)
     if not file:
         tk.error_shout("File not found")
-        raise click.Abort()
+        raise click.Abort
 
     try:
         storage = shared.get_storage(file.storage)
     except exceptions.UnknownStorageError as err:
         tk.error_shout(err)
-        raise click.Abort() from err
+        raise click.Abort from err
 
     try:
         content_stream = storage.stream(shared.FileData.from_model(file))
     except exceptions.UnsupportedOperationError as err:
         tk.error_shout(err)
-        raise click.Abort() from err
+        raise click.Abort from err
 
     while chunk := content_stream.read(1024 * 256):
         click.echo(chunk, nl=False)
@@ -109,7 +109,7 @@ def scan(
         files = storage.scan()
     except exceptions.UnsupportedOperationError as err:
         tk.error_shout(err)
-        raise click.Abort() from err
+        raise click.Abort from err
 
     stepfather = model.User.get(adopt_by)
 
@@ -128,7 +128,7 @@ def scan(
                 data = storage.analyze(name)
             except exceptions.UnsupportedOperationError as err:
                 tk.error_shout(err)
-                raise click.Abort() from err
+                raise click.Abort from err
 
             fileobj = File(
                 name=os.path.basename(name),

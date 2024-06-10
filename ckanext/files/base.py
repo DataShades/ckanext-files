@@ -315,6 +315,10 @@ class Reader(StorageService):
         """Return one-time download link."""
         raise NotImplementedError
 
+    def public_link(self, data: FileData, extras: dict[str, Any]) -> str:
+        """Return public link."""
+        raise NotImplementedError
+
 
 class Storage(OptionChecker, abc.ABC):
     def __init__(self, **settings: Any) -> None:
@@ -566,26 +570,37 @@ class Storage(OptionChecker, abc.ABC):
 
         raise exceptions.UnsupportedOperationError("copy", type(self))
 
-    def link(
+    def public_link(
         self,
         data: FileData,
-        link_type: Literal["permanent", "temporal", "one-time", None] = None,
         /,
         **kwargs: Any,
     ) -> str:
-        if self.supports(utils.Capability.PERMANENT_LINK) and (
-            not link_type or link_type == "permanent"
+        if self.supports(utils.Capability.PUBLIC_LINK):
+            return self.reader.public_link(data, kwargs)
+
+        raise exceptions.UnsupportedOperationError("public link", type(self))
+
+    def private_link(
+        self,
+        data: FileData,
+        link_type: Literal["permanent", "temporal", "one-time"] | None = None,
+        /,
+        **kwargs: Any,
+    ) -> str:
+        if self.supports(utils.Capability.ONE_TIME_LINK) and (
+            not link_type or link_type == "one-time"
         ):
-            return self.reader.permanent_link(data, kwargs)
+            return self.reader.one_time_link(data, kwargs)
 
         if self.supports(utils.Capability.TEMPORAL_LINK) and (
             not link_type or link_type == "temporal"
         ):
             return self.reader.temporal_link(data, kwargs)
 
-        if self.supports(utils.Capability.ONE_TIME_LINK) and (
-            not link_type or link_type == "one-time"
+        if self.supports(utils.Capability.PERMANENT_LINK) and (
+            not link_type or link_type == "permanent"
         ):
-            return self.reader.one_time_link(data, kwargs)
+            return self.reader.permanent_link(data, kwargs)
 
-        raise exceptions.UnsupportedOperationError("link", type(self))
+        raise exceptions.UnsupportedOperationError("private link", type(self))

@@ -53,3 +53,32 @@ class TestFileShow:
 
         result = call_action("files_file_show", id=random_file["id"])
         assert result["id"] == random_file["id"]
+
+
+@pytest.mark.usefixtures("with_plugins", "clean_db")
+class TestTransferOwnership:
+    def test_transfer_to_different_entity(
+        self,
+        random_file: dict[str, Any],
+        user: dict[str, Any],
+        package: dict[str, Any],
+    ):
+        call_action(
+            "files_transfer_ownership",
+            id=random_file["id"],
+            owner_type="user",
+            owner_id=user["id"],
+        )
+        file = model.Session.get(File, random_file["id"])
+        assert file and file.owner
+        assert file.owner.id == user["id"]
+
+        call_action(
+            "files_transfer_ownership",
+            id=random_file["id"],
+            owner_type="package",
+            owner_id=package["id"],
+        )
+        file = model.Session.get(File, random_file["id"])
+        assert file and file.owner
+        assert file.owner.id == package["id"]

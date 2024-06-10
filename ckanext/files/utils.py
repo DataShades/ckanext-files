@@ -201,6 +201,8 @@ class Capability(enum.Flag):
     TEMPORAL_LINK = enum.auto()
     # make one-time download link
     ONE_TIME_LINK = enum.auto()
+    # make permanent public(anonymously accessible) link
+    PUBLIC_LINK = enum.auto()
 
     @classmethod
     def combine(cls, *capabilities: Capability):

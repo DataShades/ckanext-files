@@ -4,7 +4,6 @@ import logging
 from functools import partial
 from typing import Any
 
-import sqlalchemy as sa
 from flask import Blueprint
 from flask.views import MethodView
 
@@ -12,6 +11,7 @@ import ckan.plugins.toolkit as tk
 from ckan import model
 from ckan.common import streaming_response
 from ckan.lib.helpers import Page
+from ckan.tests.helpers import contextlib
 from ckan.types import Response
 
 from ckanext.files import exceptions, shared
@@ -63,19 +63,18 @@ def get_blueprints():
 @bp.route("/file/<file_id>/download")
 def generic_download(file_id: str) -> Response:
     tk.check_access("files_file_download", {}, {"id": file_id})
-    item = model.Session.execute(
-        sa.select(shared.File).where(shared.File.id == file_id),
-    ).scalar()
+    item = model.Session.get(shared.File, file_id)
     if not item:
         raise tk.ObjectNotFound("file")
 
     storage = shared.get_storage(item.storage)
     data = shared.FileData.from_model(item)
 
-    try:
-        return tk.redirect_to(storage.link(data))
-    except exceptions.UnsupportedOperationError:
-        pass
+    with contextlib.suppress(exceptions.UnsupportedOperationError):
+        return tk.redirect_to(storage.public_link(data))
+
+    with contextlib.suppress(exceptions.UnsupportedOperationError):
+        return tk.redirect_to(storage.private_link(data))
 
     if storage.supports(shared.Capability.STREAM):
         resp = streaming_response(storage.stream(data), data.content_type)

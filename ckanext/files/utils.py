@@ -179,7 +179,8 @@ def get_owner(owner_type: str, owner_id: str):
 
     for mapper in mappers:
         cls = mapper.class_
-        if hasattr(cls, "__table__") and cls.__table__.name == owner_type:
+        table = getattr(cls, "__table__", None) or getattr(cls, "local_table", None)
+        if table and table.name == owner_type:
             return model.Session.get(cls, owner_id)
 
     raise TypeError(owner_type)

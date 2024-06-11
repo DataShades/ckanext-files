@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, cast
 
 import sqlalchemy as sa
 from werkzeug.utils import secure_filename
@@ -113,6 +113,10 @@ def files_file_search(  # noqa: C901, PLR0912
 
         inspector: Any = sa.inspect(Multipart)
 
+    for field in ["owner_type", "owner_id"]:
+        if field in data_dict:
+            stmt = stmt.where(getattr(Owner, field) == data_dict[field])
+
     columns = inspector.columns
 
     for mask in ["storage_data", "plugin_data"]:
@@ -127,10 +131,20 @@ def files_file_search(  # noqa: C901, PLR0912
     for k, v in data_dict.get("__extras", {}).items():
         if k not in columns:
             continue
+
+        if (
+            isinstance(v, list)
+            and len(v) == 2  # noqa: PLR2004
+            and v[0] in ["=", "<", ">", "!=", "like"]
+        ):
+            op, v = cast("list[Any]", v)  # noqa: PLW2901
+        else:
+            op = "="
+
         if not isinstance(v, columns[k].type.python_type):
             continue
 
-        stmt = stmt.where(columns[k] == v)
+        stmt = stmt.where(columns[k].bool_op(op)(v))
 
     total = sess.scalar(sa.select(sa.func.count()).select_from(stmt))
 

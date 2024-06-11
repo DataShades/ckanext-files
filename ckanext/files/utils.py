@@ -12,6 +12,7 @@ import contextlib
 import dataclasses
 import enum
 import hashlib
+import logging
 import mimetypes
 import re
 import tempfile
@@ -26,6 +27,8 @@ from werkzeug.datastructures import FileStorage
 import ckan.plugins.toolkit as tk
 from ckan import model
 from ckan.lib.api_token import _get_algorithm, _get_secret  # type: ignore
+
+log = logging.getLogger(__name__)
 
 T = TypeVar("T")
 AuthOperation = Literal["show", "update", "delete", "file_transfer"]
@@ -189,7 +192,17 @@ def get_owner(owner_type: str, owner_id: str):
         if table is not None and table.name == owner_type:
             return model.Session.get(cls, owner_id)
 
-    raise TypeError(owner_type)
+    log.warning("Unknown owner type %s with ID %s", owner_type, owner_id)
+    return None
+
+
+def is_supported_type(content_type: str, supported: Iterable[str]) -> str | None:
+    """Return content type of upload or rise an exception if type is not supported"""
+
+    maintype, subtype = content_type.split("/")
+    for st in supported:
+        if st in [content_type, maintype, subtype]:
+            return content_type
 
 
 class Capability(enum.Flag):

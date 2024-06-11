@@ -81,6 +81,13 @@ class Multipart(Base):  # type: ignore
         result = table_dictize(self, context)
         result["storage_data"] = copy.deepcopy(result["storage_data"])
 
+        if self.owner_info:
+            result["owner_type"] = self.owner_info.owner_type
+            result["owner_id"] = self.owner_info.owner_id
+        else:
+            result["owner_type"] = None
+            result["owner_id"] = None
+
         plugin_data = result.pop("plugin_data")
         if context.get("include_plugin_data"):
             result["plugin_data"] = copy.deepcopy(plugin_data)

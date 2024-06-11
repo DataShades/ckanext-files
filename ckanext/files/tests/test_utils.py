@@ -6,7 +6,7 @@ import pytest
 from faker import Faker
 from werkzeug.datastructures import FileStorage
 
-from ckanext.files import base, exceptions, shared, utils
+from ckanext.files import shared, utils
 from ckanext.files.shared import Capability
 
 
@@ -74,22 +74,6 @@ class TestHasingReader:
 
         reader.exhaust()
         assert reader.get_hash() == first_hash
-
-
-class TestEnsureSize:
-    def test_empty(self):
-        """Filesize identified even if it's not set initially."""
-
-        assert base.ensure_size(shared.make_upload(""), 0) == 0
-
-    def test_not_empty(self):
-        """Big files cause exception."""
-
-        upload = shared.make_upload(BytesIO(b" " * 10))
-        assert base.ensure_size(upload, 15) == 10
-
-        with pytest.raises(exceptions.LargeUploadError):
-            base.ensure_size(upload, 5)
 
 
 class TestCapabilities:

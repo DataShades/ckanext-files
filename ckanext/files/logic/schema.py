@@ -36,6 +36,8 @@ def _base_file_search(
         "reverse": [boolean_validator],
         "storage_data": [ignore_empty],
         "plugin_data": [ignore_empty],
+        "owner_type": [ignore_empty],
+        "owner_id": [ignore_empty],
     }
 
 

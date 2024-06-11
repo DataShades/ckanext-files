@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 from typing import Any
 
 import ckan.plugins.toolkit as tk
@@ -8,6 +9,8 @@ from ckan.types import Context, FlattenDataDict, FlattenErrorDict, FlattenKey
 
 from ckanext.files import utils
 from ckanext.files.shared import File
+
+log = logging.getLogger(__name__)
 
 
 def files_into_upload(value: Any) -> utils.Upload:
@@ -103,19 +106,36 @@ def files_transfer_ownership(owner_type: str, id_field: str):
         errors: FlattenErrorDict,
         context: Context,
     ) -> None:
-        user = authz._get_user(context.get("user"))  # type: ignore
-        ignore_auth = context.get("ignore_auth")
-        if ignore_auth or (user and user.sysadmin):
-            return
-
+        msg = "Is not an owner of the file"
         file = context["session"].get(File, data[key])
 
-        if user and file and file.owner_info:
-            owner_id = data.get(key[:-1] + (id_field,))
-            actual = file.owner_info.owner_type, file.owner_info.owner_id
-            if actual in [("user", user.id), (owner_type, owner_id)]:
-                return
+        if not file or not file.owner_info:
+            errors[key].append(msg)
+            return
 
-        errors[key].append("Is not an owner of the file")
+        id_field_path = key[:-1] + (id_field,)
+        owner_id = data.get(id_field_path)
+        actual = file.owner_info.owner_type, file.owner_info.owner_id
+
+        if actual == (owner_type, owner_id):
+            return
+
+        user = authz._get_user(context.get("user"))  # type: ignore
+        ignore_auth = context.get("ignore_auth")
+        is_admin = user and user.sysadmin
+        is_owner = user and actual == ("user", user.id)
+
+        if not any([ignore_auth, is_admin, is_owner]):
+            errors[key].append(msg)
+            return
+
+        queue = utils.file_transfer_queue()
+        queue.append(
+            {
+                "owner_type": owner_type,
+                "id_field_path": id_field_path,
+                "file_id": data[key],
+            },
+        )
 
     return validator

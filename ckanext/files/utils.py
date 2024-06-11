@@ -9,15 +9,27 @@ tools are stored here, to avoid import cycles.
 from __future__ import annotations
 
 import contextlib
+import contextvars
 import dataclasses
 import enum
+import functools
 import hashlib
 import logging
 import mimetypes
 import re
 import tempfile
 from io import BytesIO
-from typing import IO, Any, Callable, Generic, Iterable, Literal, TypeVar, cast
+from typing import (
+    IO,
+    Any,
+    Callable,
+    Generator,
+    Generic,
+    Iterable,
+    Literal,
+    TypeVar,
+    cast,
+)
 
 import jwt
 import magic
@@ -30,6 +42,9 @@ from ckan.lib.api_token import _get_algorithm, _get_secret  # type: ignore
 
 log = logging.getLogger(__name__)
 
+transfer_queue: contextvars.ContextVar[list[dict[str, Any]] | None] = (
+    contextvars.ContextVar("transfer_queue", default=None)
+)
 T = TypeVar("T")
 AuthOperation = Literal["show", "update", "delete", "file_transfer"]
 RE_FILESIZE = re.compile(r"^(?P<size>\d+(?:\.\d+)?)\s*(?P<unit>\w*)$")
@@ -416,3 +431,56 @@ def encode_token(data: dict[str, Any]) -> str:
 
 def decode_token(token: str) -> dict[str, Any]:
     return jwt.decode(token, _get_secret(encode=False), algorithms=[_get_algorithm()])
+
+
+def file_transfer_queue() -> list[dict[str, Any]]:
+    queue = transfer_queue.get()
+    if queue is None:
+        log.warning("File transfer queue accessed outside of ownership trasfer frame")
+        return []
+
+    return queue
+
+
+@contextlib.contextmanager
+def fresh_file_transfer_queue() -> Generator[list[dict[str, Any]]]:
+    queue = []
+    token = transfer_queue.set(queue)
+    try:
+        yield queue
+    finally:
+        transfer_queue.reset(token)
+
+
+def action_with_ownership_transfer(action: Any, name: str | None = None):
+    @functools.wraps(action)
+    def wrapper(*args: Any, **kwargs: Any) -> Any:
+        transfer = tk.get_action("files_transfer_ownership")
+        with fresh_file_transfer_queue() as queue:
+            result = action(*args, *kwargs)
+
+            for item in queue:
+                transfer(
+                    {"ignore_auth": True},
+                    {
+                        "id": item["file_id"],
+                        "owner_type": item["owner_type"],
+                        "owner_id": _struct_value_by_path(
+                            result,
+                            item["id_field_path"],
+                        ),
+                    },
+                )
+
+        return result
+
+    if name:
+        wrapper.__name__ = name
+    return wrapper
+
+
+def _struct_value_by_path(value: dict[str, Any], path: tuple[Any, ...]):
+    for step in path:
+        value = value[step]
+
+    return value

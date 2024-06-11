@@ -56,9 +56,10 @@ class Multipart(Base):  # type: ignore
     owner_info: Mapped[Owner | None] = relationship(
         Owner,
         primaryjoin=sa.and_(
-            foreign(Owner.item_id) == __table__.c.id,
-            foreign(Owner.item_type) == "multipart",
+            Owner.item_id == foreign(__table__.c.id),
+            Owner.item_type == "multipart",
         ),
+        single_parent=True,
         uselist=False,
         cascade="delete, delete-orphan",
         lazy="joined",

@@ -8,9 +8,9 @@ from werkzeug.utils import secure_filename
 import ckan.plugins.toolkit as tk
 from ckan import model
 from ckan.logic import validate
-from ckan.types import Context
+from ckan.types import Action, Context
 
-from ckanext.files import exceptions, shared
+from ckanext.files import exceptions, shared, utils
 from ckanext.files.base import MultipartData
 from ckanext.files.model import File, Multipart, Owner
 
@@ -470,3 +470,36 @@ def files_transfer_ownership(
 
 #     Link(...)
 #     return owner.dictize(context)
+
+
+@tk.chained_action
+def _chained_action(
+    next_action: Action,
+    context: Context,
+    data_dict: dict[str, Any],
+) -> Any:
+    return next_action(context, data_dict)
+
+
+package_create = utils.action_with_ownership_transfer(_chained_action, "package_create")
+package_update = utils.action_with_ownership_transfer(_chained_action, "package_update")
+resource_create = utils.action_with_ownership_transfer(
+    _chained_action,
+    "resource_create",
+)
+resource_update = utils.action_with_ownership_transfer(
+    _chained_action,
+    "resource_update",
+)
+group_create = utils.action_with_ownership_transfer(_chained_action, "group_create")
+group_update = utils.action_with_ownership_transfer(_chained_action, "group_update")
+organization_create = utils.action_with_ownership_transfer(
+    _chained_action,
+    "organization_create",
+)
+organization_update = utils.action_with_ownership_transfer(
+    _chained_action,
+    "organization_update",
+)
+user_create = utils.action_with_ownership_transfer(_chained_action, "user_create")
+user_update = utils.action_with_ownership_transfer(_chained_action, "user_update")

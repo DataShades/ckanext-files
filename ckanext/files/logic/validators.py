@@ -63,12 +63,15 @@ def files_ensure_name(name_field: str):
     return validator
 
 
-def files_file_id_exists(value: Any, context: Context):
+def files_file_id_exists(value: str | list[str], context: Context):
     """Verify that file ID exists."""
-    file = context["session"].get(File, value)
-    if not file:
-        msg = "File does not exist"
-        raise tk.Invalid(msg)
+    ids: list[str] = value if isinstance(value, list) else [value]
+
+    for file_id in ids:
+        file = context["session"].get(File, file_id)
+        if not file:
+            msg = "File does not exist"
+            raise tk.Invalid(msg)
 
     return value
 
@@ -76,22 +79,27 @@ def files_file_id_exists(value: Any, context: Context):
 def files_file_content_type(*supported_types: str):
     """Verify that file ID exists."""
 
-    def validator(value: Any, context: Context):
-        file = context["session"].get(File, value)
-        if not file:
-            msg = "File does not exist"
-            raise tk.Invalid(msg)
+    def validator(value: str | list[str], context: Context):
+        ids: list[str] = value if isinstance(value, list) else [value]
 
-        actual = file.content_type
-        if utils.is_supported_type(actual, supported_types):
-            return value
+        for file_id in ids:
+            file = context["session"].get(File, file_id)
+            if not file:
+                msg = "File does not exist"
+                raise tk.Invalid(msg)
 
-        expected = ", ".join(supported_types)
-        msg = (
-            f"Type {actual} is not supported."
-            + f" Use one of the following types: {expected}"
-        )
-        raise tk.Invalid(msg)
+            actual = file.content_type
+
+            if not utils.is_supported_type(actual, supported_types):
+                expected = ", ".join(supported_types)
+                msg = (
+                    f"Type {actual} is not supported."
+                    + f" Use one of the following types: {expected}"
+                )
+
+                raise tk.Invalid(msg)
+
+        return value
 
     return validator
 
@@ -107,35 +115,40 @@ def files_transfer_ownership(owner_type: str, id_field: str):
         context: Context,
     ) -> None:
         msg = "Is not an owner of the file"
-        file = context["session"].get(File, data[key])
 
-        if not file or not file.owner_info:
-            errors[key].append(msg)
-            return
-
-        id_field_path = key[:-1] + (id_field,)
-        owner_id = data.get(id_field_path)
-        actual = file.owner_info.owner_type, file.owner_info.owner_id
-
-        if actual == (owner_type, owner_id):
-            return
+        value = data[key]
+        ids: list[str] = value if isinstance(value, list) else [value]
 
         user = authz._get_user(context.get("user"))  # type: ignore
         ignore_auth = context.get("ignore_auth")
         is_admin = user and user.sysadmin
-        is_owner = user and actual == ("user", user.id)
-
-        if not any([ignore_auth, is_admin, is_owner]):
-            errors[key].append(msg)
-            return
-
         queue = utils.file_transfer_queue()
-        queue.append(
-            {
-                "owner_type": owner_type,
-                "id_field_path": id_field_path,
-                "file_id": data[key],
-            },
-        )
+
+        for file_id in ids:
+            file = context["session"].get(File, file_id)
+
+            if not file or not file.owner_info:
+                errors[key].append(msg)
+                continue
+
+            id_field_path = key[:-1] + (id_field,)
+            owner_id = data.get(id_field_path)
+            actual = file.owner_info.owner_type, file.owner_info.owner_id
+
+            if actual == (owner_type, owner_id):
+                continue
+
+            is_owner = user and actual == ("user", user.id)
+            if not any([ignore_auth, is_admin, is_owner]):
+                errors[key].append(msg)
+                continue
+
+            queue.append(
+                {
+                    "owner_type": owner_type,
+                    "id_field_path": id_field_path,
+                    "file_id": data[key],
+                },
+            )
 
     return validator

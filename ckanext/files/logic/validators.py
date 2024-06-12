@@ -120,7 +120,6 @@ def files_transfer_ownership(owner_type: str, id_field: str):
         ids: list[str] = value if isinstance(value, list) else [value]
 
         user = authz._get_user(context.get("user"))  # type: ignore
-        queue = utils.file_transfer_queue()
 
         for file_id in ids:
             file = context["session"].get(File, file_id)
@@ -144,12 +143,6 @@ def files_transfer_ownership(owner_type: str, id_field: str):
                 errors[key].append("File is pinned")
                 continue
 
-            queue.append(
-                {
-                    "owner_type": owner_type,
-                    "id_field_path": id_field_path,
-                    "file_id": data[key],
-                },
-            )
+            utils.OwnershipTransferRequest.create(file_id, owner_type, id_field_path)
 
     return validator

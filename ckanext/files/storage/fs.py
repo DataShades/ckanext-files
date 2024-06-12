@@ -271,7 +271,7 @@ class FsManager(Manager):
             yield entry.name
 
     def analyze(self, location: str, extras: dict[str, Any]) -> FileData:
-        """Return all details about filename."""
+        """Return all details about location."""
         filepath = os.path.join(str(self.storage.settings["path"]), location)
         if not os.path.exists(filepath):
             raise exceptions.MissingFileError(self.storage.settings["name"], filepath)
@@ -291,6 +291,7 @@ class FsManager(Manager):
 
 class FsReader(Reader):
     required_options = ["path"]
+
     capabilities = shared.Capability.combine(
         shared.Capability.STREAM,
         shared.Capability.TEMPORAL_LINK,
@@ -335,9 +336,10 @@ class FsStorage(Storage):
 
     def __init__(self, **settings: Any) -> None:
         path = self.ensure_option(settings, "path")
+        settings.setdefault("create_path", False)
 
         if not os.path.exists(path):
-            if tk.asbool(settings.get("create_path")):
+            if tk.asbool(settings["create_path"]):
                 os.makedirs(path)
             else:
                 raise exceptions.InvalidStorageConfigurationError(
@@ -353,20 +355,39 @@ class FsStorage(Storage):
         declaration.declare(key.path).required().set_description(
             "Path to the folder where uploaded data will be stored.",
         )
+
         declaration.declare_bool(key.create_path).set_description(
             "Create storage folder if it does not exist.",
         )
 
 
-class PublicFileSystemStorage(FsStorage):
-    def __init__(self, **settings: Any) -> None:
-        self.ensure_option(settings, "public_root")
-        super().__init__(**settings)
+class PublicFsReader(FsReader):
+    required_options = FsReader.required_options + ["public_root"]
 
+    capabilities = utils.Capability.combine(
+        FsReader.capabilities,
+        utils.Capability.PUBLIC_LINK,
+    )
+
+    def public_link(self, data: FileData, extras: dict[str, Any]) -> str:
+        """Return public download link."""
+        return "/".join(
+            [
+                self.storage.settings["public_root"].rstrip("/"),
+                data.location.lstrip("/"),
+            ],
+        )
+
+
+class PublicFsStorage(FsStorage):
     @classmethod
-    def declare_config_options(cls, declaration: Declaration, key: Key) -> None:
+    def declare_config_options(cls, declaration: Declaration, key: Key):
         super().declare_config_options(declaration, key)
+
         declaration.declare(key.public_root).required().set_description(
             "URL of the storage folder."
-            + " `public_root + filename` must produce a public URL",
+            + " `public_root + location` must produce a public URL",
         )
+
+    def make_reader(self):
+        return PublicFsReader(self)

@@ -19,15 +19,14 @@ groups:
             Names of storages that can by used by non-sysadmin users when
             authenticated uploads enabled
 
-
-      - key: ckanext.files.allow_authenticated_uploads
-        type: bool
-        description: |
-            Any authenticated user can upload files.
-
-
       - key: ckanext.files.owner.cascade_access
         type: list
+        default:
+            - package
+            - resource
+            - group
+            - organization
+
         description: |
           List of owner types that grant access on owned file to anyone who has
           access to the owner of file. For example, if this option has value
@@ -38,9 +37,14 @@ groups:
           package/resource; anyone who passes
           `package_delete`/`resource_delete` can delete files owned by
           package/resoure.
+          IMPORTANT: Do not add `user` to this list. Files may be temporarily
+          owned by user during resource creation. Using cascade access rules
+          with `user` exposes such temporal files to anyone who can read user's
+          profile.
 
       - key: ckanext.files.owner.transfer_as_update
         type: bool
+        default: true
         description: |
             Use `*_update` auth function to check cascade access for ownership
             transfer. Works with `ckanext.files.owner.cascade_access`, which by

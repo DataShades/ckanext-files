@@ -67,7 +67,7 @@ class FilesPlugin(p.SingletonPlugin):
     def files_get_storage_adapters(self) -> dict[str, type[base.Storage]]:
         adapters: dict[str, type[base.Storage]] = {
             "files:fs": storage.FsStorage,
-            "files:public_fs": storage.PublicFileSystemStorage,
+            "files:public_fs": storage.PublicFsStorage,
             "files:redis": storage.RedisStorage,
         }
 

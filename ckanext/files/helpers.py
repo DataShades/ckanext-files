@@ -53,6 +53,7 @@ def files_download_info(
         return None
 
     storage = shared.get_storage(file.storage)
+
     for lt in types:
         func = getattr(storage, f"{lt}_link", None)
         if not func:

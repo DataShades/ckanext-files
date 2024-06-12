@@ -388,7 +388,9 @@ class Storage(OptionChecker, abc.ABC):
         )
 
         declaration.declare(key.name, key[-1]).set_description(
-            "Descriptive name of the storage used for debugging.",
+            "Descriptive name of the storage used for debugging. When empty,"
+            + " name from the config option is used,"
+            + " i.e: `ckanext.files.storage.DEFAULT_NAME...`",
         )
 
     def compute_capabilities(self) -> utils.Capability:

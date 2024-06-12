@@ -16,7 +16,10 @@ and attach them to datasets, resources, etc.
   * [Multi-storage](#multi-storage)
   * [Tracked and untracked files](#tracked-and-untracked-files)
 * [Configuration](#configuration)
-
+  * [Global configuration](#global-configuration)
+  * [Storage configuration](#storage-configuration)
+    * [Redis storage configuration](#redis-storage-configuration)
+    * [Filesystem storage configuration](#filesystem-storage-configuration)
 
 ## Requirements
 
@@ -551,15 +554,46 @@ ckanext.files.storage.memory.prefix = xxx:
 ckanext.files.storage.my_drive.path = /tmp/hello
 ```
 
-Below is the list of non-storage specific options. Details of the specific
-storage type can be found in the dedicated section of the storage type.
+
+### Global configuration
 
 ```ini
-
 # Default storage used for upload when no explicit storage specified
 # (optional, default: default)
 ckanext.files.default_storage = default
+
+# Any authenticated user can upload files.
+# (optional, default: false)
+ckanext.files.authenticated_uploads.allow = false
+
+# Names of storages that can by used by non-sysadmin users when authenticated
+# uploads enabled
+# (optional, default: default)
+ckanext.files.authenticated_uploads.storages = default
+
+# List of owner types that grant access on owned file to anyone who has
+# access to the owner of file. For example, if this option has value
+# `resource package`, anyone who passes `resource_show` auth, can see all
+# files owned by resource; anyone who passes `package_show`, can see all
+# files owned by package; anyone who passes
+# `package_update`/`resource_update` can modify files owned by
+# package/resource; anyone who passes `package_delete`/`resource_delete` can
+# delete files owned by package/resoure. IMPORTANT: Do not add `user` to
+# this list. Files may be temporarily owned by user during resource creation.
+# Using cascade access rules with `user` exposes such temporal files to
+# anyone who can read user's profile.
+# (optional, default: package resource group organization)
+ckanext.files.owner.cascade_access = package resource group organization
+
+# Use `*_update` auth function to check cascade access for ownership
+# transfer. Works with `ckanext.files.owner.cascade_access`, which by itself
+# will check `*_file_transfer` auth function, but switch to `*_update` when
+# this flag is enabled.
+# (optional, default: true)
+ckanext.files.owner.transfer_as_update = true
 ```
+
+### Storage configuration
 
 All available options for the storage type can be checked via config
 declarations CLI. First, add the storage type to the config file:
@@ -583,11 +617,6 @@ regsitered by Redis adapter alongside with the global options:
 ## ...
 ## Storage adapter used by the storage
 ckanext.files.storage.xxx.type = files:redis
-## The maximum size of a single upload.
-## Supports size suffixes: 42B, 2M, 24KiB, 1GB. `0` means no restrictions.
-ckanext.files.storage.xxx.max_size = 0
-## Descriptive name of the storage used for debugging.
-ckanext.files.storage.xxx.name = xxx
 ## Static prefix of the Redis key generated for every upload.
 ckanext.files.storage.xxx.prefix = ckanext:files:default:file_content:
 ```
@@ -623,13 +652,62 @@ options:
 ## ...
 ## Storage adapter used by the storage
 ckanext.files.storage.xxx.type = files:fs
-## The maximum size of a single upload.
-## Supports size suffixes: 42B, 2M, 24KiB, 1GB. `0` means no restrictions.
-ckanext.files.storage.xxx.max_size = 0
-## Descriptive name of the storage used for debugging.
-ckanext.files.storage.xxx.name = xxx
 ## Path to the folder where uploaded data will be stored.
 ckanext.files.storage.xxx.path =
 ## Create storage folder if it does not exist.
 ckanext.files.storage.xxx.create_path = false
+```
+
+There is a number of options that are supported by every storage. You can set
+them and expect that every storage, regardless of type, will use these options
+in the same way:
+
+```ini
+## Storage adapter used by the storage
+ckanext.files.storage.NAME.type = ADAPTER
+## The maximum size of a single upload.
+## Supports size suffixes: 42B, 2M, 24KiB, 1GB. `0` means no restrictions.
+ckanext.files.storage.NAME.max_size = 0
+## Space-separated list of MIME types or just type or subtype part.
+## Example: text/csv pdf application video jpeg
+ckanext.files.storage.NAME.supported_types =
+## Descriptive name of the storage used for debugging. When empty, name from
+## the config option is used, i.e: `ckanext.files.storage.DEFAULT_NAME...`
+ckanext.files.storage.NAME.name = NAME
+```
+
+#### Redis storage configuration
+
+```ini
+## Storage adapter used by the storage
+ckanext.files.storage.NAME.type = files:redis
+## Static prefix of the Redis key generated for every upload.
+ckanext.files.storage.NAME.prefix = ckanext:files:default:file_content:
+```
+
+#### Filesystem storage configuration
+
+Private filesystem storage
+
+```ini
+## Storage adapter used by the storage
+ckanext.files.storage.NAME.type = files:fs
+## Path to the folder where uploaded data will be stored.
+ckanext.files.storage.NAME.path =
+## Create storage folder if it does not exist.
+ckanext.files.storage.NAME.create_path = false
+```
+
+
+Public filesystem storage
+
+```ini
+## Storage adapter used by the storage
+ckanext.files.storage.NAME.type = files:public_fs
+## Path to the folder where uploaded data will be stored.
+ckanext.files.storage.NAME.path =
+## Create storage folder if it does not exist.
+ckanext.files.storage.NAME.create_path = false
+## URL of the storage folder. `public_root + location` must produce a public URL
+ckanext.files.storage.NAME.public_root =
 ```

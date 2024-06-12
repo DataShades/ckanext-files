@@ -22,22 +22,26 @@ def file_create(  # noqa: PLR0913
 
 
 @validator_args
-def _base_file_search(
+def _base_file_search(  # noqa: PLR0913
     unicode_safe: Validator,
     default: ValidatorFactory,
     int_validator: Validator,
     boolean_validator: Validator,
     ignore_empty: Validator,
+    dict_only: Validator,
+    ignore_missing: Validator,
+    convert_to_json_if_string: Validator,
 ) -> Schema:
     return {
         "start": [default(0), int_validator],
         "rows": [default(10), int_validator],
         "sort": [default("name"), unicode_safe],
         "reverse": [boolean_validator],
-        "storage_data": [ignore_empty],
-        "plugin_data": [ignore_empty],
+        "storage_data": [ignore_empty, convert_to_json_if_string, dict_only],
+        "plugin_data": [ignore_empty, convert_to_json_if_string, dict_only],
         "owner_type": [ignore_empty],
         "owner_id": [ignore_empty],
+        "pinned": [ignore_missing, boolean_validator],
     }
 
 

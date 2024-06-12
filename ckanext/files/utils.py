@@ -18,7 +18,7 @@ import logging
 import mimetypes
 import re
 import tempfile
-from io import BytesIO
+from io import BufferedReader, BytesIO
 from typing import (
     IO,
     Any,
@@ -198,9 +198,6 @@ def get_owner(owner_type: str, owner_id: str):
     for mapper in mappers:
         cls = mapper.class_
         table = getattr(cls, "__table__", None)
-        # do not use `table` in simplified expressions, like `table and
-        # table.name`. Due to table nature it will cause SQL statement
-        # construction instead of truthiness check
         if table is None:
             table = getattr(mapper, "local_table", None)
 
@@ -270,8 +267,8 @@ class Capability(enum.Flag):
     # make permanent public(anonymously accessible) link
     PUBLIC_LINK = enum.auto()
 
-    @classmethod
-    def combine(cls, *capabilities: Capability):
+    @staticmethod
+    def combine(*capabilities: Capability):
         """Combine multiple capabilities.
 
         Example:
@@ -346,6 +343,7 @@ def make_upload(
         | bytes
         | bytearray
         | BytesIO
+        | BufferedReader
         | Any
     ),
 ) -> Upload:
@@ -387,7 +385,7 @@ def make_upload(
     if isinstance(value, (bytes, bytearray)):
         value = BytesIO(value)
 
-    if isinstance(value, BytesIO):
+    if isinstance(value, (BytesIO, BufferedReader)):
         mime = magic.from_buffer(value.read(1024), True)
         value.seek(0, 2)
         size = value.tell()

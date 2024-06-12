@@ -1,6 +1,6 @@
 import contextlib
 
-from .fs import FsStorage, PublicFileSystemStorage
+from .fs import FsStorage, PublicFsStorage
 from .redis import RedisStorage
 
 with contextlib.suppress(ImportError):
@@ -8,7 +8,7 @@ with contextlib.suppress(ImportError):
 
 __all__ = [
     "FsStorage",
+    "PublicFsStorage",
     "GoogleCloudStorage",
-    "PublicFileSystemStorage",
     "RedisStorage",
 ]

@@ -113,7 +113,7 @@ def files_file_search(  # noqa: C901, PLR0912
 
         inspector: Any = sa.inspect(Multipart)
 
-    for field in ["owner_type", "owner_id"]:
+    for field in ["owner_type", "owner_id", "pinned"]:
         if field in data_dict:
             stmt = stmt.where(getattr(Owner, field) == data_dict[field])
 
@@ -141,8 +141,15 @@ def files_file_search(  # noqa: C901, PLR0912
         else:
             op = "="
 
-        if not isinstance(v, columns[k].type.python_type):
-            continue
+        column_type = columns[k].type.python_type
+        if not isinstance(v, column_type) and v is not None:
+            v = str(v)  # noqa: PLW2901
+
+        if v is None:
+            if op == "=":
+                op = "is"
+            elif op == "!=":
+                op = "is not"
 
         stmt = stmt.where(columns[k].bool_op(op)(v))
 

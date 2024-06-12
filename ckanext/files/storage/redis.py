@@ -2,8 +2,9 @@ from __future__ import annotations
 
 import copy
 from io import BytesIO
-from typing import IO, Any, cast
+from typing import IO, Any, Iterable, cast
 
+import magic
 import redis
 from redis import ResponseError
 
@@ -23,6 +24,8 @@ from ckanext.files.shared import (
     Upload,
     Uploader,
 )
+
+connect_to_redis: Any
 
 
 class RedisUploader(Uploader):
@@ -81,7 +84,36 @@ class RedisManager(Manager):
     storage: RedisStorage
 
     required_options = ["prefix"]
-    capabilities = Capability.combine(Capability.REMOVE, Capability.EXISTS)
+    capabilities = Capability.combine(
+        Capability.REMOVE,
+        Capability.EXISTS,
+        Capability.SCAN,
+        Capability.ANALYZE,
+    )
+
+    def scan(self, extras: dict[str, Any]) -> Iterable[str]:
+        prefix = self.storage.settings["prefix"]
+        keys: Iterable[bytes] = self.storage.redis.scan_iter(f"{prefix}*")
+        for key in keys:
+            yield key.decode()[len(prefix) :]
+
+    def analyze(self, location: str, extras: dict[str, Any]) -> FileData:
+        """Return all details about location."""
+        key = self.storage.settings["prefix"] + location
+        value: Any = self.storage.redis.get(key)
+        if value is None:
+            raise exceptions.MissingFileError(self.storage.settings["name"], key)
+
+        reader = HashingReader(BytesIO(value))
+        content_type = magic.from_buffer(next(reader, b""), True)
+        reader.exhaust()
+
+        return FileData(
+            location,
+            size=cast(int, self.storage.redis.memory_usage(key)),
+            content_type=content_type,
+            hash=reader.get_hash(),
+        )
 
     def remove(self, data: FileData | MultipartData, extras: dict[str, Any]) -> bool:
         key = self.storage.settings["prefix"] + data.location

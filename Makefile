@@ -6,4 +6,4 @@ help:
 
 
 changelog:  ## compile changelog
-	git changelog -c conventional -o CHANGELOG.md
+	git changelog -c conventional -o CHANGELOG.md $(if $(bump),-B $(bump))

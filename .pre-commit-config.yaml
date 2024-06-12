@@ -1,0 +1,38 @@
+default_install_hook_types:
+- pre-commit
+- pre-push
+- commit-msg
+
+repos:
+- repo: https://github.com/pre-commit/pre-commit-hooks
+  rev: v4.5.0
+  hooks:
+  # - id: check-yaml
+  - id: end-of-file-fixer
+    stages: [pre-commit]
+  - id: trailing-whitespace
+    stages: [pre-commit]
+  - id: debug-statements
+    stages: [pre-push]
+
+## Isort
+- repo: https://github.com/pycqa/isort
+  rev: 5.13.2
+  hooks:
+  - id: isort
+    name: isort
+    stages: [pre-commit]
+
+## Black
+- repo: https://github.com/psf/black
+  rev: 24.2.0
+  hooks:
+  - id: black
+    stages: [pre-commit]
+
+## Ruff
+- repo: https://github.com/charliermarsh/ruff-pre-commit
+  rev: v0.3.0
+  hooks:
+  - id: ruff
+    stages: [pre-commit]

@@ -1,0 +1,70 @@
+{#
+    storage: str | None
+    uploader: str | None
+    file_attrs: dict[str, str] | None
+    with_dropzone: bool | None
+
+    #}
+
+{% import 'macros/form.html' as form %}
+
+{% block uploader %}
+    <div class="file-uploader">
+        {% block form %}
+            <form action="" method="post" class="file-uploader__form"
+                data-module="files--scheduler">
+                {{ form.input("upload", label="File", type="file", attrs=dict({
+                    "class": "form-control",
+                    "data-queue-scheduler": true,
+                    }, **file_attrs|default({}))) }}
+            </form>
+        {% endblock form %}
+
+        {% block dropzone %}
+            {% if with_dropzone %}
+                <div class="file-uploader__dropzone" data-module="files--dropzone" data-module-immediate>
+                    {{ _("Drag a file here") }}
+                </div>
+            {% endif %}
+        {% endblock dropzone%}
+
+        {% block progress %}
+            <div data-module="files--queue"
+                {% if storage is defined %} data-module-storage="{{ storage }}"{% endif %}
+                {% if uploader is defined %} data-module-uploader="{{ uploader }}"{% endif %}
+            >
+
+                <div data-upload-template hidden class="card file-uploader__queue_item my-1">
+                    <div class="card-header">
+                        <strong data-item-name></strong>
+                    </div>
+
+                    <div class="card-body">
+                        <div class="progress">
+                            <div class="progress-bar progress-bar-striped bg-secondary" style="width: 0%" data-upload-progress>
+                                0%
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card-footer">
+                        <div class="file-uploader__controls">
+                            <button type="button" class="btn btn-sm btn-light" data-upload-resume>
+                                <i class="fa fa-play"></i>
+                            </button>
+
+                            <button type="button" class="btn btn-sm btn-light" data-upload-pause>
+                                <i class="fa fa-pause"></i>
+                            </button>
+
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+        {% endblock progress %}
+
+    </div>
+
+{% endblock %}

@@ -1,0 +1,1 @@
+../../../assets/scripts/files--shared-uploader.js

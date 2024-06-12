@@ -1,8 +1,16 @@
+from __future__ import annotations
+
+import os
+import pydoc
+import textwrap
+
 import click
 
-from ckan.plugins import toolkit as tk
+import ckan.plugins.toolkit as tk
+from ckan import model
 
-import ckanext.files.config as files_conf
+from ckanext.files import base, config, exceptions, shared
+from ckanext.files.model import File, Owner
 
 __all__ = [
     "files",
@@ -15,39 +23,128 @@ def files():
 
 
 @files.command()
-@click.option("--delete", "-d", is_flag=True, help="Delete orphaned datasets.")
-@click.argument("threshold", required=False, type=int)
-def remove_unused_files(delete: bool, threshold: int):
-    """Remove files that are not used for N days. The unused threshold is specified
-    in a config"""
-    threshold = (
-        threshold
-        if threshold is not None
-        else files_conf.get_unused_threshold()
-    )
+@click.argument("file_id")
+def stream(file_id: str):
+    """Stream content of the file."""
+    file = model.Session.get(shared.File, file_id)
+    if not file:
+        tk.error_shout("File not found")
+        raise click.Abort
 
-    files = tk.get_action("files_get_unused_files")(
-        {"ignore_auth": True}, {"threshold": threshold}
-    )
+    try:
+        storage = shared.get_storage(file.storage)
+    except exceptions.UnknownStorageError as err:
+        tk.error_shout(err)
+        raise click.Abort from err
 
-    if not files:
-        return click.secho("No unused files", fg="blue")
+    try:
+        content_stream = storage.stream(shared.FileData.from_model(file))
+    except exceptions.UnsupportedOperationError as err:
+        tk.error_shout(err)
+        raise click.Abort from err
 
-    click.secho(
-        f"Found unused files that were unused more than {threshold} days:", fg="green"
-    )
+    while chunk := content_stream.read(1024 * 256):
+        click.echo(chunk, nl=False)
 
-    for file in files:
-        click.echo(f"File path={file['path']}")
 
-        if delete:
-            tk.get_action("files_file_delete")(
-                {"ignore_auth": True}, {"id": file["id"]}
-            )
-            click.echo(f"File was deleted", fg="red")
-
-    if not delete:
+@files.command()
+@click.option("-v", "--verbose", is_flag=True, help="Show adapter's documentation")
+def adapters(verbose: bool):
+    """Show all awailable storage adapters."""
+    for name in sorted(base.adapters):
+        adapter = base.adapters[name]
         click.secho(
-            "If you want to delete unused files, add `--delete` flag",
-            fg="red",
+            f"{click.style(name, bold=True)} - {adapter.__module__}:{adapter.__name__}",
         )
+        if verbose:
+            doc = pydoc.getdoc(adapter)
+            wrapped = textwrap.indent(doc, "\t")
+            if wrapped:
+                click.echo(wrapped)
+
+
+@files.command()
+@click.option("-v", "--verbose", is_flag=True, help="Show storage's details")
+def storages(verbose: bool):
+    """Show all configured storages."""
+    for name, settings in config.storages().items():
+        click.secho("{}: {}".format(click.style(name, bold=True), settings["type"]))
+        if verbose:
+            storage = shared.get_storage(name)
+            click.echo(f"\tSupports: {storage.capabilities}")
+            click.echo(f"\tDoes not support: {storage.unsupported_operations()}")
+
+
+@files.command()
+@click.option("-s", "--storage-name", help="Name of the configured storage")
+@click.option(
+    "-u",
+    "--untracked-only",
+    help="Show only untracked files(not recorded in DB)",
+    is_flag=True,
+)
+@click.option(
+    "-t",
+    "--track",
+    help="Track untracked files by creating record in DB",
+    is_flag=True,
+)
+@click.option("-a", "--adopt-by", help="Attach untracked to specified user")
+def scan(
+    storage_name: str | None,
+    untracked_only: bool,
+    adopt_by: str | None,
+    track: bool,
+):
+    """Iterate over all files available in storage.
+
+    This command can be used to locate untracked files, that are not registered
+    in DB, but exist in storage.
+
+    """
+    storage_name = storage_name or config.default_storage()
+    storage = shared.get_storage(storage_name)
+
+    try:
+        files = storage.scan()
+    except exceptions.UnsupportedOperationError as err:
+        tk.error_shout(err)
+        raise click.Abort from err
+
+    stepfather = model.User.get(adopt_by)
+
+    for name in files:
+        is_untracked = not model.Session.query(
+            File.by_location(name, storage_name).exists(),
+        ).scalar()
+
+        if untracked_only and not is_untracked:
+            continue
+
+        click.echo(name)
+
+        if track and is_untracked:
+            try:
+                data = storage.analyze(name)
+            except exceptions.UnsupportedOperationError as err:
+                tk.error_shout(err)
+                raise click.Abort from err
+
+            fileobj = File(
+                name=os.path.basename(name),
+                storage=storage_name,
+            )
+            data.into_model(fileobj)
+
+            model.Session.add(fileobj)
+
+            if stepfather:
+                owner = Owner(
+                    item_id=fileobj.id,
+                    item_type="file",
+                    owner_id=stepfather.id,
+                    owner_type="user",
+                )
+                model.Session.add(owner)
+
+            model.Session.commit()

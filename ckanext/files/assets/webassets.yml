@@ -1,0 +1,17 @@
+files-js:
+  filter: rjsmin
+  output: ckanext-files/%(version)s-files.js
+  contents:
+    - scripts/files--shared.js
+    - scripts/files--modules.js
+    - scripts/files--google-cloud-storage-uploader.js
+
+  extra:
+    preload:
+      - base/main
+      - base/ckan
+
+files-css:
+  output: ckanext-files/%(version)s-files.css
+  contents:
+    - styles/files--style.css

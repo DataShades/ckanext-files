@@ -1,0 +1,99 @@
+{#
+    Displays a list of files.
+
+    files       - A list of files to display.
+    owner_type  - type of the files owner
+    owner_id    - ID of the files owner
+
+    Example:
+
+    {% snippet 'files/snippets/file_table.html', files=files %}
+
+    #}
+{% set columns = [
+    {"name": "name", "label": "Name"},
+    {"name": "ctime", "label": "Created"},
+    {"name": "storage_data.content_type", "label": "Type"},
+    {"name": "storage_data.size", "label": "Size"},
+    ] %}
+
+{% set params = request.args %}
+
+{% block file_table %}
+    <table class="table table-striped">
+        <thead>
+            {% block table_header %}
+                <tr>
+                    {% for column in columns %}
+                        <th>
+                            {% if params.sort == column.name and params.reverse == 'false' %}
+                                {{ _(column.label) }}
+
+                                <i class="fa fa-sort-amount-desc"></i>
+                            {% else %}
+                                <a href="{{ h.remove_url_param(['sort', 'reverse'], replace=column.name, alternative_url=request.path) }}&reverse=false">
+                                    {{ _(column.label) }}
+                                </a>
+                            {% endif %}
+
+                        </th>
+                    {% endfor %}
+                    <th>{{ _("Actions") }}</th>
+                </tr>
+            {% endblock table_header %}
+        </thead>
+
+        <tbody>
+            {% for file in files %}
+
+                {% block table_row scoped %}
+                    <tr class="file-item">
+                        <td>
+                            {{ file.name }}
+                        </td>
+                        <td>
+                            <div title="{{  h.time_ago_from_timestamp(file.ctime) }}" class=""file-item__creation-time>
+                                {{ h.render_datetime(file.ctime, with_hours=true) }}
+                            </div>
+                        </td>
+                        <td>
+                            {% set content_type = file.content_type %}
+                            <div data-content-type="{{ content_type }}" class="file-item__type" title="{{ content_type }}">
+                                {% set icon_path = h.files_content_type_icon(content_type, "amy-dark", "svg") %}
+                                {% if icon_path %}
+                                    <img alt="type icon" src="{{ icon_path }}"/>
+                                {% endif %}
+
+                                {{ _(h.files_humanize_content_type(content_type)) }}
+                            </div>
+                        </td>
+                        <td>
+                            {{ h.localised_filesize(file.size) }}
+                        </td>
+                        <td>
+                            {% block file_actions %}
+                                {% if h.check_access("files_file_download", {"id": file.id}) %}
+                                    <a class="btn btn-success btn-sm" title="Download the file"
+                                        href="{{ h.url_for('files.generic_download', file_id=file.id) }}">
+                                        <i class="fa fa-download"></i>
+                                    </a>
+                                {% endif %}
+
+                                {% if owner_type == "user" and owner_id and h.check_access("files_file_delete", {"id": file.id})%}
+                                    <a class="btn btn-danger btn-sm" title="Remove the file"
+                                       href="{{ h.url_for('files.delete_file',
+                                             file_id=file.id,
+                                             came_from=request.path, user_id=owner_id) }}">
+                                        <i class="fa fa-remove"></i>
+                                    </a>
+                                {% endif %}
+
+                            {% endblock %}
+                        </td>
+                    </tr>
+                {% endblock table_row %}
+
+	    {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}

@@ -1,5 +1,11 @@
-from sqlalchemy.ext.declarative import declarative_base
+from __future__ import annotations
 
-from ckan.model.meta import metadata
+from datetime import datetime, timezone
 
-Base = declarative_base(metadata=metadata)
+import ckan.plugins.toolkit as tk
+
+Base = tk.BaseModel
+
+
+def now():
+    return datetime.now(timezone.utc)

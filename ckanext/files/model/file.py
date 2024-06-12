@@ -1,34 +1,160 @@
 from __future__ import annotations
 
-import datetime
+import copy
+from datetime import datetime
+from typing import Any, Literal
 
-
-from sqlalchemy import Column, UnicodeText, DateTime
-from sqlalchemy.orm import Query
+import sqlalchemy as sa
 from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy.orm import Mapped, foreign, relationship
 
-import ckan.plugins.toolkit as tk
-import ckan.model as model
-from ckan.model.types import make_uuid
 from ckan.lib.dictization import table_dictize
-from .base import Base
+from ckan.model.types import make_uuid
+
+from ckanext.files import utils
+
+from .base import Base, now
+from .owner import Owner
+
+foreign: Any
 
 
-class File(Base):
-    __tablename__ = "files_file"
-    id = Column(UnicodeText, primary_key=True, default=make_uuid)
-    name = Column(UnicodeText, nullable=False)
-    path = Column(UnicodeText, nullable=False)
-    kind = Column(UnicodeText, nullable=False)
-    uploaded_at = Column(
-        DateTime, nullable=False, default=datetime.datetime.utcnow
+class File(Base):  # type: ignore
+    __table__ = sa.Table(
+        "files_file",
+        Base.metadata,
+        sa.Column("id", sa.UnicodeText, primary_key=True, default=make_uuid),
+        sa.Column("name", sa.UnicodeText, nullable=False),
+        sa.Column("location", sa.Text, nullable=False),
+        sa.Column(
+            "content_type",
+            sa.Text,
+            nullable=False,
+            default="application/octet-stream",
+        ),
+        sa.Column("size", sa.Integer, nullable=False, default=0),
+        sa.Column("hash", sa.Text, nullable=False, default=""),
+        sa.Column("storage", sa.Text, nullable=False),
+        sa.Column(
+            "ctime",
+            sa.DateTime(timezone=True),
+            nullable=False,
+            default=now,
+            server_default=sa.func.now(),
+        ),
+        sa.Column("mtime", sa.DateTime(timezone=True)),
+        sa.Column("atime", sa.DateTime(timezone=True)),
+        sa.Column("storage_data", JSONB, default=dict, server_default="{}"),
+        sa.Column("plugin_data", JSONB, default=dict, server_default="{}"),
     )
-    last_access = Column(
-        DateTime, nullable=False, default=datetime.datetime.utcnow
-    )
-    extras = Column(JSONB)
 
-    def dictize(self, context):
+    id: Mapped[str]
+
+    name: Mapped[str]
+    location: Mapped[str]
+    content_type: Mapped[str]
+    size: Mapped[int]
+    hash: Mapped[str]
+
+    storage: Mapped[str]
+
+    ctime: Mapped[datetime]
+    mtime: Mapped[datetime | None]
+    atime: Mapped[datetime | None]
+
+    storage_data: Mapped[dict[str, Any]]
+    plugin_data: Mapped[dict[str, Any]]
+
+    completed: Mapped[bool]
+
+    owner_info: Mapped[Owner | None] = relationship(
+        Owner,
+        primaryjoin=sa.and_(
+            Owner.item_id == foreign(__table__.c.id),
+            Owner.item_type == "file",
+        ),
+        single_parent=True,
+        uselist=False,
+        cascade="delete, delete-orphan",
+        lazy="joined",
+    )  # type: ignore
+
+    @property
+    def owner(self) -> Any | None:
+        owner = self.owner_info
+        if not owner:
+            return None
+
+        return utils.get_owner(owner.owner_type, owner.owner_id)
+
+    def __init__(self, **kwargs: Any):
+        super().__init__(**kwargs)
+        if not self.id:
+            self.id = make_uuid()
+
+    def dictize(self, context: Any) -> dict[str, Any]:
         result = table_dictize(self, context)
-        result["url"] = tk.h.url_for("files.get_file", file_id=self.id, qualified=True)
+        result["storage_data"] = copy.deepcopy(result["storage_data"])
+
+        if self.owner_info:
+            result["owner_type"] = self.owner_info.owner_type
+            result["owner_id"] = self.owner_info.owner_id
+            result["pinned"] = self.owner_info.pinned
+
+        else:
+            result["owner_type"] = None
+            result["owner_id"] = None
+            result["pinned"] = False
+
+        plugin_data = result.pop("plugin_data")
+        if context.get("include_plugin_data"):
+            result["plugin_data"] = copy.deepcopy(plugin_data)
+
         return result
+
+    def touch(
+        self,
+        access: bool = True,
+        modification: bool = False,
+        moment: datetime | None = None,
+    ):
+        if not moment:
+            moment = now()
+
+        if access:
+            self.atime = moment
+
+        if modification:
+            self.mtime = moment
+
+    def patch_data(
+        self,
+        patch: dict[str, Any],
+        dict_path: list[str] | None = None,
+        prop: Literal["storage_data", "plugin_data"] = "plugin_data",
+    ) -> dict[str, Any]:
+        data: dict[str, Any] = copy.deepcopy(getattr(self, prop))
+
+        target: dict[str, Any] | Any = data
+        if dict_path:
+            for part in dict_path:
+                target = target.setdefault(part, {})
+                if not isinstance(target, dict):
+                    raise TypeError(part)
+
+        target.update(patch)
+
+        setattr(self, prop, data)
+        return data
+
+    @classmethod
+    def by_location(cls, location, storage=None):
+        # type: (str, str | None) -> sa.sql.Select
+        stmt = sa.select(cls).where(
+            cls.location == location,
+        )
+
+        if storage:
+            stmt = stmt.where(cls.storage == storage)
+
+        return stmt

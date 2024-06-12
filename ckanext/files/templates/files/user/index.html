@@ -1,0 +1,24 @@
+{#
+    storage: str | None
+    uploader: str | None
+    #}
+
+{% extends "user/read_base.html" %}
+
+
+{% block primary_content_inner %}
+    {% block files_list %}
+        {% if files.results %}
+            {% snippet 'files/snippets/file_table.html', files=files.results, owner_type="user", owner_id=user_dict.name %}
+
+        {% elif not files.count %}
+            <p class="text-muted">
+                {{ _("There are no files uploaded by the current user.") }}
+            </p>
+
+        {% endif %}
+
+        {{ pager.pager() }}
+    {% endblock %}
+
+{% endblock %}

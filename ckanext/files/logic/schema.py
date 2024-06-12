@@ -1,47 +1,178 @@
-import ckan.plugins.toolkit as tk
 from ckan.logic.schema import validator_args
+from ckan.types import Schema, Validator, ValidatorFactory
 
-
-CONFIG_KIND = "ckanext.files.default.kind"
-DEFAULT_KIND = "ckanext_files_file"
+from ckanext.files import config
 
 
 @validator_args
-def file_create(
-    ignore_empty,
-    dict_only,
-    not_empty,
-    unicode_safe,
-    default,
-    ignore,
-    not_missing,
-):
-    default_kind = tk.config.get(CONFIG_KIND, DEFAULT_KIND)
+def file_create(  # noqa: PLR0913
+    ignore_empty: Validator,
+    unicode_safe: Validator,
+    default: ValidatorFactory,
+    files_into_upload: Validator,
+    not_missing: Validator,
+    files_ensure_name: ValidatorFactory,
+) -> Schema:
+    # name is checked inside action, using "upload" as source if empty
     return {
+        "name": [ignore_empty, unicode_safe],
+        "storage": [default(config.default_storage()), unicode_safe],
+        "upload": [not_missing, files_into_upload, files_ensure_name("name")],
+    }
+
+
+@validator_args
+def _base_file_search(  # noqa: PLR0913
+    unicode_safe: Validator,
+    default: ValidatorFactory,
+    int_validator: Validator,
+    boolean_validator: Validator,
+    ignore_empty: Validator,
+    dict_only: Validator,
+    ignore_missing: Validator,
+    convert_to_json_if_string: Validator,
+) -> Schema:
+    return {
+        "start": [default(0), int_validator],
+        "rows": [default(10), int_validator],
+        "sort": [default("name"), unicode_safe],
+        "reverse": [boolean_validator],
+        "storage_data": [ignore_empty, convert_to_json_if_string, dict_only],
+        "plugin_data": [ignore_empty, convert_to_json_if_string, dict_only],
+        "owner_type": [ignore_empty],
+        "owner_id": [ignore_empty],
+        "pinned": [ignore_missing, boolean_validator],
+    }
+
+
+@validator_args
+def file_search_by_user(
+    ignore_missing: Validator,
+    unicode_safe: Validator,
+    default: ValidatorFactory,
+    ignore_not_sysadmin: Validator,
+) -> Schema:
+    schema = _base_file_search()
+    schema["user"] = [ignore_missing, ignore_not_sysadmin, unicode_safe]
+    return schema
+
+
+@validator_args
+def file_search(default: ValidatorFactory, boolean_validator: Validator) -> Schema:
+    schema = _base_file_search()
+    schema["completed"] = [default(True), boolean_validator]
+    return schema
+
+
+@validator_args
+def file_delete(
+    default: ValidatorFactory,
+    boolean_validator: Validator,
+    not_empty: Validator,
+    unicode_safe: Validator,
+) -> Schema:
+    return {
+        "id": [not_empty, unicode_safe],
+        "completed": [default(True), boolean_validator],
+    }
+
+
+@validator_args
+def file_show(
+    default: ValidatorFactory,
+    boolean_validator: Validator,
+    not_empty: Validator,
+    unicode_safe: Validator,
+) -> Schema:
+    return {
+        "id": [not_empty, unicode_safe],
+        "completed": [default(True), boolean_validator],
+    }
+
+
+@validator_args
+def file_rename(
+    default: ValidatorFactory,
+    boolean_validator: Validator,
+    not_empty: Validator,
+    unicode_safe: Validator,
+) -> Schema:
+    return {
+        "id": [not_empty, unicode_safe],
         "name": [not_empty, unicode_safe],
-        "upload": [not_missing],
-        "kind": [default(default_kind), unicode_safe],
-        "extras": [ignore_empty, dict_only],
-        "__extras": [ignore],
+        "completed": [default(True), boolean_validator],
     }
 
 
 @validator_args
-def file_update(not_empty, ignore_missing, unicode_safe, dict_only, ignore):
+def multipart_start(
+    not_empty: Validator,
+    unicode_safe: Validator,
+    default: ValidatorFactory,
+    int_validator: Validator,
+) -> Schema:
     return {
-        "id": [not_empty],
-        "name": [ignore_missing, unicode_safe],
-        "upload": [ignore_missing],
-        "extras": [ignore_missing, dict_only],
-        "__extras": [ignore],
+        "storage": [default(config.default_storage()), unicode_safe],
+        "name": [not_empty, unicode_safe],
+        "content_type": [not_empty, unicode_safe],
+        "size": [not_empty, int_validator],
+        "hash": [default(""), unicode_safe],
     }
 
 
 @validator_args
-def file_get_unused_files(int_validator, default):
+def multipart_refresh(not_empty: Validator, unicode_safe: Validator) -> Schema:
+    return {"id": [not_empty, unicode_safe]}
+
+
+@validator_args
+def multipart_update(not_empty: Validator, unicode_safe: Validator) -> Schema:
+    return {"id": [not_empty, unicode_safe]}
+
+
+@validator_args
+def multipart_complete(not_empty: Validator, unicode_safe: Validator) -> Schema:
+    return {"id": [not_empty, unicode_safe]}
+
+
+@validator_args
+def transfer_ownership(
+    not_empty: Validator,
+    boolean_validator: Validator,
+    default: ValidatorFactory,
+    unicode_safe: Validator,
+) -> Schema:
     return {
-        "threshold": [
-            default(tk.config["ckanext.files.unused_threshold"]),
-            int_validator,
-        ],
+        "id": [not_empty, unicode_safe],
+        "completed": [default(True), boolean_validator],
+        "owner_id": [not_empty, unicode_safe],
+        "owner_type": [not_empty, unicode_safe],
+        "force": [default(False), boolean_validator],
+        "pin": [default(False), boolean_validator],
+    }
+
+
+@validator_args
+def file_pin(
+    boolean_validator: Validator,
+    default: ValidatorFactory,
+    not_empty: Validator,
+    unicode_safe: Validator,
+) -> Schema:
+    return {
+        "id": [not_empty, unicode_safe],
+        "completed": [default(True), boolean_validator],
+    }
+
+
+@validator_args
+def file_unpin(
+    boolean_validator: Validator,
+    default: ValidatorFactory,
+    not_empty: Validator,
+    unicode_safe: Validator,
+) -> Schema:
+    return {
+        "id": [not_empty, unicode_safe],
+        "completed": [default(True), boolean_validator],
     }

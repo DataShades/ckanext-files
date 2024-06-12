@@ -1,11 +1,13 @@
 from __future__ import annotations
 
-import ckan.types as types
+from typing import Any
+
 import ckan.plugins as p
 import ckan.plugins.toolkit as tk
+from ckan.common import CKANConfig
+from ckan.types import SignalMapping
 
-from ckanext.collection.interfaces import ICollection, CollectionFactory
-
+from ckanext.collection.interfaces import CollectionFactory, ICollection
 from ckanext.file_manager.collection import FileManagerCollection
 
 
@@ -17,17 +19,17 @@ class FileManagerPlugin(p.SingletonPlugin):
 
     # IConfigurer
 
-    def update_config(self, config_):
+    def update_config(self, config_: CKANConfig):
         tk.add_template_directory(config_, "templates")
         tk.add_public_directory(config_, "public")
         tk.add_resource("assets", "file_manager")
 
     # ISignal
 
-    def get_signal_subscriptions(self) -> types.SignalMapping:
+    def get_signal_subscriptions(self) -> SignalMapping:
         return {
             tk.signals.ckanext.signal("ap_main:collect_config_sections"): [
-                collect_config_sections_subs
+                collect_config_sections_subs,
             ],
         }
 
@@ -37,7 +39,7 @@ class FileManagerPlugin(p.SingletonPlugin):
         return {"file-manager": FileManagerCollection}
 
 
-def collect_config_sections_subs(sender: None):
+def collect_config_sections_subs(sender: None) -> dict[str, Any]:
     return {
         "name": "Files",
         "configs": [
@@ -45,6 +47,6 @@ def collect_config_sections_subs(sender: None):
                 "name": "File manager",
                 "blueprint": "file_manager.list",
                 "info": "Manage uploaded files",
-            }
+            },
         ],
     }

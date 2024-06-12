@@ -456,8 +456,8 @@ class OwnershipTransferRequest:
         queue.append(cls(file_id, owner_type, id_path))
         return True
 
-    @contextlib.contextmanager
     @classmethod
+    @contextlib.contextmanager
     def fresh_queue(cls) -> Generator[list[OwnershipTransferRequest]]:
         queue: list[OwnershipTransferRequest] = []
         token = transfer_queue.set(queue)

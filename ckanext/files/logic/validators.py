@@ -120,8 +120,6 @@ def files_transfer_ownership(owner_type: str, id_field: str):
         ids: list[str] = value if isinstance(value, list) else [value]
 
         user = authz._get_user(context.get("user"))  # type: ignore
-        ignore_auth = context.get("ignore_auth")
-        is_admin = user and user.sysadmin
         queue = utils.file_transfer_queue()
 
         for file_id in ids:
@@ -138,9 +136,12 @@ def files_transfer_ownership(owner_type: str, id_field: str):
             if actual == (owner_type, owner_id):
                 continue
 
-            is_owner = user and actual == ("user", user.id)
-            if not any([ignore_auth, is_admin, is_owner]):
+            if not user or actual != ("user", user.id):
                 errors[key].append(msg)
+                continue
+
+            if file.owner_info.pinned:
+                errors[key].append("File is pinned")
                 continue
 
             queue.append(

@@ -8,7 +8,7 @@ from typing import Any, Callable
 from ckan.plugins import Interface
 from ckan.types import Context
 
-from ckanext.files import types
+from ckanext.files import utils
 
 File = Multipart = Any
 
@@ -47,7 +47,7 @@ class IFiles(Interface):
         context: Context,
         file: File | Multipart | None,
         owner: Any | None,
-        operation: types.AuthOperation,
+        operation: utils.AuthOperation,
     ) -> bool | None:
         """Decide if user is allowed to perform operation on file that belongs
         to owner.

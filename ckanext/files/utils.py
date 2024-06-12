@@ -469,6 +469,8 @@ def action_with_ownership_transfer(action: Any, name: str | None = None):
                             result,
                             item["id_field_path"],
                         ),
+                        "force": True,
+                        "pin": True,
                     },
                 )
 

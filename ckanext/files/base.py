@@ -17,7 +17,7 @@ import dataclasses
 import os
 import uuid
 from datetime import datetime
-from typing import IO, Any, Generic, Iterable
+from typing import IO, Any, Generic, Iterable, Protocol, TypeVar
 
 import pytz
 
@@ -27,7 +27,17 @@ from ckan.config.declaration import Declaration, Key
 from ckan.types import Context
 
 from . import config, exceptions, interfaces, model, utils
-from .types import TFileModel
+
+
+class PFileModel(Protocol):
+    location: str
+    size: int
+    content_type: str
+    hash: str
+    storage_data: dict[str, Any]
+
+
+TFileModel = TypeVar("TFileModel", bound=PFileModel)
 
 adapters = utils.Registry["type[Storage]"]({})
 storages = utils.Registry["Storage"]({})
@@ -43,9 +53,14 @@ def is_allowed(
     info = file.owner_info if file else None
 
     if info and info.owner_type in config.cascade_access():
+        if operation == "file_transfer" and config.transfer_as_update():
+            func_name = f"{info.owner_type}_update"
+        else:
+            func_name = f"{info.owner_type}_{operation}"
+
         try:
             tk.check_access(
-                f"{info.owner_type}_{operation}",
+                func_name,
                 context,
                 {"id": info.owner_id},
             )

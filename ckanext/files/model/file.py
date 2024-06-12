@@ -99,9 +99,12 @@ class File(Base):  # type: ignore
         if self.owner_info:
             result["owner_type"] = self.owner_info.owner_type
             result["owner_id"] = self.owner_info.owner_id
+            result["pinned"] = self.owner_info.pinned
+
         else:
             result["owner_type"] = None
             result["owner_id"] = None
+            result["pinned"] = False
 
         plugin_data = result.pop("plugin_data")
         if context.get("include_plugin_data"):

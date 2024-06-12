@@ -185,9 +185,28 @@ def files_multipart_complete(context: Context, data_dict: dict[str, Any]) -> Aut
     )
 
 
+def files_file_pin(context: Context, data_dict: dict[str, Any]) -> AuthResult:
+    return authz.is_authorized(
+        "files_edit_file",
+        context,
+        dict(data_dict, completed=False),
+    )
+
+
+def files_file_unpin(context: Context, data_dict: dict[str, Any]) -> AuthResult:
+    return authz.is_authorized(
+        "files_edit_file",
+        context,
+        dict(data_dict, completed=False),
+    )
+
+
 def files_transfer_ownership(context: Context, data_dict: dict[str, Any]) -> AuthResult:
     """Only file manager can transfer ownership."""
     file = _get_file(context, data_dict["id"], data_dict.get("completed", True))
+    if file and file.owner_info and file.owner_info.pinned and not data_dict["force"]:
+        return {"success": False, "msg": "File is pinned"}
+
     owner = utils.get_owner(data_dict["owner_type"], data_dict["owner_id"])
     result = base.is_allowed(context, file, owner, "file_transfer")
 
@@ -195,22 +214,3 @@ def files_transfer_ownership(context: Context, data_dict: dict[str, Any]) -> Aut
         return authz.is_authorized("files_manage_files", context, data_dict)
 
     return {"success": result, "msg": "Not allowed to edit file"}
-
-
-# def files_link_create(context: Context, data_dict: dict[str, Any]) -> AuthResult:
-#     return authz.is_authorized("files_edit_file", context, data_dict)
-
-
-# def files_link_list(context: Context, data_dict: dict[str, Any]) -> AuthResult:
-#     return authz.is_authorized("files_edit_file", context, data_dict)
-
-
-# def files_link_delete(context: Context, data_dict: dict[str, Any]) -> AuthResult:
-#     link = context["session"].get(Link, data_dict["id"])
-
-#     if link and link.type == "download_file":
-#         return authz.is_authorized(
-#             "files_edit_file", context, {"id": link.data.get("file_id", "")}
-#         )
-
-#     return {"success": False}

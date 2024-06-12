@@ -16,9 +16,10 @@ from typing import Any
 
 import ckan.plugins.toolkit as tk
 
-DEFAULT_STORAGE = "ckanext.files.default_storage"
 STORAGE_PREFIX = "ckanext.files.storage."
+DEFAULT_STORAGE = "ckanext.files.default_storage"
 CASCADE_ACCESS = "ckanext.files.owner.cascade_access"
+TRANSFER_AS_UPDATE = "ckanext.files.owner.transfer_as_update"
 AUTHENTICATED_UPLOADS = "ckanext.files.authenticated_uploads.allow"
 AUTHENTICATED_STORAGES = "ckanext.files.authenticated_uploads.storages"
 
@@ -56,5 +57,15 @@ def authenticated_uploads() -> bool:
     return tk.config[AUTHENTICATED_UPLOADS]
 
 
+def transfer_as_update() -> bool:
+    """Use `*_update` auth function to check cascade access for ownership transfer."""
+
+    return tk.config[TRANSFER_AS_UPDATE]
+
+
 def authenticated_storages() -> list[str]:
+    """Names of storages that can by used by non-sysadmin users when
+    authenticated uploads enabled.
+    """
+
     return tk.config[AUTHENTICATED_STORAGES]

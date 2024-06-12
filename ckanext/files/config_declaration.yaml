@@ -25,6 +25,7 @@ groups:
         description: |
             Any authenticated user can upload files.
 
+
       - key: ckanext.files.owner.cascade_access
         type: list
         description: |
@@ -37,6 +38,14 @@ groups:
           package/resource; anyone who passes
           `package_delete`/`resource_delete` can delete files owned by
           package/resoure.
+
+      - key: ckanext.files.owner.transfer_as_update
+        type: bool
+        description: |
+            Use `*_update` auth function to check cascade access for ownership
+            transfer. Works with `ckanext.files.owner.cascade_access`, which by
+            itself will check `*_file_transfer` auth function, but switch to
+            `*_update` when this flag is enabled.
 
       - key: ckanext.files.storage.<NAME>.<OPTION>
         type: dynamic

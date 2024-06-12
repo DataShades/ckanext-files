@@ -17,11 +17,13 @@ class Owner(Base):  # type: ignore
         sa.Column("item_type", sa.Text, primary_key=True),
         sa.Column("owner_id", sa.Text, nullable=False),
         sa.Column("owner_type", sa.Text, nullable=False),
+        sa.Column("pinned", sa.Boolean, default=False, nullable=False),
     )
     item_id: Mapped[str]
     item_type: Mapped[str]
     owner_id: Mapped[str]
     owner_type: Mapped[str]
+    pinned: Mapped[bool]
 
     def dictize(self, context: Context):
         return table_dictize(self, context)

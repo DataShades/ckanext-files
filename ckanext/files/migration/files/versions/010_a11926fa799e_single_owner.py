@@ -21,6 +21,11 @@ table = sa.table("files_owner", sa.column("owner_type"))
 def upgrade():
     op.drop_column("files_owner", "access")
     op.drop_column("files_owner", "id")
+    op.add_column(
+        "files_owner",
+        sa.Column("pinned", sa.Boolean, nullable=False, server_default="false"),
+    )
+
     op.create_primary_key("files_owner_pkey", "files_owner", ["item_id", "item_type"])
     op.drop_constraint(
         "files_owner_item_id_item_type_owner_id_owner_type_key",
@@ -29,6 +34,7 @@ def upgrade():
 
 
 def downgrade():
+    op.drop_column("files_owner", "pinned")
     op.add_column(
         "files_owner",
         sa.Column("access", sa.Text, nullable=False, server_default="full"),

@@ -438,7 +438,7 @@ def files_transfer_ownership(
         data_dict["id"],
     )
     if not fileobj:
-        raise tk.ObjectNotFound("upload")
+        raise tk.ObjectNotFound("file")
 
     owner = fileobj.owner_info
     if not owner:
@@ -448,28 +448,60 @@ def files_transfer_ownership(
         )
         context["session"].add(owner)
 
+    if owner.pinned and not data_dict["force"]:
+        raise tk.ValidationError(
+            {
+                "force": ["Must be enabled to transfer pinned files"],
+            },
+        )
     owner.owner_id = data_dict["owner_id"]
     owner.owner_type = data_dict["owner_type"]
+    owner.pinned = data_dict["pin"]
     sess.commit()
 
-    return owner.dictize(context)
+    return fileobj.dictize(context)
 
 
-# @validate(schema.link_create)
-# def files_link_create(context: Context, data_dict: dict[str, Any]) -> dict[str, Any]:
-#     tk.check_access("files_link_create", context, data_dict)
-#     sess = context["session"]
-#     fileobj = context["session"].get(File, data_dict["id"])
-#     if not fileobj:
-#         raise tk.ObjectNotFound("file")
+@validate(schema.file_pin)
+def files_file_pin(context: Context, data_dict: dict[str, Any]) -> dict[str, Any]:
+    tk.check_access("files_file_pin", context, data_dict)
+    sess = context["session"]
+    fileobj = context["session"].get(
+        File if data_dict["completed"] else Multipart,
+        data_dict["id"],
+    )
+    if not fileobj:
+        raise tk.ObjectNotFound("file")
+
+    owner = fileobj.owner_info
+    if not owner:
+        raise tk.ValidationError({"id": ["File has no owner"]})
+
+    owner.pinned = True
+    sess.commit()
+
+    return fileobj.dictize(context)
 
 
-#     # "id": [not_empty, unicode_safe],
-#     # "etime": [ignore_empty, isodate],
-#     # "counter": [ignore_empty, int_validator],
+@validate(schema.file_unpin)
+def files_file_unpin(context: Context, data_dict: dict[str, Any]) -> dict[str, Any]:
+    tk.check_access("files_file_unpin", context, data_dict)
+    sess = context["session"]
+    fileobj = context["session"].get(
+        File if data_dict["completed"] else Multipart,
+        data_dict["id"],
+    )
+    if not fileobj:
+        raise tk.ObjectNotFound("file")
 
-#     Link(...)
-#     return owner.dictize(context)
+    owner = fileobj.owner_info
+    if not owner:
+        raise tk.ValidationError({"id": ["File has no owner"]})
+
+    owner.pinned = False
+    sess.commit()
+
+    return fileobj.dictize(context)
 
 
 @tk.chained_action

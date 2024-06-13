@@ -1,43 +1,98 @@
 from __future__ import annotations
 
 import logging
-from typing import Any
 
 import ckan.plugins.toolkit as tk
 from ckan import authz
 from ckan.types import Context, FlattenDataDict, FlattenErrorDict, FlattenKey
 
 from ckanext.files import utils
-from ckanext.files.shared import File
+from ckanext.files.shared import File, FileData, get_storage
 
 log = logging.getLogger(__name__)
 
 
-def files_into_upload(value: Any) -> utils.Upload:
+def files_skip_absolute_url(
+    key: FlattenKey,
+    data: FlattenDataDict,
+    errors: FlattenErrorDict,
+    context: Context,
+):
+    """Stop validatio and accept value if it's an absolute URL"""
+    value = data[key]
+    if isinstance(value, str) and value.startswith(("https://", "http://")):
+        raise tk.StopOnError
+
+
+def files_file_into_public_url(
+    key: FlattenKey,
+    data: FlattenDataDict,
+    errors: FlattenErrorDict,
+    context: Context,
+):
+    """Transform file ID into public URL or raise error if public URL is not
+    supported."""
+    value: str | list[str] = data[key]
+    use_list = isinstance(value, list)
+    ids = value if use_list else [value]
+    result = []
+    for file_id in ids:
+        file = context["session"].get(File, file_id)
+        if not file:
+            msg = "File does not exist"
+            errors[key].append(msg)
+            raise tk.StopOnError
+
+        info = FileData.from_model(file)
+        storage = get_storage(file.storage)
+        url = storage.public_link(info)
+        if not url:
+            msg = "File does not support public URLs"
+            errors[key].append(msg)
+            raise tk.StopOnError
+        result.append(url)
+
+    data[key] = result if use_list else result[0]
+
+
+def files_into_upload(
+    key: FlattenKey,
+    data: FlattenDataDict,
+    errors: FlattenErrorDict,
+    context: Context,
+):
     """Convert value into Upload object"""
     try:
-        return utils.make_upload(value)
+        data[key] = utils.make_upload(data[key])
 
     except TypeError as err:
         msg = f"Unsupported source type: {err}"
-        raise tk.Invalid(msg) from err
+        errors[key].append(msg)
+        raise tk.StopOnError from err
 
     except ValueError as err:
         msg = f"Wrong file: {err}"
-        raise tk.Invalid(msg) from err
+        errors[key].append(msg)
+        raise tk.StopOnError from err
 
 
-def files_parse_filesize(value: Any) -> int:
+def files_parse_filesize(
+    key: FlattenKey,
+    data: FlattenDataDict,
+    errors: FlattenErrorDict,
+    context: Context,
+):
     """Convert human-readable filesize into an integer."""
-
+    value = data[key]
     if isinstance(value, int):
-        return value
+        return
 
     try:
-        return utils.parse_filesize(value)
+        data[key] = utils.parse_filesize(value)
     except ValueError as err:
         msg = f"Wrong filesize string: {value}"
-        raise tk.Invalid(msg) from err
+        errors[key].append(msg)
+        raise tk.StopOnError from err
 
 
 def files_ensure_name(name_field: str):
@@ -58,35 +113,49 @@ def files_ensure_name(name_field: str):
             return
 
         msg = f"Name is missing and cannot be deduced from {key[-1]}"
-        raise tk.Invalid(msg)
+        errors[key].append(msg)
+        raise tk.StopOnError
 
     return validator
 
 
-def files_file_id_exists(value: str | list[str], context: Context):
+def files_file_id_exists(
+    key: FlattenKey,
+    data: FlattenDataDict,
+    errors: FlattenErrorDict,
+    context: Context,
+):
     """Verify that file ID exists."""
-    ids: list[str] = value if isinstance(value, list) else [value]
+    value: str | list[str] = data[key]
+    ids = value if isinstance(value, list) else [value]
 
     for file_id in ids:
         file = context["session"].get(File, file_id)
         if not file:
             msg = "File does not exist"
-            raise tk.Invalid(msg)
-
-    return value
+            errors[key].append(msg)
+            raise tk.StopOnError
 
 
 def files_file_content_type(*supported_types: str):
     """Verify that file ID exists."""
 
-    def validator(value: str | list[str], context: Context):
-        ids: list[str] = value if isinstance(value, list) else [value]
+    def validator(
+        key: FlattenKey,
+        data: FlattenDataDict,
+        errors: FlattenErrorDict,
+        context: Context,
+    ):
+        value: str | list[str] = data[key]
+
+        ids = value if isinstance(value, list) else [value]
 
         for file_id in ids:
             file = context["session"].get(File, file_id)
             if not file:
                 msg = "File does not exist"
-                raise tk.Invalid(msg)
+                errors[key].append(msg)
+                raise tk.StopOnError
 
             actual = file.content_type
 
@@ -96,10 +165,8 @@ def files_file_content_type(*supported_types: str):
                     f"Type {actual} is not supported."
                     + f" Use one of the following types: {expected}"
                 )
-
-                raise tk.Invalid(msg)
-
-        return value
+                errors[key].append(msg)
+                raise tk.StopOnError
 
     return validator
 
@@ -126,7 +193,7 @@ def files_transfer_ownership(owner_type: str, id_field: str):
 
             if not file or not file.owner_info:
                 errors[key].append(msg)
-                continue
+                raise tk.StopOnError
 
             id_field_path = key[:-1] + (id_field,)
             owner_id = data.get(id_field_path)

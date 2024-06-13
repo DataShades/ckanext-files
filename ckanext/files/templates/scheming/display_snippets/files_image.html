@@ -1,4 +1,4 @@
-{% set info = h.files_download_info(data[field.field_name]) %}
+{% set info = h.files_link_details(data[field.field_name]) %}
 {% set cls = field.files_image_class or "img-thumbnail" %}
 
 {% if info and info.href %}

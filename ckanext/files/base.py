@@ -348,6 +348,8 @@ class Reader(StorageService):
 
 
 class Storage(OptionChecker, abc.ABC):
+    hidden = False
+
     def __init__(self, **settings: Any) -> None:
         self.settings = settings
 

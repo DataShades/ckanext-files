@@ -403,34 +403,34 @@ def files_multipart_complete(
     extras = data_dict.get("__extras", {})
 
     data_dict["id"]
-    fileobj = context["session"].get(Multipart, data_dict["id"])
-    if not fileobj:
+    multipart = context["session"].get(Multipart, data_dict["id"])
+    if not multipart:
         raise tk.ObjectNotFound("upload")
 
-    storage = shared.get_storage(fileobj.storage)
+    storage = shared.get_storage(multipart.storage)
 
-    result = File(
-        name=fileobj.name,
-        storage=fileobj.storage,
+    fileobj = File(
+        name=multipart.name,
+        storage=multipart.storage,
     )
 
     try:
         storage.multipart_complete(
-            shared.MultipartData.from_model(fileobj),
+            shared.MultipartData.from_model(multipart),
             **extras,
-        ).into_model(result)
+        ).into_model(fileobj)
     except exceptions.UploadError as err:
         raise tk.ValidationError({"upload": [str(err)]}) from err
 
     sess.query(Owner).where(
         Owner.item_type == "multipart",
-        Owner.item_id == fileobj.id,
-    ).update({"item_id": result.id, "item_type": "file"})
-    sess.add(result)
-    sess.delete(fileobj)
+        Owner.item_id == multipart.id,
+    ).update({"item_id": fileobj.id, "item_type": "file"})
+    sess.add(fileobj)
+    sess.delete(multipart)
     sess.commit()
 
-    return result.dictize(context)
+    return fileobj.dictize(context)
 
 
 @validate(schema.transfer_ownership)

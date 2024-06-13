@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import os
-from typing import Any, Iterable
+from typing import Any, Iterable, TypedDict
 
 import ckan.plugins.toolkit as tk
 from ckan import model
@@ -9,6 +9,13 @@ from ckan import model
 from . import shared
 
 HERE = os.path.dirname(__file__)
+
+
+class LinkDetails(TypedDict):
+    label: str
+    content_type: str
+    size: int
+    href: str | None
 
 
 def files_humanize_content_type(content_type: str) -> str:
@@ -43,11 +50,11 @@ def files_content_type_icon(
     return None
 
 
-def files_download_info(
+def files_link_details(
     file_id: str,
     types: Iterable[str] = ("public", "temporal"),
     **kwargs: Any,
-) -> dict[str, Any] | None:
+) -> LinkDetails | None:
     file = model.Session.get(shared.File, file_id)
     if not file:
         return None

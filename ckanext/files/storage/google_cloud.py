@@ -281,6 +281,8 @@ class GoogleCloudManager(Manager):
 
 
 class GoogleCloudStorage(Storage):
+    hidden = True
+
     def __init__(self, **settings: Any):
         settings["path"] = settings.setdefault("path", "").lstrip("/")
         settings.setdefault("resumable_origin", tk.config["ckan.site_url"])

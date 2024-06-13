@@ -186,6 +186,7 @@ def get_owner(owner_type: str, owner_id: str):
     if getter := owner_getters.get(owner_type):
         return getter(owner_id)
 
+    owner_model = "group" if owner_type == "organization" else owner_type
     mappers: Iterable[Mapper]
     if tk.check_ckan_version("2.11"):
         mappers = model.registry.mappers
@@ -202,7 +203,7 @@ def get_owner(owner_type: str, owner_id: str):
         if table is None:
             table = getattr(mapper, "local_table", None)
 
-        if table is not None and table.name == owner_type:
+        if table is not None and table.name == owner_model:
             return model.Session.get(cls, owner_id)
 
     log.warning("Unknown owner type %s with ID %s", owner_type, owner_id)

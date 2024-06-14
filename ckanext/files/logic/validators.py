@@ -1,25 +1,20 @@
 from __future__ import annotations
 
 import logging
+from typing import Any, Literal
 
 import ckan.plugins.toolkit as tk
 from ckan import authz
 from ckan.types import Context, FlattenDataDict, FlattenErrorDict, FlattenKey
 
-from ckanext.files import utils
+from ckanext.files import exceptions, shared, utils
 from ckanext.files.shared import File, FileData, get_storage
 
 log = logging.getLogger(__name__)
 
 
-def files_skip_absolute_url(
-    key: FlattenKey,
-    data: FlattenDataDict,
-    errors: FlattenErrorDict,
-    context: Context,
-):
+def files_skip_absolute_url(value: Any):
     """Stop validatio and accept value if it's an absolute URL"""
-    value = data[key]
     if isinstance(value, str) and value.startswith(("https://", "http://")):
         raise tk.StopOnError
 
@@ -120,25 +115,21 @@ def files_ensure_name(name_field: str):
 
 
 def files_file_id_exists(
-    key: FlattenKey,
-    data: FlattenDataDict,
-    errors: FlattenErrorDict,
+    value: str | list[str],
     context: Context,
 ):
     """Verify that file ID exists."""
-    value: str | list[str] = data[key]
     ids = value if isinstance(value, list) else [value]
 
     for file_id in ids:
         file = context["session"].get(File, file_id)
         if not file:
             msg = "File does not exist"
-            errors[key].append(msg)
-            raise tk.StopOnError
+            raise tk.Invalid(msg)
 
 
 def files_file_content_type(*supported_types: str):
-    """Verify that file ID exists."""
+    """Verify that file has allowed MIMEtype."""
 
     def validator(
         key: FlattenKey,
@@ -210,6 +201,60 @@ def files_transfer_ownership(owner_type: str, id_field: str):
                 errors[key].append("File is pinned")
                 continue
 
-            utils.OwnershipTransferRequest.create(file_id, owner_type, id_field_path)
+            utils.TaskQueue.add_task(
+                utils.OwnershipTransferTask(file_id, owner_type, id_field_path),
+            )
+
+    return validator
+
+
+def files_validate_with_storage(storage_name: str):
+    """Apply storage validators to file."""
+    storage = shared.get_storage(storage_name)
+
+    def validator(value: shared.Upload):
+        try:
+            storage.validate(value)
+        except exceptions.UploadError as err:
+            raise tk.Invalid(str(err)) from err
+        return value
+
+    return validator
+
+
+def files_upload_as(  # noqa: PLR0913
+    storage: str,
+    owner_type: str,
+    id_field: str,
+    attach_as: Literal["id", "public_url"] | None,
+    using_action: str | None = None,
+    destination_field: str | None = None,
+):
+    """This validator exists for backward compatibility and will be removed.
+
+    Schedule file upload after success of the action. File will be attached as
+    ID/public URL to owner.
+
+    """
+
+    def validator(
+        key: FlattenKey,
+        data: FlattenDataDict,
+        errors: FlattenErrorDict,
+        context: Context,
+    ) -> None:
+        value: utils.Upload = data.pop(key)
+        id_field_path = key[:-1] + (id_field,)
+        utils.TaskQueue.add_task(
+            utils.UploadAndAttachTask(
+                storage,
+                value,
+                owner_type,
+                id_field_path,
+                attach_as,
+                using_action,
+                destination_field,
+            ),
+        )
 
     return validator

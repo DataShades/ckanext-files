@@ -378,18 +378,15 @@ When writing python code, pass storage name to `get_storage` function:
 storage = get_storage("memory")
 ```
 
-When writing JS code, make a `Standard` uploader with the custom storage name
-and pass this uploader to `upload` function:
+When writing JS code, pass object `{uploaderParams: [{storage: "memory"}]}` to
+`upload` function:
 
 ```js
 const sandbox = ckan.sandbox()
 const file = new File(["content"], "file.txt", {type: "text/plain"})
-const uploader = sandbox.files.makeUploader("Standard", {storage: "memory"})
+const options = {uploaderParams: [{storage: "memory"}]};
 
-await sandbox.files.upload(
-  file,
-  uploader,
-)
+await sandbox.files.upload(file, options)
 ```
 
 ### Tracked and untracked files
@@ -515,6 +512,10 @@ that points to an existing location with files.
 ```sh
 ckan files scan -t
 ```
+
+## File upload strategies
+
+TBD
 
 ## Configuration
 
@@ -710,7 +711,7 @@ CKAN has following types of files:
 * site logo
 * files uploaded via custom logic from extensions
 
-At the moment, there is no migration strategy for the last two cases. Replacing
+At the moment, there is no migration strategy for the last two types. Replacing
 site logo manually is a trivial task, so there will be no dedicated command for
 it. As for extensions, every of them is unique, so feel free to create an issue
 in the current repository: we'll consider creation of migration script for your
@@ -733,6 +734,9 @@ customization).
 
 ### Migration for group/organization images
 
+Note: internally, groups and organizations are the same entity, so this
+workflow describes both of them.
+
 First of all, you need a configured storage that supports public links. As all
 group/organization images are stored inside local filesystem, you can use
 `files:public_fs` storage adapter.
@@ -743,38 +747,33 @@ commands if you use a different name for the storage.
 
 This configuration example sets 10MiB restriction on upload size via
 `ckanext.files.storage.group_images.max_size` option. Feel free to change it or
-remove completely to allow any upload size.
+remove completely to allow any upload size. This restriction is applied to
+future uploads only. Any existing file that exceeds limit is kept.
 
 Uploads restricted to `image/*` MIMEtype via
 `ckanext.files.storage.group_images.supported_types` option. You can make this
-option more or less restrictive.
+option more or less restrictive. This restriction is applied to future uploads
+only. Any existing file with wrong MIMEtype is kept.
 
 `ckanext.files.storage.group_images.path` controls location of the upload
-folder in filesystem. In the example it use `%(ckan.storage_path)s` wildcard,
-which is automatically replaced by value of `ckan.storage_path` config option,
-which contains original path to main storage directory. Main storage directory
-contains resources, images, webassets, etc, while we are configuring storage
-only for group images, so we add `storage/uploads/group` to the main storage
-directory. That's the path where CKAN stores group images under mains storage
-directory by default. Most likely, you can use the exact value from the
-example. But in the end you need to replace `%(ckan.storage_path)s` with the
-real value of this option manually, because our ultimate goal is to remove
-`ckan.storage_path` from config in order to disable CKAN's native upload
-widget.
+folder in filesystem. It should match value of `ckan.storage_path` option plus
+`storage/uploads/group`. In example below we assume that value of
+`ckan.storage_path` is `/var/storage/ckan`.
 
 `ckanext.files.storage.group_images.public_root` option specifies base URL from
-which every group image can be accessed. If you are serving CKAN application
-from the `ckan.site_url`, leave this option unchanged. If you are using
-`ckan.root_path`, like `/data/`, insert this root path into the value of the
-option. Example below uses `%(ckan.site_url)s` wildcard, which will be
-automatically replaced with the value of `ckan.site_url` config option. You can
-specify site URL explicitely if you don't like this wildcard syntax.
+which every group image can be accessed. In most cases it's CKAN URL plus
+`uploads/group`. If you are serving CKAN application from the `ckan.site_url`,
+leave this option unchanged. If you are using `ckan.root_path`, like `/data/`,
+insert this root path into the value of the option. Example below uses
+`%(ckan.site_url)s` wildcard, which will be automatically replaced with the
+value of `ckan.site_url` config option. You can specify site URL explicitely if
+you don't like this wildcard syntax.
 
 ```ini
 ckanext.files.storage.group_images.type = files:public_fs
 ckanext.files.storage.group_images.max_size = 10MiB
 ckanext.files.storage.group_images.supported_types = image
-ckanext.files.storage.group_images.path = %(ckan.storage_path)s/storage/uploads/group
+ckanext.files.storage.group_images.path = /var/storage/ckan/storage/uploads/group
 ckanext.files.storage.group_images.public_root = %(ckan.site_url)s/uploads/group
 ```
 
@@ -806,8 +805,8 @@ ckan files scan -s group_images -u
 Note, all the file are still available inside storage directory. If previous
 command shows nothing, it only means that CKAN already knows details about each
 file from the storage directory. If you want to see the list of the files
-again, omit `-u` flag that stands for "untracked" and you'll see again all the
-files in the command output:
+again, omit `-u` flag(which stands for "untracked") and you'll see again all
+the files in the command output:
 
 ```ini
 ckan files scan -s group_images
@@ -818,7 +817,9 @@ these files to groups/organizations that are using them. Run the command below
 to connect files with their owners. It will search for groups/organizations
 first and report, how many connections were identified. There will be
 suggestion to show identified relationship and the list of files that have no
-owner(if there are such files).
+owner(if there are such files). Presence of files without owner usually means
+that you removed group/organization from database, but did not remove its
+image.
 
 Finally, you'll be asked if you want to transfer ownership over files. This
 operation does not change existing data and if you disable ckanext-files after
@@ -852,9 +853,9 @@ order to:
 
 * make sure that all new files are uploaded and managed by ckanext-files
   instead of native CKAN's uploader
-* generate image URLs in UI using ckanext-files functionality. Right now, while
-  files stored in the original storage folder it makes no difference. But if
-  you change directory in future or even decide to move files from local
+* generate image URLs using ckanext-files functionality. Right now, while files
+  stored in the original storage folder it makes no difference. But if you
+  change upload directory in future or even decide to move files from local
   filesystem into different storage backend, it will guarantee that files are
   remain visible.
 
@@ -871,94 +872,241 @@ This approach is different from strategy recommended by ckanext-files. But in
 order to make the migration as simple as possible, we'll stay close to original
 workflow.
 
-First, we need to change validation if group/organization `image_url` field. If
-user specified an absolute URL, that starts with `http://` or `https://`, we'll
-assume it's a valid image URL and accept it as is. Otherwise, we'll assume that
-we are working with the file ID and ckanext-files will generate a public URL
-for this file.
+Note: suggestet approach resembles existing process of file uploads in
+CKAN. But ckanext-files was designed as a system, that gives you a
+choice. Check [file upload strategies](#file-upload-strategies) to learn more
+about alternative implementations of upload and their pros/cons.
 
-This is pretty restrictive choice. User's no longer allowed to specify relative
-URL to the image and all existing entities with relative URL will require
-change of `image_url` with the next modification. But it should be bearable and
-this is one of the safest ways to go. If you cannot accept this, replace
-`files_skip_absolute_url` from the following step with other validator, that
-accepts wider range of values. Check implementation of
-`files_skip_absolute_url` for an example implementation.
+First, we need to replace **Upload/Link** widget on group/organization form. If
+you are using native group templates, create `group/snippets/group_form.html`
+and `organization/snippets/organization_form.html`. Inside both files, extend
+original template and override block `basic_fields`. You only need to replace last field
 
-In order to change validation of the field, we need to modify create and update
-group/organization schemas. If you are using
-[ckanext-scheming](https://github.com/ckan/ckanext-scheming), you need to
-modify `image_url.validators` attribute of the schema. Otherwise, you need to
-implement `IGroupForm` once for group and once for organization. Here's an
-example of implementation for organization. Read comments, they highlight
-places that should be implemented differently for group.
+```jinja2
+{{ form.image_upload(
+    data, errors, is_upload_enabled=h.uploads_enabled(),
+    is_url=is_url, is_upload=is_upload) }}
+```
+
+with
+
+```jinja2
+{{ form.image_upload(
+    data, errors, is_upload_enabled=h.uploads_enabled(),
+    is_url=is_url, is_upload=is_upload,
+    field_upload="files_image_upload") }}
+```
+
+The only difference, we pass `field_upload="files_image_upload"` argument into
+macro. It will send uploaded file to CKAN inside `files_image_upload` instead
+of original `image_upload` field. This must be done because CKAN
+unconditionally strips `image_upload` field from submission payload, making
+processing of the file too unreliable. We changed the name of upload field and
+CKAN keeps this new field, so that we can process it as we wish.
+
+Note: if you are using ckanext-scheming, you only need to replace
+`form_snippet` of the `image_url` field, instead of rewriting the whole
+template.
+
+Now, let's define validation rules for this new upload field. We need to create
+plugins that modify validation schema for group and organization. Due to CKAN
+implementation details, you need separate plugin for group and organization.
+
+Note: if you are using ckanext-scheming, you can add `files_image_upload`
+validators to schemas of organization and group. Check the list of validators
+that must be applied to this new field below.
+
+Here's an example of plugins that modify validation schemas of group and
+organization. As you can see, they are mostly the same:
 
 ```python
-from ckan.lib.plugins import DefaultOrganizationForm, DefaultGroupForm
+from ckan.lib.plugins import DefaultGroupForm, DefaultOrganizationForm
 from ckan.logic.schema import default_create_group_schema, default_update_group_schema
 
-# group implementation: inherit DefaultGroupForm
-class OrganizationPlugin(p.SingletonPlugin, DefaultOrganizationForm):
-    p.implements(p.IGroupForm, inherit=True)
 
-    # group implementation: set this flag to False
+def _modify_schema(schema, type):
+    schema["files_image_upload"] = [
+        tk.get_validator("ignore_empty"),
+        tk.get_validator("files_into_upload"),
+        tk.get_validator("files_validate_with_storage")("group_images"),
+        tk.get_validator("files_upload_as")(
+            "group_images",
+            type,
+            "id",
+            "public_url",
+            type + "_patch",
+            "image_url",
+        ),
+    ]
+
+
+class FilesGroupPlugin(p.SingletonPlugin, DefaultGroupForm):
+    p.implements(p.IGroupForm, inherit=True)
+    is_organization = False
+
+    def group_types(self):
+        return ["group"]
+
+    def create_group_schema(self):
+        return _modify_schema(default_create_group_schema(), "group")
+
+    def update_group_schema(self):
+        return _modify_schema(default_update_group_schema(), "group")
+
+
+class FilesOrganizationPlugin(p.SingletonPlugin, DefaultOrganizationForm):
+    p.implements(p.IGroupForm, inherit=True)
     is_organization = True
 
     def group_types(self):
-        # group implementation: return ["group"']
         return ["organization"]
 
-    def _modify_schema(self, schema):
-        schema["image_url"].extend(
-            [
-                tk.get_validator("files_skip_absolute_url"),
-                tk.get_validator("files_file_id_exists"),
-                tk.get_validator("files_file_content_type")("image"),
-
-                # group implementation: replace 'organization' with 'group'.
-                # I.e, line will end with `("group","id"),`
-                tk.get_validator("files_transfer_ownership")("organization","id"),
-                tk.get_validator("files_file_into_public_url"),
-            ]
-        )
-        return schema
-
     def create_group_schema(self):
-        return self._modify_schema(default_create_group_schema())
+        return _modify_schema(default_create_group_schema(), "organization")
 
     def update_group_schema(self):
-        return self._modify_schema(default_update_group_schema())
-
+        return _modify_schema(default_update_group_schema(), "organization")
 ```
 
-By default, group/organization has `ignore_missing` and `unicode_safe`
-validators. We are adding 5 more:
+There are 4 validators that must be applied to the new upload field:
 
-* `files_skip_absolute_url`: use absolute URL as-is and skip further validation
-* `files_file_id_exists`: verify that value is a real file ID
-* `files_file_content_type("image")`: verify that referred file has `image/*`
-  MIMEtype
-* `files_transfer_ownership("organization", "id")`: make sure organization took
-  ownership over file and can manage/replace/remove it in future.
-* `files_file_into_public_url`: replace file ID with the public URL of this
-  file. That validator is the reason, why we are using `files:public_fs`
-  instead of `files:fs` adapter for storage. The latter does not support public
-  URLs and vaildation would fail.
+* `ignore_empty`: to skip validation, when image URL set manually and no upload
+  selected.
+* `files_into_upload`: to convert value of upload field into normalized format,
+  which is expected by ckanext-files
+* `files_validate_with_storage(STORAGE_NAME)`: this validator requires an
+  argument: the name of the storage we are using for image uploads. The
+  validator will use storage settings to verify size and MIMEtype of the
+  appload.
+* `files_upload_as(STORAGE_NAME, GROUP_TYPE, NAME_OF_ID_FIELD, "public_url",
+  NAME_OF_PATCH_ACTION, NAME_OF_URL_FIELF)`: this validator is the most
+  challenging. It accepts 6 arguments:
+  * the name of storage used for image uploads
+  * `group` or `organization` depending on processed entity
+  * name of the ID field of processed entity. It's `id` in your case.
+  * `public_url` - use this exact value. It tells which property of file you
+    want to use as link to the file.
+  * `group_patch` or `organization_patch` depending on processed entity
+  * `image_url` - name of the field that contains URL of the
+    image. ckanext-files will put the public link of uploaded file into this
+    field when form is processed.
 
-
-Now, run the command that patch every group/organization with image, that is
-already owned by the organization. As mentioned above, any relative URL is no
-longer valid as value for `image_url`. The command will take the ID of file,
-whose relative URL is currently used as group's `image_url` and save it as a
-new `image_url`. Because of validators we applied before, file ID will be
-replaced by absolute URL of the image.
-
-The same can be done manually, but running a command should be much faster, if
-you don't have groups with invalid metadata.
+That's all. Now every image upload for group/organization is handled by
+ckanext-files. To verify it, do the following. First, check list of files
+currently stored in `group_images` storage via command that we used in the
+beginning of the migration:
 
 ```sh
-
+ckan files scan -s group_images
 ```
 
+You'll see a list of existing files. Their names follow format
+`<ISO_8691_DATETIME><FILENAME>`, e.g `2024-06-14-133840.539670photo.jpg`.
+
+Now upload an image into existing group, or create a new group with any
+image. When you check list of files again, you'll see one new record. But this
+time this record resembles UUID: `da046887-e76c-4a68-97cf-7477665710ff`.
+
 ### Migration for user avatars
+
+This workflow is similar to group/organization migration. It contains the
+sequence of actions, but explanations are removed, because you already know
+details from the group migration. Only steps that are different will contain
+detailed explanation of the process.
+
+
+Configure storage with support of public links(`files:public_fs`) for user
+images. Let's use `user_images` name for it.
+
+`ckanext.files.storage.user_images.path` resembles this option for
+group/organization images storage. But user images are kept inside `user`
+folder by default. As result, value of this option should match value of
+`ckan.storage_path` option plus `storage/uploads/user`. In example below we
+assume that value of `ckan.storage_path` is `/var/storage/ckan`.
+
+`ckanext.files.storage.user_images.public_root` resebles this option for
+group/organization images storage. But user images are available at CKAN URL
+plus `uploads/user`.
+
+```ini
+ckanext.files.storage.user_images.type = files:public_fs
+ckanext.files.storage.user_images.max_size = 10MiB
+ckanext.files.storage.user_images.supported_types = image
+ckanext.files.storage.user_images.path = /var/storage/ckan/storage/uploads/user
+ckanext.files.storage.user_images.public_root = %(ckan.site_url)s/uploads/user
+```
+
+Check the list of untracked files available inside newly configured storage:
+
+```sh
+ckan files scan -s user_images -u
+```
+
+Track all these files:
+
+```sh
+ckan files scan -s user_images -t
+```
+
+Re-check that now you see no untracked files:
+
+```ini
+ckan files scan -s user_images -u
+```
+
+Transfer image ownership to corresponding users:
+
+```sh
+ckan files migrate users user_images
+```
+
+Update user template. Required field is defined in `user/new_user_form.html`
+and `user/edit_user_form.html`. It's a bit different from the filed used by
+group/organization, but you again need to add
+`field_upload="files_image_upload"` parameter to the macro `image_upload`.
+
+User has no dedicated interface for validation schema modification and here
+comes the biggest difference from group migration. You need to chain
+`user_create` and `user_update` action and modify schema from `context`:
+
+
+```python
+def _patch_schema(schema):
+    schema["files_image_upload"] = [
+        tk.get_validator("ignore_empty"),
+        tk.get_validator("files_into_upload"),
+        tk.get_validator("files_validate_with_storage")("user_images"),
+        tk.get_validator("files_upload_as")(
+            "user_images",
+            "user",
+            "id",
+            "public_url",
+            "user_patch",
+            "image_url",
+        ),
+    ]
+
+
+@tk.chained_action
+def user_update(next_action, context, data_dict):
+    schema = context.setdefault('schema', ckan.logic.schema.default_update_user_schema())
+    _patch_schema(schema)
+    return next_action(context, data_dict)
+
+
+
+@tk.chained_action
+def user_create(next_action, context, data_dict):
+    schema = context.setdefault('schema', ckan.logic.schema.default_user_schema())
+    _patch_schema(schema)
+    return next_action(context, data_dict)
+```
+
+Validators are all the same, but now we are using `user` instead of
+`group`/`organization` in parameters.
+
+
+That's all. Just as with groups, you can update an avatar and verify that all
+new filenames resemble UUIDs.
+
 ### Migration for resource uploads

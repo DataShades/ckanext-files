@@ -214,3 +214,21 @@ def files_transfer_ownership(context: Context, data_dict: dict[str, Any]) -> Aut
         return authz.is_authorized("files_manage_files", context, data_dict)
 
     return {"success": result, "msg": "Not allowed to edit file"}
+
+
+def files_group_image_upload(context: Context, data_dict: dict[str, Any]) -> AuthResult:
+    """Group manager can upload images."""
+    return authz.is_authorized(
+        "organization_update" if data_dict["is_organization"] else "group_update",
+        context,
+        {"id": data_dict["group_id"]},
+    )
+
+
+def files_user_image_upload(context: Context, data_dict: dict[str, Any]) -> AuthResult:
+    """User manager can upload images."""
+    return authz.is_authorized(
+        "user_update",
+        context,
+        {"id": data_dict["user_id"]},
+    )

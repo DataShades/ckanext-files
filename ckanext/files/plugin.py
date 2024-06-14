@@ -8,6 +8,7 @@ import ckan.plugins as p
 import ckan.plugins.toolkit as tk
 from ckan.config.declaration import Declaration, Key
 from ckan.exceptions import CkanConfigurationException
+from ckan.logic import clear_validators_cache
 
 from . import base, config, exceptions, interfaces, storage, utils
 
@@ -27,6 +28,8 @@ class FilesPlugin(p.SingletonPlugin):
 
     def declare_config_options(self, declaration: Declaration, key: Key):
         import yaml
+
+        clear_validators_cache()
 
         here = os.path.dirname(__file__)
         with open(os.path.join(here, "config_declaration.yaml"), "rb") as src:

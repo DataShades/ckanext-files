@@ -2,12 +2,19 @@ namespace ckan {
     export var sandbox: any;
     export var pubsub: any;
     export var module: (name: string, initializer: ($: any) => any) => any;
-
     export namespace CKANEXT_FILES {
-        type UploaderSettings = {
+        export type UploaderSettings = {
             storage: string;
             [key: string]: any;
         };
+
+        export interface UploadOptions{
+            uploader?: adapters.Base,
+            adapter?: string,
+            uploaderParams?: any[],
+            requestParams?: {[key: string]: any},
+        };
+
 
         export const topics = {
             addFileToQueue: "ckanext:files:queue:file:add",
@@ -21,9 +28,13 @@ namespace ckan {
 
         function upload(
             file: File,
-            uploader: adapters.Base = makeUploader("Standard"),
+            options: UploadOptions,
         ) {
-            return uploader.upload(file);
+            const uploader = options.uploader || makeUploader(
+                options.adapter || "Standard",
+                ...options.uploaderParams || []
+            )
+            return uploader.upload(file, options.requestParams || {});
         }
 
         function makeUploader(adapter: string, ...options: any) {
@@ -39,15 +50,15 @@ namespace ckan {
         ckan.sandbox.extend({ files: { upload, makeUploader } });
 
         export namespace adapters {
-            export type StorageData = {[key: string]: any};
+            export type StorageData = { [key: string]: any };
 
             export type UploadInfo = {
-                id: string
-                storage_data: StorageData,
-                location: string,
-                hash: string,
-                content_type: string,
-                size: number
+                id: string;
+                storage_data: StorageData;
+                location: string;
+                hash: string;
+                content_type: string;
+                size: number;
             };
 
             export class Base extends EventTarget {
@@ -75,7 +86,7 @@ namespace ckan {
                             ?.getAttribute("content") || "";
                 }
 
-                upload(file: File) {
+                upload(file: File, params: {[key: string]: any}) {
                     throw new Error("Base.upload is not implemented");
                 }
 
@@ -118,13 +129,15 @@ namespace ckan {
             }
 
             export class Standard extends Base {
-                protected uploadAction = "files_file_create";
+                static defaultSettings = {
+                    uploadAction: "files_file_create",
+                };
 
-                upload(file: File) {
+                upload(file: File, params: {[key: string]: any}) {
                     const request = new XMLHttpRequest();
                     const promise = this._addListeners(request, file);
                     this._prepareRequest(request, file);
-                    this._sendRequest(request, file);
+                    this._sendRequest(request, file, params);
                     return promise;
                 }
 
@@ -143,10 +156,15 @@ namespace ckan {
                     return new Promise((done, fail) => {
                         request.addEventListener("load", (event) => {
                             const result = JSON.parse(request.responseText);
-                            if (result.success) {
+                            if (typeof result === "string") {
+                                this.dispatchError(file, result);
+                                fail(result);
+
+                            } else if (result.success) {
                                 this.dispatchCommit(file, result.result.id);
                                 this.dispatchFinish(file, result.result);
                                 done(result.result);
+
                             } else {
                                 this.dispatchFail(file, result.error);
 
@@ -165,7 +183,7 @@ namespace ckan {
                     request.open(
                         "POST",
                         this.sandbox.client.url(
-                            `/api/action/${this.uploadAction}`,
+                            `/api/action/${this.settings.uploadAction}`,
                         ),
                     );
 
@@ -174,11 +192,15 @@ namespace ckan {
                     }
                 }
 
-                _sendRequest(request: XMLHttpRequest, file: File) {
+                _sendRequest(request: XMLHttpRequest, file: File, params: {[key: string]: any}) {
                     const data = new FormData();
                     data.append("upload", file);
-
-                    data.append("storage", this.settings.storage);
+                    if (!params.storage) {
+                        data.append("storage", this.settings.storage);
+                    }
+                    for (let [field, value] of Object.entries(params)) {
+                        data.append(field, value);
+                    }
                     request.send(data);
                 }
             }
@@ -193,7 +215,7 @@ namespace ckan {
                     super(settings);
                 }
 
-                async upload(file: File) {
+                async upload(file: File, params: {[key: string]: any}) {
                     if (this._active.has(file)) {
                         console.warn("File upload in progress");
                         return;

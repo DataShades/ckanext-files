@@ -8,6 +8,7 @@ tools are stored here, to avoid import cycles.
 
 from __future__ import annotations
 
+import abc
 import contextlib
 import contextvars
 import dataclasses
@@ -19,17 +20,7 @@ import mimetypes
 import re
 import tempfile
 from io import BufferedReader, BytesIO
-from typing import (
-    IO,
-    Any,
-    Callable,
-    Generator,
-    Generic,
-    Iterable,
-    Literal,
-    TypeVar,
-    cast,
-)
+from typing import IO, Any, Callable, Generic, Iterable, Literal, TypeVar, cast
 
 import jwt
 import magic
@@ -41,10 +32,13 @@ from ckan import model
 from ckan.lib.api_token import _get_algorithm, _get_secret  # type: ignore
 from ckan.types import FlattenKey
 
+from ckanext.files import exceptions
+
 log = logging.getLogger(__name__)
 
-transfer_queue: contextvars.ContextVar[list[OwnershipTransferRequest] | None] = (
-    contextvars.ContextVar("transfer_queue", default=None)
+_task_queue: contextvars.ContextVar[list[Task] | None] = contextvars.ContextVar(
+    "transfer_queue",
+    default=None,
 )
 T = TypeVar("T")
 AuthOperation = Literal["show", "update", "delete", "file_transfer"]
@@ -433,70 +427,120 @@ def decode_token(token: str) -> dict[str, Any]:
     return jwt.decode(token, _get_secret(encode=False), algorithms=[_get_algorithm()])
 
 
+class TaskQueue:
+    queue: list[Any]
+    token: contextvars.Token[Any] | None
+
+    def __len__(self):
+        return len(self.queue)
+
+    def __init__(self):
+        self.queue = []
+        self.token = None
+
+    def __enter__(self):
+        self.token = _task_queue.set(self.queue)
+        return self.queue
+
+    def __exit__(self, exc_type: Any, exc_value: Any, traceback: Any):
+        if self.token:
+            _task_queue.reset(self.token)
+
+    @classmethod
+    def add_task(cls, task: Task):
+        queue = _task_queue.get()
+        if queue is None:
+            raise exceptions.OutOfQueueError
+        queue.append(task)
+
+    def process(self, result: dict[str, Any]):
+        while self.queue:
+            task = self.queue.pop(0)
+            task.run(result)
+
+
+class Task(abc.ABC):
+    @staticmethod
+    def extract(source: dict[str, Any], path: FlattenKey):
+        for step in path:
+            source = source[step]
+
+        return source
+
+    @abc.abstractmethod
+    def run(self, result: dict[str, Any]): ...
+
+
 @dataclasses.dataclass
-class OwnershipTransferRequest:
+class OwnershipTransferTask(Task):
     file_id: str
     owner_type: str
-    id_field_path: FlattenKey
+    id_path: FlattenKey
 
-    @classmethod
-    def get_queue(cls):
-        queue = transfer_queue.get()
-        if queue is None:
-            log.warning(
-                "File transfer queue accessed outside of ownership trasfer frame",
+    def run(self, result: dict[str, Any]):
+        tk.get_action("files_transfer_ownership")(
+            {"ignore_auth": True},
+            {
+                "id": self.file_id,
+                "owner_type": self.owner_type,
+                "owner_id": self.extract(result, self.id_path),
+                "force": True,
+                "pin": True,
+            },
+        )
+
+
+@dataclasses.dataclass
+class UploadAndAttachTask(Task):
+    storage: str
+    upload: Upload
+    owner_type: str
+    id_path: FlattenKey
+
+    attach_as: Literal["id", "public_url"] | None
+    action: str | None = None
+    destination_field: str | None = None
+
+    def run(self, result: dict[str, Any]):
+        from ckanext.files import shared
+
+        info = tk.get_action("files_file_create")(
+            {"ignore_auth": True},
+            {"upload": self.upload, "storage": self.storage},
+        )
+
+        info = tk.get_action("files_transfer_ownership")(
+            {"ignore_auth": True},
+            {
+                "id": info["id"],
+                "owner_type": self.owner_type,
+                "owner_id": self.extract(result, self.id_path),
+                "force": True,
+                "pin": True,
+            },
+        )
+
+        if self.attach_as and self.action and self.destination_field:
+            if self.attach_as:
+                storage = shared.get_storage(self.storage)
+                value = storage.public_link(shared.FileData.from_dict(info))
+            else:
+                value = info["id"]
+
+            user = tk.get_action("get_site_user")({"ignore_auth": True}, {})
+            tk.get_action(self.action)(
+                {"ignore_auth": True, "user": user["name"]},
+                {"id": info["owner_id"], self.destination_field: value},
             )
-        return queue
-
-    @classmethod
-    def create(cls, file_id: str, owner_type: str, id_path: FlattenKey) -> bool:
-        queue = cls.get_queue()
-        if queue is None:
-            return False
-
-        queue.append(cls(file_id, owner_type, id_path))
-        return True
-
-    @classmethod
-    @contextlib.contextmanager
-    def fresh_queue(cls) -> Generator[list[OwnershipTransferRequest]]:
-        queue: list[OwnershipTransferRequest] = []
-        token = transfer_queue.set(queue)
-        try:
-            yield queue
-        finally:
-            transfer_queue.reset(token)
-
-    @classmethod
-    def process_queue(cls, result: dict[str, Any]):
-        queue = cls.get_queue() or []
-        transfer = tk.get_action("files_transfer_ownership")
-
-        for item in queue:
-            transfer(
-                {"ignore_auth": True},
-                {
-                    "id": item.file_id,
-                    "owner_type": item.owner_type,
-                    "owner_id": item.id_from_dict(result),
-                    "force": True,
-                    "pin": True,
-                },
-            )
-
-    def id_from_dict(self, value: dict[str, Any]):
-        for step in self.id_field_path:
-            value = value[step]
-
-        return value
 
 
-def action_with_ownership_transfer(action: Any, name: str | None = None):
+def action_with_task_queue(action: Any, name: str | None = None):
     @functools.wraps(action)
     def wrapper(*args: Any, **kwargs: Any) -> Any:
-        with OwnershipTransferRequest.fresh_queue():
+        queue = TaskQueue()
+        with queue:
             result = action(*args, *kwargs)
-            OwnershipTransferRequest.process_queue(result)
+            queue.process(result)
 
         return result
 

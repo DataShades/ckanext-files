@@ -176,3 +176,30 @@ def file_unpin(
         "id": [not_empty, unicode_safe],
         "completed": [default(True), boolean_validator],
     }
+
+
+@validator_args
+def group_image_upload(
+    boolean_validator: Validator,
+    not_empty: Validator,
+    unicode_safe: Validator,
+    group_id_or_name_exists: Validator,
+) -> Schema:
+    schema = file_create()
+    schema.pop("storage")
+    schema["group_id"] = [not_empty, group_id_or_name_exists, unicode_safe]
+    schema["is_organization"] = [boolean_validator]
+    return schema
+
+
+@validator_args
+def user_image_upload(
+    boolean_validator: Validator,
+    not_empty: Validator,
+    unicode_safe: Validator,
+    user_id_or_name_exists: Validator,
+) -> Schema:
+    schema = file_create()
+    schema.pop("storage")
+    schema["user_id"] = [not_empty, user_id_or_name_exists, unicode_safe]
+    return schema

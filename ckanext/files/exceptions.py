@@ -4,6 +4,8 @@ Avoid raising python-native exceptions and prefere defining `FilesError`
 subclass.
 
 FilesError
+* QueueError
+* * OutOfQueueError
 * StorageError
 * * UnknownAdapterError
 * * UnknownStorageError
@@ -35,6 +37,15 @@ from typing import Any
 
 class FilesError(Exception):
     pass
+
+
+class QueueError(FilesError):
+    pass
+
+
+class OutOfQueueError(QueueError):
+    def __str__(self):
+        return "Task queue accessed outside of queue context"
 
 
 class StorageError(FilesError):
@@ -156,7 +167,7 @@ class LargeUploadError(UploadError):
     def __str__(self):
         return (
             f"Upload size {self.actual_size} surpasses"
-            + " max allowed size {self.max_size}"
+            + f" max allowed size {self.max_size}"
         )
 
 

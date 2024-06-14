@@ -3,6 +3,103 @@
  * dispatches `change` event.
  *
  */
+ckan.module("files--image-upload", function ($) {
+    type TStart = { detail: { file: File } };
+    type TFinish = { detail: { file: File; result: { [key: string]: any } } };
+    type TFail = {
+        detail: { file: File; reasons: { [key: string]: string[] } };
+    };
+    type TError = { detail: { file: File; message: string } };
+
+    return {
+        options: {
+            spinner: null,
+            action: null,
+            field: null,
+        },
+        queue: null,
+
+        initialize() {
+            for (let param of ["field", "action"]) {
+                if (!this.options[param]) {
+                    console.error(
+                        `files--image-upload cannot be initialized without '${param}' option`,
+                    );
+                    return;
+                }
+            }
+
+            if (!this.options.action) {
+                console.error(
+                    "files--image-upload cannot be initialized without `action` option",
+                );
+                return;
+            }
+            $.proxyAll(this, /_on/);
+
+            this.queue = new Set();
+
+            this.el.on("change", (event: Event) =>
+                this.upload(...(event.target as HTMLInputElement).files!),
+            );
+            this.spinner = $(this.options.spinner);
+            this.field = $(this.options.field);
+            this.submits = this.el
+                .closest("form")
+                .find("input[type=submit],button[type=submit]");
+        },
+
+        upload(...files: File[]) {
+            files.forEach(async (file) => {
+                const uploader = this.sandbox.files.makeUploader("Standard");
+
+                try {
+                    this.queue.add(file);
+                    this.refreshFormState();
+
+                    const options: ckan.CKANEXT_FILES.UploadOptions = {
+                        uploaderParams: [{ uploadAction: this.options.action }],
+                    };
+                    const {
+                        details: { result },
+                    } = await this.sandbox.files.upload(file, options);
+                    this.field.val(result.id);
+                } catch (err) {
+                    if (typeof err === "string") {
+                        this.reportError("Error", err);
+                    } else {
+                        for (let [field, problems] of Object.entries(
+                            err as { [key: string]: string[] },
+                        )) {
+                            if (field.startsWith("__")) continue;
+                            this.reportError(field, problems.join(","));
+                        }
+                    }
+                }
+                this.queue.delete(file);
+                this.refreshFormState();
+            });
+        },
+
+        reportError(label: string, message: string) {
+            const box = this.sandbox.notify.initialize(
+                this.sandbox.notify.create(label, message),
+            );
+            this.field.parent().append(box);
+        },
+
+        refreshFormState() {
+            this.spinner.prop("hidden", !this.queue.size);
+            this.submits.prop("disabled", !!this.queue.size);
+        },
+    };
+});
+
+/**
+ * Add selected file to upload queue whenever `[data-queue-scheduler]`
+ * dispatches `change` event.
+ *
+ */
 ckan.module("files--scheduler", function ($) {
     return {
         options: {
@@ -246,7 +343,6 @@ ckan.module("files--queue", function ($) {
                     reasons: { [key: string]: string[] };
                     file: File;
                 }>) => {
-                    console.log(info.uploader, 1)
                     this.sandbox.notify(
                         file.name,
                         Object.entries(reasons)
@@ -271,7 +367,6 @@ ckan.module("files--queue", function ($) {
                 ({
                     detail: { message, file },
                 }: CustomEvent<{ message: string; file: File }>) => {
-                    console.log(info.uploader, 2)
                     this.sandbox.notify(file.name, message);
                     this.sandbox.notify.el[0].scrollIntoView();
 

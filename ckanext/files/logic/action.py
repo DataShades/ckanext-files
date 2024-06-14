@@ -10,7 +10,7 @@ from ckan import model
 from ckan.logic import validate
 from ckan.types import Action, Context
 
-from ckanext.files import exceptions, shared, utils
+from ckanext.files import config, exceptions, shared, utils
 from ckanext.files.base import MultipartData
 from ckanext.files.model import File, Multipart, Owner
 
@@ -464,6 +464,7 @@ def files_transfer_ownership(
     owner.owner_id = data_dict["owner_id"]
     owner.owner_type = data_dict["owner_type"]
     owner.pinned = data_dict["pin"]
+    sess.expire(fileobj)
     sess.commit()
 
     return fileobj.dictize(context)
@@ -520,25 +521,58 @@ def _chained_action(
     return next_action(context, data_dict)
 
 
-package_create = utils.action_with_ownership_transfer(_chained_action, "package_create")
-package_update = utils.action_with_ownership_transfer(_chained_action, "package_update")
-resource_create = utils.action_with_ownership_transfer(
+package_create = utils.action_with_task_queue(_chained_action, "package_create")
+package_update = utils.action_with_task_queue(_chained_action, "package_update")
+resource_create = utils.action_with_task_queue(
     _chained_action,
     "resource_create",
 )
-resource_update = utils.action_with_ownership_transfer(
+resource_update = utils.action_with_task_queue(
     _chained_action,
     "resource_update",
 )
-group_create = utils.action_with_ownership_transfer(_chained_action, "group_create")
-group_update = utils.action_with_ownership_transfer(_chained_action, "group_update")
-organization_create = utils.action_with_ownership_transfer(
+group_create = utils.action_with_task_queue(_chained_action, "group_create")
+group_update = utils.action_with_task_queue(_chained_action, "group_update")
+organization_create = utils.action_with_task_queue(
     _chained_action,
     "organization_create",
 )
-organization_update = utils.action_with_ownership_transfer(
+organization_update = utils.action_with_task_queue(
     _chained_action,
     "organization_update",
 )
-user_create = utils.action_with_ownership_transfer(_chained_action, "user_create")
-user_update = utils.action_with_ownership_transfer(_chained_action, "user_update")
+user_create = utils.action_with_task_queue(_chained_action, "user_create")
+user_update = utils.action_with_task_queue(_chained_action, "user_update")
+
+
+@validate(schema.file_delete)
+def files_group_image_upload(context: Context, data_dict: dict[str, Any]):
+    tk.check_access("files_group_image_upload", context, data_dict)
+    storage_name = config.group_images_storage()
+    if not storage_name:
+        raise tk.ValidationError(
+            {"upload": ["Group and organization uploads are not supported"]},
+        )
+
+    group_id = data_dict.pop("group_id")
+    group = model.Group.get(group_id)
+    if not group:
+        raise tk.ObjectNotFound("group")
+
+    result = tk.get_action("files_file_create")(
+        Context(context, ignore_auth=True),
+        dict(data_dict, storage=storage_name),
+    )
+
+    result = tk.get_action("files_transfer_ownership")(
+        context,
+        {
+            "id": result["id"],
+            "owner_id": group.id,
+            "owner_type": "organization" if group.is_organization else "group",
+            "pin": True,
+        },
+    )
+    storage = shared.get_storage(storage_name)
+    result["public_url"] = storage.public_link(shared.FileData.from_dict(result))
+    return result

@@ -7,6 +7,21 @@ groups:
         description: |
           Default storage used for upload when no explicit storage specified
 
+      - key: ckanext.files.user_images_storage
+        description: |
+          Storage used for user image uploads. When empty, user image uploads
+          are not allowed.
+
+      - key: ckanext.files.group_images_storage
+        description: |
+          Storage used for group image uploads. When empty, group image uploads
+          are not allowed.
+
+      - key: ckanext.files.resource_storage
+        description: |
+          Storage used for resource uploads. When empty, resource uploads are
+          not allowed.
+
       - key: ckanext.files.authenticated_uploads.allow
         type: bool
         description: |

@@ -194,7 +194,7 @@ def migrate_groups(storage_name: str):
                 owned[(group.id, group.is_organization)] = info
             else:
                 unowned.append(info)
-            unowned.append(info)
+
     click.echo(f"Located owners for {len(owned)} files out of {content['count']}.")
     if click.confirm("Show group IDs and corresponding file?"):
         for key, info in owned.items():
@@ -221,40 +221,65 @@ def migrate_groups(storage_name: str):
                 )
 
 
-@migrate.command("update-group-image-url")
+@migrate.command("users")
 @click.argument("storage_name")
-def update_group_images(storage_name: str):
-    """Migrate group images to specified storage."""
-    user = tk.get_action("get_site_user")({"ignore_auth": True}, {})
+def migrate_users(storage_name: str):
+    """Migrate user avatars to specified storage."""
     content = tk.get_action("files_file_search")(
         {"ignore_auth": True},
         {"storage": storage_name, "rows": 0},
     )
+    if not content["count"]:
+        tk.error_shout(f"Storage {storage_name} contains 0 files.")
+        tk.error_shout("Make sure it points to directory with user images and run:")
+        tk.error_shout(f"\tckan files scan -s {storage_name} -t")
+
+    click.echo(f"Found {content['count']} files. Searching file owners...")
+
     files = tk.get_action("files_file_search")(
         {"ignore_auth": True},
         {"storage": storage_name, "rows": content["count"]},
     )["results"]
 
+    unowned: list[dict[str, Any]] = []
+    owned: dict[str, dict[str, Any]] = {}
+
     bar: Iterable[Any]
     with click.progressbar(files) as bar:
         for info in bar:
-            group = model.Session.scalar(
-                sa.select(model.Group).where(model.Group.image_url == info["location"]),
+            user = model.Session.scalar(
+                sa.select(model.User).where(model.User.image_url == info["location"]),
             )
-            if group:
-                bar.label = f"Patching group {group.id}"
-                tk.get_action(
-                    "organization_patch" if group.is_organization else "group_patch",
-                )(
-                    {"ignore_auth": True, "user": user["name"]},
-                    {"id": group.id, "image_url": info["id"]},
+
+            if user:
+                owned[user.id] = info
+
+            else:
+                unowned.append(info)
+
+    click.echo(f"Located owners for {len(owned)} files out of {content['count']}.")
+    if click.confirm("Show user IDs and corresponding file?"):
+        for key, info in owned.items():
+            click.echo(f"{key}: {info['location']}")
+
+    if unowned and click.confirm("Show files that do not belong to any user?"):
+        for info in unowned:
+            click.echo(f"{info['location']}")
+
+    if click.confirm("Transfer file ownership to users identified in previous steps?"):
+        with click.progressbar(owned.items()) as bar:
+            for user_id, info in bar:
+                bar.label = f"Transfering {info['location']}"
+                tk.get_action("files_transfer_ownership")(
+                    {"ignore_auth": True},
+                    {
+                        "pin": True,
+                        "force": True,
+                        "id": info["id"],
+                        "owner_type": "user",
+                        "owner_id": user_id,
+                    },
                 )
-
-
-@migrate.command("users")
-@click.argument("storage_name")
-def migrate_users(storage_name: str):
-    """Migrate user avatars to specified storage."""
 
 
 @migrate.command("local-resources")

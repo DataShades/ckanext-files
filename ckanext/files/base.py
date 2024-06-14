@@ -452,6 +452,11 @@ class Storage(OptionChecker, abc.ABC):
         if not self.supports(utils.Capability.CREATE):
             raise exceptions.UnsupportedOperationError("upload", type(self))
 
+        self.validate(upload, **kwargs)
+
+        return self.uploader.upload(location, upload, kwargs)
+
+    def validate(self, upload: utils.Upload, /, **kwargs: Any):
         if self.max_size and upload.size > self.max_size:
             raise exceptions.LargeUploadError(upload.size, self.max_size)
 
@@ -460,8 +465,6 @@ class Storage(OptionChecker, abc.ABC):
             self.supported_types,
         ):
             raise exceptions.WrongUploadTypeError(upload.content_type)
-
-        return self.uploader.upload(location, upload, kwargs)
 
     def multipart_start(
         self,

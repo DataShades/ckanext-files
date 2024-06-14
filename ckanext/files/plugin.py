@@ -72,13 +72,11 @@ class FilesPlugin(p.SingletonPlugin):
             "files:fs": storage.FsStorage,
             "files:public_fs": storage.PublicFsStorage,
             "files:redis": storage.RedisStorage,
+            "files:filebin": storage.FilebinStorage,
         }
 
         if hasattr(storage, "GoogleCloudStorage"):
             adapters.update({"files:google_cloud_storage": storage.GoogleCloudStorage})
-
-        if hasattr(storage, "BashifyIoStorage"):
-            adapters.update({"files:bashify_io": storage.BashifyIoStorage})
 
         return adapters
 

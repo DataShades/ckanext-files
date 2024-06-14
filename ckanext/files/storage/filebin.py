@@ -15,6 +15,10 @@ API_URL = "https://filebin.net"
 class FilebinStorage(shared.Storage):
     hidden = True
 
+    def __init__(self, **settings: Any) -> None:
+        settings.setdefault("timeout", 10)
+        super().__init__(**settings)
+
     @property
     def bin(self):
         return self.settings["bin"]
@@ -70,14 +74,27 @@ class FilebinUploader(shared.Uploader):
 class FilebinReader(shared.Reader):
     storage: FilebinStorage
     required_options = ["bin"]
-    capabilities = shared.Capability.combine(shared.Capability.STREAM)
+    capabilities = shared.Capability.combine(
+        shared.Capability.STREAM,
+        shared.Capability.PUBLIC_LINK,
+    )
 
     def stream(self, data: shared.FileData, extras: dict[str, Any]) -> IO[bytes]:
         resp = requests.get(
             f"{API_URL}/{self.storage.bin}/{data.location}",
-            stream=True,
             timeout=self.storage.settings["timeout"],
+            stream=True,
+            headers={"accept": "*/*"},
         )
+        if verified := resp.cookies.get("verified"):
+            resp = requests.get(
+                f"{API_URL}/{self.storage.bin}/{data.location}",
+                cookies={"verified": verified},
+                timeout=self.storage.settings["timeout"],
+                stream=True,
+                headers={"accept": "*/*"},
+            )
+
         return resp.raw
 
     def public_link(self, data: shared.FileData, extras: dict[str, Any]) -> str:

@@ -77,6 +77,7 @@ def generic_download(file_id: str) -> Response:
         or storage.one_time_link(data)
         or storage.temporal_link(data)
     )
+
     if link:
         return tk.redirect_to(link)
 

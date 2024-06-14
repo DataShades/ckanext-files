@@ -228,16 +228,6 @@ def _set_user_owner(context: Context, item_type: str, item_id: str):
         context["session"].add(owner)
 
 
-def _delete_owners(context: Context, item_type: str, item_id: str):
-    stmt = sa.delete(Owner).where(
-        sa.and_(
-            Owner.item_type == item_type,
-            Owner.item_id == item_id,
-        ),
-    )
-    context["session"].execute(stmt)
-
-
 @validate(schema.file_delete)
 def files_file_delete(context: Context, data_dict: dict[str, Any]) -> dict[str, Any]:
     tk.check_access("files_file_delete", context, data_dict)
@@ -259,11 +249,6 @@ def files_file_delete(context: Context, data_dict: dict[str, Any]) -> dict[str, 
     except exceptions.PermissionError as err:
         raise tk.NotAuthorized(str(err)) from err
 
-    _delete_owners(
-        context,
-        "file" if data_dict["completed"] else "multipart",
-        fileobj.id,
-    )
     context["session"].delete(fileobj)
     context["session"].commit()
 

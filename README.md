@@ -29,9 +29,6 @@ To install ckanext-files:
    ```sh
    # minimal installation
    pip install ckanext-files
-
-   # with Google Cloud Storage support
-   pip install 'ckanext-files[gcs]'
    ```
 
 1. Add `files` to the `ckan.plugins` setting in your CKAN
@@ -1110,3 +1107,5 @@ That's all. Just as with groups, you can update an avatar and verify that all
 new filenames resemble UUIDs.
 
 ### Migration for resource uploads
+
+TBD

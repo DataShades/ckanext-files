@@ -12,6 +12,15 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Features
 
+- add SCAN and ANALYZE to redis storage ([96c2706](https://github.com/DataShades/ckanext-files/commit/96c2706a54bc462f1f1b6b933a5577ebc80c926a) by Sergey Motornyuk).
+- pinned files ([3e1db60](https://github.com/DataShades/ckanext-files/commit/3e1db607fc275b25b246eb790f4144bab77d191a) by Sergey Motornyuk).
+- files_download_info helper ([2659ae3](https://github.com/DataShades/ckanext-files/commit/2659ae3391ca6bfc254436743c5a960c20f2dc01) by Sergey Motornyuk).
+- validators for file fields ([a849247](https://github.com/DataShades/ckanext-files/commit/a849247e9ac0f3cb0976ba51bcb593541e90d8be) by Sergey Motornyuk).
+- add owner details to dictized file ([9ffd098](https://github.com/DataShades/ckanext-files/commit/9ffd09826f62f89a5b26c8314647aa137dd22f37) by Sergey Motornyuk).
+- restrict list of available storage for authenticated uploads ([a075263](https://github.com/DataShades/ckanext-files/commit/a07526337bfcf266079ded9ffbfc469b03e2e98e) by Sergey Motornyuk).
+- allow_authenticated_uploads config option ([7737b44](https://github.com/DataShades/ckanext-files/commit/7737b44eb0d62df6a6da9d6fdd614b3dbad5502f) by Sergey Motornyuk).
+- implement temporal_link for fs ([45ec242](https://github.com/DataShades/ckanext-files/commit/45ec2426d6aa72b44fa0783fc43da94ae291707c) by Sergey Motornyuk).
+- add public_link method to storage ([15a685b](https://github.com/DataShades/ckanext-files/commit/15a685bd0af977f9e537263ef403b7457fc739ba) by Sergey Motornyuk).
 - optional hash verification for multipart upload ([28e5f69](https://github.com/DataShades/ckanext-files/commit/28e5f6952295afae401faa18fde9fdbb509211e8) by Sergey Motornyuk).
 - add supported_types option for storages to restict upload types ([c5b43ac](https://github.com/DataShades/ckanext-files/commit/c5b43acabe11e2d5c94f5137df5948b0b29ea00c) by Sergey Motornyuk).
 - add files_file_search action ([b8e8b4c](https://github.com/DataShades/ckanext-files/commit/b8e8b4c638ce4ae1159f47e7ccd62f021550b1e5) by Sergey Motornyuk).
@@ -21,6 +30,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Code Refactoring
 
+- access column removed from owner table and now only single owner allowed ([f8d385d](https://github.com/DataShades/ckanext-files/commit/f8d385d82f44696432fb4a28ce284ed19240ab49) by Sergey Motornyuk).
 - add completed flag for rename, show and delete actions for simultaneous file and multipart support. ([10fb202](https://github.com/DataShades/ckanext-files/commit/10fb202a6e8c95dceee9a878a869812a84353219) by Sergey Motornyuk).
 - rename files_upload_show to files_multipart_refresh ([ee2a4df](https://github.com/DataShades/ckanext-files/commit/ee2a4dfdddad4009636590a28b1d664dc321e42e) by Sergey Motornyuk).
 - add kwargs to all Storage methods and extras to all service methods ([1526df1](https://github.com/DataShades/ckanext-files/commit/1526df10f566f02f70d1f0b88369fa5b69a3a815) by Sergey Motornyuk).
@@ -154,3 +164,4 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## [v0.0.1](https://github.com/DataShades/ckanext-files/releases/tag/v0.0.1) - 2021-09-21
 
 <small>[Compare with first commit](https://github.com/DataShades/ckanext-files/compare/d57d17e412821d56a9f5262636be89311e8050fc...v0.0.1)</small>
+

@@ -1,4 +1,7 @@
-from ckanext.files.base import (
+from .utils import Capability, HashingReader, Upload, make_upload
+from .interfaces import IFiles
+from .model import File, Multipart, Owner
+from .base import (
     FileData,
     Manager,
     MultipartData,
@@ -8,9 +11,7 @@ from ckanext.files.base import (
     get_storage,
     make_storage,
 )
-from ckanext.files.interfaces import IFiles
-from ckanext.files.model import File, Multipart, Owner
-from ckanext.files.utils import Capability, HashingReader, Upload, make_upload
+from .task import action_with_task_queue
 
 __all__ = [
     "IFiles",
@@ -29,4 +30,5 @@ __all__ = [
     "get_storage",
     "make_storage",
     "make_upload",
+    "action_with_task_queue",
 ]

@@ -105,7 +105,7 @@ class Multipart(Base):  # type: ignore
     ) -> dict[str, Any]:
         data: dict[str, Any] = copy.deepcopy(getattr(self, prop))
 
-        target: dict[str, Any] | Any = data
+        target: Any = data
         if dict_path:
             for part in dict_path:
                 target = target.setdefault(part, {})

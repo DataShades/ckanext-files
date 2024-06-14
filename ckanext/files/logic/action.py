@@ -10,7 +10,7 @@ from ckan import model
 from ckan.logic import validate
 from ckan.types import Action, Context
 
-from ckanext.files import config, exceptions, shared, utils
+from ckanext.files import config, exceptions, shared, task
 from ckanext.files.base import MultipartData
 from ckanext.files.model import File, Multipart, Owner
 
@@ -506,28 +506,28 @@ def _chained_action(
     return next_action(context, data_dict)
 
 
-package_create = utils.action_with_task_queue(_chained_action, "package_create")
-package_update = utils.action_with_task_queue(_chained_action, "package_update")
-resource_create = utils.action_with_task_queue(
+package_create = task.action_with_task_queue(_chained_action, "package_create")
+package_update = task.action_with_task_queue(_chained_action, "package_update")
+resource_create = task.action_with_task_queue(
     _chained_action,
     "resource_create",
 )
-resource_update = utils.action_with_task_queue(
+resource_update = task.action_with_task_queue(
     _chained_action,
     "resource_update",
 )
-group_create = utils.action_with_task_queue(_chained_action, "group_create")
-group_update = utils.action_with_task_queue(_chained_action, "group_update")
-organization_create = utils.action_with_task_queue(
+group_create = task.action_with_task_queue(_chained_action, "group_create")
+group_update = task.action_with_task_queue(_chained_action, "group_update")
+organization_create = task.action_with_task_queue(
     _chained_action,
     "organization_create",
 )
-organization_update = utils.action_with_task_queue(
+organization_update = task.action_with_task_queue(
     _chained_action,
     "organization_update",
 )
-user_create = utils.action_with_task_queue(_chained_action, "user_create")
-user_update = utils.action_with_task_queue(_chained_action, "user_update")
+user_create = task.action_with_task_queue(_chained_action, "user_create")
+user_update = task.action_with_task_queue(_chained_action, "user_update")
 
 
 @validate(schema.file_delete)

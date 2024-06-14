@@ -6,9 +6,13 @@ from .redis import RedisStorage
 with contextlib.suppress(ImportError):
     from .google_cloud import GoogleCloudStorage
 
+with contextlib.suppress(ImportError):
+    from .bashify_io import BashifyIoStorage
+
 __all__ = [
     "FsStorage",
     "PublicFsStorage",
-    "GoogleCloudStorage",
     "RedisStorage",
+    "GoogleCloudStorage",
+    "BashifyIoStorage",
 ]

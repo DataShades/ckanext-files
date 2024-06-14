@@ -77,6 +77,9 @@ class FilesPlugin(p.SingletonPlugin):
         if hasattr(storage, "GoogleCloudStorage"):
             adapters.update({"files:google_cloud_storage": storage.GoogleCloudStorage})
 
+        if hasattr(storage, "BashifyIoStorage"):
+            adapters.update({"files:bashify_io": storage.BashifyIoStorage})
+
         return adapters
 
     # IConfigurable

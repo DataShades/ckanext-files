@@ -7,7 +7,7 @@ import ckan.plugins.toolkit as tk
 from ckan import authz
 from ckan.types import Context, FlattenDataDict, FlattenErrorDict, FlattenKey
 
-from ckanext.files import exceptions, shared, utils
+from ckanext.files import exceptions, shared, utils, task
 from ckanext.files.shared import File, FileData, get_storage
 
 log = logging.getLogger(__name__)
@@ -201,8 +201,8 @@ def files_transfer_ownership(owner_type: str, id_field: str):
                 errors[key].append("File is pinned")
                 continue
 
-            utils.TaskQueue.add_task(
-                utils.OwnershipTransferTask(file_id, owner_type, id_field_path),
+            task.TaskQueue.add_task(
+                task.OwnershipTransferTask(file_id, owner_type, id_field_path),
             )
 
     return validator
@@ -245,8 +245,8 @@ def files_upload_as(  # noqa: PLR0913
     ) -> None:
         value: utils.Upload = data.pop(key)
         id_field_path = key[:-1] + (id_field,)
-        utils.TaskQueue.add_task(
-            utils.UploadAndAttachTask(
+        task.TaskQueue.add_task(
+            task.UploadAndAttachTask(
                 storage,
                 value,
                 owner_type,

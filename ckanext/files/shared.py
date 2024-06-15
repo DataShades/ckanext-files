@@ -1,6 +1,5 @@
-from .utils import Capability, HashingReader, Upload, make_upload
-from .interfaces import IFiles
-from .model import File, Multipart, Owner
+from . import config
+from . import exceptions as exc
 from .base import (
     FileData,
     Manager,
@@ -11,9 +10,14 @@ from .base import (
     get_storage,
     make_storage,
 )
-from .task import action_with_task_queue
+from .interfaces import IFiles
+from .model import File, Multipart, Owner
+from .task import Task, add_task, with_task_queue
+from .utils import Capability, HashingReader, Upload, make_upload
 
 __all__ = [
+    "exc",
+    "config",
     "IFiles",
     "HashingReader",
     "Capability",
@@ -30,5 +34,7 @@ __all__ = [
     "get_storage",
     "make_storage",
     "make_upload",
-    "action_with_task_queue",
+    "with_task_queue",
+    "add_task",
+    "Task",
 ]

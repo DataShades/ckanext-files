@@ -1,0 +1,93 @@
+{% ckan_extends %}
+{% import "macros/form.html" as form %}
+
+{# This is a rough and quick PoC of file upload field. It can be used for
+example migration, but the logic is pretty unstable. Think twice before
+changing anything.
+
+Switching state of url field is the trickiest part. I'm using the same field
+name for file upload, to simplify backend logic(let's keep at least one part of
+application safe).
+
+If page loads with non-file url_type, we wan't file's url disabled, to avoid
+conflicts. That's why we have this default attribute. When user switches to
+file upload, or opens file-resource, we need to enable file's url and disable
+the native one. For this reason you can see JS in the end of template.
+
+Finally, when user "removes" upload, we disable file's url and enable native
+url once again.
+
+Why? Because on initial stage, while I don't have enough use-cases, I want to
+keep files aside of the main logic and prefer to add new elements instead of
+overriding existing widgets.
+
+
+#}
+
+{% set is_allowed = h.files_resources_storage_is_configured() and h.check_access("files_resource_upload", {}) %}
+
+{% block url_type_select %}
+    {{ super() }}
+    {% if is_allowed %}
+        <label class="btn btn-default" title="{{ _('Upload or select previously uploaded file') }}" for="resource-url-file"
+            onclick="document.getElementById('field-resource-url').disabled=true;document.getElementById('field-resource-file').disabled=false;"
+        >
+            <i class="fa fa-icons"></i>
+            {{ _('Add file') }}
+        </label>
+    {% endif %}
+
+{% endblock %}
+
+{% block url_type_fields %}
+    {{ super() }}
+    {% if is_allowed %}
+
+        <input type="radio" id="resource-url-file" name="url_type" value="file" {{'checked' if data['url_type'] == 'file' }}>
+        <div class="select-type">
+            {{ remove_button(js="document.getElementById('field-resource-url').disabled=false;"
+                ~ "document.getElementById('field-resource-url').value='';"
+                ~ "document.getElementById('field-resource-file').disabled=true;") }}
+
+            <label>{{ _('File') }}</label>
+
+            <div class="files--resource-url-widget">
+                <br/>
+                {% set value = data.get("url", "").rsplit("/", 1)|last if data.url_type == "file" else "" %}
+                {% set fileinfo = h.files_get_file(value) %}
+
+                {{ form.input("url", id="field-resource-file", label=_("Select existing file"),
+                    attrs={
+                        "data-module": "autocomplete",
+                        "data-module-source": h.url_for("files.autocomplete_available_resource_files", incomplete="?"),
+                        "data-module-key": "id",
+                        "data-module-label": "label",
+                        "disabled": true,
+                    }, is_required=true) }}
+
+                <div>
+                    <label class="btn btn-default">
+                        {{ _("Upload file") }}
+                        <input hidden type="file"
+                            data-module="files--auto-upload files--resource-select"
+                            data-module-action="files_resource_upload"
+                            data-module-spinner="#resource-url-file--upload-spinner"
+                            data-module-select="#field-resource-file"
+                            {% if fileinfo %}
+                            data-module-initial-value="{{{'id': fileinfo.id, 'text': fileinfo.name}|tojson|forceescape }}"
+                            {% endif %}
+                        />
+                        <i id="resource-url-file--upload-spinner" class="spinner-border spinner-border-sm" hidden></i>
+                    </label>
+                </div>
+            </div>
+        </div>
+        {% if data.url_type == 'file' %}
+            <script>
+                document.getElementById('field-resource-url').disabled=true;
+                document.getElementById('field-resource-file').disabled=false;
+            </script>
+        {% endif %}
+
+    {% endif %}
+{% endblock %}

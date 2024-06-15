@@ -1,7 +1,7 @@
 import contextlib
 
 from .filebin import FilebinStorage
-from .fs import FsStorage, PublicFsStorage
+from .fs import CkanResourceFsStorage, FsStorage, PublicFsStorage
 from .redis import RedisStorage
 
 with contextlib.suppress(ImportError):
@@ -11,6 +11,7 @@ with contextlib.suppress(ImportError):
 __all__ = [
     "FsStorage",
     "PublicFsStorage",
+    "CkanResourceFsStorage",
     "RedisStorage",
     "GoogleCloudStorage",
     "FilebinStorage",

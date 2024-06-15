@@ -7,7 +7,7 @@ import ckan.plugins.toolkit as tk
 from ckan import authz
 from ckan.types import Context, FlattenDataDict, FlattenErrorDict, FlattenKey
 
-from ckanext.files import exceptions, shared, utils, task
+from ckanext.files import exceptions, shared, task, utils
 from ckanext.files.shared import File, FileData, get_storage
 
 log = logging.getLogger(__name__)
@@ -17,6 +17,39 @@ def files_skip_absolute_url(value: Any):
     """Stop validatio and accept value if it's an absolute URL"""
     if isinstance(value, str) and value.startswith(("https://", "http://")):
         raise tk.StopOnError
+
+
+def files_verify_url_type_and_value(
+    key: FlattenKey,
+    data: FlattenDataDict,
+    errors: FlattenErrorDict,
+    context: Context,
+):
+    if data.get(key[:-1] + ("url_type",)) != "file":
+        raise tk.StopOnError
+
+    value = data[key]
+    if value:
+        data[key] = value.rsplit("/", 1)[-1]
+
+
+def files_id_into_resource_download_url(
+    key: FlattenKey,
+    data: FlattenDataDict,
+    errors: FlattenErrorDict,
+    context: Context,
+):
+
+    package_id = data.get(key[:-1] + ("package_id",))
+    resource_id = data.get(key[:-1] + ("id",))
+
+    data[key] = tk.url_for(
+        "files.resource_download",
+        id=package_id,
+        resource_id=resource_id,
+        filename=data[key],
+        _external=True,
+    )
 
 
 def files_file_into_public_url(
@@ -115,17 +148,47 @@ def files_ensure_name(name_field: str):
 
 
 def files_file_id_exists(
-    value: str | list[str],
+    key: FlattenKey,
+    data: FlattenDataDict,
+    errors: FlattenErrorDict,
     context: Context,
 ):
     """Verify that file ID exists."""
-    ids = value if isinstance(value, list) else [value]
+    value = data[key]
+    use_list = isinstance(value, list)
+    ids: str | list[str] = value if use_list else [value]
 
     for file_id in ids:
         file = context["session"].get(File, file_id)
         if not file:
             msg = "File does not exist"
-            raise tk.Invalid(msg)
+            errors[key].append(msg)
+            raise tk.StopOnError
+
+
+def files_content_type_from_file(file_field: str, if_empty: bool = False):
+    """Copy MIMEtype of the file in specified field."""
+
+    def validator(
+        key: FlattenKey,
+        data: FlattenDataDict,
+        errors: FlattenErrorDict,
+        context: Context,
+    ):
+        value = data[key]
+        if value and if_empty:
+            return
+
+        file_id = data.get(key[:-1] + (file_field,))
+        if not file_id:
+            return
+        file_id = file_id.rsplit("/", 1)[-1]
+        file = context["session"].get(File, file_id)
+
+        if file:
+            data[key] = file.content_type
+
+    return validator
 
 
 def files_file_content_type(*supported_types: str):
@@ -178,10 +241,8 @@ def files_transfer_ownership(owner_type: str, id_field: str):
         ids: list[str] = value if isinstance(value, list) else [value]
 
         user = authz._get_user(context.get("user"))  # type: ignore
-
         for file_id in ids:
             file = context["session"].get(File, file_id)
-
             if not file or not file.owner_info:
                 errors[key].append(msg)
                 raise tk.StopOnError
@@ -201,7 +262,7 @@ def files_transfer_ownership(owner_type: str, id_field: str):
                 errors[key].append("File is pinned")
                 continue
 
-            task.TaskQueue.add_task(
+            shared.add_task(
                 task.OwnershipTransferTask(file_id, owner_type, id_field_path),
             )
 
@@ -245,7 +306,7 @@ def files_upload_as(  # noqa: PLR0913
     ) -> None:
         value: utils.Upload = data.pop(key)
         id_field_path = key[:-1] + (id_field,)
-        task.TaskQueue.add_task(
+        shared.add_task(
             task.UploadAndAttachTask(
                 storage,
                 value,

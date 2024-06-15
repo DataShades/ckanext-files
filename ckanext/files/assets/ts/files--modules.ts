@@ -1,37 +1,78 @@
+ckan.module("files--resource-select", function ($) {
+    return {
+        options: {
+            successEvent: "files-file-created",
+            errorEvent: "files-file-failed",
+            select: null,
+            initialValue: null,
+        },
+
+        initialize() {
+            if (!this.options.select) {
+                console.error(
+                    "files--resource-select cannot be initialized without `select` option",
+                );
+                return;
+            }
+
+            $.proxyAll(this, /_on/);
+            this.el.on({
+                [this.options.successEvent]: this._onSuccess,
+                [this.options.errorEvent]: this._onError,
+            });
+
+            this.url = document.getElementById("field-resource-url");
+            this.select = $(this.options.select);
+            if (this.options.initialValue) {
+                this.select.select2("data", this.options.initialValue);
+            }
+        },
+        _onSuccess({ detail }: { detail: any }) {
+            this.select.select2("data", { id: detail.id, text: detail.name });
+        },
+        _onError({
+            detail: err,
+        }: {
+            detail: string | { [key: string]: string[] };
+        }) {
+            if (typeof err === "string") {
+                this.reportError("Error", err);
+            } else {
+                for (let [field, problems] of Object.entries(
+                    err as { [key: string]: string[] },
+                )) {
+                    if (field.startsWith("__")) continue;
+                    this.reportError(field, problems.join(","));
+                }
+            }
+        },
+        reportError(label: string, message: string) {
+            const box = this.sandbox.notify.initialize(
+                this.sandbox.notify.create(label, message),
+            );
+            this.el.closest("label").parent().after(box);
+        },
+    };
+});
 /**
- * Add selected file to upload queue whenever `[data-queue-scheduler]`
- * dispatches `change` event.
+ * Upload file and trigger event with file data on specified element.
  *
  */
-ckan.module("files--image-upload", function ($) {
-    type TStart = { detail: { file: File } };
-    type TFinish = { detail: { file: File; result: { [key: string]: any } } };
-    type TFail = {
-        detail: { file: File; reasons: { [key: string]: string[] } };
-    };
-    type TError = { detail: { file: File; message: string } };
-
+ckan.module("files--auto-upload", function ($) {
     return {
         options: {
             spinner: null,
             action: null,
-            field: null,
+            successEvent: "files-file-created",
+            errorEvent: "files-file-failed",
+            eventTarget: null,
         },
         queue: null,
 
         initialize() {
-            for (let param of ["field", "action"]) {
-                if (!this.options[param]) {
-                    console.error(
-                        `files--image-upload cannot be initialized without '${param}' option`,
-                    );
-                    return;
-                }
-            }
-
             if (!this.options.action) {
                 console.error(
-                    "files--image-upload cannot be initialized without `action` option",
+                    "files--auto-upload cannot be initialized without `action` option",
                 );
                 return;
             }
@@ -51,41 +92,35 @@ ckan.module("files--image-upload", function ($) {
 
         upload(...files: File[]) {
             files.forEach(async (file) => {
-                const uploader = this.sandbox.files.makeUploader("Standard");
-
-                try {
-                    this.queue.add(file);
-                    this.refreshFormState();
-
-                    const options: ckan.CKANEXT_FILES.UploadOptions = {
-                        uploaderParams: [{ uploadAction: this.options.action }],
-                    };
-                    const {
-                        details: { result },
-                    } = await this.sandbox.files.upload(file, options);
-                    this.field.val(result.id);
-                } catch (err) {
-                    if (typeof err === "string") {
-                        this.reportError("Error", err);
-                    } else {
-                        for (let [field, problems] of Object.entries(
-                            err as { [key: string]: string[] },
-                        )) {
-                            if (field.startsWith("__")) continue;
-                            this.reportError(field, problems.join(","));
-                        }
-                    }
-                }
-                this.queue.delete(file);
+                this.queue.add(file);
                 this.refreshFormState();
+                const options: ckan.CKANEXT_FILES.UploadOptions = {
+                    uploaderParams: [{ uploadAction: this.options.action }],
+                };
+
+                this.sandbox.files
+                    .upload(file, options)
+                    .then(
+                        (result: any) =>
+                            this.dispatchResult(
+                                this.options.successEvent,
+                                result,
+                            ),
+                        (err: any) =>
+                            this.dispatchResult(this.options.errorEvent, err),
+                    )
+                    .then(() => {
+                        this.queue.delete(file);
+                        this.refreshFormState();
+                    });
             });
         },
 
-        reportError(label: string, message: string) {
-            const box = this.sandbox.notify.initialize(
-                this.sandbox.notify.create(label, message),
-            );
-            this.field.parent().append(box);
+        dispatchResult(event: string, detail: any) {
+            const target = this.options.eventTarget
+                ? $(this.options.eventTarget)
+                : this.el;
+            target[0].dispatchEvent(new CustomEvent(event, { detail }));
         },
 
         refreshFormState() {

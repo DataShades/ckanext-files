@@ -2,12 +2,46 @@ from __future__ import annotations
 
 from typing import Any, cast
 
+import ckan.plugins as p
 import ckan.plugins.toolkit as tk
 from ckan import authz, model
 from ckan.types import AuthResult, Context
 
-from ckanext.files import base, config, utils
-from ckanext.files.model import File, Multipart
+from ckanext.files import interfaces, shared, types, utils
+
+
+def _is_allowed(
+    context: Context,
+    file: shared.File | shared.Multipart | None,
+    operation: types.AuthOperation,
+    next_owner: Any | None = None,
+) -> Any:
+    """Decide if user is allowed to perform operation on file."""
+    info = file.owner_info if file else None
+
+    if info and info.owner_type in shared.config.cascade_access():
+        if operation == "file_transfer" and shared.config.transfer_as_update():
+            func_name = f"{info.owner_type}_update"
+        else:
+            func_name = f"{info.owner_type}_{operation}"
+
+        try:
+            tk.check_access(
+                func_name,
+                context,
+                {"id": info.owner_id},
+            )
+
+        except tk.NotAuthorized:
+            return False
+
+        except ValueError:
+            pass
+
+    for plugin in p.PluginImplementations(interfaces.IFiles):
+        result = plugin.files_is_allowed(context, file, operation, next_owner)
+        if result is not None:
+            return result
 
 
 def _get_user(context: Context) -> model.User | None:
@@ -26,10 +60,10 @@ def _get_file(
     context: Context,
     file_id: str,
     completed: bool,
-) -> File | Multipart | None:
+) -> shared.File | shared.Multipart | None:
     if "files_file" not in context:
         context["files_file"] = model.Session.get(  # type: ignore
-            File if completed else Multipart,
+            shared.File if completed else shared.Multipart,
             file_id,
         )
 
@@ -70,7 +104,7 @@ def files_owns_file(context: Context, data_dict: dict[str, Any]) -> AuthResult:
 @tk.auth_disallow_anonymous_access
 def files_edit_file(context: Context, data_dict: dict[str, Any]) -> AuthResult:
     file = _get_file(context, data_dict["id"], data_dict.get("completed", True))
-    result = base.is_allowed(context, file, file and file.owner, "update")
+    result = _is_allowed(context, file, "update")
     if result is None:
         return authz.is_authorized("files_owns_file", context, data_dict)
 
@@ -80,7 +114,7 @@ def files_edit_file(context: Context, data_dict: dict[str, Any]) -> AuthResult:
 @tk.auth_disallow_anonymous_access
 def files_read_file(context: Context, data_dict: dict[str, Any]) -> AuthResult:
     file = _get_file(context, data_dict["id"], data_dict.get("completed", True))
-    result = base.is_allowed(context, file, file and file.owner, "show")
+    result = _is_allowed(context, file, file and file.owner, "show")
     if result is None:
         return authz.is_authorized("files_edit_file", context, data_dict)
 
@@ -90,7 +124,7 @@ def files_read_file(context: Context, data_dict: dict[str, Any]) -> AuthResult:
 @tk.auth_disallow_anonymous_access
 def files_delete_file(context: Context, data_dict: dict[str, Any]) -> AuthResult:
     file = _get_file(context, data_dict["id"], data_dict.get("completed", True))
-    result = base.is_allowed(context, file, file and file.owner, "delete")
+    result = _is_allowed(context, file, "delete")
     if result is None:
         return authz.is_authorized("files_edit_file", context, data_dict)
 
@@ -125,8 +159,8 @@ def files_file_search(context: Context, data_dict: dict[str, Any]) -> AuthResult
 @tk.auth_disallow_anonymous_access
 def files_file_create(context: Context, data_dict: dict[str, Any]) -> AuthResult:
     if (
-        config.authenticated_uploads()
-        and data_dict["storage"] in config.authenticated_storages()
+        shared.config.authenticated_uploads()
+        and data_dict["storage"] in shared.config.authenticated_storages()
     ):
         return {"success": True}
 
@@ -208,7 +242,7 @@ def files_transfer_ownership(context: Context, data_dict: dict[str, Any]) -> Aut
         return {"success": False, "msg": "File is pinned"}
 
     owner = utils.get_owner(data_dict["owner_type"], data_dict["owner_id"])
-    result = base.is_allowed(context, file, owner, "file_transfer")
+    result = _is_allowed(context, file, "file_transfer", owner)
 
     if result is None:
         return authz.is_authorized("files_manage_files", context, data_dict)
@@ -216,19 +250,50 @@ def files_transfer_ownership(context: Context, data_dict: dict[str, Any]) -> Aut
     return {"success": result, "msg": "Not allowed to edit file"}
 
 
+@tk.auth_disallow_anonymous_access
+def files_resource_upload(context: Context, data_dict: dict[str, Any]) -> AuthResult:
+    """Users can upload resources files."""
+    # TODO: add restriction on number of free-files or their total size inside
+    # resource storage.
+    try:
+        shared.get_storage(shared.config.resources_storage())
+    except shared.exc.UnknownStorageError:
+        return {"success": False}
+
+    return {"success": True}
+
+
+@tk.auth_disallow_anonymous_access
 def files_group_image_upload(context: Context, data_dict: dict[str, Any]) -> AuthResult:
-    """Group manager can upload images."""
-    return authz.is_authorized(
-        "organization_update" if data_dict["is_organization"] else "group_update",
-        context,
-        {"id": data_dict["group_id"]},
-    )
+    """Users can upload group images."""
+    # TODO: add restriction on number of free-files or their total size inside
+    # resource storage.
+
+    try:
+        shared.get_storage(shared.config.group_images_storage())
+    except shared.exc.UnknownStorageError:
+        return {"success": False}
+
+    return {"success": True}
 
 
+@tk.auth_disallow_anonymous_access
 def files_user_image_upload(context: Context, data_dict: dict[str, Any]) -> AuthResult:
-    """User manager can upload images."""
-    return authz.is_authorized(
-        "user_update",
-        context,
-        {"id": data_dict["user_id"]},
-    )
+    """Users can upload avatars."""
+    # TODO: add restriction on number of free-files or their total size inside
+    # resource storage.
+    try:
+        shared.get_storage(shared.config.user_images_storage())
+    except shared.exc.UnknownStorageError:
+        return {"success": False}
+
+    return {"success": True}
+
+
+@tk.auth_disallow_anonymous_access
+def files_autocomplete_available_resource_files(
+    context: Context,
+    data_dict: dict[str, Any],
+) -> AuthResult:
+    """Users allowed to search their free resource files."""
+    return {"success": True}

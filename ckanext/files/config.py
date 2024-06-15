@@ -24,7 +24,8 @@ AUTHENTICATED_UPLOADS = "ckanext.files.authenticated_uploads.allow"
 AUTHENTICATED_STORAGES = "ckanext.files.authenticated_uploads.storages"
 USER_IMAGES_STORAGE = "ckanext.files.user_images_storage"
 GROUP_IMAGES_STORAGE = "ckanext.files.group_images_storage"
-RESOURCE_STORAGE = "ckanext.files.resource_storage"
+RESOURCE_STORAGE = "ckanext.files.resources_storage"
+ENABLE_RESOURCE_HACK = "ckanext.files.enable_resource_migration_template_patch"
 
 
 def default_storage() -> str:
@@ -74,18 +75,22 @@ def authenticated_storages() -> list[str]:
     return tk.config[AUTHENTICATED_STORAGES]
 
 
-def group_images_storage() -> str | None:
+def group_images_storage() -> str:
     """Storage used for group image uploads."""
     return tk.config[GROUP_IMAGES_STORAGE]
 
 
-def user_images_storage() -> str | None:
+def user_images_storage() -> str:
     """Storage used for user image uploads."""
 
     return tk.config[USER_IMAGES_STORAGE]
 
 
-def resource_storage() -> str | None:
+def resources_storage() -> str:
     """Storage used for resource uploads."""
 
     return tk.config[RESOURCE_STORAGE]
+
+
+def override_resource_form() -> bool:
+    return tk.config[ENABLE_RESOURCE_HACK]

@@ -1,7 +1,7 @@
 from ckan.logic.schema import validator_args
 from ckan.types import Schema, Validator, ValidatorFactory
 
-from ckanext.files import config
+from ckanext.files import shared
 
 
 @validator_args
@@ -16,7 +16,7 @@ def file_create(  # noqa: PLR0913
     # name is checked inside action, using "upload" as source if empty
     return {
         "name": [ignore_empty, unicode_safe],
-        "storage": [default(config.default_storage()), unicode_safe],
+        "storage": [default(shared.config.default_storage()), unicode_safe],
         "upload": [not_missing, files_into_upload, files_ensure_name("name")],
     }
 
@@ -112,7 +112,7 @@ def multipart_start(
     int_validator: Validator,
 ) -> Schema:
     return {
-        "storage": [default(config.default_storage()), unicode_safe],
+        "storage": [default(shared.config.default_storage()), unicode_safe],
         "name": [not_empty, unicode_safe],
         "content_type": [not_empty, unicode_safe],
         "size": [not_empty, int_validator],
@@ -179,27 +179,24 @@ def file_unpin(
 
 
 @validator_args
-def group_image_upload(
-    boolean_validator: Validator,
-    not_empty: Validator,
-    unicode_safe: Validator,
-    group_id_or_name_exists: Validator,
-) -> Schema:
+def resource_upload(ignore: Validator) -> Schema:
     schema = file_create()
-    schema.pop("storage")
-    schema["group_id"] = [not_empty, group_id_or_name_exists, unicode_safe]
-    schema["is_organization"] = [boolean_validator]
+    schema["storage"] = [ignore]
+    schema["__extras"] = [ignore]
     return schema
 
 
 @validator_args
-def user_image_upload(
-    boolean_validator: Validator,
-    not_empty: Validator,
-    unicode_safe: Validator,
-    user_id_or_name_exists: Validator,
-) -> Schema:
+def group_image_upload(ignore: Validator) -> Schema:
     schema = file_create()
-    schema.pop("storage")
-    schema["user_id"] = [not_empty, user_id_or_name_exists, unicode_safe]
+    schema["storage"] = [ignore]
+    schema["__extras"] = [ignore]
+    return schema
+
+
+@validator_args
+def user_image_upload(ignore: Validator) -> Schema:
+    schema = file_create()
+    schema["storage"] = [ignore]
+    schema["__extras"] = [ignore]
     return schema

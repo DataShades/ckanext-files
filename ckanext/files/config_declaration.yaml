@@ -8,19 +8,31 @@ groups:
           Default storage used for upload when no explicit storage specified
 
       - key: ckanext.files.user_images_storage
+        default: user_images
         description: |
           Storage used for user image uploads. When empty, user image uploads
           are not allowed.
 
       - key: ckanext.files.group_images_storage
+        default: group_images
         description: |
           Storage used for group image uploads. When empty, group image uploads
           are not allowed.
 
-      - key: ckanext.files.resource_storage
+      - key: ckanext.files.resources_storage
+        default: resources
         description: |
           Storage used for resource uploads. When empty, resource uploads are
           not allowed.
+
+      - key: ckanext.files.enable_resource_migration_template_patch
+        type: bool
+        description: |
+            Enable HTML templates and JS modules required for unsafe default
+            implementation of resource uploads via files. IMPORTANT: this
+            option exists to simplify migration and experiments with the
+            extension. These templates may change a lot or even get removed in
+            the public release of the extension.
 
       - key: ckanext.files.authenticated_uploads.allow
         type: bool

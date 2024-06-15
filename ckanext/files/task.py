@@ -6,31 +6,33 @@ It's a high-level module that relies on base and utils.
 
 from __future__ import annotations
 
-import contextvars
 import abc
+import contextvars
 import dataclasses
 import functools
+from collections import deque
 from typing import Any, Literal
+
+import ckan.plugins.toolkit as tk
 from ckan.types import FlattenKey
 
-from ckanext.files import exceptions, base, utils
-import ckan.plugins.toolkit as tk
+from ckanext.files import base, exceptions, utils
 
-_task_queue: contextvars.ContextVar[list[Task] | None] = contextvars.ContextVar(
+_task_queue: contextvars.ContextVar[deque[Task] | None] = contextvars.ContextVar(
     "transfer_queue",
     default=None,
 )
 
 
 class TaskQueue:
-    queue: list[Any]
+    queue: deque[Any]
     token: contextvars.Token[Any] | None
 
     def __len__(self):
         return len(self.queue)
 
     def __init__(self):
-        self.queue = []
+        self.queue = deque()
         self.token = None
 
     def __enter__(self):
@@ -41,20 +43,18 @@ class TaskQueue:
         if self.token:
             _task_queue.reset(self.token)
 
-    @classmethod
-    def add_task(cls, task: Task):
-        queue = _task_queue.get()
-        if queue is None:
-            raise exceptions.OutOfQueueError
-        queue.append(task)
-
     def process(self, result: dict[str, Any]):
+        prev = Task.NO_PREVIOUS_TASK
+        idx = 0
         while self.queue:
-            task = self.queue.pop(0)
-            task.run(result)
+            task = self.queue.popleft()
+            prev = task.run(result, idx, prev)
+            idx += 1
 
 
 class Task(abc.ABC):
+    NO_PREVIOUS_TASK = object()
+
     @staticmethod
     def extract(source: dict[str, Any], path: FlattenKey):
         for step in path:
@@ -63,8 +63,7 @@ class Task(abc.ABC):
         return source
 
     @abc.abstractmethod
-    def run(self, result: dict[str, Any]):
-        ...
+    def run(self, result: dict[str, Any], idx: int, prev: Any): ...
 
 
 @dataclasses.dataclass
@@ -73,8 +72,8 @@ class OwnershipTransferTask(Task):
     owner_type: str
     id_path: FlattenKey
 
-    def run(self, result: dict[str, Any]):
-        tk.get_action("files_transfer_ownership")(
+    def run(self, result: dict[str, Any], idx: int, prev: Any):
+        return tk.get_action("files_transfer_ownership")(
             {"ignore_auth": True},
             {
                 "id": self.file_id,
@@ -97,7 +96,7 @@ class UploadAndAttachTask(Task):
     action: str | None = None
     destination_field: str | None = None
 
-    def run(self, result: dict[str, Any]):
+    def run(self, result: dict[str, Any], idx: int, prev: Any):
         info = tk.get_action("files_file_create")(
             {"ignore_auth": True},
             {"upload": self.upload, "storage": self.storage},
@@ -127,13 +126,15 @@ class UploadAndAttachTask(Task):
                 {"id": info["owner_id"], self.destination_field: value},
             )
 
+        return info
 
-def action_with_task_queue(action: Any, name: str | None = None):
-    @functools.wraps(action)
+
+def with_task_queue(func: Any, name: str | None = None):
+    @functools.wraps(func)
     def wrapper(*args: Any, **kwargs: Any) -> Any:
         queue = TaskQueue()
         with queue:
-            result = action(*args, *kwargs)
+            result = func(*args, *kwargs)
             queue.process(result)
 
         return result
@@ -141,3 +142,10 @@ def action_with_task_queue(action: Any, name: str | None = None):
     if name:
         wrapper.__name__ = name
     return wrapper
+
+
+def add_task(task: Task):
+    queue = _task_queue.get()
+    if queue is None:
+        raise exceptions.OutOfQueueError
+    queue.append(task)

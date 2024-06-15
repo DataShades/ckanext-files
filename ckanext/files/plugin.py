@@ -71,6 +71,7 @@ class FilesPlugin(p.SingletonPlugin):
         adapters: dict[str, type[base.Storage]] = {
             "files:fs": storage.FsStorage,
             "files:public_fs": storage.PublicFsStorage,
+            "files:ckan_resource_fs": storage.CkanResourceFsStorage,
             "files:redis": storage.RedisStorage,
             "files:filebin": storage.FilebinStorage,
         }
@@ -90,6 +91,9 @@ class FilesPlugin(p.SingletonPlugin):
         tk.add_template_directory(config_, "templates")
         tk.add_resource("assets", "files")
         tk.add_public_directory(config_, "public")
+
+        if config.override_resource_form():
+            tk.add_template_directory(config_, "resource_form_templates")
 
 
 def _register_adapters():

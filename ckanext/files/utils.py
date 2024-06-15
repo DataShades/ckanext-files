@@ -17,7 +17,7 @@ import mimetypes
 import re
 import tempfile
 from io import BufferedReader, BytesIO
-from typing import IO, Any, Callable, Generic, Iterable, Literal, TypeVar, cast
+from typing import IO, Any, Callable, Generic, Iterable, TypeVar, cast
 
 import jwt
 import magic
@@ -31,7 +31,7 @@ from ckan.lib.api_token import _get_algorithm, _get_secret  # type: ignore
 log = logging.getLogger(__name__)
 
 T = TypeVar("T")
-AuthOperation = Literal["show", "update", "delete", "file_transfer"]
+
 RE_FILESIZE = re.compile(r"^(?P<size>\d+(?:\.\d+)?)\s*(?P<unit>\w*)$")
 CHUNK_SIZE = 16 * 1024
 CHECKSUM_ALGORITHM = "md5"

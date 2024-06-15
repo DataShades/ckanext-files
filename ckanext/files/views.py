@@ -5,7 +5,7 @@ from functools import partial
 from typing import Any
 
 import jwt
-from flask import Blueprint
+from flask import Blueprint, jsonify
 from flask.views import MethodView
 
 import ckan.plugins.toolkit as tk
@@ -13,6 +13,7 @@ from ckan import model
 from ckan.common import streaming_response
 from ckan.lib.helpers import Page
 from ckan.types import Response
+from ckan.views.resource import download
 
 from ckanext.files import shared, utils
 
@@ -237,3 +238,69 @@ bp.add_url_rule(
     "/user/<user_id>/files/delete/<file_id>",
     view_func=DeleteFile.as_view("delete_file"),
 )
+
+
+@bp.route("/api/util/files_autocomplete_available_resource_files")
+def autocomplete_available_resource_files() -> Any:
+    tk.check_access("files_autocomplete_available_resource_files", {}, {})
+    q = tk.request.args.get("incomplete")
+
+    result = tk.get_action("files_file_search")(
+        {"ignore_auth": True},
+        {
+            "owner_type": "user",
+            "owner_id": tk.current_user.is_authenticated and tk.current_user.id,  # type: ignore
+            "pinned": False,
+            "storage": shared.config.resources_storage(),
+            "name": ["like", f"%{q}%"],
+        },
+    )
+
+    return jsonify(
+        {
+            "ResultSet": {
+                "Result": [
+                    {
+                        "id": item["id"],
+                        "name": item["name"],
+                        "label": "{name} [{content_type}, {size}]".format(
+                            name=item["name"],
+                            content_type=tk.h.unified_resource_format(
+                                item["content_type"],
+                            ),
+                            size=utils.humanize_filesize(item["size"]),
+                        ),
+                    }
+                    for item in result["results"]
+                ],
+            },
+        },
+    )
+
+
+@bp.route(
+    "/<package_type>/<id>/resource/<resource_id>/download",
+    defaults={"package_type": "dataset"},
+)
+@bp.route(
+    "/<package_type>/<id>/<resource_id>/download/<filename>",
+    defaults={"package_type": "dataset"},
+)
+def resource_download(
+    package_type: str,
+    id: str,
+    resource_id: str,
+    filename: str | None = None,
+):
+    try:
+        resource = tk.get_action("resource_show")({}, {"id": resource_id})
+    except tk.ObjectNotFound:
+        return tk.abort(404, tk._("Resource not found"))
+    except tk.NotAuthorized:
+        return tk.abort(403, tk._("Not authorized to download resource"))
+
+    if resource.get("url_type") != "file":
+        return download(package_type, id, resource_id, filename)
+
+    file_id = resource["url"].rsplit("/", 1)[-1]
+    return generic_download(file_id)

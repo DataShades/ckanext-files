@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import copy
+import glob
 import logging
 import os
 import shutil
@@ -265,10 +266,15 @@ class FsManager(Manager):
 
     def scan(self, extras: dict[str, Any]) -> Iterable[str]:
         path = self.storage.settings["path"]
-        for entry in os.scandir(path):
-            if not entry.is_file():
+        search_path = os.path.join(path, "**")
+
+        for entry in glob.glob(
+            search_path,
+            recursive=self.storage.settings["recursive"],
+        ):
+            if not os.path.isfile(entry):
                 continue
-            yield entry.name
+            yield os.path.relpath(entry, path)
 
     def analyze(self, location: str, extras: dict[str, Any]) -> FileData:
         """Return all details about location."""
@@ -337,6 +343,7 @@ class FsStorage(Storage):
     def __init__(self, **settings: Any) -> None:
         path = self.ensure_option(settings, "path")
         settings.setdefault("create_path", False)
+        settings.setdefault("recursive", False)
 
         if not os.path.exists(path):
             if tk.asbool(settings["create_path"]):
@@ -358,6 +365,10 @@ class FsStorage(Storage):
 
         declaration.declare_bool(key.create_path).set_description(
             "Create storage folder if it does not exist.",
+        )
+        declaration.declare_bool(key.recursive).set_description(
+            "Use this flag if files can be stored inside subfolders"
+            + " of the main storage path.",
         )
 
 
@@ -391,3 +402,9 @@ class PublicFsStorage(FsStorage):
 
     def make_reader(self):
         return PublicFsReader(self)
+
+
+class CkanResourceFsStorage(FsStorage):
+    def __init__(self, **settings: Any) -> None:
+        settings["recursive"] = True
+        super().__init__(**settings)

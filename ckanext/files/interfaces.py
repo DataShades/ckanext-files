@@ -8,7 +8,7 @@ from typing import Any, Callable
 from ckan.plugins import Interface
 from ckan.types import Context
 
-from ckanext.files import utils
+from ckanext.files import types
 
 File = Multipart = Any
 
@@ -46,8 +46,8 @@ class IFiles(Interface):
         self,
         context: Context,
         file: File | Multipart | None,
-        owner: Any | None,
-        operation: utils.AuthOperation,
+        operation: types.AuthOperation,
+        next_owner: Any | None,
     ) -> bool | None:
         """Decide if user is allowed to perform operation on file that belongs
         to owner.
@@ -58,13 +58,10 @@ class IFiles(Interface):
         means, that nobody is allowed to do anything with file owner by
         resource, dataset, group, etc.
 
-        For `show`, `update` and `delete` operation, `owner` represents the
-        current owner of the file. For `file_transfer` operation, `owner`
-        represents the entity that will become a new owner of the file. In this
-        case, the current owner can be checked via `file.owner` property.
-
         Example:
-        >>> def files_is_allowed(self, context, file, owner, operation) -> bool | None:
+        >>> def files_is_allowed(
+        >>>         self, context, file, operation, next_owner
+        >>> ) -> bool | None:
         >>>     if isinstance(owner, model.Resource):
         >>>         return is_authorized_boolean(
         >>>             f"resource_{operation}",

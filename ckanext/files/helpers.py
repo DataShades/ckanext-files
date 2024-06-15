@@ -50,6 +50,10 @@ def files_content_type_icon(
     return None
 
 
+def files_get_file(file_id: str) -> shared.File | None:
+    return model.Session.get(shared.File, file_id)
+
+
 def files_link_details(
     file_id: str,
     types: Iterable[str] = ("public", "temporal"),
@@ -72,3 +76,22 @@ def files_link_details(
                 "size": file.size,
                 "href": link,
             }
+
+
+def _is_storage_configured(name: str) -> bool:
+    try:
+        return bool(shared.get_storage(name))
+    except shared.exc.UnknownStorageError:
+        return False
+
+
+def files_group_images_storage_is_configured() -> bool:
+    return _is_storage_configured(shared.config.group_images_storage())
+
+
+def files_user_images_storage_is_configured() -> bool:
+    return _is_storage_configured(shared.config.user_images_storage())
+
+
+def files_resources_storage_is_configured() -> bool:
+    return _is_storage_configured(shared.config.resources_storage())

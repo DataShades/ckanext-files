@@ -21,12 +21,9 @@ from typing import IO, Any, Generic, Iterable, Protocol, TypeVar
 
 import pytz
 
-import ckan.plugins as p
-import ckan.plugins.toolkit as tk
 from ckan.config.declaration import Declaration, Key
-from ckan.types import Context
 
-from . import config, exceptions, interfaces, model, utils
+from . import config, exceptions, model, utils
 
 
 class PFileModel(Protocol):
@@ -41,40 +38,6 @@ TFileModel = TypeVar("TFileModel", bound=PFileModel)
 
 adapters = utils.Registry["type[Storage]"]({})
 storages = utils.Registry["Storage"]({})
-
-
-def is_allowed(
-    context: Context,
-    file: model.File | model.Multipart | None,
-    owner: Any | None,
-    operation: utils.AuthOperation,
-) -> Any:
-    """Decide if user is allowed to perform operation on file."""
-    info = file.owner_info if file else None
-
-    if info and info.owner_type in config.cascade_access():
-        if operation == "file_transfer" and config.transfer_as_update():
-            func_name = f"{info.owner_type}_update"
-        else:
-            func_name = f"{info.owner_type}_{operation}"
-
-        try:
-            tk.check_access(
-                func_name,
-                context,
-                {"id": info.owner_id},
-            )
-
-        except tk.NotAuthorized:
-            return False
-
-        except ValueError:
-            pass
-
-    for plugin in p.PluginImplementations(interfaces.IFiles):
-        result = plugin.files_is_allowed(context, file, owner, operation)
-        if result is not None:
-            return result
 
 
 @dataclasses.dataclass

@@ -738,9 +738,12 @@ First of all, you need a configured storage that supports public links. As all
 group/organization images are stored inside local filesystem, you can use
 `files:public_fs` storage adapter.
 
-Below is an example of storage with name `group_images`. This name will be used
-in all other commands of this migration workflow, so don't forget to adapt
-commands if you use a different name for the storage.
+This extension expects that the name of group images storage will be
+`group_images`. This name will be used in all other commands of this migration
+workflow. If you want to use different name for group images storage, override
+`ckanext.files.group_images_storage` config option which has default value
+`group_images` and don't forget to adapt commands if you use a different name
+for the storage.
 
 This configuration example sets 10MiB restriction on upload size via
 `ckanext.files.storage.group_images.max_size` option. Feel free to change it or
@@ -889,17 +892,21 @@ with
 
 ```jinja2
 {{ form.image_upload(
-    data, errors, is_upload_enabled=h.uploads_enabled(),
+    data, errors, is_upload_enabled=h.files_group_images_storage_is_configured(),
     is_url=is_url, is_upload=is_upload,
     field_upload="files_image_upload") }}
 ```
 
-The only difference, we pass `field_upload="files_image_upload"` argument into
-macro. It will send uploaded file to CKAN inside `files_image_upload` instead
-of original `image_upload` field. This must be done because CKAN
-unconditionally strips `image_upload` field from submission payload, making
-processing of the file too unreliable. We changed the name of upload field and
-CKAN keeps this new field, so that we can process it as we wish.
+There are two differences with the original. First, we use
+`h.files_group_images_storage_is_configured()` instead of
+`h.uploads_enabled()`. As we are using different storage for different upload
+types, now upload widgets can be enabled independently. And second, we pass
+`field_upload="files_image_upload"` argument into macro. It will send uploaded
+file to CKAN inside `files_image_upload` instead of original `image_upload`
+field. This must be done because CKAN unconditionally strips `image_upload`
+field from submission payload, making processing of the file too unreliable. We
+changed the name of upload field and CKAN keeps this new field, so that we can
+process it as we wish.
 
 Note: if you are using ckanext-scheming, you only need to replace
 `form_snippet` of the `image_url` field, instead of rewriting the whole
@@ -1012,8 +1019,15 @@ details from the group migration. Only steps that are different will contain
 detailed explanation of the process.
 
 
-Configure storage with support of public links(`files:public_fs`) for user
-images. Let's use `user_images` name for it.
+Configure local filesystem storage with support of public
+links(`files:public_fs`) for user images.
+
+This extension expects that the name of user images storage will be
+`user_images`. This name will be used in all other commands of this migration
+workflow. If you want to use different name for user images storage, override
+`ckanext.files.user_images_storage` config option which has default value
+`user_images` and don't forget to adapt commands if you use a different name
+for the storage.
 
 `ckanext.files.storage.user_images.path` resembles this option for
 group/organization images storage. But user images are kept inside `user`
@@ -1060,7 +1074,8 @@ ckan files migrate users user_images
 Update user template. Required field is defined in `user/new_user_form.html`
 and `user/edit_user_form.html`. It's a bit different from the filed used by
 group/organization, but you again need to add
-`field_upload="files_image_upload"` parameter to the macro `image_upload`.
+`field_upload="files_image_upload"` parameter to the macro `image_upload` and
+replace `h.uploads_enabled()` with `h.files_user_images_storage_is_configured()`.
 
 User has no dedicated interface for validation schema modification and here
 comes the biggest difference from group migration. You need to chain
@@ -1108,4 +1123,153 @@ new filenames resemble UUIDs.
 
 ### Migration for resource uploads
 
-TBD
+Configure named storage for resources. Use `files:ckan_resource_fs` storage
+adapter.
+
+This extension expects that the name of resources storage will be
+`resources`. This name will be used in all other commands of this migration
+workflow. If you want to use different name for resources storage, override
+`ckanext.files.resources_storage` config option which has default value
+`resources` and don't forget to adapt commands if you use a different name for
+the storage.
+
+`ckanext.files.storage.resources.path` must match value of `ckan.storage_path`
+option, followed by `resources` directory. In example below we assume that
+value of `ckan.storage_path` is `/var/storage/ckan`.
+
+Example below sets 10MiB limit on resource size. Modify it if you are using
+different limit set by `ckan.max_resource_size`.
+
+Unlike group and user images, this storage does not need upload type
+restriction and `public_root`.
+
+```ini
+ckanext.files.storage.resources.type = files:ckan_resource_fs
+ckanext.files.storage.resources.max_size = 10MiB
+ckanext.files.storage.resources.path = /var/storage/ckan/resources
+```
+
+Check the list of untracked files available inside newly configured storage:
+
+```sh
+ckan files scan -s resources -u
+```
+
+Track all these files:
+
+```sh
+ckan files scan -s resources -t
+```
+
+Re-check that now you see no untracked files:
+
+```ini
+ckan files scan -s resources -u
+```
+
+Transfer file ownership to corresponding resources. In addition to simple
+ownership transfer, this command will ask you, whether you want to modify
+resource's `url_type` and `url` fields. It's required to move file management
+to files extension completely and enable possibility of migration to different
+storage type.
+
+If you accept resource modifications, for every file owner `url_type` will be
+changed to `file` and `url` will be changed to file ID. Then all modified
+packages will be reindexed.
+
+```sh
+ckan files migrate local-resources resources
+```
+
+And the next goal is correct metadata schema. If you are using ckanext-schemin,
+you need to modify validators of `url` and `format` fields.
+
+If you are working with native schemas, you have to modify dataset schema via
+implementing IDatasetForm. Here's an example:
+
+
+```python
+from ckan.lib.plugins import DefaultDatasetForm
+from ckan.logic import schema
+
+class FilesDatasetPlugin(p.SingletonPlugin, DefaultDatasetForm):
+    p.implements(p.IDatasetForm, inherit=True)
+
+    def is_fallback(self):
+        return True
+
+    def package_types(self):
+        return ["dataset"]
+
+    def _modify_schema(self, schema):
+        schema["resources"]["url"].extend([
+            tk.get_validator("files_verify_url_type_and_value"),
+            tk.get_validator("files_file_id_exists"),
+            tk.get_validator("files_transfer_ownership")("resource","id"),
+        ])
+        schema["resources"]["format"].insert(0, tk.get_validator("files_content_type_from_file")("url"))
+
+    def create_package_schema(self):
+        sch = schema.default_create_package_schema()
+        self._modify_schema(sch)
+        return sch
+
+    def update_package_schema(self):
+        sch = schema.default_update_package_schema()
+        self._modify_schema(sch)
+        return sch
+
+    def show_package_schema(self):
+        sch = schema.default_show_package_schema()
+        sch["resources"]["url"].extend([
+            tk.get_validator("files_verify_url_type_and_value"),
+            tk.get_validator("files_id_into_resource_download_url"),
+        ])
+        return sch
+
+```
+
+Both create and update schemas are updated in the same way. We add a new
+validator to format field, to correctly identify file format. And wi add a
+number of validators to `url`:
+
+* `files_verify_url_type_and_value`: skip validation if we are not working with
+  resource that contains file.
+* `files_file_id_exists`: verify existence of file ID
+* `files_transfer_ownership("resource","id")`: move file ownership to resource
+  after successful validation
+
+At top of this, we also have two validators applied to
+`show_package_schema`(use `output_validators` in ckanext-scheming):
+
+* `files_verify_url_type_and_value`: skip validation if we are not working with
+  resource that contains file.
+* `files_id_into_resource_download_url`: replace file ID with download URL in
+  API output
+
+
+And the next part is the trickiest. You need to create a number of templates
+and JS modules. But because ckanext-files is actively developed, most likely,
+your custom files will be outdated pretty soon.
+
+Instead, we recommend enabling patch for resource form that shipped with
+ckanext-files. It's a bit hacky, but because the extension itself is stil in
+alpha-stage, it should be acceptable. Check [file upload
+strategies](#file-upload-strategies) for examples of implementation that you
+can add to your portal instead of the default patch.
+
+To enable patch for templates, add following line to the config file:
+
+```ini
+ckanext.files.enable_resource_migration_template_patch = true
+```
+
+This option adds **Add file** button to resource form
+
+![button on resource form](./screenshots/resource-form-btn.png)
+
+Upon clicking, this button is replaced by widget that supports uploading new
+files of selecting previously uploaded files that are not used by any resource
+yet
+
+![expanded widget on resource form](./screenshots/resource-form-file.png)

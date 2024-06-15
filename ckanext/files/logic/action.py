@@ -10,9 +10,8 @@ from ckan import model
 from ckan.logic import validate
 from ckan.types import Action, Context
 
-from ckanext.files import config, exceptions, shared, task
-from ckanext.files.base import MultipartData
-from ckanext.files.model import File, Multipart, Owner
+from ckanext.files import shared
+from ckanext.files.shared import File, Multipart, Owner
 
 from . import schema
 
@@ -185,7 +184,7 @@ def files_file_create(context: Context, data_dict: dict[str, Any]) -> dict[str, 
 
     try:
         storage = shared.get_storage(data_dict["storage"])
-    except exceptions.UnknownStorageError as err:
+    except shared.exc.UnknownStorageError as err:
         raise tk.ValidationError({"storage": [str(err)]}) from err
 
     if not storage.supports(shared.Capability.CREATE):
@@ -199,7 +198,7 @@ def files_file_create(context: Context, data_dict: dict[str, Any]) -> dict[str, 
             data_dict["upload"],
             **extras,
         )
-    except exceptions.UploadError as err:
+    except shared.exc.UploadError as err:
         raise tk.ValidationError({"upload": [str(err)]}) from err
 
     fileobj = File(
@@ -246,7 +245,7 @@ def files_file_delete(context: Context, data_dict: dict[str, Any]) -> dict[str, 
     dc = shared.FileData if data_dict["completed"] else shared.MultipartData
     try:
         storage.remove(dc.from_model(fileobj))
-    except exceptions.PermissionError as err:
+    except shared.exc.PermissionError as err:
         raise tk.NotAuthorized(str(err)) from err
 
     context["session"].delete(fileobj)
@@ -298,7 +297,7 @@ def files_multipart_start(
 
     try:
         storage = shared.get_storage(data_dict["storage"])
-    except exceptions.UnknownStorageError as err:
+    except shared.exc.UnknownStorageError as err:
         raise tk.ValidationError({"storage": [str(err)]}) from err
 
     if not storage.supports(shared.Capability.MULTIPART):
@@ -308,7 +307,7 @@ def files_multipart_start(
     try:
         data = storage.multipart_start(
             filename,
-            MultipartData(
+            shared.MultipartData(
                 filename,
                 data_dict["size"],
                 data_dict["content_type"],
@@ -316,7 +315,7 @@ def files_multipart_start(
             ),
             **extras,
         )
-    except exceptions.UploadError as err:
+    except shared.exc.UploadError as err:
         raise tk.ValidationError({"upload": [str(err)]}) from err
 
     fileobj = Multipart(
@@ -344,7 +343,9 @@ def files_multipart_refresh(
         raise tk.ObjectNotFound("file")
 
     storage = shared.get_storage(fileobj.storage)
-    storage.multipart_refresh(MultipartData.from_model(fileobj)).into_model(fileobj)
+    storage.multipart_refresh(shared.MultipartData.from_model(fileobj)).into_model(
+        fileobj,
+    )
     context["session"].commit()
 
     return fileobj.dictize(context)
@@ -370,7 +371,7 @@ def files_multipart_update(
             shared.MultipartData.from_model(fileobj),
             **extras,
         ).into_model(fileobj)
-    except exceptions.UploadError as err:
+    except shared.exc.UploadError as err:
         raise tk.ValidationError({"upload": [str(err)]}) from err
 
     context["session"].commit()
@@ -404,7 +405,7 @@ def files_multipart_complete(
             shared.MultipartData.from_model(multipart),
             **extras,
         ).into_model(fileobj)
-    except exceptions.UploadError as err:
+    except shared.exc.UploadError as err:
         raise tk.ValidationError({"upload": [str(err)]}) from err
 
     sess.query(Owner).where(
@@ -506,58 +507,73 @@ def _chained_action(
     return next_action(context, data_dict)
 
 
-package_create = task.action_with_task_queue(_chained_action, "package_create")
-package_update = task.action_with_task_queue(_chained_action, "package_update")
-resource_create = task.action_with_task_queue(
+package_create = shared.with_task_queue(_chained_action, "package_create")
+package_update = shared.with_task_queue(_chained_action, "package_update")
+resource_create = shared.with_task_queue(
     _chained_action,
     "resource_create",
 )
-resource_update = task.action_with_task_queue(
+resource_update = shared.with_task_queue(
     _chained_action,
     "resource_update",
 )
-group_create = task.action_with_task_queue(_chained_action, "group_create")
-group_update = task.action_with_task_queue(_chained_action, "group_update")
-organization_create = task.action_with_task_queue(
+group_create = shared.with_task_queue(_chained_action, "group_create")
+group_update = shared.with_task_queue(_chained_action, "group_update")
+organization_create = shared.with_task_queue(
     _chained_action,
     "organization_create",
 )
-organization_update = task.action_with_task_queue(
+organization_update = shared.with_task_queue(
     _chained_action,
     "organization_update",
 )
-user_create = task.action_with_task_queue(_chained_action, "user_create")
-user_update = task.action_with_task_queue(_chained_action, "user_update")
+user_create = shared.with_task_queue(_chained_action, "user_create")
+user_update = shared.with_task_queue(_chained_action, "user_update")
 
 
-@validate(schema.file_delete)
-def files_group_image_upload(context: Context, data_dict: dict[str, Any]):
-    tk.check_access("files_group_image_upload", context, data_dict)
-    storage_name = config.group_images_storage()
+@validate(schema.resource_upload)
+def files_resource_upload(context: Context, data_dict: dict[str, Any]):
+    tk.check_access("files_resource_upload", context, data_dict)
+    storage_name = shared.config.resources_storage()
     if not storage_name:
         raise tk.ValidationError(
-            {"upload": ["Group and organization uploads are not supported"]},
+            {"upload": ["Resource uploads are not supported"]},
         )
 
-    group_id = data_dict.pop("group_id")
-    group = model.Group.get(group_id)
-    if not group:
-        raise tk.ObjectNotFound("group")
-
-    result = tk.get_action("files_file_create")(
+    return tk.get_action("files_file_create")(
         Context(context, ignore_auth=True),
         dict(data_dict, storage=storage_name),
     )
 
-    result = tk.get_action("files_transfer_ownership")(
-        context,
-        {
-            "id": result["id"],
-            "owner_id": group.id,
-            "owner_type": "organization" if group.is_organization else "group",
-            "pin": True,
-        },
-    )
-    storage = shared.get_storage(storage_name)
-    result["public_url"] = storage.public_link(shared.FileData.from_dict(result))
-    return result
+
+# @validate(schema.group_image_upload)
+# def files_group_image_upload(context: Context, data_dict: dict[str, Any]):
+#     tk.check_access("files_group_image_upload", context, data_dict)
+#     storage_name = shared.config.group_images_storage()
+#     if not storage_name:
+#         raise tk.ValidationError(
+#             {"upload": ["Group and organization uploads are not supported"]},
+#         )
+
+#     group_id = data_dict.pop("group_id")
+#     group = model.Group.get(group_id)
+#     if not group:
+#         raise tk.ObjectNotFound("group")
+
+#     result = tk.get_action("files_file_create")(
+#         Context(context, ignore_auth=True),
+#         dict(data_dict, storage=storage_name),
+#     )
+
+#     result = tk.get_action("files_transfer_ownership")(
+#         context,
+#         {
+#             "id": result["id"],
+#             "owner_id": group.id,
+#             "owner_type": "organization" if group.is_organization else "group",
+#             "pin": True,
+#         },
+#     )
+#     storage = shared.get_storage(storage_name)
+#     result["public_url"] = storage.public_link(shared.FileData.from_dict(result))
+#     return result

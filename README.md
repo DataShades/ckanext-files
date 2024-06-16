@@ -637,7 +637,7 @@ options. Let's try using `files:fs` storage instead of the redis:
 ckanext.files.storage.xxx.type = files:fs
 ```
 
-Now attempt to run `ckan config declaration files -d` will show an error,
+Now any attempt to run `ckan config declaration files -d` will show an error,
 because required `path` option is missing:
 
 ```sh
@@ -705,6 +705,9 @@ ckanext.files.storage.NAME.type = files:fs
 ckanext.files.storage.NAME.path =
 ## Create storage folder if it does not exist.
 ckanext.files.storage.NAME.create_path = false
+## Use this flag if files can be stored inside subfolders
+## of the main storage path.
+ckanext.files.storage.NAME.recursive = false
 ```
 
 
@@ -717,9 +720,61 @@ ckanext.files.storage.NAME.type = files:public_fs
 ckanext.files.storage.NAME.path =
 ## Create storage folder if it does not exist.
 ckanext.files.storage.NAME.create_path = false
+## Use this flag if files can be stored inside subfolders
+## of the main storage path.
+ckanext.files.storage.NAME.recursive = false
 ## URL of the storage folder. `public_root + location` must produce a public URL
 ckanext.files.storage.NAME.public_root =
 ```
+
+#### OpenDAL storage configuration
+
+To use this storage install extension with `opendal` extras.
+
+```sh
+pip install 'ckanext-files[opendal]'
+```
+
+The actual storage backend is controlled by `scheme` option of the
+storage. List of all schemes is available
+[here](https://docs.rs/opendal/latest/opendal/services/index.html)
+
+```ini
+## Storage adapter used by the storage
+ckanext.files.storage.NAME.type = files:opendal
+## OpenDAL service type. Check available services at  https://docs.rs/opendal/latest/opendal/services/index.html
+ckanext.files.storage.NAME.scheme =
+## JSON object with parameters passed directly to OpenDAL operator.
+ckanext.files.storage.NAME.params =
+```
+
+#### Apache libcloud storage configuration
+
+To use this storage install extension with `libcloud` extras.
+
+```sh
+pip install 'ckanext-files[libcloud]'
+```
+
+The actual storage backend is controlled by `provider` option of the
+storage. List of all providers is available
+[here](https://libcloud.readthedocs.io/en/stable/storage/supported_providers.html#provider-matrix)
+
+```ini
+## Storage adapter used by the storage
+ckanext.files.storage.NAME.type = files:libcloud
+## apache-libcloud storage provider. List of providers available at https://libcloud.readthedocs.io/en/stable/storage/supported_providers.html#provider-matrix . Use upper-cased value from Provider Constant column
+ckanext.files.storage.NAME.provider =
+## API key or username
+ckanext.files.storage.NAME.key =
+## Secret password
+ckanext.files.storage.NAME.secret =
+## JSON object with additional parameters passed directly to storage constructor.
+ckanext.files.storage.NAME.params =
+## Name of the container(bucket)
+ckanext.files.storage.NAME.container =
+```
+
 
 ## Migration from native CKAN storage system
 

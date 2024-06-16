@@ -122,16 +122,6 @@ def files_read_file(context: Context, data_dict: dict[str, Any]) -> AuthResult:
 
 
 @tk.auth_disallow_anonymous_access
-def files_delete_file(context: Context, data_dict: dict[str, Any]) -> AuthResult:
-    file = _get_file(context, data_dict["id"], data_dict.get("completed", True))
-    result = _is_allowed(context, file, "delete")
-    if result is None:
-        return authz.is_authorized("files_edit_file", context, data_dict)
-
-    return {"success": result, "msg": "Not allowed to delete file"}
-
-
-@tk.auth_disallow_anonymous_access
 def files_file_search_by_user(
     context: Context,
     data_dict: dict[str, Any],
@@ -167,9 +157,15 @@ def files_file_create(context: Context, data_dict: dict[str, Any]) -> AuthResult
     return authz.is_authorized("files_manage_files", context, data_dict)
 
 
+@tk.auth_disallow_anonymous_access
 def files_file_delete(context: Context, data_dict: dict[str, Any]) -> AuthResult:
     """Only owner can remove files."""
-    return authz.is_authorized("files_delete_file", context, data_dict)
+    file = _get_file(context, data_dict["id"], data_dict.get("completed", True))
+    result = _is_allowed(context, file, "delete")
+    if result is None:
+        return authz.is_authorized("files_edit_file", context, data_dict)
+
+    return {"success": result, "msg": "Not allowed to delete file"}
 
 
 def files_file_show(context: Context, data_dict: dict[str, Any]) -> AuthResult:

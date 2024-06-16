@@ -17,7 +17,7 @@ import dataclasses
 import os
 import uuid
 from datetime import datetime
-from typing import IO, Any, Generic, Iterable, Protocol, TypeVar
+from typing import Any, Generic, Iterable, Protocol, TypeVar
 
 import pytz
 
@@ -285,13 +285,13 @@ class Manager(StorageService):
 
 
 class Reader(StorageService):
-    def stream(self, data: FileData, extras: dict[str, Any]) -> IO[bytes]:
+    def stream(self, data: FileData, extras: dict[str, Any]) -> Iterable[bytes]:
         """Return byte-stream of the file content."""
         raise NotImplementedError
 
     def content(self, data: FileData, extras: dict[str, Any]) -> bytes:
         """Return file content as a single byte object."""
-        return self.stream(data, extras).read()
+        return b"".join(self.stream(data, extras))
 
     def permanent_link(self, data: FileData, extras: dict[str, Any]) -> str:
         """Return permanent download link."""
@@ -312,6 +312,9 @@ class Reader(StorageService):
 
 class Storage(OptionChecker, abc.ABC):
     hidden = False
+
+    def __str__(self):
+        return self.settings.get("name", "unknown")
 
     def __init__(self, **settings: Any) -> None:
         self.settings = settings
@@ -413,7 +416,7 @@ class Storage(OptionChecker, abc.ABC):
 
     def upload(self, location: str, upload: utils.Upload, /, **kwargs: Any) -> FileData:
         if not self.supports(utils.Capability.CREATE):
-            raise exceptions.UnsupportedOperationError("upload", type(self))
+            raise exceptions.UnsupportedOperationError("upload", self)
 
         self.validate(upload, **kwargs)
 
@@ -449,37 +452,37 @@ class Storage(OptionChecker, abc.ABC):
 
     def exists(self, data: FileData, /, **kwargs: Any) -> bool:
         if not self.supports(utils.Capability.EXISTS):
-            raise exceptions.UnsupportedOperationError("exists", type(self))
+            raise exceptions.UnsupportedOperationError("exists", self)
 
         return self.manager.exists(data, kwargs)
 
     def remove(self, data: FileData | MultipartData, /, **kwargs: Any) -> bool:
         if not self.supports(utils.Capability.REMOVE):
-            raise exceptions.UnsupportedOperationError("remove", type(self))
+            raise exceptions.UnsupportedOperationError("remove", self)
 
         return self.manager.remove(data, kwargs)
 
     def scan(self, **kwargs: Any) -> Iterable[str]:
         if not self.supports(utils.Capability.SCAN):
-            raise exceptions.UnsupportedOperationError("scan", type(self))
+            raise exceptions.UnsupportedOperationError("scan", self)
 
         return self.manager.scan(kwargs)
 
     def analyze(self, location: str, /, **kwargs: Any) -> FileData:
         if not self.supports(utils.Capability.ANALYZE):
-            raise exceptions.UnsupportedOperationError("analyze", type(self))
+            raise exceptions.UnsupportedOperationError("analyze", self)
 
         return self.manager.analyze(location, kwargs)
 
-    def stream(self, data: FileData, /, **kwargs: Any) -> IO[bytes]:
+    def stream(self, data: FileData, /, **kwargs: Any) -> Iterable[bytes]:
         if not self.supports(utils.Capability.STREAM):
-            raise exceptions.UnsupportedOperationError("stream", type(self))
+            raise exceptions.UnsupportedOperationError("stream", self)
 
         return self.reader.stream(data, kwargs)
 
     def content(self, data: FileData, /, **kwargs: Any) -> bytes:
         if not self.supports(utils.Capability.STREAM):
-            raise exceptions.UnsupportedOperationError("content", type(self))
+            raise exceptions.UnsupportedOperationError("content", self)
 
         return self.reader.content(data, kwargs)
 
@@ -503,7 +506,7 @@ class Storage(OptionChecker, abc.ABC):
                 **kwargs,
             )
 
-        raise exceptions.UnsupportedOperationError("copy", type(self))
+        raise exceptions.UnsupportedOperationError("copy", self)
 
     def compose(
         self,
@@ -528,7 +531,7 @@ class Storage(OptionChecker, abc.ABC):
                 )
             return dest_data
 
-        raise exceptions.UnsupportedOperationError("compose", type(self))
+        raise exceptions.UnsupportedOperationError("compose", self)
 
     def append(
         self,
@@ -540,7 +543,7 @@ class Storage(OptionChecker, abc.ABC):
         if self.supports(utils.Capability.APPEND):
             return self.manager.append(data, upload, kwargs)
 
-        raise exceptions.UnsupportedOperationError("append", type(self))
+        raise exceptions.UnsupportedOperationError("append", self)
 
     def move(
         self,
@@ -567,7 +570,7 @@ class Storage(OptionChecker, abc.ABC):
             storage.remove(data)
             return result
 
-        raise exceptions.UnsupportedOperationError("copy", type(self))
+        raise exceptions.UnsupportedOperationError("copy", self)
 
     def public_link(self, data: FileData, /, **kwargs: Any) -> str | None:
         if self.supports(utils.Capability.PUBLIC_LINK):

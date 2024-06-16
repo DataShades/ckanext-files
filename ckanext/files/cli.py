@@ -46,7 +46,7 @@ def stream(file_id: str):
         tk.error_shout(err)
         raise click.Abort from err
 
-    while chunk := content_stream.read(1024 * 256):
+    for chunk in content_stream:
         click.echo(chunk, nl=False)
 
 

@@ -10,6 +10,9 @@ with contextlib.suppress(ImportError):
 with contextlib.suppress(ImportError):
     from .opendal import OpenDalStorage
 
+with contextlib.suppress(ImportError):
+    from .libcloud import LibCloudStorage
+
 
 __all__ = [
     "FsStorage",
@@ -19,4 +22,5 @@ __all__ = [
     "GoogleCloudStorage",
     "FilebinStorage",
     "OpenDalStorage",
+    "LibCloudStorage",
 ]

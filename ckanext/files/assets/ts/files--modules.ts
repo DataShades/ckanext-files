@@ -66,6 +66,7 @@ ckan.module("files--auto-upload", function ($) {
             successEvent: "files-file-created",
             errorEvent: "files-file-failed",
             eventTarget: null,
+            copyIdInto: null,
         },
         queue: null,
 
@@ -88,6 +89,7 @@ ckan.module("files--auto-upload", function ($) {
             this.submits = this.el
                 .closest("form")
                 .find("input[type=submit],button[type=submit]");
+            this.idTarget = $(this.options.copyIdInto);
         },
 
         upload(...files: File[]) {
@@ -101,11 +103,13 @@ ckan.module("files--auto-upload", function ($) {
                 this.sandbox.files
                     .upload(file, options)
                     .then(
-                        (result: any) =>
+                        (result: any) => {
+                            this.idTarget.val(result.id);
                             this.dispatchResult(
                                 this.options.successEvent,
                                 result,
-                            ),
+                            );
+                        },
                         (err: any) =>
                             this.dispatchResult(this.options.errorEvent, err),
                     )

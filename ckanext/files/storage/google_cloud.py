@@ -287,8 +287,6 @@ class GoogleCloudStorage(Storage):
         settings["path"] = settings.setdefault("path", "").lstrip("/")
         settings.setdefault("resumable_origin", tk.config["ckan.site_url"])
 
-        super().__init__(**settings)
-
         credentials = None
         credentials_file = settings.get("credentials_file", None)
         if credentials_file:
@@ -301,6 +299,8 @@ class GoogleCloudStorage(Storage):
                 ) from err
 
         self.client = Client(credentials=credentials)
+
+        super().__init__(**settings)
 
     def make_uploader(self):
         return GoogleCloudUploader(self)

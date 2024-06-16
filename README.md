@@ -1,4 +1,4 @@
-[![Tests](https://github.com/DataShades/ckanext-files/actions/workflows/test.yml/badge.svg?branch=storage)](https://github.com/DataShades/ckanext-files/actions/workflows/test.yml)
+[![Tests](https://github.com/DataShades/ckanext-files/actions/workflows/test.yml/badge.svg)](https://github.com/DataShades/ckanext-files/actions/workflows/test.yml)
 
 # ckanext-files
 
@@ -696,6 +696,17 @@ ckanext.files.storage.NAME.public_root =
 
 ## Migration from native CKAN storage system
 
+Important: ckanext-files itself is an independent file-management system. You
+don't have to migrate existing files from groups, users and resources to
+it. You can just start using ckanext-files for **new fields** defined in
+metadata schema or for uploading arbitrary files. And continue using native
+CKAN uploads for group/user images and resource files. Migration workflows
+described here merely exist as a PoC of using ckanext-files for everything in
+CKAN. Don't migrate your production instances yet, because concepts and rules
+may change in future and migration process will change as well. Try migration
+only as an experiment, that gives you an idea of what else you want to see in
+ckanext-file, and share this idea with us.
+
 Note: every migration workflow described below requires installed
 ckanext-files. Complete [installation](#installation) section before going
 further.
@@ -1176,6 +1187,19 @@ storage type.
 If you accept resource modifications, for every file owner `url_type` will be
 changed to `file` and `url` will be changed to file ID. Then all modified
 packages will be reindexed.
+
+Changing `url_type` means that some pages will change. For example, instead of
+**Download** button CKAN will show you **Go to resource** button on the
+resource page, because **Download** label is specific to `url_type=upload`. And
+some views may stop working as well. But this is safer option for migration,
+than leaving `url_type` unchanged: ckanext-files manages files in its own way
+and some assumptions about files will not work anymore, so using different
+`url_type` is the fastest way to tell everyone that something changed.
+
+Broken views can be easily fixed. Every view implemented as a separate
+plugin. You always can inherit from this plugin and override methods that
+relied on different behavior. And a lot of views work with file URL directly,
+so they won't even see the difference.
 
 ```sh
 ckan files migrate local-resources resources

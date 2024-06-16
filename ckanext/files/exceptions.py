@@ -79,15 +79,12 @@ class UnknownAdapterError(StorageError):
 class UnsupportedOperationError(StorageError):
     """Requested operation is not supported by storage."""
 
-    def __init__(self, operation: str, adapter: type):
+    def __init__(self, operation: str, storage: Any):
         self.operation = operation
-        self.adapter = adapter
+        self.storage = storage
 
     def __str__(self):
-        return (
-            f"Operation {self.operation} is not supported"
-            + f" by storage adapter {self.adapter}"
-        )
+        return f"Operation {self.operation} is not supported by {self.storage} storage"
 
 
 class InvalidStorageConfigurationError(StorageError):

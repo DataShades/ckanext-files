@@ -82,6 +82,9 @@ class FilesPlugin(p.SingletonPlugin):
         if hasattr(storage, "OpenDalStorage"):
             adapters.update({"files:opendal": storage.OpenDalStorage})
 
+        if hasattr(storage, "LibCloudStorage"):
+            adapters.update({"files:libcloud": storage.LibCloudStorage})
+
         return adapters
 
     # IConfigurable

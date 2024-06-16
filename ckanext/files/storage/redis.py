@@ -191,8 +191,8 @@ class RedisStorage(Storage):
             "prefix",
             _default_prefix(),
         )
-        super().__init__(**settings)
         self.redis: redis.Redis = connect_to_redis()
+        super().__init__(**settings)
 
     @classmethod
     def declare_config_options(cls, declaration: Declaration, key: Key):

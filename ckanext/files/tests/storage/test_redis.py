@@ -86,7 +86,7 @@ class TestReader:
 
         stream = storage.stream(result)
 
-        assert stream.read() == data
+        assert b"".join(stream) == data
 
     def test_content(self, storage: redis.RedisStorage, faker: Faker):
         data = faker.binary(100)

@@ -23,8 +23,6 @@ class OpenDalStorage(shared.Storage):
         scheme = self.ensure_option(settings, "scheme")
         params = settings.setdefault("params", {})
 
-        super().__init__(**settings)
-
         try:
             self.operator = opendal.Operator(scheme, **params)
         except opendal.exceptions.ConfigInvalid as err:  # type: ignore
@@ -32,6 +30,26 @@ class OpenDalStorage(shared.Storage):
                 type(self),
                 str(err),
             ) from err
+
+        super().__init__(**settings)
+
+    def compute_capabilities(self) -> shared.Capability:
+        cluster = super().compute_capabilities()
+        capabilities = self.operator.capability()
+
+        if not capabilities.delete:
+            cluster = cluster.exclude(shared.Capability.REMOVE)
+
+        if not capabilities.list:
+            cluster = cluster.exclude(shared.Capability.SCAN)
+
+        if not capabilities.write:
+            cluster = cluster.exclude(shared.Capability.CREATE)
+
+        if not capabilities.read:
+            cluster = cluster.exclude(shared.Capability.STREAM)
+
+        return cluster
 
     @classmethod
     def declare_config_options(cls, declaration: Declaration, key: Key) -> None:
@@ -79,6 +97,7 @@ class OpenDalReader(shared.Reader):
 
 class OpenDalManager(shared.Manager):
     storage: OpenDalStorage
+
     capabilities = shared.Capability.combine(
         shared.Capability.REMOVE,
         shared.Capability.SCAN,

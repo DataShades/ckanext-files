@@ -235,6 +235,7 @@ def files_file_delete(context: Context, data_dict: dict[str, Any]) -> dict[str, 
         File if data_dict["completed"] else Multipart,
         data_dict["id"],
     )
+
     if not fileobj:
         raise tk.ObjectNotFound("file")
 

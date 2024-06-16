@@ -79,6 +79,9 @@ class FilesPlugin(p.SingletonPlugin):
         if hasattr(storage, "GoogleCloudStorage"):
             adapters.update({"files:google_cloud_storage": storage.GoogleCloudStorage})
 
+        if hasattr(storage, "OpenDalStorage"):
+            adapters.update({"files:opendal": storage.OpenDalStorage})
+
         return adapters
 
     # IConfigurable

@@ -7,6 +7,9 @@ from .redis import RedisStorage
 with contextlib.suppress(ImportError):
     from .google_cloud import GoogleCloudStorage
 
+with contextlib.suppress(ImportError):
+    from .opendal import OpenDalStorage
+
 
 __all__ = [
     "FsStorage",
@@ -15,4 +18,5 @@ __all__ = [
     "RedisStorage",
     "GoogleCloudStorage",
     "FilebinStorage",
+    "OpenDalStorage",
 ]

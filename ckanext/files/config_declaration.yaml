@@ -7,6 +7,13 @@ groups:
         description: |
           Default storage used for upload when no explicit storage specified
 
+      - key: ckanext.files.inline_content_types
+        default: application/pdf image video
+        type: list
+        description: |
+            MIMEtypes that can be served without content-disposition:attachment
+            header.
+
       - key: ckanext.files.user_images_storage
         default: user_images
         description: |

@@ -318,7 +318,7 @@ class FsReader(Reader):
                 "location": data.location,
             },
         )
-        return tk.url_for("files.token_download", token=token, _external=True)
+        return tk.url_for("files.temporal_download", token=token, _external=True)
 
     def stream(self, data: FileData, extras: dict[str, Any]) -> IO[bytes]:
         filepath = os.path.join(str(self.storage.settings["path"]), data.location)

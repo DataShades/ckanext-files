@@ -8,13 +8,12 @@ namespace ckan {
             [key: string]: any;
         };
 
-        export interface UploadOptions{
-            uploader?: adapters.Base,
-            adapter?: string,
-            uploaderParams?: any[],
-            requestParams?: {[key: string]: any},
-        };
-
+        export interface UploadOptions {
+            uploader?: adapters.Base;
+            adapter?: string;
+            uploaderParams?: any[];
+            requestParams?: { [key: string]: any };
+        }
 
         export const topics = {
             addFileToQueue: "ckanext:files:queue:file:add",
@@ -26,14 +25,13 @@ namespace ckan {
             storage: "default",
         };
 
-        function upload(
-            file: File,
-            options: UploadOptions,
-        ) {
-            const uploader = options.uploader || makeUploader(
-                options.adapter || "Standard",
-                ...options.uploaderParams || []
-            )
+        function upload(file: File, options: UploadOptions) {
+            const uploader =
+                options.uploader ||
+                makeUploader(
+                    options.adapter || "Standard",
+                    ...(options.uploaderParams || []),
+                );
             return uploader.upload(file, options.requestParams || {});
         }
 
@@ -86,7 +84,7 @@ namespace ckan {
                             ?.getAttribute("content") || "";
                 }
 
-                upload(file: File, params: {[key: string]: any}) {
+                upload(file: File, params: { [key: string]: any }) {
                     throw new Error("Base.upload is not implemented");
                 }
 
@@ -133,7 +131,7 @@ namespace ckan {
                     uploadAction: "files_file_create",
                 };
 
-                upload(file: File, params: {[key: string]: any}) {
+                upload(file: File, params: { [key: string]: any }) {
                     const request = new XMLHttpRequest();
                     const promise = this._addListeners(request, file);
                     this._prepareRequest(request, file);
@@ -159,12 +157,10 @@ namespace ckan {
                             if (typeof result === "string") {
                                 this.dispatchError(file, result);
                                 fail(result);
-
                             } else if (result.success) {
                                 this.dispatchCommit(file, result.result.id);
                                 this.dispatchFinish(file, result.result);
                                 done(result.result);
-
                             } else {
                                 this.dispatchFail(file, result.error);
 
@@ -192,7 +188,11 @@ namespace ckan {
                     }
                 }
 
-                _sendRequest(request: XMLHttpRequest, file: File, params: {[key: string]: any}) {
+                _sendRequest(
+                    request: XMLHttpRequest,
+                    file: File,
+                    params: { [key: string]: any },
+                ) {
                     const data = new FormData();
                     data.append("upload", file);
                     if (!params.storage) {
@@ -215,7 +215,7 @@ namespace ckan {
                     super(settings);
                 }
 
-                async upload(file: File, params: {[key: string]: any}) {
+                async upload(file: File, params: { [key: string]: any }) {
                     if (this._active.has(file)) {
                         console.warn("File upload in progress");
                         return;

@@ -74,7 +74,7 @@
                             {% block file_actions %}
                                 {% if h.check_access("files_file_download", {"id": file.id}) %}
                                     <a class="btn btn-success btn-sm" title="Download the file"
-                                        href="{{ h.url_for('files.generic_download', file_id=file.id) }}">
+                                        href="{{ h.url_for('files.dispatch_download', file_id=file.id) }}">
                                         <i class="fa fa-download"></i>
                                     </a>
                                 {% endif %}

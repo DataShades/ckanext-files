@@ -26,6 +26,7 @@ USER_IMAGES_STORAGE = "ckanext.files.user_images_storage"
 GROUP_IMAGES_STORAGE = "ckanext.files.group_images_storage"
 RESOURCE_STORAGE = "ckanext.files.resources_storage"
 ENABLE_RESOURCE_HACK = "ckanext.files.enable_resource_migration_template_patch"
+INLINE_TYPES = "ckanext.files.inline_content_types"
 
 
 def default_storage() -> str:
@@ -94,3 +95,7 @@ def resources_storage() -> str:
 
 def override_resource_form() -> bool:
     return tk.config[ENABLE_RESOURCE_HACK]
+
+
+def inline_types() -> list[str]:
+    return tk.config[INLINE_TYPES]

@@ -11,7 +11,7 @@ from ckan.logic import validate
 from ckan.types import Action, Context
 
 from ckanext.files import shared
-from ckanext.files.shared import File, Multipart, Owner
+from ckanext.files.shared import File, Multipart, Owner, TransferHistory
 
 from . import schema
 
@@ -442,12 +442,20 @@ def files_transfer_ownership(
         )
         context["session"].add(owner)
 
-    if owner.pinned and not data_dict["force"]:
+    elif owner.pinned and not data_dict["force"]:
         raise tk.ValidationError(
             {
                 "force": ["Must be enabled to transfer pinned files"],
             },
         )
+    elif (owner.owner_type, owner.owner_id) != (
+        data_dict["owner_type"],
+        data_dict["owner_id"],
+    ):
+        archive = TransferHistory.from_owner(owner)
+        archive.actor = context["user"]
+        sess.add(archive)
+
     owner.owner_id = data_dict["owner_id"]
     owner.owner_type = data_dict["owner_type"]
     owner.pinned = data_dict["pin"]

@@ -12,6 +12,7 @@ import ckan.plugins.toolkit as tk
 from ckan import model
 from ckan.common import streaming_response
 from ckan.lib.helpers import Page
+from ckan.logic import parse_params
 from ckan.types import Response
 from ckan.views.resource import download
 
@@ -62,7 +63,7 @@ def get_blueprints():
 
 
 @bp.route("/file/download/<file_id>")
-def generic_download(file_id: str) -> Response:
+def dispatch_download(file_id: str) -> Response:
     tk.check_access("files_file_download", {}, {"id": file_id})
     item = model.Session.get(shared.File, file_id)
     if not item:
@@ -82,20 +83,30 @@ def generic_download(file_id: str) -> Response:
     if link:
         return tk.redirect_to(link)
 
+    if resp := _streaming_file(item, storage, data):
+        return resp
+
+    return tk.abort(422, "File is not downloadable")
+
+
+def _streaming_file(
+    item: shared.File,
+    storage: shared.Storage,
+    data: shared.FileData,
+) -> Response | None:
     if storage.supports(shared.Capability.STREAM):
         resp = streaming_response(storage.stream(data), data.content_type)
-        resp.headers["content-disposition"] = f"attachment; filename={item.name}"
+        if not utils.is_supported_type(item.content_type, shared.config.inline_types()):
+            resp.headers["content-disposition"] = f"attachment; filename={item.name}"
 
         item.touch()
         model.Session.commit()
 
         return resp
 
-    return tk.abort(422, "File is not downloadable")
-
 
 @bp.route("/file/token-download/<token>")
-def token_download(token: str) -> Response:
+def temporal_download(token: str) -> Response:
     try:
         data = utils.decode_token(token)
 
@@ -125,13 +136,7 @@ def token_download(token: str) -> Response:
     storage = shared.get_storage(item.storage)
     data = shared.FileData.from_model(item)
 
-    if storage.supports(shared.Capability.STREAM):
-        resp = streaming_response(storage.stream(data), data.content_type)
-        resp.headers["content-disposition"] = f"attachment; filename={item.name}"
-
-        item.touch()
-        model.Session.commit()
-
+    if resp := _streaming_file(item, storage, data):
         return resp
 
     return tk.abort(422, "File is not downloadable")
@@ -240,6 +245,49 @@ bp.add_url_rule(
 )
 
 
+@bp.route("/api/util/files_autocomplete_own_files")
+def autocomplete_own_files() -> Any:
+    tk.check_access("files_autocomplete_available_resource_files", {}, {})
+
+    params = parse_params(tk.request.args)
+
+    q = params.pop("q", "")
+
+    params.update(
+        {
+            "owner_type": "user",
+            "owner_id": tk.current_user.is_authenticated and tk.current_user.id,  # type: ignore
+            "pinned": False,
+            "name": ["like", f"%{q}%"],
+        },
+    )
+
+    result = tk.get_action("files_file_search")(
+        {"ignore_auth": True},
+        params,
+    )
+
+    return jsonify(
+        {
+            "ResultSet": {
+                "Result": [
+                    dict(
+                        item,
+                        label="{name} [{content_type}, {size}]".format(
+                            name=item["name"],
+                            content_type=tk.h.unified_resource_format(
+                                item["content_type"],
+                            ),
+                            size=utils.humanize_filesize(item["size"]),
+                        ),
+                    )
+                    for item in result["results"]
+                ],
+            },
+        },
+    )
+
+
 @bp.route("/api/util/files_autocomplete_available_resource_files")
 def autocomplete_available_resource_files() -> Any:
     tk.check_access("files_autocomplete_available_resource_files", {}, {})
@@ -303,4 +351,4 @@ def resource_download(
         return download(package_type, id, resource_id, filename)
 
     file_id = resource["url"].rsplit("/", 1)[-1]
-    return generic_download(file_id)
+    return dispatch_download(file_id)

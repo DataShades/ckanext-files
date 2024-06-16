@@ -1,0 +1,77 @@
+{% import "macros/form.html" as form%}
+{% set params = field.file_selector | default({}) %}
+
+{% set value = data[field.field_name] %}
+{% set file = h.files_get_file(value) if value else null %}
+{% set field_id = "field-" ~ field.field_name %}
+{% set spinner_id = file_id ~ "--upload-spinner" %}
+
+{% set attrs = {
+    "data-module": "autocomplete",
+    "data-module-source": h.url_for("files.autocomplete_own_files", q="?", **params.filters|default({})),
+    "data-module-key": "id",
+    "data-module-label": "label",
+    } %}
+
+
+<div class="files--snippet--file-selector">
+    {% call form.input(
+        field.field_name,
+        id=field_id,
+        label=_("Select existing file"),
+        is_required=field.required,
+        placeholder=field.form_placeholder,
+        attrs=dict(attrs, **field.form_attrs|default({}))
+
+        ) %}
+    {% endcall %}
+
+    <div class="form-group">
+        <label class="btn btn-default files--no-after-content">
+            {{ _("Upload file") }}
+            <input hidden type="file"
+                data-module="files--auto-upload"
+                data-module-action="{{ params.storage|default('files_file_create') }}"
+                data-module-spinner="#{{ spinner_id }}"
+                data-module-event-target="#{{ field_id }}"
+                {% if fileinfo %}
+                data-module-initial-value="{{{'id': fileinfo.id, 'text': fileinfo.name}|tojson|forceescape }}"
+                {% endif %}
+            />
+            <i id="{{ spinner_id }}" class="spinner-border spinner-border-sm" hidden></i>
+        </label>
+    </div>
+
+    <script>
+        window.addEventListener("load", () => {
+            const el = $("#{{ field_id }}");
+            const sandbox = ckan.sandbox();
+
+            function reportError(label, message) {
+                const box = sandbox.notify.initialize(sandbox.notify.create(label, message));
+                el.closest(".files--snippet--file-selector").append(box);
+            }
+
+            {% if file %}el.select2("data", { id: "{{ file.id }}", text: "{{ file.name }}" });{% endif %}
+
+            el.on({
+                "files-file-created": ({detail})=> {
+                    el.select2("data", { id: detail.id, text: detail.name })
+                },
+                "files-file-failed": (event) => {
+                    const err = event.detail;
+
+                    if (typeof err === "string") {
+                        reportError("Error", err);
+
+                    } else {
+                        for (let [field, problems] of Object.entries(err,)) {
+                            if (field.startsWith("__")) continue;
+                            reportError(field, problems.join(","));
+                        }
+                    }
+                }
+            });
+        });
+    </script>
+</div>

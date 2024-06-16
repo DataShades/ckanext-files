@@ -1,0 +1,8 @@
+{% set info = h.files_link_details(data[field.field_name]) %}
+{% set cls = field.files_image_class or "img-thumbnail" %}
+
+
+{% if info and info.href %}
+    <object data="{{ info.href }}" type="{{ info.content_type }}"></object>
+
+{% endif %}

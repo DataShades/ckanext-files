@@ -39,7 +39,6 @@ def files_id_into_resource_download_url(
     errors: FlattenErrorDict,
     context: Context,
 ):
-
     package_id = data.get(key[:-1] + ("package_id",))
     resource_id = data.get(key[:-1] + ("id",))
 
@@ -191,7 +190,7 @@ def files_content_type_from_file(file_field: str, if_empty: bool = False):
     return validator
 
 
-def files_file_content_type(*supported_types: str):
+def files_accept_file_with_type(*supported_types: str):
     """Verify that file has allowed MIMEtype."""
 
     def validator(
@@ -218,6 +217,38 @@ def files_file_content_type(*supported_types: str):
                 msg = (
                     f"Type {actual} is not supported."
                     + f" Use one of the following types: {expected}"
+                )
+                errors[key].append(msg)
+                raise tk.StopOnError
+
+    return validator
+
+
+def files_accept_file_with_storage(*supported_storages: str):
+    """Verify that file has allowed MIMEtype."""
+
+    def validator(
+        key: FlattenKey,
+        data: FlattenDataDict,
+        errors: FlattenErrorDict,
+        context: Context,
+    ):
+        value: str | list[str] = data[key]
+
+        ids = value if isinstance(value, list) else [value]
+
+        for file_id in ids:
+            file = context["session"].get(File, file_id)
+            if not file:
+                msg = "File does not exist"
+                errors[key].append(msg)
+                raise tk.StopOnError
+
+            if file.storage not in supported_storages:
+                expected = ", ".join(supported_storages)
+                msg = (
+                    f"Storage {file.storage} is not supported."
+                    + f" Use one of the following storages: {expected}"
                 )
                 errors[key].append(msg)
                 raise tk.StopOnError

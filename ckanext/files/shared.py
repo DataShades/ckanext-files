@@ -11,7 +11,7 @@ from .base import (
     make_storage,
 )
 from .interfaces import IFiles
-from .model import File, Multipart, Owner
+from .model import File, Multipart, Owner, TransferHistory
 from .task import Task, add_task, with_task_queue
 from .utils import Capability, HashingReader, Upload, make_upload
 
@@ -21,6 +21,7 @@ __all__ = [
     "IFiles",
     "HashingReader",
     "Capability",
+    "TransferHistory",
     "File",
     "FileData",
     "Manager",

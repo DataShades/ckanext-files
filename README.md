@@ -43,14 +43,15 @@ To install ckanext-files:
 
 ### Configure the storage
 
-Before uploading files, you have to configure a **storage**. Storage defines
-the **adapter** used for uploads(i.e, where and how data will be stored:
-filesystem, cloud, DB, etc.), and, depending on the adapter, a few specific
-options. For example, filesystem adapter likely requires a path to the folder
-where uploads are stored. DB adapter may need DB connection parameters. Cloud
-adapter most likely will not work without an API key. These additional options
-are specific to adapter and you have to check its documentation to find out
-what are the possible options.
+Before uploading files, you have to configure a **storage**: place where all
+uploaded files are stored. Storage relies on **adapter** that describes where
+and how data is be stored: filesystem, cloud, DB, etc. And, depending on the
+adapter, storage may have a couple of addition specific options. For example,
+filesystem adapter likely requires a path to the folder where uploads are
+stored. DB adapter may need DB connection parameters. Cloud adapter most likely
+will not work without an API key. These additional options are specific to
+adapter and you have to check its documentation to find out what are the
+possible options.
 
 Let's start from the Redis adapter, because it has minimal requirements in terms
 of configuration.
@@ -80,7 +81,7 @@ Aborted!
 
 Storage is configured, so we can actually upload the file. Let's use
 [ckanapi](https://github.com/ckan/ckanapi) for this task. Files are created via
-    `files_file_create` API action and this time we have to pass 2 parameters into
+`files_file_create` API action and this time we have to pass 2 parameters into
 it:
 
 * `name`: the name of uploaded file
@@ -151,7 +152,7 @@ ckanapi action files_file_delete id=e21162ab-abfb-476c-b8c5-5fe7cb89eca0
 
 If you are writing the code and you want to interact with the storage directly,
 without the API layer, you can do it via a number of public functions of the
-extension.
+extension available in `ckanext.files.shared`.
 
 Let's configure filesystem storage first. Filesystem adapter has a mandatory
 option `path` that controls filesystem location, where files are stored. If
@@ -177,16 +178,13 @@ Because you have all configuration in place, the rest is fairly
 straightforward. We will upload the file, read it's content and remove it from
 the CKAN shell.
 
-To create the file, `storage.upload` method must be called with 3 parameters:
+To create the file, `storage.upload` method must be called with 2 parameters:
 
 * the human readable name of the file
 * special steam-like object with content of the file
-* dictionary with extra parameters that are consumed by the storage adapter
 
-You can use any string as the first parameter. The last parameter is not used
-by `files:fs` adapter, so we'll pass an empty dictionary. And the only
-problematic parameter is the "special stream-like object". To make things
-simpler, ckanext-files has `ckanext.files.shared.make_upload` function, that
+You can use any string as the first parameter. As for the "special stream-like
+object", ckanext-files has `ckanext.files.shared.make_upload` function, that
 accepts a number of different types(`str`, `bytes`,
 `werkzeug.datastructures.FileStorage`) and converts them into expected format.
 
@@ -195,7 +193,7 @@ accepts a number of different types(`str`, `bytes`,
 from ckanext.files.shared import make_upload
 
 upload = make_upload("hello world")
-result = storage.upload('file.txt', upload, {})
+result = storage.upload('file.txt', upload)
 
 print(result)
 
@@ -211,9 +209,9 @@ print(result)
 `result` is an instance of `ckanext.files.shared.FileData` dataclass. It
 contains all the information required by storage to manage the file.
 
-`result` object has `location` attribute that shows the name of the file
+`result` object has `location` attribute that contains the name of the file
 *relative* to the `path` option specified in the storage configuration. If you
-visit `/tmp/example` directory, which was specified as a `path` for the storage,
+visit `/tmp/example` directory, which was set as a `path` for the storage,
 you'll see there a file with the name matching `location` from result. And its
 content matches the content of our upload, which is quite an expected outcome.
 
@@ -224,14 +222,12 @@ cat /tmp/example/60b385e7-8137-496c-bb1d-6ae4d7963ab3
 ```
 
 But let's go back to the shell and try reading file from the python's
-code. We'll pass `result` to the storage's `stream` method, which produces a
-readable buffer based on our result. This buffer has `read` method so we can
-work with the buffer just as we usually do with IO streams:
+code. We'll pass `result` to the storage's `stream` method, which produces an
+iterable of bytes based on our result:
 
 ```python
 buffer = storage.stream(result)
-content = buffer.read()
-print(content)
+content = b"".join(buffer)
 
 ... b'hello world'
 ```
@@ -249,13 +245,13 @@ location = "60b385e7-8137-496c-bb1d-6ae4d7963ab3"
 data = FileData(location)
 
 buffer = storage.stream(data)
-content = buffer.read()
+content = b"".join(buffer)
 print(content)
 
 ... b'hello world'
 ```
 
-And finally we need to remove the file
+And finally we can to remove the file
 
 ```python
 storage.remove(result)
@@ -263,7 +259,7 @@ storage.remove(result)
 
 ### Usage in browser
 
-You can upload files using JavaScript CKAN modules. The extension extends
+You can upload files using JavaScript CKAN modules. ckanext-files extends
 CKAN's Sandbox object(available as `this.sandbox` inside the JS CKAN module),
 so we can use shortcut and upload file directly from the DevTools. Open any
 CKAN page, switch to JS console and create the sandbox instance. Inside it we
@@ -510,6 +506,10 @@ that points to an existing location with files.
 ckan files scan -t
 ```
 
+## Permissions
+
+TBD
+
 ## File upload strategies
 
 TBD
@@ -544,6 +544,33 @@ ckanext.files.storage.my_drive.path = /tmp/hello
 # (optional, default: default)
 ckanext.files.default_storage = default
 
+# MIMEtypes that can be served without content-disposition:attachment header.
+# (optional, default: application/pdf image video)
+ckanext.files.inline_content_types = application/pdf image video
+
+# Storage used for user image uploads. When empty, user image uploads are not
+# allowed.
+# (optional, default: user_images)
+ckanext.files.user_images_storage = user_images
+
+# Storage used for group image uploads. When empty, group image uploads are
+# not allowed.
+# (optional, default: group_images)
+ckanext.files.group_images_storage = group_images
+
+# Storage used for resource uploads. When empty, resource uploads are not
+# allowed.
+# (optional, default: resources)
+ckanext.files.resources_storage = resources
+
+# Enable HTML templates and JS modules required for unsafe default
+# implementation of resource uploads via files. IMPORTANT: this option exists
+# to simplify migration and experiments with the extension. These templates
+# may change a lot or even get removed in the public release of the
+# extension.
+# (optional, default: false)
+ckanext.files.enable_resource_migration_template_patch = false
+
 # Any authenticated user can upload files.
 # (optional, default: false)
 ckanext.files.authenticated_uploads.allow = false
@@ -560,8 +587,8 @@ ckanext.files.authenticated_uploads.storages = default
 # files owned by package; anyone who passes
 # `package_update`/`resource_update` can modify files owned by
 # package/resource; anyone who passes `package_delete`/`resource_delete` can
-# delete files owned by package/resoure. IMPORTANT: Do not add `user` to
-# this list. Files may be temporarily owned by user during resource creation.
+# delete files owned by package/resoure. IMPORTANT: Do not add `user` to this
+# list. Files may be temporarily owned by user during resource creation.
 # Using cascade access rules with `user` exposes such temporal files to
 # anyone who can read user's profile.
 # (optional, default: package resource group organization)

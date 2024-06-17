@@ -146,4 +146,4 @@ class FilebinManager(shared.Manager):
                     base64.decodebytes(record["md5"].encode()).decode(),
                 )
 
-        raise exceptions.MissingFileError(self.storage.settings["name"], location)
+        raise exceptions.MissingFileError(self.storage, location)

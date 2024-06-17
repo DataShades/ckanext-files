@@ -262,7 +262,7 @@ class GoogleCloudManager(Manager):
             exists = blob.exists()
         except Forbidden as err:
             raise exceptions.PermissionError(
-                type(self),
+                self,
                 "exists",
                 str(err),
             ) from err
@@ -272,7 +272,7 @@ class GoogleCloudManager(Manager):
                 blob.delete()
             except Forbidden as err:
                 raise exceptions.PermissionError(
-                    type(self),
+                    self,
                     "remove",
                     str(err),
                 ) from err

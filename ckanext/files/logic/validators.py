@@ -13,18 +13,25 @@ from ckanext.files.shared import File, FileData, get_storage
 log = logging.getLogger(__name__)
 
 
+# unstable
 def files_skip_absolute_url(value: Any):
-    """Stop validatio and accept value if it's an absolute URL"""
+    """Stop validation and accept value if it's an absolute URL"""
     if isinstance(value, str) and value.startswith(("https://", "http://")):
         raise tk.StopOnError
 
 
+# unstable
 def files_verify_url_type_and_value(
     key: FlattenKey,
     data: FlattenDataDict,
     errors: FlattenErrorDict,
     context: Context,
 ):
+    """Skip validation for non-file resources.
+
+    Remove everything before last `/` for file resources.
+    """
+
     if data.get(key[:-1] + ("url_type",)) != "file":
         raise tk.StopOnError
 
@@ -33,12 +40,15 @@ def files_verify_url_type_and_value(
         data[key] = value.rsplit("/", 1)[-1]
 
 
+# unstable
 def files_id_into_resource_download_url(
     key: FlattenKey,
     data: FlattenDataDict,
     errors: FlattenErrorDict,
     context: Context,
 ):
+    """Transform file ID into resource's download URL."""
+
     package_id = data.get(key[:-1] + ("package_id",))
     resource_id = data.get(key[:-1] + ("id",))
 
@@ -51,6 +61,7 @@ def files_id_into_resource_download_url(
     )
 
 
+# unstable
 def files_file_into_public_url(
     key: FlattenKey,
     data: FlattenDataDict,
@@ -165,6 +176,7 @@ def files_file_id_exists(
             raise tk.StopOnError
 
 
+# unstable
 def files_content_type_from_file(file_field: str, if_empty: bool = False):
     """Copy MIMEtype of the file in specified field."""
 
@@ -225,7 +237,7 @@ def files_accept_file_with_type(*supported_types: str):
 
 
 def files_accept_file_with_storage(*supported_storages: str):
-    """Verify that file has allowed MIMEtype."""
+    """Verify that file stored inside specified storage."""
 
     def validator(
         key: FlattenKey,
@@ -256,9 +268,8 @@ def files_accept_file_with_storage(*supported_storages: str):
     return validator
 
 
-def files_transfer_ownership(owner_type: str, id_field: str):
-    """Verify that file is owner by user who performs operation or by entity
-    which is currently validated."""
+def files_transfer_ownership(owner_type: str, id_field: str = "id"):
+    """Tranfer file ownership to validated object."""
 
     def validator(
         key: FlattenKey,
@@ -300,6 +311,7 @@ def files_transfer_ownership(owner_type: str, id_field: str):
     return validator
 
 
+# unstable
 def files_validate_with_storage(storage_name: str):
     """Apply storage validators to file."""
     storage = shared.get_storage(storage_name)
@@ -314,6 +326,7 @@ def files_validate_with_storage(storage_name: str):
     return validator
 
 
+# unstable
 def files_upload_as(  # noqa: PLR0913
     storage: str,
     owner_type: str,

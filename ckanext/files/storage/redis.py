@@ -75,7 +75,7 @@ class RedisReader(Reader):
         key = self.storage.settings["prefix"] + data.location
         value = cast("bytes | None", self.storage.redis.get(key))
         if value is None:
-            raise exceptions.MissingFileError(self.storage.settings["name"], key)
+            raise exceptions.MissingFileError(self.storage, key)
 
         return value
 
@@ -102,7 +102,7 @@ class RedisManager(Manager):
         key = self.storage.settings["prefix"] + location
         value: Any = self.storage.redis.get(key)
         if value is None:
-            raise exceptions.MissingFileError(self.storage.settings["name"], key)
+            raise exceptions.MissingFileError(self.storage, key)
 
         reader = HashingReader(BytesIO(value))
         content_type = magic.from_buffer(next(reader, b""), True)
@@ -135,10 +135,10 @@ class RedisManager(Manager):
         dest: str = self.storage.settings["prefix"] + safe_location
 
         if not self.storage.redis.exists(src):
-            raise exceptions.MissingFileError(self.storage.settings["name"], src)
+            raise exceptions.MissingFileError(self.storage, src)
 
         if self.storage.redis.exists(dest):
-            raise exceptions.ExistingFileError(self.storage.settings["name"], dest)
+            raise exceptions.ExistingFileError(self.storage, dest)
 
         try:
             self.storage.redis.copy(src, dest)
@@ -165,10 +165,10 @@ class RedisManager(Manager):
         dest = self.storage.settings["prefix"] + safe_location
 
         if not self.storage.redis.exists(src):
-            raise exceptions.MissingFileError(self.storage.settings["name"], src)
+            raise exceptions.MissingFileError(self.storage, src)
 
         if self.storage.redis.exists(dest):
-            raise exceptions.ExistingFileError(self.storage.settings["name"], dest)
+            raise exceptions.ExistingFileError(self.storage, dest)
 
         self.storage.redis.rename(src, dest)
         new_data = copy.deepcopy(data)

@@ -506,13 +506,331 @@ that points to an existing location with files.
 ckan files scan -t
 ```
 
-## Permissions
+### Permissions
 
-TBD
+File creation is not allowed by default. Only sysadmin can use
+`files_file_create` and `files_multipart_start` actions. This is done
+deliberately: uncontrolled uploads can turn your portal into user's personal
+cloud-storage.
+
+There are three ways to grant upload permission to normal users.
+
+The BAD option is simple. Enable `ckanext.files.authenticated_uploads.allow`
+config option and every registered user will be allowed to upload files. But
+only into `default` storage. If you want to change the list of storages
+available to common user, specify storage names as
+`ckanext.files.authenticated_uploads.storages` option.
+
+The GOOD option is relatively simple. Define chained auth function with name
+`files_file_create`. It's called whenever user initiates an upload. Now you can
+decide whether user is allowed to upload files with specified parameters.
+
+The BEST option is to leave this restriction unchanged. Do not allow any user
+to call `files_file_create`. Instead, create a new action for your
+goal. ckanext-files isn't a solution - it's a tool that helps you in building
+the solution.
+
+If you need to add *documents* field to dataset that contains uploaded PDF
+files, create a separate action `dataset_document_attach`. Specify access rules
+and validation for it. Or even hardcode the storage that will be used for
+uploads. And then, from this new action, call `files_file_create` with
+`ignore_auth: True`.
+
+In this way you control every side of uploading documents into dataset and do
+not accidentally break other functionality, because every other feature will
+define its own action.
+
+### File ownership
+
+Every file *can* have an owner and there can be only one owner of the
+file. It's possible to create file without an owner, but usually application
+will only benefit from keeping every file with its owner. Owner is described
+with two fields: ID and type.
+
+When file is created, by default the current user from API action's context is
+assigned as an owner of the file. From now on, the owner can perform other
+operations, such as renaming/displaying/removing with the file.
+
+Apart from chaining auth function, to modify access rules for the file, plugin
+can implement `IFiles.files_is_allowed` method.
+
+```python
+def files_is_allowed(
+    self,
+    context: Context,
+    file: File | Multipart | None,
+    operation: types.AuthOperation,
+    next_owner: Any | None,
+) -> bool | None:
+    ...
+```
+
+This method receives current action context, the file that is accessed, the
+name of operation(`show`, `update`, `delete`, `file_transfer`) and the next
+owner in case of file transfer.
+
+If method returns true/false, operation is allowed/denied. If method returns
+`None`, default logic used to check access.
+
+As already mentoined, by default, user who owns the file, can access it. But
+what about different owners? What if file owned by other entity, like resource
+or dataset?
+
+Out of the box, nobody can access such files. But there are two config options
+that modify this restriction. `ckanext.files.owner.cascade_access =
+entity_type` gives access to file owned by entity if user already has access to
+entity itself.
+
+For example: file is owned by *resource*. If cascade access is enabled, whoever
+has access to `resource_show` of the *resource*, can also see the file owned by
+this resource. If user passes `resource_update` for *resource*, he can also
+modify the file owned by this resource, etc.
+
+The second option is `ckanext.files.owner.transfer_as_update`. By default,
+there is no auth function that gives user cascade permission to modify
+ownership of the file. But when transfer-as-update enabled together with
+cascade access, any user who has `resource_update`, can also modify ownership
+of the file owned by *resource*.
+
+Be careful and do not add `user` to
+`ckanext.files.owner.cascade_access`. User's own files are considered private
+and most likely you don't really need anyone else to be able to see or modify
+these files.
+
+### Ownership transfer
+
+File ownership can be transfered. As there can be only one owner of the file,
+as soon as you transfer ownership over file, you yourself do not own this file.
+
+To transfer ownership, use `files_transfer_ownership` action and specify `id`
+of the file, `owner_id` and `owner_type` of the new owner.
+
+You can't just transfer ownership to anyone. You either must pass
+`IFiles.files_is_allowed` check for `file_transfer` operation, or pass a
+cascade access check for the future owner of the file when cascade access and
+transfer-as-update is enabled.
+
+For example, if you have the following options in config file:
+
+```ini
+ckanext.files.owner.cascade_access = organization
+ckanext.files.owner.transfer_as_update = true
+```
+you must pass `organization_update` auth function if you want to transfer file
+ownership to organization.
+
+In addition, file can be *pinned*. In this way we mark important files. Imagine
+the resource and its uploaded file. The link to this file is used by resource
+and we don't want this file to be accidentally transfered to someone else. We
+pin the file and now nobody can transfer the file without explicit confirmation
+of his intention.
+
+There are two ways to move pinned file:
+
+* you can call `files_file_unpin` first and then transfer the ownership via
+  separate API call
+* you can pass `force` parameter to `files_transfer_ownership`
+
+### Task queue
+
+One of the challenges introduced by independently managed files is related to
+file ownership. As long as you can call `files_transfer_ownership` manually,
+things are transparent. But as soon as you add custom file field to dataset,
+you probably want to automatically transfer ownership of the file refered by
+this custom field.
+
+Imagine, that you have PDF file owned by you. And you specify ID of this file
+in the `attachment_id` field of the dataset. You want to show download link for
+this file on the dataset page. But if file owned by you, nobody will be able to
+download the file. So you decide to transfer file ownership to dataset, so that
+anyone who sees dataset, can see the file as well.
+
+You cannot update dataset and transfer ownership after it, because there will
+be a time window between these two actions, when data is not valid. Or even
+worse, after updating dataset you'll lose internet connection and won't be able
+to finish the transfer.
+
+Neither you can transfer ownership first and then update the
+dataset. `attachment_id` may have additional validators and you don't know in
+advance, whether you'll be able to successfully update dataset after the
+transfer.
+
+This problem can be solved via queuing additional *tasks* inside the
+action. For example, validator that checks if certain file ID can be used as
+`attachment_id` can queue ownership transfer. If dataset update completed
+without errors, queued task is executed automatically and dataset becomes the
+owner of the file.
+
+Task is queued via `ckanext.files.shared.add_task` function, which accepts
+objects inherited from `ckanext.files.shared.Task`. `Task` class requires
+implementing abstract method `run(result: Any, idx: int, prev: Any)`, which is
+called when task is executed. This method receives the result of action which
+caused task execution, task's position in queue and the result of previous
+task.
+
+For example, one of `attachment_id` validatos can queue the following `MyTask`
+via `add_task(MyTask(file_id))` to transfer `file_id` ownership to the updated
+dataset:
+
+```python
+from ckanext.files.shared import Task
+
+class MyTask(Task):
+    def __init__(self, file_id):
+        self.file_id = file_id
+
+    def run(self, dataset, idx, prev):
+        return tk.get_action("files_transfer_ownership")(
+            {"ignore_auth": True},
+            {
+                "id": self.file_id,
+                "owner_type": "package",
+                "owner_id": dataset["id"],
+                "force": True,
+                "pin": True,
+            },
+        )
+```
+
+`Task.run` receives the result of action wchich was called as the first
+argument. Right now only following actions support tasks:
+
+* `package_create`
+* `packaage_update`
+* `resource_create`
+* `resource_update`
+* `group_create`
+* `group_update`
+* `organization_create`
+* `organization_update`
+* `user_create`
+* `user_update`
+
+If you want to enable tasks support for your custom action, decorate it with
+`ckanext.files.shared.with_task_queue` decorator:
+
+```python
+from ckanext.files.shared import with_task_queue
+
+@with_task_queue
+def my_action(context, data_dict)
+    # you can call `add_task` inside this action's stack frame.
+    ...
+```
+
+Good example of validator using tasks is `files_transfer_ownership` validator
+factory. It can be added to metadata schema as
+`files_transfer_ownership(owner_type, name_of_id_field)`. For example, if you
+are adding this validator to resource, call it as
+`files_transfer_ownership("resource", "id")`. The second argument is the name
+of the ID field. As in most cases it's `id`, you can omit the second argument:
+
+* organization: `files_transfer_ownership("organization")`
+* dataset: `files_transfer_ownership("package")`
+* user: `files_transfer_ownership("user")`
 
 ## File upload strategies
 
+There is no "right" way to add file to entity via ckanext-files. Everything
+depends on your use-case and here you can find a few different ways to combine
+file and arbitrary entity.
+
 TBD
+
+## Implement custom storage
+
+TBD
+
+## CLI
+
+TBD
+
+## API
+
+TBD
+
+## Interfaces
+
+ckanext-files registers `ckanext.files.shared.IFiles` interface. As extension
+is actively developed, this interface may change in future. Always use
+`inherit=True` when implementing `IFiles`.
+
+```python
+class IFiles(Interface):
+    """Extension point for ckanext-files."""
+
+    def files_get_storage_adapters(self) -> dict[str, Any]:
+        """Return mapping of storage type to adapter class.
+
+        Example:
+        >>> def files_get_storage_adapters(self):
+        >>>     return {
+        >>>         "my_ext:dropbox": DropboxStorage,
+        >>>     }
+
+        """
+
+        return {}
+
+    def files_register_owner_getters(self) -> dict[str, Callable[[str], Any]]:
+        """Return mapping with lookup functions for owner types.
+
+        Name of the getter is the name used as `Owner.owner_type`. The getter
+        itself is a function that accepts owner ID and returns optional owner
+        entity.
+
+        Example:
+        >>> def files_register_owner_getters(self):
+        >>>     return {"resource": model.Resource.get}
+        """
+        return {}
+
+    def files_is_allowed(
+        self,
+        context: Context,
+        file: File | Multipart | None,
+        operation: types.AuthOperation,
+        next_owner: Any | None,
+    ) -> bool | None:
+        """Decide if user is allowed to perform operation on file that belongs
+        to owner.
+
+        Return True/False if user allowed/not allowed. Return `None` to rely on
+        other plugins. If every implementation returns `None`, default logic
+        allows only user who owns the file to perform any operation on it. It
+        means, that nobody is allowed to do anything with file owner by
+        resource, dataset, group, etc.
+
+        Example:
+        >>> def files_is_allowed(
+        >>>         self, context, file, operation, next_owner
+        >>> ) -> bool | None:
+        >>>     if isinstance(owner, model.Resource):
+        >>>         return is_authorized_boolean(
+        >>>             f"resource_{operation}",
+        >>>             context,
+        >>>             {"id": file.owner_info.id}
+        >>>         )
+        >>>
+        >>>     return None
+
+        """
+        return None
+```
+
+## Validators
+
+
+| Validator                                                    | Effect                                                                                                                                                               |
+|--------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| files_into_upload                                            | Transform value of field(usually file uploaded via `<input type="file">`) into upload object using `ckanext.files.shared.make_upload`                                |
+| files_parse_filesize                                         | Convert human-readable filesize(1B, 10MiB, 20GB) into an integer                                                                                                     |
+| files_ensure_name(name_field)                                | If `name_field` is empty, copy into it filename from current field. Current field must be processed with `files_into_upload` first                                   |
+| files_file_id_exists                                         | Verify that file ID exists                                                                                                                                           |
+| files_accept_file_with_type(*type)                           | Verify that file ID refers to file with one of specified types. As a type can be used full MIMEtype(`image/png`), or just its main(`image`) or secondary(`png`) part |
+| files_accept_file_with_storage(*storage_name)                | Verify that file ID refers to file stored inside one of specified storages                                                                                           |
+| files_transfer_ownership(owner_type, name_of_owner_id_field) | Transfer ownership for file ID to specified entity when current API action is successfully finished                                                                  |
+
 
 ## Configuration
 

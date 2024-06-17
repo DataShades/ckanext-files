@@ -45,7 +45,7 @@ class FsUploader(Uploader):
         dest = os.path.join(self.storage.settings["path"], location)
 
         if os.path.exists(dest):
-            raise exceptions.ExistingFileError(self.storage.settings["name"], dest)
+            raise exceptions.ExistingFileError(self.storage, dest)
 
         os.makedirs(os.path.dirname(dest), exist_ok=True)
         reader = shared.HashingReader(upload.stream)
@@ -178,14 +178,14 @@ class FsManager(Manager):
         location = self.storage.compute_location(location, **extras)
         dest = os.path.join(str(self.storage.settings["path"]), location)
         if os.path.exists(dest):
-            raise exceptions.ExistingFileError(self.storage.settings["name"], dest)
+            raise exceptions.ExistingFileError(self.storage, dest)
 
         sources: list[str] = []
         for data in datas:
             src = os.path.join(str(self.storage.settings["path"]), data.location)
 
             if not os.path.exists(src):
-                raise exceptions.MissingFileError(self.storage.settings["name"], src)
+                raise exceptions.MissingFileError(self.storage, src)
             sources.append(src)
 
         with open(dest, "wb") as to_fd:
@@ -220,10 +220,10 @@ class FsManager(Manager):
         dest = os.path.join(str(self.storage.settings["path"]), location)
 
         if not os.path.exists(src):
-            raise exceptions.MissingFileError(self.storage.settings["name"], src)
+            raise exceptions.MissingFileError(self.storage, src)
 
         if os.path.exists(dest):
-            raise exceptions.ExistingFileError(self.storage.settings["name"], dest)
+            raise exceptions.ExistingFileError(self.storage, dest)
 
         shutil.copy(src, dest)
         new_data = copy.deepcopy(data)
@@ -242,10 +242,10 @@ class FsManager(Manager):
         dest = os.path.join(str(self.storage.settings["path"]), location)
 
         if not os.path.exists(src):
-            raise exceptions.MissingFileError(self.storage.settings["name"], src)
+            raise exceptions.MissingFileError(self.storage, src)
 
         if os.path.exists(dest):
-            raise exceptions.ExistingFileError(self.storage.settings["name"], dest)
+            raise exceptions.ExistingFileError(self.storage, dest)
 
         shutil.move(src, dest)
         new_data = copy.deepcopy(data)
@@ -280,7 +280,7 @@ class FsManager(Manager):
         """Return all details about location."""
         filepath = os.path.join(str(self.storage.settings["path"]), location)
         if not os.path.exists(filepath):
-            raise exceptions.MissingFileError(self.storage.settings["name"], filepath)
+            raise exceptions.MissingFileError(self.storage, filepath)
 
         with open(filepath, "rb") as src:
             reader = shared.HashingReader(src)
@@ -323,7 +323,7 @@ class FsReader(Reader):
     def stream(self, data: FileData, extras: dict[str, Any]) -> IO[bytes]:
         filepath = os.path.join(str(self.storage.settings["path"]), data.location)
         if not os.path.exists(filepath):
-            raise exceptions.MissingFileError(self.storage.settings["name"], filepath)
+            raise exceptions.MissingFileError(self.storage, filepath)
 
         return open(filepath, "rb")  # noqa: SIM115
 

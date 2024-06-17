@@ -4,13 +4,14 @@ import json
 import os
 from typing import Any
 
+import yaml
+
 import ckan.plugins as p
 import ckan.plugins.toolkit as tk
-from ckan.config.declaration import Declaration, Key
 from ckan.exceptions import CkanConfigurationException
 from ckan.logic import clear_validators_cache
 
-from . import base, config, exceptions, interfaces, storage, utils
+from . import base, config, exceptions, interfaces, storage, types, utils
 
 
 @tk.blanket.helpers
@@ -26,9 +27,8 @@ class FilesPlugin(p.SingletonPlugin):
 
     p.implements(p.IConfigDeclaration)
 
-    def declare_config_options(self, declaration: Declaration, key: Key):
-        import yaml
-
+    def declare_config_options(self, declaration: types.Declaration, key: types.Key):
+        # this call allows using custom validators in config declarations
         clear_validators_cache()
 
         here = os.path.dirname(__file__)
@@ -36,7 +36,14 @@ class FilesPlugin(p.SingletonPlugin):
             declaration.load_dict(yaml.safe_load(src))
 
         _register_adapters()
+
+        # add config declarations for configured storages. In this way user can
+        # print all available options for every storage via `ckan config
+        # declaration files`
         for name, settings in config.storages().items():
+            # make base key so that storage can declare options by extending it
+            # like `storage_key.option_name`, instead of logner form
+            # `key.ckanext.files.storage.STORAGE_NAME.option_nam`
             storage_key = key.from_string(config.STORAGE_PREFIX + name)
 
             if tk.check_ckan_version("2.10.3"):
@@ -98,6 +105,8 @@ class FilesPlugin(p.SingletonPlugin):
         tk.add_resource("assets", "files")
         tk.add_public_directory(config_, "public")
 
+        # this template folder contains a single unsafe template used in
+        # resource migration workflow described in README
         if config.override_resource_form():
             tk.add_template_directory(config_, "resource_form_templates")
 
@@ -128,6 +137,8 @@ def _initialize_storages():
 
 
 def _register_owner_getters():
+    """Register functions used by Owner model to locate owner entity."""
+
     for plugin in p.PluginImplementations(interfaces.IFiles):
         for name, getter in plugin.files_register_owner_getters().items():
             utils.owner_getters.register(name, getter)

@@ -1,32 +1,34 @@
 """Exception definitions for the extension.
 
-Avoid raising python-native exceptions and prefere defining `FilesError`
+Avoid raising python-native exceptions and prefer defining `FilesError`
 subclass.
 
-FilesError
-* QueueError
-* * OutOfQueueError
-* StorageError
-* * UnknownAdapterError
-* * UnknownStorageError
-* * UnsupportedOperationError
-* * PermissionError
-* * MissingFileError
-* * ExistingFileError
-* * ExtrasError
-* * * MissingExtrasError
-* * InvalidStorageConfigurationError
-* * * MissingStorageConfigurationError
-* * UploadError
-* * * WrongUploadTypeError
-* * * NameStrategyError
-* * * LargeUploadError
-* * * * UploadOutOfBoundError
-* * * UploadMismatchError
-* * * * UploadTypeMismatchError
-* * * * UploadHashMismatchError
-* * * * UploadSizeMismatchError
+Hierarchy:
 
+Exception
+* FilesError
+* * QueueError
+* * * OutOfQueueError
+* * StorageError
+* * * UnknownAdapterError
+* * * UnknownStorageError
+* * * UnsupportedOperationError
+* * * PermissionError
+* * * MissingFileError
+* * * ExistingFileError
+* * * ExtrasError
+* * * * MissingExtrasError
+* * * InvalidStorageConfigurationError
+* * * * MissingStorageConfigurationError
+* * * UploadError
+* * * * WrongUploadTypeError
+* * * * NameStrategyError
+* * * * LargeUploadError
+* * * * * UploadOutOfBoundError
+* * * * UploadMismatchError
+* * * * * UploadTypeMismatchError
+* * * * * UploadHashMismatchError
+* * * * * UploadSizeMismatchError
 
 """
 
@@ -34,26 +36,26 @@ from __future__ import annotations
 
 from typing import Any
 
+Storage = Any
+
 
 class FilesError(Exception):
-    pass
+    """Base error for catch-all scenario."""
 
 
 class QueueError(FilesError):
-    pass
+    """Error related to task queue."""
 
 
 class OutOfQueueError(QueueError):
+    """Attempt to add task without initializing task queue context."""
+
     def __str__(self):
         return "Task queue accessed outside of queue context"
 
 
 class StorageError(FilesError):
-    pass
-
-
-class UploadError(StorageError):
-    pass
+    """Error related to storage."""
 
 
 class UnknownStorageError(StorageError):
@@ -79,7 +81,7 @@ class UnknownAdapterError(StorageError):
 class UnsupportedOperationError(StorageError):
     """Requested operation is not supported by storage."""
 
-    def __init__(self, operation: str, storage: Any):
+    def __init__(self, operation: str, storage: Storage):
         self.operation = operation
         self.storage = storage
 
@@ -104,15 +106,15 @@ class InvalidStorageConfigurationError(StorageError):
 class PermissionError(StorageError):
     """Storage client does not have required permissions."""
 
-    def __init__(self, adapter: type, operation: str, problem: str):
-        self.adapter = adapter
+    def __init__(self, storage: Storage, operation: str, problem: str):
+        self.storage = storage
         self.operation = operation
         self.problem = problem
 
     def __str__(self):
         msg = "Storage {} is not allowed to perform {} operation: {}"
         return msg.format(
-            self.adapter.__name__,
+            self.storage,
             self.operation,
             self.problem,
         )
@@ -131,27 +133,27 @@ class MissingStorageConfigurationError(InvalidStorageConfigurationError):
 class MissingFileError(StorageError):
     """File does not exist."""
 
-    def __init__(self, storage: str, filename: str):
+    def __init__(self, storage: Storage, filename: str):
         self.storage = storage
         self.filename = filename
 
     def __str__(self):
-        return (
-            f"File {self.filename} does not exist inside" + f" storage {self.storage}"
-        )
+        return f"File {self.filename} does not exist inside storage {self.storage}"
 
 
 class ExistingFileError(StorageError):
     """File already exists."""
 
-    def __init__(self, storage: str, filename: str):
+    def __init__(self, storage: Storage, filename: str):
         self.storage = storage
         self.filename = filename
 
     def __str__(self):
-        return (
-            f"File {self.filename} already exists inside" + f" storage {self.storage}"
-        )
+        return f"File {self.filename} already exists inside storage {self.storage}"
+
+
+class UploadError(StorageError):
+    """Error related to file upload process."""
 
 
 class LargeUploadError(UploadError):

@@ -17,7 +17,7 @@ class IFiles(Interface):
     """Extension point for ckanext-files."""
 
     def files_get_storage_adapters(self) -> dict[str, Any]:
-        """Return mapping of storage type to storage factory.
+        """Return mapping of storage type to adapter class.
 
         Example:
         >>> def files_get_storage_adapters(self):

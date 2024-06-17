@@ -578,8 +578,9 @@ or dataset?
 
 Out of the box, nobody can access such files. But there are two config options
 that modify this restriction. `ckanext.files.owner.cascade_access =
-entity_type` gives access to file owned by entity if user already has access to
-entity itself.
+ENTITY_TYPE` gives access to file owned by entity if user already has access to
+entity itself. Use words like `package`, `resource`, `group` instead of
+`ENTITY_TYPE`.
 
 For example: file is owned by *resource*. If cascade access is enabled, whoever
 has access to `resource_show` of the *resource*, can also see the file owned by

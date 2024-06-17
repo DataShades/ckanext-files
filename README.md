@@ -2157,8 +2157,8 @@ class FilesDatasetPlugin(p.SingletonPlugin, DefaultDatasetForm):
 ```
 
 Both create and update schemas are updated in the same way. We add a new
-validator to format field, to correctly identify file format. And wi add a
-number of validators to `url`:
+validator to format field, to correctly identify file format. And there is a
+number of new validators for `url`:
 
 * `files_verify_url_type_and_value`: skip validation if we are not working with
   resource that contains file.

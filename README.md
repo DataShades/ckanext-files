@@ -1918,7 +1918,7 @@ ckan files scan -s group_images
 ```
 
 You'll see a list of existing files. Their names follow format
-`<ISO_8691_DATETIME><FILENAME>`, e.g `2024-06-14-133840.539670photo.jpg`.
+`<ISO_8601_DATETIME><FILENAME>`, e.g `2024-06-14-133840.539670photo.jpg`.
 
 Now upload an image into existing group, or create a new group with any
 image. When you check list of files again, you'll see one new record. But this

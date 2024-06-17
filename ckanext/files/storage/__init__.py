@@ -1,5 +1,6 @@
 import contextlib
 
+from .db import DbStorage
 from .filebin import FilebinStorage
 from .fs import CkanResourceFsStorage, FsStorage, PublicFsStorage
 from .redis import RedisStorage
@@ -23,4 +24,5 @@ __all__ = [
     "FilebinStorage",
     "OpenDalStorage",
     "LibCloudStorage",
+    "DbStorage",
 ]

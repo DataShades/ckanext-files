@@ -312,6 +312,7 @@ class Reader(StorageService):
 
 class Storage(OptionChecker, abc.ABC):
     hidden = False
+    capabilities = utils.Capability.NONE
 
     def __str__(self):
         return self.settings.get("name", "unknown")

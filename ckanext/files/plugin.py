@@ -81,6 +81,7 @@ class FilesPlugin(p.SingletonPlugin):
             "files:ckan_resource_fs": storage.CkanResourceFsStorage,
             "files:redis": storage.RedisStorage,
             "files:filebin": storage.FilebinStorage,
+            "files:db": storage.DbStorage,
         }
 
         if hasattr(storage, "GoogleCloudStorage"):

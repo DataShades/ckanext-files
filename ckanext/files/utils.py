@@ -148,6 +148,9 @@ class HashingReader:
 
     next = __next__
 
+    def read(self):
+        return b"".join(self)
+
     def reset(self):
         """Rewind underlying stream and reset hash to initial state."""
         self.position = 0
@@ -226,31 +229,31 @@ class Capability(enum.Flag):
     CREATE = enum.auto()
     # return file content as stream of bytes
     STREAM = enum.auto()
-    # make a copy of the file inside the storage
+    # make a copy of the file inside the same storage
     COPY = enum.auto()
     # remove file from the storage
     REMOVE = enum.auto()
     # create file in 3 stages: initialize, upload(repeatable), complete
     MULTIPART = enum.auto()
-    # move file to a different location inside the storage
+    # move file to a different location inside the same storage
     MOVE = enum.auto()
     # check if file exists
     EXISTS = enum.auto()
-    # iterate over all files in storage
+    # iterate over all files in the storage
     SCAN = enum.auto()
     # add content to the existing file
     APPEND = enum.auto()
-    # combine multiple files into a new one
+    # combine multiple files into a new one in the same storage
     COMPOSE = enum.auto()
-    # return specific range of file bytes
+    # return specific range of bytes from the file
     RANGE = enum.auto()
     # return file details from the storage, as if file was uploaded just now
     ANALYZE = enum.auto()
-    # make permanent download link
+    # make permanent download link for private file
     PERMANENT_LINK = enum.auto()
-    # make expiring download link
+    # make expiring download link for private file
     TEMPORAL_LINK = enum.auto()
-    # make one-time download link
+    # make one-time download link for private file
     ONE_TIME_LINK = enum.auto()
     # make permanent public(anonymously accessible) link
     PUBLIC_LINK = enum.auto()

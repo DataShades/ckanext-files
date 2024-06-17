@@ -49,8 +49,7 @@ class IFiles(Interface):
         operation: types.AuthOperation,
         next_owner: Any | None,
     ) -> bool | None:
-        """Decide if user is allowed to perform operation on file that belongs
-        to owner.
+        """Decide if user is allowed to perform specified operation on the file.
 
         Return True/False if user allowed/not allowed. Return `None` to rely on
         other plugins. If every implementation returns `None`, default logic
@@ -62,7 +61,7 @@ class IFiles(Interface):
         >>> def files_is_allowed(
         >>>         self, context, file, operation, next_owner
         >>> ) -> bool | None:
-        >>>     if isinstance(owner, model.Resource):
+        >>>     if file.owner_info and file.owner_info.owner_type == "resource":
         >>>         return is_authorized_boolean(
         >>>             f"resource_{operation}",
         >>>             context,

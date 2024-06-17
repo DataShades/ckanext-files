@@ -1307,7 +1307,7 @@ class IFiles(Interface):
         >>> def files_is_allowed(
         >>>         self, context, file, operation, next_owner
         >>> ) -> bool | None:
-        >>>     if isinstance(owner, model.Resource):
+        >>>     if file.owner_info and file.owner_info.owner_type == "resource":
         >>>         return is_authorized_boolean(
         >>>             f"resource_{operation}",
         >>>             context,

@@ -34,6 +34,7 @@ T = TypeVar("T")
 
 RE_FILESIZE = re.compile(r"^(?P<size>\d+(?:\.\d+)?)\s*(?P<unit>\w*)$")
 CHUNK_SIZE = 16 * 1024
+SAMPLE_SIZE = 1024 * 2
 CHECKSUM_ALGORITHM = "md5"
 
 UNITS = cast(
@@ -200,7 +201,7 @@ def get_owner(owner_type: str, owner_id: str):
 
 
 def is_supported_type(content_type: str, supported: Iterable[str]) -> str | None:
-    """Return content type of upload or rise an exception if type is not supported"""
+    """Return content type if it matches supported types."""
 
     maintype, subtype = content_type.split("/")
     for st in supported:
@@ -351,7 +352,7 @@ def make_upload(
 
             mime, _encoding = mimetypes.guess_type(value.filename)
             if not mime:
-                mime = magic.from_buffer(value.file.read(1024), True)
+                mime = magic.from_buffer(value.file.read(SAMPLE_SIZE), True)
                 value.file.seek(0)
             value.file.seek(0, 2)
             size = value.file.tell()
@@ -377,7 +378,7 @@ def make_upload(
         value = BytesIO(value)
 
     if isinstance(value, (BytesIO, BufferedReader)):
-        mime = magic.from_buffer(value.read(1024), True)
+        mime = magic.from_buffer(value.read(SAMPLE_SIZE), True)
         value.seek(0, 2)
         size = value.tell()
         value.seek(0)
@@ -399,14 +400,14 @@ def _file_storage_as_upload(value: FileStorage):
 
     mime, _encoding = mimetypes.guess_type(name)
     if not mime:
-        mime = magic.from_buffer(value.stream.read(1024), True)
+        mime = magic.from_buffer(value.stream.read(SAMPLE_SIZE), True)
         value.stream.seek(0)
 
     return Upload(value.stream, name, size, mime)
 
 
 def _tempfile_as_upload(value: tempfile.SpooledTemporaryFile[bytes]):
-    mime = magic.from_buffer(value.read(1024), True)
+    mime = magic.from_buffer(value.read(SAMPLE_SIZE), True)
     value.seek(0, 2)
     size = value.tell()
     value.seek(0)

@@ -871,7 +871,8 @@ content of the file as bytes.
 For the sake of simplicity, our storage will work only with existing
 tables. Create the table manually before we begin.
 
-First of all, we create an adapter that does nothing and register in in our plugin.
+First of all, we create an adapter that does nothing and register it in our
+plugin.
 
 ```python
 from __future__ import annotations
@@ -974,8 +975,8 @@ You can notice that we are using `Storage.ensure_option` quite often. This
 method returns the value of specified option from settings or raises an
 exception.
 
-The table definition and columns as storage attributes, to simplify building SQL
-queries in future.
+The table definition and columns are saved as storage attributes, to simplify
+building SQL queries in future.
 
 Now we are going to define classes for all 3 storage services and tell storage,
 how to initialize these services.

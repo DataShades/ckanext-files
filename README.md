@@ -1165,6 +1165,28 @@ you. As for results:
 * `scan`: return iterable with all file locations
 
 ```python
+class DbManager(shared.Manager):
+    storage: DbStorage
+    capabilities = shared.Capability.combine(
+        shared.Capability.SCAN,
+        shared.Capability.REMOVE,
+    )
+
+    def scan(self, extras: dict[str, Any]) -> Iterable[str]:
+        stmt = sa.select(self.storage.location_column).select_from(self.storage.table)
+        for row in self.storage.engine.execute(stmt):
+            yield row[0]
+
+    def remove(
+        self,
+        data: shared.FileData | shared.MultipartData,
+        extras: dict[str, Any],
+    ) -> bool:
+        stmt = sa.delete(self.storage.table).where(
+            self.storage.location_column == data.location,
+        )
+        self.storage.engine.execute(stmt)
+        return True
 ```
 
 Now you can list the all the files in storage:

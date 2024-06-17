@@ -2107,8 +2107,9 @@ so they won't even see the difference.
 ckan files migrate local-resources resources
 ```
 
-And the next goal is correct metadata schema. If you are using ckanext-schemin,
-you need to modify validators of `url` and `format` fields.
+And the next goal is correct metadata schema. If you are using
+[ckanext-scheming](https://github.com/ckan/ckanext-scheming), you need to
+modify validators of `url` and `format` fields.
 
 If you are working with native schemas, you have to modify dataset schema via
 implementing IDatasetForm. Here's an example:

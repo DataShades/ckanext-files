@@ -398,10 +398,8 @@ def _file_storage_as_upload(value: FileStorage):
         size = value.stream.tell()
         value.stream.seek(0)
 
-    mime, _encoding = mimetypes.guess_type(name)
-    if not mime:
-        mime = magic.from_buffer(value.stream.read(SAMPLE_SIZE), True)
-        value.stream.seek(0)
+    mime = magic.from_buffer(value.stream.read(SAMPLE_SIZE), True)
+    value.stream.seek(0)
 
     return Upload(value.stream, name, size, mime)
 

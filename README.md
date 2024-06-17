@@ -693,8 +693,8 @@ class MyTask(Task):
         )
 ```
 
-`Task.run` receives the result of action wchich was called as the first
-argument. Right now only following actions support tasks:
+As the first argument, `Task.run` receives the result of action which was
+called. Right now only following actions support tasks:
 
 * `package_create`
 * `packaage_update`
@@ -767,7 +767,7 @@ storage = get_storage()
 can_read = storage.supports(Capability.STREAM)
 
 read_and_write = Capability.combine(Capability.CREATE, Capability.STREAM)
-can_read_and_write = storage.supports(can_read_and_write)
+can_read_and_write = storage.supports(read_and_write)
 
 ```
 

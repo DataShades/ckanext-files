@@ -796,8 +796,8 @@ Pros:
 * simple and transparent
 
 Cons:
-* requires hooking into entity creation workflow to transfer ownership after
-  every modification.
+* it's easy to forget about ownership transfer and leave the entity with the
+  inaccessible file
 * after entity got reference to file and before ownership is transfered data
   may be considered invalid.
 

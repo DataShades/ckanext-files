@@ -51,9 +51,13 @@ are chances that file is not completely removed with this operation.
 
 Requires storage with `REMOVE` capability.
 
+```sh
+ckanapi action files_file_delete id=226056e2-6f83-47c5-8bd2-102e2b82ab9a
+```
+
 Params:
 
-* `id`: ID of the file. `name` and `location` cannot be used here.
+* `id`: ID of the file
 * `completed`: use `False` to remove incomplete uploads. Default: `True`
 
 Returns:
@@ -63,12 +67,44 @@ dictionary with details of the removed file.
 
 ## files_file_pin
 
+Pin file to the current owner.
 
+Pinned file cannot be transfered to a different owner. Use it to guarantee
+that file referred by entity is not accidentally transferred to a different
+owner.
+
+Params:
+
+* `id`: ID of the file
+* `completed`: use `False` to pin incomplete uploads. Default: `True`
+
+Returns:
+
+dictionary with details of updated file
 
 
 ## files_file_rename
 
+Rename the file.
 
+This action changes human-readable name of the file, which is stored in
+DB. Real location of the file in the storage is not modified.
+
+```sh
+ckanapi action files_file_show \
+    id=226056e2-6f83-47c5-8bd2-102e2b82ab9a \
+    name=new-name.txt
+```
+
+Params:
+
+* `id`: ID of the file
+* `name`: new name of the file
+* `completed`: use `False` to rename incomplete uploads. Default: `True`
+
+Returns:
+
+dictionary with file details
 
 
 ## files_file_search
@@ -143,37 +179,165 @@ Internal action. Do not use it.
 
 ## files_file_show
 
+Show file details.
 
+This action only displays information from DB record. There is no way to
+get the content of the file using this action(or any other API action).
+
+```sh
+ckanapi action files_file_show id=226056e2-6f83-47c5-8bd2-102e2b82ab9a
+```
+
+Params:
+
+* `id`: ID of the file
+* `completed`: use `False` to show incomplete uploads. Default: `True`
+
+Returns:
+
+dictionary with file details
 
 
 ## files_file_unpin
 
+Pin file to the current owner.
 
+Pinned file cannot be transfered to a different owner. Use it to guarantee
+that file referred by entity is not accidentally transferred to a different
+owner.
+
+Params:
+
+* `id`: ID of the file
+* `completed`: use `False` to unpin incomplete uploads. Default: `True`
+
+Returns:
+
+dictionary with details of updated file
 
 
 ## files_multipart_complete
 
+Finalize multipart upload and transform it into completed file.
 
+Depending on storage this action may require additional parameters. But
+usually it just takes ID and verify that content type, size and hash
+provided when upload was initialized, much the actual value.
+
+If data is valid and file is completed inside the storage, new File entry
+with file details created in DB and file can be used just as any normal
+file.
+
+Requires storage with `MULTIPART` capability.
+
+Params:
+
+* `id`: ID of the incomplete upload
+
+Returns:
+
+dictionary with details of the created file
 
 
 ## files_multipart_refresh
 
+Refresh details of incomplete upload.
 
+Can be used if upload process was interrupted and client does not how many
+bytes were already uploaded.
+
+Requires storage with `MULTIPART` capability.
+
+Params:
+
+* `id`: ID of the incomplete upload
+
+Returns:
+
+dictionary with details of the updated upload
 
 
 ## files_multipart_start
 
+Initialize multipart(resumable,continuous,signed,etc) upload.
 
+Apart from standard parameters, different storages can require additional
+data, so always check documentation of the storage before initiating
+multipart upload.
+
+When upload initialized, storage usually returns details required for
+further upload. It may be a presigned URL for direct upload, or just an ID
+of upload which must be used with `files_multipart_update`.
+
+Requires storage with `MULTIPART` capability.
+
+Params:
+
+* `storage`: name of the storage that will handle the upload. Default: `default`
+* `name`: name of the uploaded file.
+* `content_type`: MIMEtype of the uploaded file. Used for validation
+* `size`: Expected size of upload. Used for validation
+* `hash`: Expected content hash. If present, used for validation.
+
+Returns:
+
+dictionary with details of initiated upload. Depends on used storage
 
 
 ## files_multipart_update
 
+Update incomplete upload.
 
+Depending on storage this action may require additional parameters. Most
+likely, `upload` with the fragment of uploaded file.
+
+Requires storage with `MULTIPART` capability.
+
+Params:
+
+* `id`: ID of the incomplete upload
+
+Returns:
+
+dictionary with details of the updated upload
 
 
 ## files_resource_upload
 
+Create a new file inside resource storage.
 
+This action internally calls `files_file_create` with `ignore_auth=True`
+and always uses resources storage.
+
+New file is not attached to resource. You need to call
+`files_transfer_ownership` manually, when resource created.
+
+Params:
+
+* `name`: human-readable name of the file. Default: guess using upload field
+* `upload`: content of the file as string, bytes, file descriptor or uploaded file
+
+Returns:
+
+dictionary with file details.
 
 
 ## files_transfer_ownership
+
+Transfer file ownership.
+
+Depending on storage this action may require additional parameters. Most
+likely, `upload` with the fragment of uploaded file.
+
+Params:
+
+* `id`: ID of the file upload
+* `completed`: use `False` to transfer incomplete uploads. Default: `True`
+* `owner_id`: ID of the new owner
+* `owner_type`: type of the new owner
+* `force`: move file even if it's pinned. Default: `False`
+* `pin`: pin file after transfer to stop future transfers. Default: `False`
+
+Returns:
+
+dictionary with details of updated file

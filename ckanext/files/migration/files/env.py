@@ -1,8 +1,9 @@
 import os
-from logging.config import fileConfig
 
 from alembic import context
 from sqlalchemy import engine_from_config, pool
+
+from ckan.model.meta import metadata
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
@@ -10,13 +11,13 @@ config = context.config
 
 # Interpret the config file for Python logging.
 # This line sets up loggers basically.
-fileConfig(config.config_file_name)
+# fileConfig(config.config_file_name)
 
 # add your model's MetaData object here
 # for 'autogenerate' support
 # from myapp import mymodel
 # target_metadata = mymodel.Base.metadata
-target_metadata = None
+target_metadata = metadata
 
 # other values from the config, defined by the needs of env.py,
 # can be acquired:
@@ -24,6 +25,12 @@ target_metadata = None
 # ... etc.
 
 name = os.path.basename(os.path.dirname(__file__))
+
+
+def include_object(object, object_name, type_, reflected, compare_to):
+    if type_ == "table":
+        return object_name.startswith(name)
+    return True
 
 
 def run_migrations_offline():
@@ -69,6 +76,7 @@ def run_migrations_online():
             connection=connection,
             target_metadata=target_metadata,
             version_table=f"{name}_alembic_version",
+            include_object=include_object,
         )
 
         with context.begin_transaction():

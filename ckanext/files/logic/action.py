@@ -34,6 +34,8 @@ def files_file_search_by_user(  # noqa: C901
     context: Context,
     data_dict: dict[str, Any],
 ) -> dict[str, Any]:
+    """Internal action. Do not use it."""
+
     tk.check_access("files_file_search_by_user", context, data_dict)
     sess = context["session"]
 
@@ -94,6 +96,63 @@ def files_file_search(  # noqa: C901, PLR0912
     context: Context,
     data_dict: dict[str, Any],
 ) -> dict[str, Any]:
+    """Search files.
+
+    This action is not stabilized yet and will change in future.
+
+    Provides an ability to search files using exact filter by name,
+    content_type, size, owner, etc. Results are paginated and returned in
+    package_search manner, as dict with `count` and `results` items.
+
+    All columns of File model can be used as filters. Before the search, type
+    of column and type of filter value are compared. If they are the same,
+    original values are used in search. If type different, column value and
+    filter value are casted to string.
+
+    This request produces `size = 10` SQL expression:
+    ```sh
+    ckanapi action files_file_search size:10
+    ```
+
+    This request produces `size::text = '10'` SQL expression:
+    ```sh
+    ckanapi action files_file_search size=10
+    ```
+
+    Even though results are usually not changed, using correct types leads to
+    more efficient search.
+
+    Apart from File columns, the following Owner properties can be used for
+    searching: `owner_id`, `owner_type`, `pinned`.
+
+    `storage_data` and `plugin_data` are dictionaries. Filter's value for these
+    fields used as a mask. For example, `storage_data={"a": {"b": 1}}` matches
+    any File with `storage_data` *containing* item `a` with value that contains
+    `b=1`. This works only with data represented by nested dictionaries,
+    without other structures, like list or sets.
+
+    Experimental feature: File columns can be passed as a pair of operator and
+    value. This feature will be replaced by strictly defined query language at
+    some point:
+
+    ```sh
+    ckanapi action files_file_search size:'["<", 100]' content_type:'["like", "text/%"]'
+    ```
+
+    Params:
+
+    * `start`: index of first row in result/number of rows to skip. Default: 0
+    * `rows`: number of rows to return. Default: 0
+    * `sort`: name of File column used for sorting. Default: name
+    * `reverse`: sort results in descending order. Default: false
+    * `storage_data`: mask for `storage_data` column. Default: {}
+    * `plugin_data`: mask for `plugin_data` column. Default: {}
+    * `owner_type: str`: show only specific owner id if present. Default: None
+    * `owner_type`: show only specific owner type if present. Default: None
+    * `pinned`: show only pinned/unpinned items if present. Default: None
+
+    """
+
     tk.check_access("files_file_search", context, data_dict)
     sess = context["session"]
 
@@ -114,7 +173,12 @@ def files_file_search(  # noqa: C901, PLR0912
 
     for field in ["owner_type", "owner_id", "pinned"]:
         if field in data_dict:
-            stmt = stmt.where(getattr(Owner, field) == data_dict[field])
+            value = data_dict[field]
+            if value is not None and not (
+                field == "pinned" and isinstance(value, bool)
+            ):
+                value = str(value)
+            stmt = stmt.where(getattr(Owner, field) == value)
 
     columns = inspector.columns
 
@@ -140,9 +204,11 @@ def files_file_search(  # noqa: C901, PLR0912
         else:
             op = "="
 
-        column_type = columns[k].type.python_type
+        col = columns[k]
+        column_type = col.type.python_type
         if not isinstance(v, column_type) and v is not None:
             v = str(v)  # noqa: PLW2901
+            col = sa.func.cast(col, sa.Text)
 
         if v is None:
             if op == "=":
@@ -150,7 +216,7 @@ def files_file_search(  # noqa: C901, PLR0912
             elif op == "!=":
                 op = "is not"
 
-        stmt = stmt.where(columns[k].bool_op(op)(v))
+        stmt = stmt.where(col.bool_op(op)(v))
 
     total = sess.scalar(sa.select(sa.func.count()).select_from(stmt))
 

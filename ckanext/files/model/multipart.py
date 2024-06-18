@@ -26,9 +26,9 @@ class Multipart(Base):  # type: ignore
         sa.Column("id", sa.UnicodeText, primary_key=True, default=make_uuid),
         sa.Column("name", sa.UnicodeText, nullable=False),
         sa.Column("location", sa.Text, nullable=False, default=""),
-        sa.Column("content_type", sa.Text, default=""),
-        sa.Column("size", sa.Integer, default=0),
-        sa.Column("hash", sa.Text, default=""),
+        sa.Column("content_type", sa.Text, nullable=False, default=""),
+        sa.Column("size", sa.Integer, nullable=False, default=0),
+        sa.Column("hash", sa.Text, nullable=False, default=""),
         sa.Column("storage", sa.Text, nullable=False),
         sa.Column(
             "ctime",

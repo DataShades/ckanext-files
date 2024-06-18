@@ -157,7 +157,7 @@ class OwnershipTransferTask(Task):
                 "id": self.file_id,
                 "owner_type": self.owner_type,
                 "owner_id": self.extract(result, self.id_path),
-                "force": True,
+                # "force": True,
                 "pin": True,
             },
         )
@@ -230,7 +230,7 @@ class UploadAndAttachTask(Task):
                 "id": info["id"],
                 "owner_type": self.owner_type,
                 "owner_id": self.extract(result, self.id_path),
-                "force": True,
+                # "force": True,
                 "pin": True,
             },
         )

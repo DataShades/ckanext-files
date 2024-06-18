@@ -60,7 +60,6 @@ groups:
             - resource
             - group
             - organization
-
         description: |
           List of owner types that grant access on owned file to anyone who has
           access to the owner of file. For example, if this option has value

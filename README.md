@@ -687,7 +687,6 @@ class MyTask(Task):
                 "id": self.file_id,
                 "owner_type": "package",
                 "owner_id": dataset["id"],
-                "force": True,
                 "pin": True,
             },
         )

@@ -323,7 +323,7 @@ def humanize_filesize(value: int | float) -> str:
         value /= threshold
 
     value = int(value * 100) / 100
-    return f"{value:.2g}{suffixes[iteration]}"
+    return f"{value:.2f}{suffixes[iteration]}"
 
 
 def make_upload(

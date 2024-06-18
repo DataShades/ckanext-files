@@ -6,7 +6,6 @@ import logging
 import os
 import shutil
 from io import BytesIO
-from time import time
 from typing import IO, Any, Iterable
 
 import magic
@@ -302,23 +301,6 @@ class FsReader(Reader):
         shared.Capability.STREAM,
         shared.Capability.TEMPORAL_LINK,
     )
-
-    def temporal_link(self, data: FileData, extras: dict[str, Any]) -> str:
-        """Return temporal download link.
-
-        extras["ttl"] controls lifetime of the link(30 seconds by default).
-
-        """
-
-        token = utils.encode_token(
-            {
-                "topic": "download_file",
-                "exp": str(int(time()) + extras.get("ttl", 30)),
-                "storage": self.storage.settings["name"],
-                "location": data.location,
-            },
-        )
-        return tk.url_for("files.temporal_download", token=token, _external=True)
 
     def stream(self, data: FileData, extras: dict[str, Any]) -> IO[bytes]:
         filepath = os.path.join(str(self.storage.settings["path"]), data.location)

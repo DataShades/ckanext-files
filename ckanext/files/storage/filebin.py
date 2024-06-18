@@ -77,6 +77,7 @@ class FilebinReader(shared.Reader):
     capabilities = shared.Capability.combine(
         shared.Capability.STREAM,
         shared.Capability.PUBLIC_LINK,
+        shared.Capability.TEMPORAL_LINK,
     )
 
     def stream(self, data: shared.FileData, extras: dict[str, Any]) -> IO[bytes]:

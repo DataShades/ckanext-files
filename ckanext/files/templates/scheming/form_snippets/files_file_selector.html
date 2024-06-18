@@ -15,6 +15,7 @@
 
 
 <div class="files--snippet--file-selector">
+    <label>{{ field.label }}</label>
     {% call form.input(
         field.field_name,
         id=field_id,
@@ -31,12 +32,9 @@
             {{ _("Upload file") }}
             <input hidden type="file"
                 data-module="files--auto-upload"
-                data-module-action="{{ params.storage|default('files_file_create') }}"
+                data-module-action="{{ params.upload_action|default('files_file_create') }}"
                 data-module-spinner="#{{ spinner_id }}"
                 data-module-event-target="#{{ field_id }}"
-                {% if fileinfo %}
-                data-module-initial-value="{{{'id': fileinfo.id, 'text': fileinfo.name}|tojson|forceescape }}"
-                {% endif %}
             />
             <i id="{{ spinner_id }}" class="spinner-border spinner-border-sm" hidden></i>
         </label>
@@ -52,7 +50,9 @@
                 el.closest(".files--snippet--file-selector").append(box);
             }
 
-            {% if file %}el.select2("data", { id: "{{ file.id }}", text: "{{ file.name }}" });{% endif %}
+            {% if file %}
+            setTimeout(()=>el.select2("data", { id: "{{ file.id }}", text: "{{ file.name }}" }), 0);
+            {% endif %}
 
             el.on({
                 "files-file-created": ({detail})=> {

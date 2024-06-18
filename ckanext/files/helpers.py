@@ -56,16 +56,17 @@ def files_get_file(file_id: str) -> shared.File | None:
 
 def files_link_details(
     file_id: str,
-    types: Iterable[str] = ("public", "temporal"),
+    *types: Iterable[str],
     **kwargs: Any,
 ) -> LinkDetails | None:
     file = model.Session.get(shared.File, file_id)
+
     if not file:
         return None
 
     storage = shared.get_storage(file.storage)
 
-    for lt in types:
+    for lt in types or ("public", "temporal"):
         func = getattr(storage, f"{lt}_link", None)
         if not func:
             continue

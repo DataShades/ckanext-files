@@ -95,7 +95,7 @@ class LibCloudUploader(shared.Uploader):
         safe_location = self.storage.compute_location(location)
 
         result = self.storage.container.upload_object_via_stream(
-            upload.stream,
+            iter(upload.stream),
             safe_location,
             extra={"content_type": upload.content_type},
         )
@@ -112,6 +112,7 @@ class LibCloudReader(shared.Reader):
     storage: LibCloudStorage
     capabilities = shared.Capability.combine(
         shared.Capability.STREAM,
+        shared.Capability.TEMPORAL_LINK,
     )
 
     def stream(self, data: shared.FileData, extras: dict[str, Any]) -> Iterable[bytes]:

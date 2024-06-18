@@ -383,7 +383,7 @@ def make_upload(
         size = value.tell()
         value.seek(0)
 
-        return Upload(value, "", size, mime)
+        return Upload(value, getattr(value, "name", ""), size, mime)
 
     raise TypeError(type(value))
 

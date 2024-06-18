@@ -23,3 +23,4 @@ def api_docs():
 
         click.echo(f"## {name}\n")
         click.echo(pydoc.getdoc(func))
+        click.echo("\n")

@@ -77,7 +77,7 @@ class TestUploader:
         """Abstract methods raise exception."""
 
         with pytest.raises(NotImplementedError):
-            uploader.upload(faker.file_name(), make_upload(""), {})
+            uploader.upload(faker.file_name(), make_upload(b""), {})
 
         with pytest.raises(NotImplementedError):
             uploader.multipart_start(faker.file_name(), MultipartData(), {})
@@ -187,7 +187,7 @@ class TestStorage:
 
     def test_not_supported_methods(self, faker: Faker):
         with pytest.raises(exceptions.UnsupportedOperationError):
-            base.Storage().upload(faker.file_name(), make_upload(""))
+            base.Storage().upload(faker.file_name(), make_upload(b""))
 
         with pytest.raises(exceptions.UnsupportedOperationError):
             base.Storage().stream(FileData(""))
@@ -211,7 +211,7 @@ class TestStorage:
         """Storage raises an error if upload is not implemented."""
         storage = Storage()
         with pytest.raises(NotImplementedError):
-            storage.upload(faker.file_name(), make_upload(""))
+            storage.upload(faker.file_name(), make_upload(b""))
 
         with pytest.raises(NotImplementedError):
             storage.multipart_start(faker.file_name(), MultipartData())

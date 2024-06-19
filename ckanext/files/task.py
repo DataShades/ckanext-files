@@ -187,7 +187,7 @@ class UploadAndAttachTask(Task):
     Example:
     >>> task = UploadAndAttachTask(
     >>>     "default",
-    >>>     make_upload("file.txt", "hello world),
+    >>>     make_upload(b"file.txt", "hello world),
     >>>     "resource",
     >>>     ("resources", 0, "id"),
     >>>     "id",

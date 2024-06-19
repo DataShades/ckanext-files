@@ -185,14 +185,15 @@ To create the file, `storage.upload` method must be called with 2 parameters:
 
 You can use any string as the first parameter. As for the "special stream-like
 object", ckanext-files has `ckanext.files.shared.make_upload` function, that
-accepts a number of different types(`str`, `bytes`,
-`werkzeug.datastructures.FileStorage`) and converts them into expected format.
+accepts a number of different types(`bytes`,
+`werkzeug.datastructures.FileStorage`, `BytesIO`, file descriptor) and converts
+them into expected format.
 
 
 ```python
 from ckanext.files.shared import make_upload
 
-upload = make_upload("hello world")
+upload = make_upload(b"hello world")
 result = storage.upload('file.txt', upload)
 
 print(result)
@@ -399,7 +400,7 @@ and via direct call to `Storage.upload`:
 from ckanext.files.shared import get_storage, make_upload
 
 storage = get_storage()
-storage.upload("hello.txt", make_upload("hello"), {})
+storage.upload("hello.txt", make_upload(b"hello"), {})
 ```
 
 The former snippet creates a *tracked* file: file uploaded to the storage and
@@ -1499,6 +1500,8 @@ ckanext.files.storage.NAME.max_size = 0
 ## Space-separated list of MIME types or just type or subtype part.
 ## Example: text/csv pdf application video jpeg
 ckanext.files.storage.NAME.supported_types =
+## Allow using inefficient implemetation of MOVE/COPY/COMPOSE if size of the file is smaller than specified value.
+ckanext.files.storage.default.inefficient_operation_cap = 10MiB
 ## Descriptive name of the storage used for debugging. When empty, name from
 ## the config option is used, i.e: `ckanext.files.storage.DEFAULT_NAME...`
 ckanext.files.storage.NAME.name = NAME

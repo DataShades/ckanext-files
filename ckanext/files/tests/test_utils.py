@@ -281,10 +281,8 @@ class TestMakeUpload:
     def test_str(self, faker: Faker):
         """Strings converted into Upload."""
         string = faker.pystr()
-        upload = utils.make_upload(string)
-
-        assert isinstance(upload, shared.Upload)
-        assert upload.stream.read() == string.encode()
+        with pytest.raises(TypeError):
+            utils.make_upload(string)
 
     def test_bytes(self, faker: Faker):
         """Bytes converted into Upload."""
@@ -297,4 +295,4 @@ class TestMakeUpload:
     def test_wrong_type(self):
         """Any unexpected value causes an exception."""
         with pytest.raises(TypeError):
-            utils.make_upload(123)
+            utils.make_upload(123)  # type: ignore

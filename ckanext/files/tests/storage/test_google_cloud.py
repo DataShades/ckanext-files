@@ -272,7 +272,7 @@ class TestMultipartUploader:
 class TestManager:
     @pytest.mark.usefixtures("mocked_upload")
     def test_removal(self, storage: gc.GoogleCloudStorage, responses: Any):
-        result = storage.upload("", shared.make_upload(""))
+        result = storage.upload("", shared.make_upload(b""))
         name = os.path.join(storage.settings["path"], result.location)
 
         object_url = f"https://storage.googleapis.com/storage/v1/b/ld-bq-test/o/{quote_plus(name)}"
@@ -283,7 +283,7 @@ class TestManager:
 
     @pytest.mark.usefixtures("mocked_upload")
     def test_removal_missing(self, storage: gc.GoogleCloudStorage, responses: Any):
-        result = storage.upload("", shared.make_upload(""))
+        result = storage.upload("", shared.make_upload(b""))
         name = os.path.join(storage.settings["path"], result.location)
 
         object_url = f"https://storage.googleapis.com/storage/v1/b/ld-bq-test/o/{quote_plus(name)}"

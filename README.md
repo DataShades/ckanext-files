@@ -755,8 +755,8 @@ operations that can be supported by storage:
 These capabilities are defined when storage is created and are automatically
 checked by actions that work with storage. If you want to check if storage
 supports certain capability, it can be done manually. If you want to check
-presence of multiple capabilities at once, you can combine them via
-`Capability.combine`.
+presence of multiple capabilities at once, you can combine them via bitwise-or
+operator.
 
 ```python
 from ckanext.files.shared import Capability, get_storage
@@ -765,7 +765,7 @@ storage = get_storage()
 
 can_read = storage.supports(Capability.STREAM)
 
-read_and_write = Capability.combine(Capability.CREATE, Capability.STREAM)
+read_and_write = Capability.CREATE | Capability.STREAM
 can_read_and_write = storage.supports(read_and_write)
 
 ```
@@ -1015,7 +1015,7 @@ attribute which tells the storage, what exactly the Uploader can do.
 
 ```python
 class DbUploader(shared.Uploader):
-    capabilities = shared.Capability.combine(shared.Capability.CREATE)
+    capabilities = shared.Capability.CREATE
 
     def upload(self, location: str, upload: shared.Upload, extras: dict[str, Any]) -> shared.FileData:
         ...
@@ -1053,7 +1053,7 @@ Here's the final implementation of DbUploader:
 
 ```python
 class DbUploader(shared.Uploader):
-    capabilities = shared.Capability.combine(shared.Capability.CREATE)
+    capabilities = shared.Capability.CREATE
 
     def upload(self, location: str, upload: shared.Upload, extras: dict[str, Any]) -> shared.FileData:
         uuid = make_uuid()
@@ -1125,7 +1125,7 @@ And don't forget to add `STREAM` capability to `Reader.capabilities`.
 
 ```python
 class DbReader(shared.Reader):
-    capabilities = shared.Capability.combine(shared.Capability.STREAM)
+    capabilities = shared.Capability.STREAM
 
     def stream(self, data: shared.FileData, extras: dict[str, Any]) -> Iterable[bytes]:
         stmt = (
@@ -1166,10 +1166,7 @@ you. As for results:
 ```python
 class DbManager(shared.Manager):
     storage: DbStorage
-    capabilities = shared.Capability.combine(
-        shared.Capability.SCAN,
-        shared.Capability.REMOVE,
-    )
+    capabilities = shared.Capability.SCAN | shared.Capability.REMOVE
 
     def scan(self, extras: dict[str, Any]) -> Iterable[str]:
         stmt = sa.select(self.storage.location_column).select_from(self.storage.table)

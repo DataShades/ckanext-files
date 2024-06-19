@@ -117,15 +117,15 @@ class TestReader:
 
 
 class RemovingManager(base.Manager):
-    capabilities = Capability.combine(Capability.REMOVE)
+    capabilities = Capability.REMOVE
 
 
 class StreamingReader(base.Reader):
-    capabilities = Capability.combine(Capability.STREAM)
+    capabilities = Capability.STREAM
 
 
 class SimpleUploader(base.Uploader):
-    capabilities = Capability.combine(Capability.CREATE)
+    capabilities = Capability.CREATE
 
 
 class Storage(base.Storage):
@@ -143,10 +143,8 @@ class TestStorage:
     def test_inherited_capabilities(self):
         """Storage combine capabilities of its services."""
         storage = Storage()
-        assert storage.capabilities == Capability.combine(
-            Capability.REMOVE,
-            Capability.STREAM,
-            Capability.CREATE,
+        assert storage.capabilities == (
+            Capability.REMOVE | Capability.STREAM | Capability.CREATE
         )
 
     def test_settings(self, faker: Faker):
@@ -170,20 +168,10 @@ class TestStorage:
         storage = Storage()
 
         assert storage.supports(Capability.CREATE)
-        assert storage.supports(
-            Capability.combine(
-                Capability.REMOVE,
-                Capability.STREAM,
-            ),
-        )
+        assert storage.supports(Capability.REMOVE | Capability.STREAM)
 
         assert not storage.supports(Capability.MULTIPART)
-        assert not storage.supports(
-            Capability.combine(
-                Capability.REMOVE,
-                Capability.MULTIPART,
-            ),
-        )
+        assert not storage.supports(Capability.REMOVE | Capability.MULTIPART)
 
     def test_not_supported_methods(self, faker: Faker):
         with pytest.raises(exceptions.UnsupportedOperationError):

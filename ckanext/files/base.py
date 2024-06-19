@@ -90,7 +90,7 @@ class MultipartData(BaseData[model.Multipart]):
 
 
 def make_storage(name: str, settings: dict[str, Any]) -> Storage:
-    """Initialize storage instance with sppeecified settings.
+    """Initialize storage instance with specified settings.
 
     Storage adapter is defined by `type` key of the settings. All other
     settings depend on the specific adapter.
@@ -159,7 +159,7 @@ class StorageService(OptionChecker):
     storage, service raises an error during storage initialization stage.
 
     >>> class Uploader(StorageService):
-    >>>     capabilities = Capability.combine(Capability.CREATE)
+    >>>     capabilities = Capability.CREATE
     >>>     required_options = ["allowed_mimetypes"]
 
     """
@@ -378,10 +378,10 @@ class Storage(OptionChecker, abc.ABC):
         )
 
     def compute_capabilities(self) -> utils.Capability:
-        return utils.Capability.combine(
-            self.uploader.capabilities,
-            self.manager.capabilities,
-            self.reader.capabilities,
+        return (
+            self.uploader.capabilities
+            | self.manager.capabilities
+            | self.reader.capabilities
         )
 
     def make_uploader(self):
@@ -395,9 +395,6 @@ class Storage(OptionChecker, abc.ABC):
 
     def supports(self, operation: utils.Capability) -> bool:
         return self.capabilities.can(operation)
-
-    def unsupported_operations(self):
-        return utils.Capability.combine(*utils.Capability).exclude(self.capabilities)
 
     def compute_location(
         self,
@@ -536,7 +533,7 @@ class Storage(OptionChecker, abc.ABC):
             return self.manager.compose(datas, location, kwargs)
 
         if self.supports(utils.Capability.STREAM) and storage.supports(
-            utils.Capability.combine(utils.Capability.CREATE, utils.Capability.APPEND),
+            utils.Capability.CREATE | utils.Capability.APPEND,
         ):
             dest_data = storage.upload(location, utils.make_upload(""), **kwargs)
             for data in datas:
@@ -573,10 +570,7 @@ class Storage(OptionChecker, abc.ABC):
             return self.manager.move(data, location, kwargs)
 
         if self.supports(
-            utils.Capability.combine(
-                utils.Capability.STREAM,
-                utils.Capability.REMOVE,
-            ),
+            utils.Capability.STREAM | utils.Capability.REMOVE,
         ) and storage.supports(utils.Capability.CREATE):
             result = storage.upload(
                 location,

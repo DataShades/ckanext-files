@@ -81,7 +81,7 @@ def storages(verbose: bool):
         if verbose:
             storage = shared.get_storage(name)
             click.echo(f"\tSupports: {storage.capabilities}")
-            click.echo(f"\tDoes not support: {storage.unsupported_operations()}")
+            click.echo(f"\tDoes not support: {~storage.capabilities}")
 
 
 @files.command()

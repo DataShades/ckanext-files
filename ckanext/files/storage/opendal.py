@@ -65,7 +65,7 @@ class OpenDalStorage(shared.Storage):
 
 class OpenDalUploader(shared.Uploader):
     storage: OpenDalStorage
-    capabilities = shared.Capability.combine(shared.Capability.CREATE)
+    capabilities = shared.Capability.CREATE
 
     def upload(
         self,
@@ -89,7 +89,7 @@ class OpenDalUploader(shared.Uploader):
 
 class OpenDalReader(shared.Reader):
     storage: OpenDalStorage
-    capabilities = shared.Capability.combine(shared.Capability.STREAM)
+    capabilities = shared.Capability.STREAM
 
     def stream(self, data: shared.FileData, extras: dict[str, Any]) -> IO[bytes]:
         return cast(Any, self.storage.operator.open(data.location, "rb"))
@@ -98,10 +98,7 @@ class OpenDalReader(shared.Reader):
 class OpenDalManager(shared.Manager):
     storage: OpenDalStorage
 
-    capabilities = shared.Capability.combine(
-        shared.Capability.REMOVE,
-        shared.Capability.SCAN,
-    )
+    capabilities = shared.Capability.REMOVE | shared.Capability.SCAN
 
     def remove(
         self,

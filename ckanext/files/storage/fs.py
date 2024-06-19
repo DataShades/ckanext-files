@@ -29,10 +29,7 @@ CHUNK_SIZE = 16384
 
 class FsUploader(Uploader):
     required_options = ["path"]
-    capabilities = shared.Capability.combine(
-        shared.Capability.CREATE,
-        shared.Capability.MULTIPART,
-    )
+    capabilities = shared.Capability.CREATE | shared.Capability.MULTIPART
 
     def upload(
         self,
@@ -155,15 +152,15 @@ class FsUploader(Uploader):
 
 class FsManager(Manager):
     required_options = ["path"]
-    capabilities = shared.Capability.combine(
-        shared.Capability.REMOVE,
-        shared.Capability.SCAN,
-        shared.Capability.EXISTS,
-        shared.Capability.ANALYZE,
-        shared.Capability.COPY,
-        shared.Capability.MOVE,
-        shared.Capability.COMPOSE,
-        shared.Capability.APPEND,
+    capabilities = (
+        shared.Capability.REMOVE
+        | shared.Capability.SCAN
+        | shared.Capability.EXISTS
+        | shared.Capability.ANALYZE
+        | shared.Capability.COPY
+        | shared.Capability.MOVE
+        | shared.Capability.COMPOSE
+        | shared.Capability.APPEND
     )
 
     def compose(
@@ -297,10 +294,7 @@ class FsManager(Manager):
 class FsReader(Reader):
     required_options = ["path"]
 
-    capabilities = shared.Capability.combine(
-        shared.Capability.STREAM,
-        shared.Capability.TEMPORAL_LINK,
-    )
+    capabilities = shared.Capability.STREAM | shared.Capability.TEMPORAL_LINK
 
     def stream(self, data: FileData, extras: dict[str, Any]) -> IO[bytes]:
         filepath = os.path.join(str(self.storage.settings["path"]), data.location)
@@ -357,10 +351,7 @@ class FsStorage(Storage):
 class PublicFsReader(FsReader):
     required_options = FsReader.required_options + ["public_root"]
 
-    capabilities = utils.Capability.combine(
-        FsReader.capabilities,
-        utils.Capability.PUBLIC_LINK,
-    )
+    capabilities = FsReader.capabilities | utils.Capability.PUBLIC_LINK
 
     def public_link(self, data: FileData, extras: dict[str, Any]) -> str:
         """Return public download link."""

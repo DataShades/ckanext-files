@@ -22,7 +22,7 @@ When uploading a raw content of the file using string or bytes object, name
 is mandatory.
 
 ```python
-ckanapi action files_file_create upload="hello world" name=file.txt
+ckanapi action files_file_create upload@<(echo -n "hello world") name=file.txt
 ```
 
 Requires storage with `CREATE` capability.

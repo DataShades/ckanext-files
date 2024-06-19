@@ -51,7 +51,7 @@ class DbStorage(shared.Storage):
 
 class DbReader(shared.Reader):
     storage: DbStorage
-    capabilities = shared.Capability.combine(shared.Capability.STREAM)
+    capabilities = shared.Capability.STREAM
 
     def stream(self, data: shared.FileData, extras: dict[str, Any]) -> Iterable[bytes]:
         stmt = (
@@ -69,7 +69,7 @@ class DbReader(shared.Reader):
 
 class DbUploader(shared.Uploader):
     storage: DbStorage
-    capabilities = shared.Capability.combine(shared.Capability.CREATE)
+    capabilities = shared.Capability.CREATE
 
     def upload(
         self,
@@ -98,10 +98,7 @@ class DbUploader(shared.Uploader):
 
 class DbManager(shared.Manager):
     storage: DbStorage
-    capabilities = shared.Capability.combine(
-        shared.Capability.SCAN,
-        shared.Capability.REMOVE,
-    )
+    capabilities = shared.Capability.SCAN | shared.Capability.REMOVE
 
     def scan(self, extras: dict[str, Any]) -> Iterable[str]:
         stmt = sa.select(self.storage.location_column).select_from(self.storage.table)

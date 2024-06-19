@@ -212,14 +212,8 @@ def is_supported_type(content_type: str, supported: Iterable[str]) -> str | None
 class Capability(enum.Flag):
     """Enumeration of operations supported by the storage.
 
-    Do not assume internal implementation of this type. Use Storage.supports,
-    Capability.combine, and Capability.exclude to check and modify capabilities
-    of the storage.
-
     Example:
-    >>> read_and_write = Capability.combine(
-    >>>     Capability.STREAM, Capability.CREATE,
-    >>> )
+    >>> read_and_write = Capability.STREAM | Capability.CREATE
     >>> if storage.supports(read_and_write)
     >>>     ...
     """
@@ -258,18 +252,6 @@ class Capability(enum.Flag):
     ONE_TIME_LINK = enum.auto()
     # make permanent public(anonymously accessible) link
     PUBLIC_LINK = enum.auto()
-
-    @staticmethod
-    def combine(*capabilities: Capability):
-        """Combine multiple capabilities.
-
-        Example:
-        >>> cluster = Capability.CREATE.combine(Capability.REMOVE)
-        """
-        result = Capability.NONE
-        for capability in capabilities:
-            result |= capability
-        return result
 
     def exclude(self, *capabilities: Capability):
         """Remove capabilities from the cluster

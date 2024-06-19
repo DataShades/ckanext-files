@@ -32,11 +32,7 @@ class RedisUploader(Uploader):
     storage: RedisStorage
 
     required_options = ["prefix"]
-    capabilities = Capability.combine(
-        Capability.CREATE,
-        Capability.COPY,
-        Capability.MOVE,
-    )
+    capabilities = Capability.CREATE
 
     def upload(
         self,
@@ -66,7 +62,7 @@ class RedisReader(Reader):
     storage: RedisStorage
 
     required_options = ["prefix"]
-    capabilities = Capability.combine(Capability.STREAM)
+    capabilities = Capability.STREAM
 
     def stream(self, data: FileData, extras: dict[str, Any]) -> IO[bytes]:
         return BytesIO(self.content(data, extras))
@@ -84,11 +80,13 @@ class RedisManager(Manager):
     storage: RedisStorage
 
     required_options = ["prefix"]
-    capabilities = Capability.combine(
-        Capability.REMOVE,
-        Capability.EXISTS,
-        Capability.SCAN,
-        Capability.ANALYZE,
+    capabilities = (
+        Capability.COPY
+        | Capability.MOVE
+        | Capability.REMOVE
+        | Capability.EXISTS
+        | Capability.SCAN
+        | Capability.ANALYZE
     )
 
     def scan(self, extras: dict[str, Any]) -> Iterable[str]:

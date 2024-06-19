@@ -260,6 +260,12 @@ def with_task_queue(func: Any, name: str | None = None):
 
     Without this decorator, you have to manually create task queue context
     before queuing tasks.
+
+    Example:
+    >>> @with_task_queue
+    >>> def my_action(context, data_dict):
+    >>>     ...
+
     """
 
     @functools.wraps(func)

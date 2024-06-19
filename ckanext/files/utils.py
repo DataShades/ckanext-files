@@ -319,7 +319,16 @@ def make_upload(
         | BinaryIO
     ),
 ) -> Upload:
-    """Convert value into Upload object"""
+    """Convert value into Upload object
+
+    Use this function for simple and reliable initialization of Upload
+    object. Avoid creating Upload manually, unless you are 100% sure you can
+    provide correct MIMEtype, size and stream.
+
+    Example:
+    >>> storage.upload("file.txt", make_upload(b"hello world"))
+
+    """
     if isinstance(value, Upload):
         return value
 

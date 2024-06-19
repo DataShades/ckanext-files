@@ -16,6 +16,39 @@ from ckanext.files.shared import File, Multipart, Owner, TransferHistory
 from . import schema
 
 
+@tk.chained_action
+def _chained_action(
+    next_action: Action,
+    context: Context,
+    data_dict: dict[str, Any],
+) -> Any:
+    return next_action(context, data_dict)
+
+
+package_create = shared.with_task_queue(_chained_action, "package_create")
+package_update = shared.with_task_queue(_chained_action, "package_update")
+resource_create = shared.with_task_queue(
+    _chained_action,
+    "resource_create",
+)
+resource_update = shared.with_task_queue(
+    _chained_action,
+    "resource_update",
+)
+group_create = shared.with_task_queue(_chained_action, "group_create")
+group_update = shared.with_task_queue(_chained_action, "group_update")
+organization_create = shared.with_task_queue(
+    _chained_action,
+    "organization_create",
+)
+organization_update = shared.with_task_queue(
+    _chained_action,
+    "organization_update",
+)
+user_create = shared.with_task_queue(_chained_action, "user_create")
+user_update = shared.with_task_queue(_chained_action, "user_update")
+
+
 def _flat_mask(data: dict[str, Any]) -> dict[tuple[Any, ...], Any]:
     result: dict[tuple[Any, ...], Any] = {}
 
@@ -821,39 +854,6 @@ def files_file_unpin(context: Context, data_dict: dict[str, Any]) -> dict[str, A
     return fileobj.dictize(context)
 
 
-@tk.chained_action
-def _chained_action(
-    next_action: Action,
-    context: Context,
-    data_dict: dict[str, Any],
-) -> Any:
-    return next_action(context, data_dict)
-
-
-package_create = shared.with_task_queue(_chained_action, "package_create")
-package_update = shared.with_task_queue(_chained_action, "package_update")
-resource_create = shared.with_task_queue(
-    _chained_action,
-    "resource_create",
-)
-resource_update = shared.with_task_queue(
-    _chained_action,
-    "resource_update",
-)
-group_create = shared.with_task_queue(_chained_action, "group_create")
-group_update = shared.with_task_queue(_chained_action, "group_update")
-organization_create = shared.with_task_queue(
-    _chained_action,
-    "organization_create",
-)
-organization_update = shared.with_task_queue(
-    _chained_action,
-    "organization_update",
-)
-user_create = shared.with_task_queue(_chained_action, "user_create")
-user_update = shared.with_task_queue(_chained_action, "user_update")
-
-
 @validate(schema.resource_upload)
 def files_resource_upload(context: Context, data_dict: dict[str, Any]):
     """Create a new file inside resource storage.
@@ -886,36 +886,3 @@ def files_resource_upload(context: Context, data_dict: dict[str, Any]):
         Context(context, ignore_auth=True),
         dict(data_dict, storage=storage_name),
     )
-
-
-# @validate(schema.group_image_upload)
-# def files_group_image_upload(context: Context, data_dict: dict[str, Any]):
-#     tk.check_access("files_group_image_upload", context, data_dict)
-#     storage_name = shared.config.group_images_storage()
-#     if not storage_name:
-#         raise tk.ValidationError(
-#             {"upload": ["Group and organization uploads are not supported"]},
-#         )
-
-#     group_id = data_dict.pop("group_id")
-#     group = model.Group.get(group_id)
-#     if not group:
-#         raise tk.ObjectNotFound("group")
-
-#     result = tk.get_action("files_file_create")(
-#         Context(context, ignore_auth=True),
-#         dict(data_dict, storage=storage_name),
-#     )
-
-#     result = tk.get_action("files_transfer_ownership")(
-#         context,
-#         {
-#             "id": result["id"],
-#             "owner_id": group.id,
-#             "owner_type": "organization" if group.is_organization else "group",
-#             "pin": True,
-#         },
-#     )
-#     storage = shared.get_storage(storage_name)
-#     result["public_url"] = storage.public_link(shared.FileData.from_dict(result))
-#     return result

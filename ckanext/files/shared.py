@@ -16,6 +16,11 @@ from .task import Task, add_task, with_task_queue
 from .utils import Capability, HashingReader, Upload, make_upload
 
 __all__ = [
+    "get_storage",
+    "make_storage",
+    "make_upload",
+    "with_task_queue",
+    "add_task",
     "exc",
     "config",
     "IFiles",
@@ -32,10 +37,5 @@ __all__ = [
     "Storage",
     "Upload",
     "Uploader",
-    "get_storage",  #
-    "make_storage",  #
-    "make_upload",
-    "with_task_queue",
-    "add_task",
     "Task",
 ]

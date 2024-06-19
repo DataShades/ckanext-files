@@ -14,9 +14,11 @@ from __future__ import annotations
 import abc
 import copy
 import dataclasses
+import itertools
 import os
 import uuid
 from datetime import datetime
+from io import BytesIO
 from time import time
 from typing import Any, Generic, Iterable, Protocol, TypeVar
 
@@ -295,6 +297,25 @@ class Reader(StorageService):
         """Return file content as a single byte object."""
         return b"".join(self.stream(data, extras))
 
+    def range(
+        self,
+        data: FileData,
+        start: int,
+        end: int | None,
+        extras: dict[str, Any],
+    ) -> Iterable[bytes]:
+        """Return byte-stream of the file content."""
+        ints = itertools.chain.from_iterable(self.stream(data, extras))
+
+        if end and end < 0:
+            end += data.size
+
+        if start < 0:
+            start += data.size
+
+        fragment = bytes(itertools.islice(ints, start, end))
+        return BytesIO(fragment)
+
     def permanent_link(self, data: FileData, extras: dict[str, Any]) -> str:
         """Return permanent download link."""
         raise NotImplementedError
@@ -511,6 +532,20 @@ class Storage(OptionChecker, abc.ABC):
             raise exceptions.UnsupportedOperationError("stream", self)
 
         return self.reader.stream(data, kwargs)
+
+    def range(
+        self,
+        data: FileData,
+        start: int = 0,
+        end: int | None = None,
+        /,
+        **kwargs: Any,
+    ) -> Iterable[bytes]:
+        """Return byte-stream of the file content."""
+        if self.supports(utils.Capability.RANGE):
+            return self.reader.range(data, start, end, kwargs)
+
+        raise exceptions.UnsupportedOperationError("range", self)
 
     def content(self, data: FileData, /, **kwargs: Any) -> bytes:
         if not self.supports(utils.Capability.STREAM):

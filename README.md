@@ -1220,9 +1220,19 @@ adapter classes are printed as well.
 List all configured storages. With `-v/--verbose` flag all supported
 capabilities are shown.
 
-`stream FILE_ID`
+`stream FILE_ID [-o OUTPUT] [--start START] [--end END]`
 
-Stream content of the file to STDOUT.
+Stream content of the file to STDOUT. For non-textual files use output
+redirection `stream ID > file.ext`. Alternatively, output destination can be
+specified via `-o/--output` option. If it contains path to directory, inside
+this directory will be created file with the same name as streamed
+item. Otherwise, `OUTPUT` is used as filename.
+
+`--start` and `--end` can be used to receive a fragment of the file. Only
+positive values are guaranteed to work with any storage that supports
+STREAM. Some storages support negative values for these options and count them
+from the end of file. I.e `--start -10` reads last 10 bytes of file. `--end -1`
+reads till the last byte, but the last byte is not included into output.
 
 `scan [-s default] [-u] [-t [-a OWNER_ID]]`
 

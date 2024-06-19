@@ -3,11 +3,12 @@ from __future__ import annotations
 import os
 import pydoc
 import textwrap
+from typing import IO
 
 import click
 
 import ckan.plugins.toolkit as tk
-from ckan import model
+from ckan import model, sys
 
 from ckanext.files import base, config, exceptions, shared
 from ckanext.files.model import File, Owner
@@ -30,8 +31,12 @@ files.add_command(migrate.group, "migrate")
 
 @files.command()
 @click.argument("file_id")
-def stream(file_id: str):
+@click.option("--start", type=int, default=0)
+@click.option("--end", type=int)
+@click.option("-o", "--output")
+def stream(file_id: str, output: str | None, start: int, end: int | None):
     """Stream content of the file."""
+
     file = model.Session.get(shared.File, file_id)
     if not file:
         tk.error_shout("File not found")
@@ -43,14 +48,30 @@ def stream(file_id: str):
         tk.error_shout(err)
         raise click.Abort from err
 
-    try:
-        content_stream = storage.stream(shared.FileData.from_model(file))
-    except exceptions.UnsupportedOperationError as err:
-        tk.error_shout(err)
-        raise click.Abort from err
+    if (start or end) and storage.supports(shared.Capability.RANGE):
+        content_stream = storage.range(shared.FileData.from_model(file), start, end)
+
+    elif storage.supports(shared.Capability.STREAM):
+        content_stream = storage.reader.range(
+            shared.FileData.from_model(file),
+            start,
+            end,
+            {},
+        )
+
+    else:
+        tk.error_shout("File streaming is not supported")
+        raise click.Abort
+
+    if output is None:
+        dest: IO[bytes] = sys.stdout.buffer
+    else:
+        if os.path.isdir(output):
+            output = os.path.join(output, file.name)
+        dest = open(output, "wb")  # noqa: SIM115
 
     for chunk in content_stream:
-        click.echo(chunk, nl=False)
+        click.echo(chunk, nl=False, file=dest)
 
 
 @files.command()

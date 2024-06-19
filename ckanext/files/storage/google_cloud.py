@@ -29,10 +29,7 @@ class GoogleCloudUploader(Uploader):
     storage: GoogleCloudStorage
 
     required_options = ["bucket"]
-    capabilities = Capability.combine(
-        Capability.CREATE,
-        Capability.MULTIPART,
-    )
+    capabilities = Capability.CREATE | Capability.MULTIPART
 
     def upload(
         self,
@@ -248,7 +245,7 @@ class GoogleCloudUploader(Uploader):
 class GoogleCloudManager(Manager):
     storage: GoogleCloudStorage
     required_options = ["bucket"]
-    capabilities = Capability.combine(Capability.REMOVE)
+    capabilities = Capability.REMOVE
 
     def remove(self, data: FileData | MultipartData, extras: dict[str, Any]) -> bool:
         if isinstance(data, MultipartData):

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import logging
 from functools import partial
-from typing import Any, cast
+from typing import Any
 
 import jwt
 from flask import Blueprint, jsonify
@@ -150,7 +150,7 @@ def _pager_url(*args: Any, **kwargs: Any) -> str:
     """
     params = {k: v for k, v in tk.request.args.items() if k != "page"}
     params.update(
-        {k: v for k, v in cast("dict[str, Any]", tk.request.view_args or {}).items()},
+        {k: v for k, v in (tk.request.view_args or {}).items()},
     )
     params.update(kwargs)
     return tk.h.pager_url(*args, **params)

@@ -77,142 +77,49 @@ class TestHasingReader:
 
 
 class TestCapabilities:
-    def test_reflexive_combination(self):
-        """Combination of unit with itself leaves a single unit."""
-
-        first = Capability.combine(
-            Capability.CREATE,
-            Capability.CREATE,
-        )
-        second = Capability.combine(Capability.CREATE)
-        assert first is second
-
-    def test_commutative_combination(self):
-        """Order of combination does not change the result"""
-
-        first = Capability.combine(
-            Capability.CREATE,
-            Capability.REMOVE,
-        )
-        second = Capability.combine(
-            Capability.REMOVE,
-            Capability.CREATE,
-        )
-        assert first is second
-
-    def test_associative_combination(self):
-        """Rearranging the combination sequence does not change the result."""
-
-        first = Capability.combine(
-            Capability.combine(Capability.CREATE, Capability.REMOVE),
-            Capability.MULTIPART,
-        )
-        second = Capability.combine(
-            Capability.combine(
-                Capability.CREATE,
-                Capability.MULTIPART,
-            ),
-            Capability.REMOVE,
-        )
-        third = Capability.combine(
-            Capability.combine(
-                Capability.REMOVE,
-                Capability.MULTIPART,
-            ),
-            Capability.CREATE,
-        )
-
-        assert first == second == third
-
-    def test_clusters(self):
-        """Clusters can be combined with the same result as individual units."""
-
-        first = Capability.combine(
-            Capability.CREATE,
-            Capability.REMOVE,
-        )
-        second = Capability.combine(
-            Capability.MULTIPART,
-            Capability.STREAM,
-        )
-
-        clusters = Capability.combine(first, second)
-        units = Capability.combine(
-            Capability.CREATE,
-            Capability.REMOVE,
-            Capability.MULTIPART,
-            Capability.STREAM,
-        )
-        assert clusters is units
-
     def test_not_intersecting_exclusion(self):
         """Nothing changes when non-existing unit excluded."""
-        cluster = Capability.combine(
-            Capability.CREATE,
-            Capability.REMOVE,
-        )
+        cluster = Capability.CREATE | Capability.REMOVE
 
         assert Capability.exclude(cluster, Capability.MULTIPART) is cluster
 
     def test_exclusion_of_single_unit(self):
         """Single unit exclusion leaves all other units inside cluster."""
 
-        cluster = Capability.combine(
-            Capability.CREATE,
-            Capability.REMOVE,
-        )
+        cluster = Capability.CREATE | Capability.REMOVE
 
-        assert Capability.exclude(
-            cluster,
-            Capability.CREATE,
-        ) is Capability.combine(Capability.REMOVE)
+        assert Capability.exclude(cluster, Capability.CREATE) is Capability.REMOVE
 
     def test_multi_unit_exclusion(self):
         """Multiple units can be excluded at once."""
 
-        cluster = Capability.combine(
-            Capability.CREATE,
-            Capability.REMOVE,
-            Capability.STREAM,
+        cluster = Capability.CREATE | Capability.REMOVE | Capability.STREAM
+        assert (
+            Capability.exclude(cluster, Capability.REMOVE, Capability.CREATE)
+            == Capability.STREAM
         )
-        assert Capability.exclude(
-            cluster,
-            Capability.REMOVE,
-            Capability.CREATE,
-        ) == Capability.combine(Capability.STREAM)
 
     def test_exclusion_of_cluster(self):
         """The whole cluster can be excluded at once."""
 
-        cluster = Capability.combine(
-            Capability.CREATE,
-            Capability.REMOVE,
-            Capability.STREAM,
-        )
+        cluster = Capability.CREATE | Capability.REMOVE | Capability.STREAM
 
-        empty = Capability.exclude(
-            cluster,
-            Capability.combine(Capability.CREATE, Capability.STREAM),
-        )
-        assert empty == Capability.combine(Capability.REMOVE)
+        empty = Capability.exclude(cluster, Capability.CREATE | Capability.STREAM)
+        assert empty == Capability.REMOVE
 
     def test_can_single_capability(self):
         """Individual capabilites are identified in cluster."""
-        cluster = Capability.combine(Capability.CREATE, Capability.REMOVE)
+        cluster = Capability.CREATE | Capability.REMOVE
         assert cluster.can(Capability.CREATE)
         assert cluster.can(Capability.REMOVE)
         assert not cluster.can(Capability.STREAM)
 
     def test_can_cluster_capability(self):
         """Cluster capabilites are identified in cluster."""
-        cluster = Capability.combine(
-            Capability.CREATE,
-            Capability.REMOVE,
-            Capability.STREAM,
-        )
+        cluster = Capability.CREATE | Capability.REMOVE | Capability.STREAM
 
-        assert cluster.can(Capability.combine(Capability.CREATE, Capability.REMOVE))
-        assert not cluster.can(Capability.combine(Capability.CREATE, Capability.MOVE))
+        assert cluster.can(Capability.CREATE | Capability.REMOVE)
+        assert not cluster.can(Capability.CREATE | Capability.MOVE)
 
 
 class TestParseFilesize:

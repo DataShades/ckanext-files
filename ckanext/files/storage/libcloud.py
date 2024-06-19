@@ -82,9 +82,7 @@ class LibCloudStorage(shared.Storage):
 
 class LibCloudUploader(shared.Uploader):
     storage: LibCloudStorage
-    capabilities = shared.Capability.combine(
-        shared.Capability.CREATE,
-    )
+    capabilities = shared.Capability.CREATE
 
     def upload(
         self,
@@ -110,10 +108,7 @@ class LibCloudUploader(shared.Uploader):
 
 class LibCloudReader(shared.Reader):
     storage: LibCloudStorage
-    capabilities = shared.Capability.combine(
-        shared.Capability.STREAM,
-        shared.Capability.TEMPORAL_LINK,
-    )
+    capabilities = shared.Capability.STREAM | shared.Capability.TEMPORAL_LINK
 
     def stream(self, data: shared.FileData, extras: dict[str, Any]) -> Iterable[bytes]:
         try:
@@ -129,10 +124,7 @@ class LibCloudReader(shared.Reader):
 
 class LibCloudManager(shared.Manager):
     storage: LibCloudStorage
-    capabilities = shared.Capability.combine(
-        shared.Capability.SCAN,
-        shared.Capability.REMOVE,
-    )
+    capabilities = shared.Capability.SCAN | shared.Capability.REMOVE
 
     def scan(self, extras: dict[str, Any]) -> Iterable[str]:
         for item in self.storage.container.iterate_objects():

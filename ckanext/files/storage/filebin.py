@@ -45,7 +45,7 @@ class FilebinStorage(shared.Storage):
 class FilebinUploader(shared.Uploader):
     storage: FilebinStorage
     required_options = ["bin"]
-    capabilities = shared.Capability.combine(shared.Capability.CREATE)
+    capabilities = shared.Capability.CREATE
 
     def upload(
         self,
@@ -74,10 +74,10 @@ class FilebinUploader(shared.Uploader):
 class FilebinReader(shared.Reader):
     storage: FilebinStorage
     required_options = ["bin"]
-    capabilities = shared.Capability.combine(
-        shared.Capability.STREAM,
-        shared.Capability.PUBLIC_LINK,
-        shared.Capability.TEMPORAL_LINK,
+    capabilities = (
+        shared.Capability.STREAM
+        | shared.Capability.PUBLIC_LINK
+        | shared.Capability.TEMPORAL_LINK
     )
 
     def stream(self, data: shared.FileData, extras: dict[str, Any]) -> IO[bytes]:
@@ -105,10 +105,8 @@ class FilebinReader(shared.Reader):
 class FilebinManager(shared.Manager):
     storage: FilebinStorage
     required_options = ["bin"]
-    capabilities = shared.Capability.combine(
-        shared.Capability.REMOVE,
-        shared.Capability.SCAN,
-        shared.Capability.ANALYZE,
+    capabilities = (
+        shared.Capability.REMOVE | shared.Capability.SCAN | shared.Capability.ANALYZE
     )
 
     def remove(

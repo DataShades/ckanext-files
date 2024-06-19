@@ -16,8 +16,8 @@ import logging
 import mimetypes
 import re
 import tempfile
-from io import BufferedReader, BytesIO
-from typing import IO, Any, Callable, Generic, Iterable, TypeVar, cast
+from io import BufferedReader, BytesIO, TextIOWrapper
+from typing import IO, Any, BinaryIO, Callable, Generic, Iterable, TypeVar, cast
 
 import jwt
 import magic
@@ -313,12 +313,10 @@ def make_upload(
         FileStorage
         | Upload
         | tempfile.SpooledTemporaryFile[Any]
-        | str
+        | TextIOWrapper
         | bytes
         | bytearray
-        | BytesIO
-        | BufferedReader
-        | Any
+        | BinaryIO
     ),
 ) -> Upload:
     """Convert value into Upload object"""
@@ -353,11 +351,11 @@ def make_upload(
     if isinstance(value, tempfile.SpooledTemporaryFile):
         return _tempfile_as_upload(value)
 
-    if isinstance(value, str):
-        value = value.encode()
-
     if isinstance(value, (bytes, bytearray)):
         value = BytesIO(value)
+
+    if isinstance(value, TextIOWrapper):
+        value = value.buffer
 
     if isinstance(value, (BytesIO, BufferedReader)):
         mime = magic.from_buffer(value.read(SAMPLE_SIZE), True)

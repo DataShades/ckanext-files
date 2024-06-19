@@ -357,6 +357,18 @@ class Storage(OptionChecker, abc.ABC):
 
         return self.settings.get("supported_types", [])
 
+    @property
+    def inefficient_operation_cap(self) -> int:
+        """Threshold for performing inefficient operations.
+
+        Inefficient operations transform content into binary stream
+        in-memory. When trying to move 1TB file in this way, your memory won't
+        be happy. It's better to restrict such operations, but we still may use
+        them for small files.
+        """
+
+        return self.settings.get("inefficient_operation_cap", 10_485_760)  # 10MiB
+
     @classmethod
     def declare_config_options(cls, declaration: Declaration, key: Key) -> None:
         declaration.declare(key.max_size, 0).append_validators(
@@ -366,6 +378,13 @@ class Storage(OptionChecker, abc.ABC):
             + "\nSupports size suffixes: 42B, 2M, 24KiB, 1GB."
             + " `0` means no restrictions.",
         )
+        declaration.declare(key.inefficient_operation_cap, "10MiB").append_validators(
+            "files_parse_filesize",
+        ).set_description(
+            "Allow using inefficient implemetation of MOVE/COPY/COMPOSE"
+            + " if size of the file is smaller than specified value.",
+        )
+
         declaration.declare_list(key.supported_types, None).set_description(
             "Space-separated list of MIME types or just type or subtype part."
             + "\nExample: text/csv pdf application video jpeg",
@@ -510,12 +529,16 @@ class Storage(OptionChecker, abc.ABC):
         if storage is self and self.supports(utils.Capability.COPY):
             return self.manager.copy(data, location, kwargs)
 
-        if self.supports(utils.Capability.STREAM) and storage.supports(
-            utils.Capability.CREATE,
+        if (
+            self.supports(utils.Capability.STREAM)
+            and storage.supports(
+                utils.Capability.CREATE,
+            )
+            and data.size < self.inefficient_operation_cap
         ):
             return storage.upload(
                 location,
-                utils.make_upload(self.stream(data)),
+                utils.make_upload(b"".join(self.stream(data))),
                 **kwargs,
             )
 
@@ -532,14 +555,18 @@ class Storage(OptionChecker, abc.ABC):
         if storage is self and self.supports(utils.Capability.COMPOSE):
             return self.manager.compose(datas, location, kwargs)
 
-        if self.supports(utils.Capability.STREAM) and storage.supports(
-            utils.Capability.CREATE | utils.Capability.APPEND,
+        if (
+            self.supports(utils.Capability.STREAM)
+            and storage.supports(
+                utils.Capability.CREATE | utils.Capability.APPEND,
+            )
+            and all(d.size < self.inefficient_operation_cap for d in datas)
         ):
-            dest_data = storage.upload(location, utils.make_upload(""), **kwargs)
+            dest_data = storage.upload(location, utils.make_upload(b""), **kwargs)
             for data in datas:
                 dest_data = storage.append(
                     dest_data,
-                    utils.make_upload(self.stream(data)),
+                    utils.make_upload(b"".join(self.stream(data))),
                     **kwargs,
                 )
             return dest_data
@@ -569,12 +596,16 @@ class Storage(OptionChecker, abc.ABC):
         if storage is self and self.supports(utils.Capability.MOVE):
             return self.manager.move(data, location, kwargs)
 
-        if self.supports(
-            utils.Capability.STREAM | utils.Capability.REMOVE,
-        ) and storage.supports(utils.Capability.CREATE):
+        if (
+            self.supports(
+                utils.Capability.STREAM | utils.Capability.REMOVE,
+            )
+            and storage.supports(utils.Capability.CREATE)
+            and data.size < self.inefficient_operation_cap
+        ):
             result = storage.upload(
                 location,
-                utils.make_upload(self.stream(data)),
+                utils.make_upload(b"".join(self.stream(data))),
                 **kwargs,
             )
             storage.remove(data)

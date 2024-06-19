@@ -20,7 +20,7 @@ def storage(tmp_path: Path):
 
 class TestUploader:
     def test_key(self, storage: fs.FsStorage):
-        result = storage.upload("", shared.make_upload(""))
+        result = storage.upload("", shared.make_upload(b""))
 
         assert UUID(result.location)
         assert result.size == 0
@@ -41,7 +41,7 @@ class TestUploader:
             assert src.read() == content
 
     def test_hash(self, storage: fs.FsStorage, faker: Faker):
-        result = storage.upload("", shared.make_upload(""))
+        result = storage.upload("", shared.make_upload(b""))
         assert result.hash == hashlib.md5().hexdigest()
 
         content = faker.binary(100)
@@ -146,7 +146,7 @@ class TestMultipartUploader:
 
 class TestManager:
     def test_removal(self, storage: fs.FsStorage):
-        result = storage.upload("", shared.make_upload(""))
+        result = storage.upload("", shared.make_upload(b""))
         filepath = os.path.join(storage.settings["path"], result.location)
         assert os.path.exists(filepath)
 
@@ -154,7 +154,7 @@ class TestManager:
         assert not os.path.exists(filepath)
 
     def test_removal_missing(self, storage: fs.FsStorage):
-        result = storage.upload("", shared.make_upload(""))
+        result = storage.upload("", shared.make_upload(b""))
         assert storage.remove(result)
         assert not storage.remove(result)
 
@@ -177,7 +177,7 @@ class TestReader:
         assert content == data
 
     def test_missing(self, storage: fs.FsStorage, faker: Faker):
-        result = storage.upload("", shared.make_upload(""))
+        result = storage.upload("", shared.make_upload(b""))
         result.location += faker.uuid4()
 
         with pytest.raises(exceptions.MissingFileError):

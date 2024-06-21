@@ -20,14 +20,14 @@ import uuid
 from datetime import datetime
 from io import BytesIO
 from time import time
-from typing import Any, Generic, Iterable, Protocol, TypeVar
+from typing import Any, Generic, Iterable, Protocol, TypeVar, cast
 
 import pytz
 
 import ckan.plugins.toolkit as tk
 from ckan.config.declaration import Declaration, Key
 
-from . import config, exceptions, model, utils
+from . import config, exceptions, model, utils, types
 
 
 class PFileModel(Protocol):
@@ -378,18 +378,6 @@ class Storage(OptionChecker, abc.ABC):
 
         return self.settings.get("supported_types", [])
 
-    @property
-    def inefficient_operation_cap(self) -> int:
-        """Threshold for performing inefficient operations.
-
-        Inefficient operations transform content into binary stream
-        in-memory. When trying to move 1TB file in this way, your memory won't
-        be happy. It's better to restrict such operations, but we still may use
-        them for small files.
-        """
-
-        return self.settings.get("inefficient_operation_cap", 10_485_760)  # 10MiB
-
     @classmethod
     def declare_config_options(cls, declaration: Declaration, key: Key) -> None:
         declaration.declare(key.max_size, 0).append_validators(
@@ -398,12 +386,6 @@ class Storage(OptionChecker, abc.ABC):
             "The maximum size of a single upload."
             + "\nSupports size suffixes: 42B, 2M, 24KiB, 1GB."
             + " `0` means no restrictions.",
-        )
-        declaration.declare(key.inefficient_operation_cap, "10MiB").append_validators(
-            "files_parse_filesize",
-        ).set_description(
-            "Allow using inefficient implemetation of MOVE/COPY/COMPOSE"
-            + " if size of the file is smaller than specified value.",
         )
 
         declaration.declare_list(key.supported_types, None).set_description(
@@ -564,16 +546,12 @@ class Storage(OptionChecker, abc.ABC):
         if storage is self and self.supports(utils.Capability.COPY):
             return self.manager.copy(data, location, kwargs)
 
-        if (
-            self.supports(utils.Capability.STREAM)
-            and storage.supports(
-                utils.Capability.CREATE,
-            )
-            and data.size < self.inefficient_operation_cap
+        if self.supports(utils.Capability.STREAM) and storage.supports(
+            utils.Capability.CREATE,
         ):
             return storage.upload(
                 location,
-                utils.make_upload(b"".join(self.stream(data))),
+                self.stream_as_upload(data, **kwargs),
                 **kwargs,
             )
 
@@ -590,23 +568,34 @@ class Storage(OptionChecker, abc.ABC):
         if storage is self and self.supports(utils.Capability.COMPOSE):
             return self.manager.compose(datas, location, kwargs)
 
-        if (
-            self.supports(utils.Capability.STREAM)
-            and storage.supports(
-                utils.Capability.CREATE | utils.Capability.APPEND,
-            )
-            and all(d.size < self.inefficient_operation_cap for d in datas)
+        if self.supports(utils.Capability.STREAM) and storage.supports(
+            utils.Capability.CREATE | utils.Capability.APPEND,
         ):
             dest_data = storage.upload(location, utils.make_upload(b""), **kwargs)
             for data in datas:
                 dest_data = storage.append(
                     dest_data,
-                    utils.make_upload(b"".join(self.stream(data))),
+                    self.stream_as_upload(data, **kwargs),
                     **kwargs,
                 )
             return dest_data
 
         raise exceptions.UnsupportedOperationError("compose", self)
+
+    def stream_as_upload(self, data: FileData, **kwargs: Any) -> utils.Upload:
+        """Make an Upload with file content."""
+        stream = self.stream(data, **kwargs)
+        if hasattr(stream, "read"):
+            stream = cast(types.UploadStream, stream)
+        else:
+            stream = utils.IterableBytesReader(stream)
+
+        return utils.Upload(
+            stream,
+            data.location,
+            data.size,
+            data.content_type,
+        )
 
     def append(
         self,
@@ -631,16 +620,12 @@ class Storage(OptionChecker, abc.ABC):
         if storage is self and self.supports(utils.Capability.MOVE):
             return self.manager.move(data, location, kwargs)
 
-        if (
-            self.supports(
-                utils.Capability.STREAM | utils.Capability.REMOVE,
-            )
-            and storage.supports(utils.Capability.CREATE)
-            and data.size < self.inefficient_operation_cap
-        ):
+        if self.supports(
+            utils.Capability.STREAM | utils.Capability.REMOVE,
+        ) and storage.supports(utils.Capability.CREATE):
             result = storage.upload(
                 location,
-                utils.make_upload(b"".join(self.stream(data))),
+                self.stream_as_upload(data, **kwargs),
                 **kwargs,
             )
             storage.remove(data)

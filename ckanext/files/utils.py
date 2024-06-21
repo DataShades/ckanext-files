@@ -1,8 +1,8 @@
 """Internal utilities of the extension.
 
 Do not use this module outside of the extension and do not import any other
-internal module except for config and exceptions. Only independent
-tools are stored here, to avoid import cycles.
+internal module except for config, types and exceptions. Only independent tools
+are stored here, to avoid import cycles.
 
 """
 
@@ -12,12 +12,13 @@ import contextlib
 import dataclasses
 import enum
 import hashlib
+import itertools
 import logging
 import mimetypes
 import re
 import tempfile
 from io import BufferedReader, BytesIO, TextIOWrapper
-from typing import IO, Any, BinaryIO, Callable, Generic, Iterable, TypeVar, cast
+from typing import Any, BinaryIO, Callable, Generic, Iterable, TypeVar, cast
 
 import jwt
 import magic
@@ -27,6 +28,7 @@ from werkzeug.datastructures import FileStorage
 import ckan.plugins.toolkit as tk
 from ckan import model
 from ckan.lib.api_token import _get_algorithm, _get_secret  # type: ignore
+from ckanext.files import types
 
 log = logging.getLogger(__name__)
 
@@ -102,7 +104,7 @@ class Registry(Generic[T]):
 
 @dataclasses.dataclass
 class Upload:
-    stream: IO[bytes]
+    stream: types.UploadStream
     filename: str
     size: int
     content_type: str
@@ -125,7 +127,7 @@ class HashingReader:
 
     def __init__(
         self,
-        stream: IO[bytes],
+        stream: types.UploadStream,
         chunk_size: int = CHUNK_SIZE,
         algorithm: str = CHECKSUM_ALGORITHM,
     ) -> None:
@@ -151,12 +153,6 @@ class HashingReader:
 
     def read(self):
         return b"".join(self)
-
-    def reset(self):
-        """Rewind underlying stream and reset hash to initial state."""
-        self.position = 0
-        self.hashsum = hashlib.new(self.algorithm)
-        self.stream.seek(0)
 
     def get_hash(self):
         """Get content hash as a string."""
@@ -408,3 +404,16 @@ def encode_token(data: dict[str, Any]) -> str:
 
 def decode_token(token: str) -> dict[str, Any]:
     return jwt.decode(token, _get_secret(encode=False), algorithms=[_get_algorithm()])
+
+
+class IterableBytesReader:
+    def __init__(self, source: Iterable[bytes], chunk_size: int = CHUNK_SIZE):
+        self.source = itertools.chain.from_iterable(source)
+        self.chunk_size = chunk_size
+
+    def __iter__(self):
+        while chunk := itertools.islice(self.source, 0, self.chunk_size):
+            yield bytes(chunk)
+
+    def read(self, size: int | None = None):
+        return bytes(itertools.islice(self.source, 0, size))

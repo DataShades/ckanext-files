@@ -178,7 +178,7 @@ class TestReader:
 
     def test_missing(self, storage: fs.FsStorage, faker: Faker):
         result = storage.upload("", shared.make_upload(b""))
-        result.location += faker.uuid4()
+        result.location += str(faker.uuid4())
 
         with pytest.raises(exceptions.MissingFileError):
             storage.stream(result)

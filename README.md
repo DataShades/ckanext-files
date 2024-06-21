@@ -1510,8 +1510,6 @@ ckanext.files.storage.NAME.max_size = 0
 ## Space-separated list of MIME types or just type or subtype part.
 ## Example: text/csv pdf application video jpeg
 ckanext.files.storage.NAME.supported_types =
-## Allow using inefficient implemetation of MOVE/COPY/COMPOSE if size of the file is smaller than specified value.
-ckanext.files.storage.default.inefficient_operation_cap = 10MiB
 ## Descriptive name of the storage used for debugging. When empty, name from
 ## the config option is used, i.e: `ckanext.files.storage.DEFAULT_NAME...`
 ckanext.files.storage.NAME.name = NAME

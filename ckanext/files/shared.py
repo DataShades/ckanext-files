@@ -1,3 +1,4 @@
+from . import types
 from . import config
 from . import exceptions as exc
 from .base import (
@@ -16,6 +17,7 @@ from .task import Task, add_task, with_task_queue
 from .utils import Capability, HashingReader, Upload, make_upload
 
 __all__ = [
+    "types",
     "get_storage",
     "make_storage",
     "make_upload",

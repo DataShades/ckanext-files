@@ -59,22 +59,6 @@ class TestHasingReader:
         assert output == content
         assert reader.get_hash() == expected
 
-    def test_reset(self, faker: Faker):
-        """Resetting the reader makes it reusable"""
-        stream = BytesIO(faker.binary(100))
-        reader = shared.HashingReader(stream)
-
-        reader.exhaust()
-
-        first_hash = reader.get_hash()
-        assert stream.tell() == 100
-
-        reader.reset()
-        assert stream.tell() == 0
-
-        reader.exhaust()
-        assert reader.get_hash() == first_hash
-
 
 class TestCapabilities:
     def test_not_intersecting_exclusion(self):
@@ -189,7 +173,7 @@ class TestMakeUpload:
         """Strings converted into Upload."""
         string = faker.pystr()
         with pytest.raises(TypeError):
-            utils.make_upload(string)
+            utils.make_upload(string)  # type: ignore
 
     def test_bytes(self, faker: Faker):
         """Bytes converted into Upload."""

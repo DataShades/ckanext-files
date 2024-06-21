@@ -34,7 +34,6 @@ class TestStorages:
                 "name": "default",
                 "supported_types": [],
                 "max_size": 0,
-                "inefficient_operation_cap": 2**20 * 10,
             },
         }
 
@@ -59,7 +58,6 @@ class TestStorages:
                 "name": "default",
                 "supported_types": [],
                 "max_size": 0,
-                "inefficient_operation_cap": 2**20 * 10,
             },
             "test": {
                 "type": "test",
@@ -87,6 +85,5 @@ class TestStorages:
                 "name": "default",
                 "supported_types": [],
                 "max_size": 0,
-                "inefficient_operation_cap": 2**20 * 10,
             },
         }

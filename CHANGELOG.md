@@ -12,6 +12,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Features
 
+- transfer_history table ([434abda](https://github.com/DataShades/ckanext-files/commit/434abda216b229c7cb69d171f24c0924ed22d1de) by Sergey Motornyuk).
+- libcloud adapter ([6594bb9](https://github.com/DataShades/ckanext-files/commit/6594bb9ae60c3d0914d09116433069dc01352dc6) by Sergey Motornyuk).
 - add SCAN and ANALYZE to redis storage ([96c2706](https://github.com/DataShades/ckanext-files/commit/96c2706a54bc462f1f1b6b933a5577ebc80c926a) by Sergey Motornyuk).
 - pinned files ([3e1db60](https://github.com/DataShades/ckanext-files/commit/3e1db607fc275b25b246eb790f4144bab77d191a) by Sergey Motornyuk).
 - files_download_info helper ([2659ae3](https://github.com/DataShades/ckanext-files/commit/2659ae3391ca6bfc254436743c5a960c20f2dc01) by Sergey Motornyuk).
@@ -30,6 +32,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Code Refactoring
 
+- remove HashingReader.reset ([7e67d5f](https://github.com/DataShades/ckanext-files/commit/7e67d5f5df2c897debbd5b1cc7177d21cdca2673) by Sergey Motornyuk).
+- do not allow str as upload source ([cae738d](https://github.com/DataShades/ckanext-files/commit/cae738d7203b9991425661c1c2d00ddb68fc2bd9) by Sergey Motornyuk).
+- Capability.combine removed ([332c1a4](https://github.com/DataShades/ckanext-files/commit/332c1a422ae5bdd810e922f718ddf583e42601b8) by Sergey Motornyuk).
 - access column removed from owner table and now only single owner allowed ([f8d385d](https://github.com/DataShades/ckanext-files/commit/f8d385d82f44696432fb4a28ce284ed19240ab49) by Sergey Motornyuk).
 - add completed flag for rename, show and delete actions for simultaneous file and multipart support. ([10fb202](https://github.com/DataShades/ckanext-files/commit/10fb202a6e8c95dceee9a878a869812a84353219) by Sergey Motornyuk).
 - rename files_upload_show to files_multipart_refresh ([ee2a4df](https://github.com/DataShades/ckanext-files/commit/ee2a4dfdddad4009636590a28b1d664dc321e42e) by Sergey Motornyuk).
@@ -59,7 +64,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [v0.3.0](https://github.com/DataShades/ckanext-files/releases/tag/v0.3.0) - 2024-05-16
 
-<small>[Compare with v0.0.6](https://github.com/DataShades/ckanext-files/compare/v0.0.6...v0.3.0)</small>
+<small>[Compare with v0.2.6](https://github.com/DataShades/ckanext-files/compare/v0.2.6...v0.3.0)</small>
 
 ### Features
 
@@ -76,7 +81,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [v0.0.6](https://github.com/DataShades/ckanext-files/releases/tag/v0.0.6) - 2024-04-24
 
-<small>[Compare with v0.2.6](https://github.com/DataShades/ckanext-files/compare/v0.2.6...v0.0.6)</small>
+<small>[Compare with v0.0.5](https://github.com/DataShades/ckanext-files/compare/v0.0.5...v0.0.6)</small>
 
 ### Bug Fixes
 
@@ -164,3 +169,4 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## [v0.0.1](https://github.com/DataShades/ckanext-files/releases/tag/v0.0.1) - 2021-09-21
 
 <small>[Compare with first commit](https://github.com/DataShades/ckanext-files/compare/d57d17e412821d56a9f5262636be89311e8050fc...v0.0.1)</small>
+

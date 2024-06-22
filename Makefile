@@ -10,4 +10,4 @@ changelog:  ## compile changelog
 
 
 test-server:
-    ckan -c test.ini run -t
+	ckan -c test.ini run -t

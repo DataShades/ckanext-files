@@ -25,7 +25,7 @@ namespace ckan {
             storage: "default",
         };
 
-        function upload(file: File, options: UploadOptions) {
+        function upload(file: File, options: UploadOptions = {}) {
             const uploader =
                 options.uploader ||
                 makeUploader(

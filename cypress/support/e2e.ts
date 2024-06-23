@@ -13,6 +13,7 @@
 // https://on.cypress.io/configuration
 // ***********************************************************
 
+import "cypress-intercept-formdata";
 // Import commands.js using ES2015 syntax:
 import './commands'
 

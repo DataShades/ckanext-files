@@ -1,4 +1,4 @@
-name: Tests
+name: Frontend tests
 on:
   push:
     branches:
@@ -43,12 +43,13 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - name: Install requirements
-      # Install any extra requirements your extension has here (dev requirements, other extensions etc)
       run: |
-        pip install -e ".[dev]"
+        pip install -e '.[dev]'
+
     - name: Setup extension
       run: |
-        ckan -c test.ini db init
+        ckan -c test.ini db upgrade
+        yes | ckan -c test.ini sysadmin add admin password=password123 email=admin@test.net
 
     - name: Run Cypress
       uses: cypress-io/github-action@v6
@@ -60,6 +61,7 @@ jobs:
       with:
         name: cypress-screenshots
         path: cypress/screenshots
+
     # Test run video was always captured, so this action uses "always()" condition
     - uses: actions/upload-artifact@v3
       if: always()

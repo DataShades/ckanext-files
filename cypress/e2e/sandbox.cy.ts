@@ -86,21 +86,27 @@ describe("sandbox.files.upload", () => {
             });
     });
 
-    it("accepts parameters for API action", () => {
-        const content = "content";
-        sandbox()
-            .then(({ files }) =>
-                files.upload(new File([content], "test.txt"), {
-                    uploaderParams: [{ storage: "memory" }],
-                }),
-            )
-            .then((info) => {
-                expect(info).to.include({
-                    content_type: "text/plain",
-                    size: content.length,
-                    name: "test.txt",
+    it.only("accepts parameters for API action", () => {
+        cy.intercept("/api/action/files_file_create", (req) =>
+            req.reply({ success: true, result: {} }),
+        ).as("makeFile");
+
+        sandbox().then(({ files }) => {
+            files.upload(new File(["test"], "test.txt"), {
+                requestParams: {
+                    hello: "world",
                     storage: "memory",
-                });
+                    value: 42,
+                },
             });
+        });
+
+        cy.wait("@makeFile").interceptFormData((data) => {
+            expect(data).includes({
+                storage: "memory",
+                hello: "world",
+                value: 42,
+            });
+        });
     });
 });

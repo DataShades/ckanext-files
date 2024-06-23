@@ -1,6 +1,7 @@
 {
     "dependencies": {
         "cypress": "^13.12.0",
+        "cypress-intercept-formdata": "^0.6.0",
         "pyright": "^1.1.367",
         "typescript": "^5.4.2"
     },

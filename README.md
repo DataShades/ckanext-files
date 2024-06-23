@@ -375,13 +375,13 @@ When writing python code, pass storage name to `get_storage` function:
 storage = get_storage("memory")
 ```
 
-When writing JS code, pass object `{uploaderParams: [{storage: "memory"}]}` to
+When writing JS code, pass object `{requestParams: {storage: "memory"}}` to
 `upload` function:
 
 ```js
 const sandbox = ckan.sandbox()
 const file = new File(["content"], "file.txt")
-const options = {uploaderParams: [{storage: "memory"}]};
+const options = {requestParams: {storage: "memory"}};
 
 await sandbox.files.upload(file, options)
 ```
@@ -834,10 +834,11 @@ among all adapters:
   URL instead of using `files_multipart_update`.
 * `files_multipart_complete` compares `content_type`, `size` and `hash`(if
   present) specified during initialization of upload with actual values. If
-  they are different, upload is not converted into normal file. It's not
-  possible to modify expected `content_type`, `size` and `hash`. The only
-  option is to remove existing upload and start a new one, with correct
-  parameters.
+  they are different, upload is not converted into normal file. Depending on
+  implementation, storage may just ignore incorrect initial expectations an
+  assign a real values to the file as long as they are allowed by storage
+  configuration. But it's recommended to reject such uploads, so it safer to
+  assume, that incorrect expectations are not accepted.
 
 
 Incomplete files support most of normal file actions, but you need to pass

@@ -69,7 +69,9 @@ class FsUploader(Uploader):
             data.content_type,
         )
 
+        # validation happens here
         tmp_result = self.storage.upload(location, upload, **extras)
+
         data.location = tmp_result.location
         data.storage_data = dict(tmp_result.storage_data, uploaded=0)
         return data

@@ -1,7 +1,7 @@
-name: Check types
+name: Typing
 on: [pull_request]
 env:
-  NODE_VERSION: '18'
+  NODE_VERSION: '20'
   PYTHON_VERSION: '3.9'
 
 permissions:
@@ -11,16 +11,21 @@ jobs:
   typecheck:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-python@v2
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v3
         with:
           python-version: ${{ env.PYTHON_VERSION }}
-      - uses: actions/setup-node@v3
+
+      - uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
+
       - name: Install python deps
-        run: SETUPTOOLS_ENABLE_FEATURES="legacy-editable" pip install -e. 'ckan[requirements,dev]' -e'.[gcs,libcloud,opendal]'
+        run: pip install 'ckan[requirements,dev]' -e'.[gcs,libcloud,opendal]'
+
       - name: Install node deps
         run: npm ci
+
       - name: Check types
         run: npx pyright

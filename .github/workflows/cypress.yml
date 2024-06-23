@@ -6,6 +6,12 @@ on:
   pull_request:
     branches:
       - master
+env:
+  NODE_VERSION: '20'
+  PYTHON_VERSION: '3.9'
+
+permissions:
+  contents: read
 
 jobs:
   test:
@@ -45,6 +51,10 @@ jobs:
     - name: Install requirements
       run: |
         pip install -e '.[dev]'
+
+    - uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
 
     - name: Setup extension
       run: |

@@ -10,4 +10,7 @@ changelog:  ## compile changelog
 
 
 test-server:
+	yes | ckan -c test.ini db clean
+	ckan -c test.ini db upgrade
+	yes | ckan -ctest.ini sysadmin add admin password=password123 email=admin@test.net
 	ckan -c test.ini run -t

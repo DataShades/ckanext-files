@@ -97,7 +97,7 @@ ckan.module("files--auto-upload", function ($) {
                 this.queue.add(file);
                 this.refreshFormState();
                 const options: ckan.CKANEXT_FILES.UploadOptions = {
-                    uploaderParams: [{ uploadAction: this.options.action }],
+                    uploaderArgs: [{ uploadAction: this.options.action }],
                 };
 
                 this.sandbox.files
@@ -370,10 +370,6 @@ ckan.module("files--queue", function ($) {
             widget.on("click", "[data-upload-resume]", this._onWidgetResume);
             widget.on("click", "[data-upload-pause]", this._onWidgetPause);
 
-            info.uploader.addEventListener(
-                "commit",
-                (event: CustomEvent) => (info.id = event.detail.id),
-            );
             info.uploader.addEventListener(
                 "fail",
                 ({

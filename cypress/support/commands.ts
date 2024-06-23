@@ -36,10 +36,6 @@
 //   }
 // }
 
-Cypress.Commands.add("resetDb", () => {
-    cy.exec("yes | ckan -ctest.ini db clean");
-    cy.exec("ckan -ctest.ini db upgrade");
-});
 Cypress.Commands.add("seedUsers", () => {
     for (let name in users) {
         const info = users[name];
@@ -80,11 +76,6 @@ declare namespace Cypress {
          *    cy.login("normal_user")
          */
         login(user?: string): Chainable<void>;
-
-        /**
-         * Clean and re-initialize the database.
-         */
-        resetDb(): Chainable<void>;
 
         /**
          * Create all default user accounts.

@@ -11,7 +11,7 @@ namespace ckan {
         export interface UploadOptions {
             uploader?: adapters.Base;
             adapter?: string;
-            uploaderParams?: any[];
+            uploaderArgs?: any[];
             requestParams?: { [key: string]: any };
         }
 
@@ -25,12 +25,12 @@ namespace ckan {
             storage: "default",
         };
 
-        function upload(file: File, options: UploadOptions) {
+        function upload(file: File, options: UploadOptions = {}) {
             const uploader =
                 options.uploader ||
                 makeUploader(
                     options.adapter || "Standard",
-                    ...(options.uploaderParams || []),
+                    ...(options.uploaderArgs || []),
                 );
             return uploader.upload(file, options.requestParams || {});
         }
@@ -97,11 +97,6 @@ namespace ckan {
                         new CustomEvent("start", { detail: { file } }),
                     );
                 }
-                dispatchCommit(file: File, id: string) {
-                    this.dispatchEvent(
-                        new CustomEvent("commit", { detail: { file, id } }),
-                    );
-                }
                 dispatchProgress(file: File, loaded: number, total: number) {
                     this.dispatchEvent(
                         new CustomEvent("progress", {
@@ -158,7 +153,6 @@ namespace ckan {
                                 this.dispatchError(file, result);
                                 fail(result);
                             } else if (result.success) {
-                                this.dispatchCommit(file, result.result.id);
                                 this.dispatchFinish(file, result.result);
                                 done(result.result);
                             } else {
@@ -225,7 +219,7 @@ namespace ckan {
                     let info;
 
                     try {
-                        info = await this._initializeUpload(file);
+                        info = await this._initializeUpload(file, params);
                     } catch (err) {
                         if (typeof err === "string") {
                             this.dispatchError(file, err);
@@ -235,7 +229,6 @@ namespace ckan {
                         return;
                     }
 
-                    this.dispatchCommit(file, info.id);
                     this.dispatchStart(file);
 
                     this._doUpload(file, info);
@@ -297,7 +290,7 @@ namespace ckan {
                     this.dispatchFinish(file, info);
                 }
 
-                _initializeUpload(file: File): Promise<UploadInfo> {
+                _initializeUpload(file: File, params: {[key: string]: any}): Promise<UploadInfo> {
                     return new Promise((done, fail) =>
                         this.sandbox.client.call(
                             "POST",
@@ -310,7 +303,7 @@ namespace ckan {
                                     size: file.size,
                                     content_type: file.type,
                                 },
-                                this.settings.initializePayload || {},
+                                params,
                             ),
                             (data: any) => {
                                 done(data.result);

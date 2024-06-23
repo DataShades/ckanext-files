@@ -1,21 +1,13 @@
-name: Cypress
-on:
-  push:
-    branches:
-      - master
-  pull_request:
-    branches:
-      - master
-
+name: Frontend tests
 env:
-  NODE_VERSION: '16'
+  NODE_VERSION: '20'
   PYTHON_VERSION: '3.9'
 
 permissions:
   contents: read
 
 jobs:
-  cypress:
+  frontend-test:
     runs-on: ubuntu-latest
     services:
       ckan-postgres:
@@ -48,6 +40,11 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
+      - name: Install Cypress deps
+        run: |
+            apt update
+            apt install -y libgtk2.0-0 libgtk-3-0 libgbm-dev libnotify-dev libnss3 libxss1 libasound2 libxtst6 xauth xvfb
+
       - uses: actions/setup-python@v4
         with:
           python-version: ${{ env.PYTHON_VERSION }}
@@ -56,18 +53,18 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
 
       - name: Install python deps
-        run: pip install 'ckan[requirements,dev]' -e.
+        run: |
+            git clone --depth 1 --branch ckan-2.10.4 https://github.com/ckan/ckan ../ckan
+            pip install '../ckan[requirements,dev]' -e.
 
       - name: Init environment
         run: |
-            sed -i -e 's/use = config:.*/use = config:\/srv\/app\/src\/ckan\/test-core.ini/' test.ini
-            ckan -c test.ini db upgrade
-            yes | ckan -c test.ini sysadmin add admin password=password123 email=admin@test.net
+          ckan -c test.ini db upgrade
 
       - name: Run Cypress
         uses: cypress-io/github-action@v6
         with:
-          start: ckan -c test-core-cypress.ini run
+          start: ckan -c test.ini run
 
       - uses: actions/upload-artifact@v3
         if: failure()

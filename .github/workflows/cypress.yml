@@ -1,5 +1,12 @@
 name: Cypress
-on: [pull_request]
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+
 env:
   NODE_VERSION: '16'
   PYTHON_VERSION: '3.9'

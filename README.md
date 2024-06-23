@@ -799,18 +799,20 @@ multiple stages. It can be used in following situations:
   only notifies the application, when upload is finished, so that the
   application can make file visible. This is a signed upload.
 
-All these situations are handled by 4 API actions:
+All these situations are handled by 4 API actions, which are available is
+storage has `MULTIPART` capability:
 
 * `files_multipart_start`: initialize multipart upload and set expected final
   size and MIMEtype. Real multipart upload usually just return upload ID from
   this action. Resumable upload creates empty file in the storage to accumulate
   content inside it. Signed upload produces a URL for direct upload.
-* `files_multipart_update`: most often this action accepts ID of the upload and
+* `files_multipart_update`: upload the fragment of the file of modify the
+  upload in some other way. Most often this action accepts ID of the upload and
   `upload` field with fragment of the uploaded file.
 * `files_multipart_refresh`: this action synchronizes and returns current
   upload progress. It can be used if upload was paused and client does not know
-  how many bytes were uploaded and from which byte must be started the next
-  upload fragment.
+  how many bytes were uploaded and from which byte the next upload fragment
+  starts.
 * `files_multipart_complete`: finalize the upload and convert it into normal
   file, available to other parts of the application. Multipart upload usually
   combines all uploaded parts into single file here. Resumable upload verifies
@@ -851,7 +853,7 @@ ckanapi action files_file_delete id=bdfc0268-d36d-4f1b-8a03-2f2aaa21de24 complet
 
 Incompleted files do not support streaming and downloading via public interface
 of the extension. But storage adapter can expose such features via custom
-methods if it technically possible.
+methods if it's technically possible.
 
 Example of basic multipart upload is shown above. `files:fs` adapter can be
 used for running this example, as it implements `MULTIPART`.
@@ -955,11 +957,11 @@ ckanapi action files_multipart_complete id=90ebd047-96a0-4f32-a810-ffc962cbc380
 
 Now file can be used normally. You can transfer file ownership to someone,
 stream or modify it. Pay attention to ID: completed file has its own unique ID,
-which is different from ID of the upload.
+which is different from ID of the incomplete upload.
 
 ### JavaScript utilities
 
-None: ckanext-files does not provide stable CKAN JS modules at the moment. Try
+Note: ckanext-files does not provide stable CKAN JS modules at the moment. Try
 creating your own widgets and share with us your examples or
 requirements. We'll consider creating and including widgets into ckanext-files
 if they are generic enough for majority of the users.
@@ -992,9 +994,9 @@ await sandbox.files.upload(
 
 This function uploads file to `default` storage via `files_file_create`
 action. Extra parameters for API call can be passed using second argument of
-upload. Use an object with `requestParams` key. Value of this key will be added
-to standard API request parameters. For example, if you want to use `storage`
-with name `memory` and `field` with value `custom`:
+`upload` helper. Use an object with `requestParams` key. Value of this key will
+be added to standard API request parameters. For example, if you want to use
+`storage` with name `memory` and `field` with value `custom`:
 
 ```js
 await sandbox.files.upload(
@@ -1006,12 +1008,12 @@ await sandbox.files.upload(
 If you need more control over upload, you can create an **uploader** and
 interact with it directly, instead of using `upload` helper.
 
-*Uploader* is an object that extends base uploader, which defines standard
-interface for this object. Uploader perfroms all the API calls internally and
-returns uploaded file details. Out of the box you can use `Standard` and
-`Multipart` uploaders. `Standard` uses `files_file_create` API action and
-specializes on normal uploads. `Multipart` relies on `files_multipart_*`
-actions and can be used to pause and continue upload.
+*Uploader* is an object that uploads file to server. It extends base uploader,
+which defines standard interface for this object. Uploader perfroms all the API
+calls internally and returns uploaded file details. Out of the box you can use
+`Standard` and `Multipart` uploaders. `Standard` uses `files_file_create` API
+action and specializes on normal uploads. `Multipart` relies on
+`files_multipart_*` actions and can be used to pause and continue upload.
 
 To create uploader instance, pass its name as a string to `makeUploader`. And
 then you can call `upload` method of the uploader to perform the actual
@@ -1055,7 +1057,7 @@ to do it.
 * pass `adapter` property with uploader name inside second argument of `upload`
   helper:
   ```js
-  await sandbox.files.upload(new File(...), {adapter: "My"})
+  await sandbox.files.upload(new File(...), {adapter: "Multipart"})
   ```
 * pass `uploader` property with uploader instance inside second argument of `upload`
   helper:
@@ -1361,7 +1363,7 @@ using `get_hash` method of the reader.
 
 Just make sure to read the whole file before checking the hash, because hash
 computed using consumed content. I.e, if you just create the hashing reader,
-but do not read a single byte from it, you'll receive the has of empty
+but do not read a single byte from it, you'll receive the hash of empty
 string. If you read just 1 byte, you'll receive the hash of this single byte,
 etc.
 

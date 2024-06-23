@@ -48,6 +48,7 @@ jobs:
 
     - name: Setup extension
       run: |
+        sed -i -e 's/use = config:.*/use = config:\/srv\/app\/src\/ckan\/test-core.ini/' test.ini
         ckan -c test.ini db upgrade
         yes | ckan -c test.ini sysadmin add admin password=password123 email=admin@test.net
 

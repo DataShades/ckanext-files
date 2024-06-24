@@ -1036,6 +1036,9 @@ upload events:
 
 * `start`: file upload started. Event has `detail` property with object that
   contains uploaded file as `file`.
+* `multipartid`: multipart upload initialized. Event has `detail` property with
+  object that contains uploaded file as `file` and ID of multipart upload as
+  `id`.
 * `progress`: another chunk of file was transferred to server. Event has
   `detail` property with object that contains uploaded file as `file`, number
   of loaded bytes as `loaded` and total number of bytes that must be

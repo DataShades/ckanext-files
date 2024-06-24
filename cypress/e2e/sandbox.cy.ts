@@ -4,9 +4,9 @@ const sandbox = () => ckan().invoke({ log: false }, "sandbox");
 
 const intercept = (
     action: string,
-    success: boolean = true,
-    result: any = {},
     alias: string = "request",
+    result: any = {},
+    success: boolean = true,
 ) =>
     cy
         .intercept("/api/action/" + action, (req) =>
@@ -173,7 +173,7 @@ describe("Standard uploader", () => {
             .as("adapter"),
     );
 
-    it("uploads files", () => {
+    it("sends expected data to server", () => {
         intercept("files_file_create");
         cy.get("@adapter").then((adapter: any) =>
             new adapter().upload(new File(["test"], "test.txt"), {}),
@@ -187,7 +187,7 @@ describe("Standard uploader", () => {
         });
     });
 
-    it.only("accepts params and even can override storage", () => {
+    it("accepts params and even can override storage", () => {
         intercept("files_file_create");
         cy.get("@adapter").then((adapter: any) =>
             new adapter().upload(new File(["test"], "test.txt"), {
@@ -202,6 +202,94 @@ describe("Standard uploader", () => {
                 field: "value",
                 upload: "test.txt",
             });
+        });
+    });
+});
+
+describe("Multipart uploader", () => {
+    beforeEach(() =>
+        ckan()
+            .then(
+                ({
+                    CKANEXT_FILES: {
+                        adapters: { Multipart },
+                    },
+                }) => Multipart,
+            )
+            .as("adapter"),
+    );
+
+    it("sends expected data to server", () => {
+        const content = "hello,world";
+        const chunkSize = 6;
+        let sizes = [content.length, chunkSize];
+
+        intercept("files_multipart_start", "start", {
+            id: "1",
+            storage_data: { uploaded: 0 },
+        });
+
+        cy.intercept("/api/action/files_multipart_update", (req) => {
+            return req.reply({
+                success: true,
+                result: {
+                    id: "1",
+                    storage_data: {
+                        uploaded: sizes.pop(),
+                    },
+                },
+            });
+        }).as("update");
+
+        intercept("files_multipart_complete", "complete");
+
+        cy.get("@adapter").then((adapter: any) =>
+            new adapter({ chunkSize: chunkSize }).upload(
+                new File([content], "test.txt", { type: "text/plain" }),
+                {},
+            ),
+        );
+
+        cy.wait("@start").then(({ request: { body } }) => {
+            expect(body).deep.equal({
+                size: content.length,
+                content_type: "text/plain",
+                storage: "default",
+                name: "test.txt",
+            });
+        });
+
+        cy.wait("@update").interceptFormData(
+            (data) => {
+                expect(data).includes({
+                    id: "1",
+                    position: "0",
+                });
+
+                cy.wrap(data.upload.slice().text()).should(
+                    "be.equal",
+                    content.slice(0, chunkSize),
+                );
+            },
+            { loadFileContent: true },
+        );
+
+        cy.wait("@update").interceptFormData(
+            (data) => {
+                expect(data).includes({
+                    id: "1",
+                    position: String(chunkSize),
+                });
+
+                cy.wrap(data.upload.slice().text()).should(
+                    "be.equal",
+                    content.slice(chunkSize, content.length),
+                );
+            },
+            { loadFileContent: true },
+        );
+        cy.wait("@complete").then(({ request: { body } }) => {
+            expect(body).deep.equal({ id: "1" });
         });
     });
 });

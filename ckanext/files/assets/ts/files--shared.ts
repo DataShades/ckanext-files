@@ -97,6 +97,11 @@ namespace ckan {
                         new CustomEvent("start", { detail: { file } }),
                     );
                 }
+                dispatchMultipartId(file: File, id: string) {
+                    this.dispatchEvent(
+                        new CustomEvent("multipartid", { detail: { file, id } }),
+                    );
+                }
                 dispatchProgress(file: File, loaded: number, total: number) {
                     this.dispatchEvent(
                         new CustomEvent("progress", {
@@ -229,9 +234,11 @@ namespace ckan {
                         return;
                     }
 
+                    this.dispatchMultipartId(file, info.id);
+
                     this.dispatchStart(file);
 
-                    this._doUpload(file, info);
+                    return this._doUpload(file, info);
                 }
 
                 async resume(file: File, id: string) {
@@ -288,6 +295,7 @@ namespace ckan {
                         return;
                     }
                     this.dispatchFinish(file, info);
+                    return info
                 }
 
                 _initializeUpload(file: File, params: {[key: string]: any}): Promise<UploadInfo> {

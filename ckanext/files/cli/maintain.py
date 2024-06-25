@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from datetime import datetime, timezone
-
 import click
 import sqlalchemy as sa
 
@@ -9,10 +7,6 @@ import ckan.plugins.toolkit as tk
 from ckan import model
 
 from ckanext.files import shared, utils
-
-
-def _now():
-    return datetime.now(timezone.utc)
 
 
 @click.group()

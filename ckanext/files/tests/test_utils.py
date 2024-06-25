@@ -173,7 +173,7 @@ class TestMakeUpload:
         """Strings converted into Upload."""
         string = faker.pystr()
         with pytest.raises(TypeError):
-            utils.make_upload(string)  # type: ignore
+            utils.make_upload(string)
 
     def test_bytes(self, faker: Faker):
         """Bytes converted into Upload."""

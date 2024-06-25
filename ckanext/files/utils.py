@@ -18,7 +18,7 @@ import mimetypes
 import re
 import tempfile
 from io import BufferedReader, BytesIO, TextIOWrapper
-from typing import Any, BinaryIO, Callable, Generic, Iterable, TypeVar, cast
+from typing import Any, Callable, Generic, Iterable, TypeVar, cast
 
 import jwt
 import magic
@@ -306,15 +306,7 @@ def humanize_filesize(value: int | float) -> str:
 
 
 def make_upload(
-    value: (
-        FileStorage
-        | Upload
-        | tempfile.SpooledTemporaryFile[Any]
-        | TextIOWrapper
-        | bytes
-        | bytearray
-        | BinaryIO
-    ),
+    value: types.Uploadable | Upload,
 ) -> Upload:
     """Convert value into Upload object
 

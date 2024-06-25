@@ -13,7 +13,7 @@ from ckan import model, sys
 from ckanext.files import base, config, exceptions, shared
 from ckanext.files.model import File, Owner
 
-from . import dev, migrate
+from . import dev, maintain, migrate, stats
 
 __all__ = [
     "files",
@@ -27,6 +27,8 @@ def files():
 
 files.add_command(dev.group, "dev")
 files.add_command(migrate.group, "migrate")
+files.add_command(stats.group, "stats")
+files.add_command(maintain.group, "maintain")
 
 
 @files.command()

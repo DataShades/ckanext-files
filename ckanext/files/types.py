@@ -22,8 +22,7 @@ AuthOperation = Literal["show", "update", "delete", "file_transfer"]
 class UploadStream(Protocol):
     def read(self, size: Any = ..., /) -> bytes: ...
 
-    def __iter__(self) -> Iterator[bytes]:
-        ...
+    def __iter__(self) -> Iterator[bytes]: ...
 
 
 __all__ = [

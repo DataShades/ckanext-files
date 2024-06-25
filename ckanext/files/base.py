@@ -27,7 +27,7 @@ import pytz
 import ckan.plugins.toolkit as tk
 from ckan.config.declaration import Declaration, Key
 
-from . import config, exceptions, model, utils, types
+from . import config, exceptions, model, types, utils
 
 
 class PFileModel(Protocol):

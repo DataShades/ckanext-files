@@ -1116,7 +1116,7 @@
         
   
   <span class="md-ellipsis">
-    Migration for group/organization images
+    Group/organization images
   </span>
   
 
@@ -1137,7 +1137,7 @@
         
   
   <span class="md-ellipsis">
-    Migration for user avatars
+    User avatars
   </span>
   
 
@@ -1158,7 +1158,7 @@
         
   
   <span class="md-ellipsis">
-    Resource
+    Resource uploads
   </span>
   
 
@@ -1253,7 +1253,15 @@
 is actively developed, this interface may change in future. Always use
 <code>inherit=True</code> when implementing <code>IFiles</code>.</p>
 <div class="highlight"><pre><span></span><code><span class="k">class</span> <span class="nc">IFiles</span><span class="p">(</span><span class="n">Interface</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Extension point for ckanext-files.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Extension point for ckanext-files.</span>
+
+<span class="sd">    This interface is not stabilized. Implement it with `inherit=True`.</span>
+
+<span class="sd">    Example:</span>
+<span class="sd">    &gt;&gt;&gt; class MyPlugin(p.SingletonPlugin):</span>
+<span class="sd">    &gt;&gt;&gt;     p.implements(interfaces.IFiles, inherit=True)</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="nf">files_get_storage_adapters</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Return mapping of storage type to adapter class.</span>

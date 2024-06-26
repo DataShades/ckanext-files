@@ -22,7 +22,7 @@
     
     
       
-        <title>Resource - ckanext-files</title>
+        <title>Resource uploads - ckanext-files</title>
       
     
     
@@ -72,7 +72,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#migration-for-resource-uploads" class="md-skip">
+        <a href="#resource-uploads" class="md-skip">
           Skip to content
         </a>
       
@@ -107,7 +107,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Resource
+              Resource uploads
             
           </span>
         </div>
@@ -1073,7 +1073,7 @@
         
   
   <span class="md-ellipsis">
-    Migration for group/organization images
+    Group/organization images
   </span>
   
 
@@ -1094,7 +1094,7 @@
         
   
   <span class="md-ellipsis">
-    Migration for user avatars
+    User avatars
   </span>
   
 
@@ -1117,53 +1117,18 @@
       <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
       
       
+        
       
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  <span class="md-ellipsis">
-    Resource
-  </span>
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
       
       <a href="./" class="md-nav__link md-nav__link--active">
         
   
   <span class="md-ellipsis">
-    Resource
+    Resource uploads
   </span>
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#migration-for-resource-uploads" class="md-nav__link">
-    <span class="md-ellipsis">
-      Migration for resource uploads
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
       
     </li>
   
@@ -1214,23 +1179,8 @@
   
   
   
+    
   
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#migration-for-resource-uploads" class="md-nav__link">
-    <span class="md-ellipsis">
-      Migration for resource uploads
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
   
 </nav>
                   </div>
@@ -1248,22 +1198,29 @@
   
 
 
-  <h1>Resource</h1>
-
-<h3 id="migration-for-resource-uploads">Migration for resource uploads</h3>
+<h1 id="resource-uploads">Resource uploads</h1>
 <p>Configure named storage for resources. Use <code>files:ckan_resource_fs</code> storage
 adapter.</p>
+<details class="info">
+<summary>Storage name</summary>
 <p>This extension expects that the name of resources storage will be
 <code>resources</code>. This name will be used in all other commands of this migration
 workflow. If you want to use different name for resources storage, override
 <code>ckanext.files.resources_storage</code> config option which has default value
 <code>resources</code> and don't forget to adapt commands if you use a different name for
 the storage.</p>
+</details>
+<details class="info">
+<summary>Location</summary>
 <p><code>ckanext.files.storage.resources.path</code> must match value of <code>ckan.storage_path</code>
 option, followed by <code>resources</code> directory. In example below we assume that
 value of <code>ckan.storage_path</code> is <code>/var/storage/ckan</code>.</p>
+</details>
+<details class="info">
+<summary>Size restriction</summary>
 <p>Example below sets 10MiB limit on resource size. Modify it if you are using
 different limit set by <code>ckan.max_resource_size</code>.</p>
+</details>
 <p>Unlike group and user images, this storage does not need upload type
 restriction and <code>public_root</code>.</p>
 <div class="highlight"><pre><span></span><code><span class="na">ckanext.files.storage.resources.type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">files:ckan_resource_fs</span>
@@ -1413,7 +1370,7 @@ yet</p>
       <nav class="md-footer__inner md-grid" aria-label="Footer" >
         
           
-          <a href="../user/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Migration for user avatars">
+          <a href="../user/" class="md-footer__link md-footer__link--prev" aria-label="Previous: User avatars">
             <div class="md-footer__button md-icon">
               
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.5.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256l137.3-137.4c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg>
@@ -1423,7 +1380,7 @@ yet</p>
                 Previous
               </span>
               <div class="md-ellipsis">
-                Migration for user avatars
+                User avatars
               </div>
             </div>
           </a>

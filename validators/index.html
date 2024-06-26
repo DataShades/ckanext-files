@@ -718,6 +718,17 @@
         
       
       
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    Validators
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
       <a href="./" class="md-nav__link md-nav__link--active">
         
   
@@ -727,6 +738,88 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#files_into_upload" class="md-nav__link">
+    <span class="md-ellipsis">
+      files_into_upload
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#files_parse_filesize" class="md-nav__link">
+    <span class="md-ellipsis">
+      files_parse_filesize
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#files_ensure_namename_field" class="md-nav__link">
+    <span class="md-ellipsis">
+      files_ensure_name(name_field)
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#files_file_id_exists" class="md-nav__link">
+    <span class="md-ellipsis">
+      files_file_id_exists
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#files_accept_file_with_typetype" class="md-nav__link">
+    <span class="md-ellipsis">
+      files_accept_file_with_type(*type)
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#files_accept_file_with_storagestorage_name" class="md-nav__link">
+    <span class="md-ellipsis">
+      files_accept_file_with_storage(*storage_name)
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#files_transfer_ownershipowner_type-name_of_owner_id_field" class="md-nav__link">
+    <span class="md-ellipsis">
+      files_transfer_ownership(owner_type, name_of_owner_id_field)
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
       
     </li>
   
@@ -1083,7 +1176,7 @@
         
   
   <span class="md-ellipsis">
-    Migration for group/organization images
+    Group/organization images
   </span>
   
 
@@ -1104,7 +1197,7 @@
         
   
   <span class="md-ellipsis">
-    Migration for user avatars
+    User avatars
   </span>
   
 
@@ -1125,7 +1218,7 @@
         
   
   <span class="md-ellipsis">
-    Resource
+    Resource uploads
   </span>
   
 
@@ -1182,6 +1275,77 @@
     
   
   
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#files_into_upload" class="md-nav__link">
+    <span class="md-ellipsis">
+      files_into_upload
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#files_parse_filesize" class="md-nav__link">
+    <span class="md-ellipsis">
+      files_parse_filesize
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#files_ensure_namename_field" class="md-nav__link">
+    <span class="md-ellipsis">
+      files_ensure_name(name_field)
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#files_file_id_exists" class="md-nav__link">
+    <span class="md-ellipsis">
+      files_file_id_exists
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#files_accept_file_with_typetype" class="md-nav__link">
+    <span class="md-ellipsis">
+      files_accept_file_with_type(*type)
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#files_accept_file_with_storagestorage_name" class="md-nav__link">
+    <span class="md-ellipsis">
+      files_accept_file_with_storage(*storage_name)
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#files_transfer_ownershipowner_type-name_of_owner_id_field" class="md-nav__link">
+    <span class="md-ellipsis">
+      files_transfer_ownership(owner_type, name_of_owner_id_field)
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
 </nav>
                   </div>
                 </div>
@@ -1199,44 +1363,25 @@
 
 
 <h1 id="validators">Validators</h1>
-<table>
-<thead>
-<tr>
-<th>Validator</th>
-<th>Effect</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>files_into_upload</td>
-<td>Transform value of field(usually file uploaded via <code>&lt;input type="file"&gt;</code>) into upload object using <code>ckanext.files.shared.make_upload</code></td>
-</tr>
-<tr>
-<td>files_parse_filesize</td>
-<td>Convert human-readable filesize(1B, 10MiB, 20GB) into an integer</td>
-</tr>
-<tr>
-<td>files_ensure_name(name_field)</td>
-<td>If <code>name_field</code> is empty, copy into it filename from current field. Current field must be processed with <code>files_into_upload</code> first</td>
-</tr>
-<tr>
-<td>files_file_id_exists</td>
-<td>Verify that file ID exists</td>
-</tr>
-<tr>
-<td>files_accept_file_with_type(*type)</td>
-<td>Verify that file ID refers to file with one of specified types. As a type can be used full MIMEtype(<code>image/png</code>), or just its main(<code>image</code>) or secondary(<code>png</code>) part</td>
-</tr>
-<tr>
-<td>files_accept_file_with_storage(*storage_name)</td>
-<td>Verify that file ID refers to file stored inside one of specified storages</td>
-</tr>
-<tr>
-<td>files_transfer_ownership(owner_type, name_of_owner_id_field)</td>
-<td>Transfer ownership for file ID to specified entity when current API action is successfully finished</td>
-</tr>
-</tbody>
-</table>
+<h2 id="files_into_upload">files_into_upload</h2>
+<p>Transform value of field(usually file uploaded via <code>&lt;input type="file"&gt;</code>) into
+upload object using <code>ckanext.files.shared.make_upload</code></p>
+<h2 id="files_parse_filesize">files_parse_filesize</h2>
+<p>Convert human-readable filesize(1B, 10MiB, 20GB) into an integer</p>
+<h2 id="files_ensure_namename_field">files_ensure_name(name_field)</h2>
+<p>If <code>name_field</code> is empty, copy into it filename from current field. Current
+field must be processed with <code>files_into_upload</code> first</p>
+<h2 id="files_file_id_exists">files_file_id_exists</h2>
+<p>Verify that file ID exists</p>
+<h2 id="files_accept_file_with_typetype">files_accept_file_with_type(*type)</h2>
+<p>Verify that file ID refers to file with one of specified types. As a type can
+be used full MIMEtype(<code>image/png</code>), or just its main(<code>image</code>) or
+secondary(<code>png</code>) part</p>
+<h2 id="files_accept_file_with_storagestorage_name">files_accept_file_with_storage(*storage_name)</h2>
+<p>Verify that file ID refers to file stored inside one of specified storages</p>
+<h2 id="files_transfer_ownershipowner_type-name_of_owner_id_field">files_transfer_ownership(owner_type, name_of_owner_id_field)</h2>
+<p>Transfer ownership for file ID to specified entity when current API action is
+successfully finished</p>
 
 
 

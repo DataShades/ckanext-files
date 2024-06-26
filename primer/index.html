@@ -1067,7 +1067,7 @@
         
   
   <span class="md-ellipsis">
-    Migration for group/organization images
+    Group/organization images
   </span>
   
 
@@ -1088,7 +1088,7 @@
         
   
   <span class="md-ellipsis">
-    Migration for user avatars
+    User avatars
   </span>
   
 
@@ -1109,7 +1109,7 @@
         
   
   <span class="md-ellipsis">
-    Resource
+    Resource uploads
   </span>
   
 
@@ -1183,8 +1183,7 @@
 
 
 <h1 id="welcome-to-mkdocs">Welcome to MkDocs</h1>
-<p>For full documentation visit <a href="https://www.mkdocs.org">mkdocs.org</a>{ data-preview }</p>
-<p><a href="../api/#files_file_createcontext-context-data_dict-dictstr-any-dictstr-any">Attribute Lists</a>{ data-preview }</p>
+<p>For full documentation visit <a href="https://www.mkdocs.org">mkdocs.org</a></p>
 <div class="admonition note">
 <p class="admonition-title">Some title</p>
 </div>
@@ -1248,8 +1247,16 @@ John-&gt;&gt;Bob: How about you?
 Bob--&gt;&gt;John: Jolly good!</code></pre>
 <p>```py title="IFiles"
 class IFiles(Interface):
-    """Extension point for ckanext-files."""</p>
-<pre><code>def files_get_storage_adapters(self) -&gt; dict[str, Any]:
+    """Extension point for ckanext-files.</p>
+<pre><code>This interface is not stabilized. Implement it with `inherit=True`.
+
+Example:
+&gt;&gt;&gt; class MyPlugin(p.SingletonPlugin):
+&gt;&gt;&gt;     p.implements(interfaces.IFiles, inherit=True)
+
+"""
+
+def files_get_storage_adapters(self) -&gt; dict[str, Any]:
     """Return mapping of storage type to adapter class.
 
     Example:

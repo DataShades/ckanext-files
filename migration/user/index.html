@@ -22,7 +22,7 @@
     
     
       
-        <title>Migration for user avatars - ckanext-files</title>
+        <title>User avatars - ckanext-files</title>
       
     
     
@@ -72,7 +72,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#migration-for-user-avatars" class="md-skip">
+        <a href="#user-avatars" class="md-skip">
           Skip to content
         </a>
       
@@ -107,7 +107,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Migration for user avatars
+              User avatars
             
           </span>
         </div>
@@ -1073,7 +1073,7 @@
         
   
   <span class="md-ellipsis">
-    Migration for group/organization images
+    Group/organization images
   </span>
   
 
@@ -1103,7 +1103,7 @@
         
   
   <span class="md-ellipsis">
-    Migration for user avatars
+    User avatars
   </span>
   
 
@@ -1125,7 +1125,7 @@
         
   
   <span class="md-ellipsis">
-    Resource
+    Resource uploads
   </span>
   
 
@@ -1198,27 +1198,39 @@
   
 
 
-<h1 id="migration-for-user-avatars">Migration for user avatars</h1>
+<h1 id="user-avatars">User avatars</h1>
+<div class="admonition info">
+<p class="admonition-title">Info</p>
 <p>This workflow is similar to group/organization migration. It contains the
 sequence of actions, but explanations are removed, because you already know
 details from the group migration. Only steps that are different will contain
 detailed explanation of the process.</p>
+</div>
 <p>Configure local filesystem storage with support of public
 links(<code>files:public_fs</code>) for user images.</p>
+<details class="info">
+<summary>Storage name</summary>
 <p>This extension expects that the name of user images storage will be
 <code>user_images</code>. This name will be used in all other commands of this migration
 workflow. If you want to use different name for user images storage, override
 <code>ckanext.files.user_images_storage</code> config option which has default value
 <code>user_images</code> and don't forget to adapt commands if you use a different name
 for the storage.</p>
+</details>
+<details class="info">
+<summary>Location</summary>
 <p><code>ckanext.files.storage.user_images.path</code> resembles this option for
 group/organization images storage. But user images are kept inside <code>user</code>
 folder by default. As result, value of this option should match value of
 <code>ckan.storage_path</code> option plus <code>storage/uploads/user</code>. In example below we
 assume that value of <code>ckan.storage_path</code> is <code>/var/storage/ckan</code>.</p>
+</details>
+<details class="info">
+<summary>Public URL</summary>
 <p><code>ckanext.files.storage.user_images.public_root</code> resebles this option for
 group/organization images storage. But user images are available at CKAN URL
 plus <code>uploads/user</code>.</p>
+</details>
 <div class="highlight"><pre><span></span><code><span class="na">ckanext.files.storage.user_images.type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">files:public_fs</span>
 <span class="na">ckanext.files.storage.user_images.max_size</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">10MiB</span>
 <span class="na">ckanext.files.storage.user_images.supported_types</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">image</span>
@@ -1314,7 +1326,7 @@ new filenames resemble UUIDs.</p>
       <nav class="md-footer__inner md-grid" aria-label="Footer" >
         
           
-          <a href="../group/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Migration for group/organization images">
+          <a href="../group/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Group/organization images">
             <div class="md-footer__button md-icon">
               
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.5.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256l137.3-137.4c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg>
@@ -1324,20 +1336,20 @@ new filenames resemble UUIDs.</p>
                 Previous
               </span>
               <div class="md-ellipsis">
-                Migration for group/organization images
+                Group/organization images
               </div>
             </div>
           </a>
         
         
           
-          <a href="../resource/" class="md-footer__link md-footer__link--next" aria-label="Next: Resource">
+          <a href="../resource/" class="md-footer__link md-footer__link--next" aria-label="Next: Resource uploads">
             <div class="md-footer__title">
               <span class="md-footer__direction">
                 Next
               </span>
               <div class="md-ellipsis">
-                Resource
+                Resource uploads
               </div>
             </div>
             <div class="md-footer__button md-icon">

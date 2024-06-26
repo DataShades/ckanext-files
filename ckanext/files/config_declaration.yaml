@@ -79,10 +79,17 @@ groups:
         type: bool
         default: true
         description: |
-            Use `*_update` auth function to check cascade access for ownership
-            transfer. Works with `ckanext.files.owner.cascade_access`, which by
-            itself will check `*_file_transfer` auth function, but switch to
-            `*_update` when this flag is enabled.
+            Use `<OWNER_TYPE>_update` auth function to check access for
+            ownership transfer. When this flag is disabled
+            `<OWNER_TYPE>_file_transfer` auth function is used.
+
+      - key: ckanext.files.owner.scan_as_update
+        type: bool
+        default: true
+        description: |
+            Use `<OWNER_TYPE>_update` auth function to check access when
+            listing all files of the owner. When this flag is disabled
+            `<OWNER_TYPE>_file_scan` auth function is used.
 
       - key: ckanext.files.storage.<NAME>.<OPTION>
         type: dynamic

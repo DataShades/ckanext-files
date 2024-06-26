@@ -153,6 +153,17 @@ def transfer_ownership(
 
 
 @validator_args
+def file_scan(
+    default: ValidatorFactory,
+    unicode_safe: Validator,
+) -> Schema:
+    return {
+        "owner_id": [default(""), unicode_safe],
+        "owner_type": [default("user"), unicode_safe],
+    }
+
+
+@validator_args
 def file_pin(
     boolean_validator: Validator,
     default: ValidatorFactory,

@@ -556,22 +556,35 @@ assigned as an owner of the file. From now on, the owner can perform other
 operations, such as renaming/displaying/removing with the file.
 
 Apart from chaining auth function, to modify access rules for the file, plugin
-can implement `IFiles.files_is_allowed` method.
+can implement `IFiles.files_file_allows` and `IFiles.files_owner_allows`
+methods.
 
 ```python
-def files_is_allowed(
+def files_file_allows(
     self,
     context: Context,
-    file: File | Multipart | None,
-    operation: types.AuthOperation,
-    next_owner: Any | None,
+    file: File | Multipart,
+    operation: types.FileOperation,
 ) -> bool | None:
     ...
+
+def files_owner_allows(
+    self,
+    context: Context,
+    owner_type: str, owner_id: str,
+    operation: types.OwnerOperation,
+) -> bool | None:
+    ...
+
 ```
 
-This method receives current action context, the file that is accessed, the
-name of operation(`show`, `update`, `delete`, `file_transfer`) and the next
-owner in case of file transfer.
+These methods receive current action context, the tested object details, and
+the name of operation(`show`, `update`, `delete`,
+`file_transfer`). `files_file_allows` checks permission for accessed file. It's
+usually called when user interacts with file directly. `files_owner_allows`
+works with owner described by type and ID. It's usually called when user
+transfer file ownership, perform bulk file operation for owner files, or just
+trying to get the list of files that belongs to owner.
 
 If method returns true/false, operation is allowed/denied. If method returns
 `None`, default logic used to check access.
@@ -580,27 +593,33 @@ As already mentoined, by default, user who owns the file, can access it. But
 what about different owners? What if file owned by other entity, like resource
 or dataset?
 
-Out of the box, nobody can access such files. But there are two config options
-that modify this restriction. `ckanext.files.owner.cascade_access =
-ENTITY_TYPE` gives access to file owned by entity if user already has access to
-entity itself. Use words like `package`, `resource`, `group` instead of
-`ENTITY_TYPE`.
+Out of the box, nobody can access such files. But there are three config
+options that modify this restriction.
+
+`ckanext.files.owner.cascade_access = ENTITY_TYPE ANOTHER_TYPE` gives access to
+file owned by entity if user already has access to entity itself. Use words
+like `package`, `resource`, `group` instead of `ENTITY_TYPE`.
 
 For example: file is owned by *resource*. If cascade access is enabled, whoever
 has access to `resource_show` of the *resource*, can also see the file owned by
 this resource. If user passes `resource_update` for *resource*, he can also
 modify the file owned by this resource, etc.
 
-The second option is `ckanext.files.owner.transfer_as_update`. By default,
-there is no auth function that gives user cascade permission to modify
-ownership of the file. But when transfer-as-update enabled together with
-cascade access, any user who has `resource_update`, can also modify ownership
-of the file owned by *resource*.
-
-Be careful and do not add `user` to
+Important: be careful and do not add `user` to
 `ckanext.files.owner.cascade_access`. User's own files are considered private
 and most likely you don't really need anyone else to be able to see or modify
 these files.
+
+The second option is `ckanext.files.owner.transfer_as_update`.  When
+transfer-as-update enabled, any user who has `<OWNER_TYPE>_update` permission,
+can transfer own files to this `OWNER_TYPE`. Intead of using this option, you
+can define `<OWNER_TYPE>_file_transfer`.
+
+And the third option is `ckanext.files.owner.scan_as_update`.  Just as with
+ownership transfer, it gives user permission to list all files of the owner if
+user can `<OWNER_TYPE>_update` it. Intead of using this option, you
+can define `<OWNER_TYPE>_file_scan`.
+
 
 ### Ownership transfer
 
@@ -611,7 +630,7 @@ To transfer ownership, use `files_transfer_ownership` action and specify `id`
 of the file, `owner_id` and `owner_type` of the new owner.
 
 You can't just transfer ownership to anyone. You either must pass
-`IFiles.files_is_allowed` check for `file_transfer` operation, or pass a
+`IFiles.files_owner_allows` check for `file_transfer` operation, or pass a
 cascade access check for the future owner of the file when cascade access and
 transfer-as-update is enabled.
 
@@ -1618,30 +1637,71 @@ class IFiles(Interface):
         """
         return {}
 
-    def files_is_allowed(
+    def files_file_allows(
         self,
         context: Context,
-        file: File | Multipart | None,
-        operation: types.AuthOperation,
-        next_owner: Any | None,
+        file: File | Multipart,
+        operation: types.FileOperation,
     ) -> bool | None:
         """Decide if user is allowed to perform specified operation on the file.
 
         Return True/False if user allowed/not allowed. Return `None` to rely on
-        other plugins. If every implementation returns `None`, default logic
-        allows only user who owns the file to perform any operation on it. It
-        means, that nobody is allowed to do anything with file owner by
-        resource, dataset, group, etc.
+        other plugins.
+
+        Default implementation relies on cascade_access config option. If owner
+        of file is included into cascade access, user can perform operation on
+        file if he can perform the same operation with file's owner.
+
+        If current owner is not affected by cascade access, user can perform
+        operation on file only if user owns the file.
 
         Example:
-        >>> def files_is_allowed(
-        >>>         self, context, file, operation, next_owner
+        >>> def files_file_allows(
+        >>>         self, context,
+        >>>         file: shared.File | shared.Multipart,
+        >>>         operation: shared.types.FileOperation
         >>> ) -> bool | None:
         >>>     if file.owner_info and file.owner_info.owner_type == "resource":
         >>>         return is_authorized_boolean(
         >>>             f"resource_{operation}",
         >>>             context,
         >>>             {"id": file.owner_info.id}
+        >>>         )
+        >>>
+        >>>     return None
+
+        """
+        return None
+
+    def files_owner_allows(
+        self,
+        context: Context,
+        owner_type: str,
+        owner_id: str,
+        operation: types.OwnerOperation,
+    ) -> bool | None:
+        """Decide if user is allowed to perform specified operation on the owner.
+
+        Return True/False if user allowed/not allowed. Return `None` to rely on
+        other plugins.
+
+        Default implementation relies on cascade_access config option.
+
+        If current owner is not affected by cascade access, user can perform
+        operations only on himself.
+
+
+        Example:
+        >>> def files_owner_allows(
+        >>>         self, context,
+        >>>         owner_type: str, owner_id: str,
+        >>>         operation: shared.types.OwnerOperation
+        >>> ) -> bool | None:
+        >>>     if owner_type == "resource" and operation == "file_transfer":
+        >>>         return is_authorized_boolean(
+        >>>             f"resource_update",
+        >>>             context,
+        >>>             {"id": owner_id}
         >>>         )
         >>>
         >>>     return None
@@ -1744,12 +1804,17 @@ ckanext.files.authenticated_uploads.storages = default
 # (optional, default: package resource group organization)
 ckanext.files.owner.cascade_access = package resource group organization
 
-# Use `*_update` auth function to check cascade access for ownership
-# transfer. Works with `ckanext.files.owner.cascade_access`, which by itself
-# will check `*_file_transfer` auth function, but switch to `*_update` when
-# this flag is enabled.
+# Use `<OWNER_TYPE>_update` auth function to check access for ownership
+# transfer. When this flag is disabled `<OWNER_TYPE>_file_transfer` auth
+# function is used.
 # (optional, default: true)
 ckanext.files.owner.transfer_as_update = true
+
+# Use `<OWNER_TYPE>_update` auth function to check access when listing all
+# files of the owner. When this flag is disabled `<OWNER_TYPE>_file_scan`
+# auth function is used.
+# (optional, default: true)
+ckanext.files.owner.scan_as_update = true
 ```
 
 ### Storage configuration

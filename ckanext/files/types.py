@@ -1,7 +1,6 @@
 """Types for the extension.
 
 """
-
 from __future__ import annotations
 
 import tempfile
@@ -20,11 +19,12 @@ from ckan.types import (
     ValidatorFactory,
 )
 
-AuthOperation = Literal["show", "update", "delete", "file_transfer"]
+FileOperation = Literal["show", "update", "delete"]
+OwnerOperation = Literal["show", "update", "delete", "file_transfer", "file_scan"]
 
 Uploadable = Union[
     FileStorage,
-    tempfile.SpooledTemporaryFile[Any],
+    "tempfile.SpooledTemporaryFile[Any]",
     TextIOWrapper,
     bytes,
     bytearray,
@@ -45,7 +45,8 @@ __all__ = [
     "FlattenKey",
     "FlattenErrorDict",
     "FlattenDataDict",
-    "AuthOperation",
     "Declaration",
+    "FileOperation",
+    "OwnerOperation",
     "Key",
 ]

@@ -188,11 +188,10 @@ def files_file_search(  # noqa: C901, PLR0912
 
     Returns:
 
-    * `count`: total number of files mathing filters
+    * `count`: total number of files matching filters
     * `results`: array of dictionaries with file details.
 
     """
-
     tk.check_access("files_file_search", context, data_dict)
     sess = context["session"]
 
@@ -713,6 +712,46 @@ def files_multipart_complete(
     sess.commit()
 
     return fileobj.dictize(context)
+
+
+@tk.side_effect_free
+@validate(schema.file_scan)
+def files_file_scan(
+    context: Context,
+    data_dict: dict[str, Any],
+) -> dict[str, Any]:
+    """List files of the owner
+
+    This action internally calls files_file_search, but with static values of
+    owner filters. If owner is not specified, files filtered by current
+    user. If owner is specified, user must pass authorization check to see
+    files.
+
+    Params:
+
+    * `owner_id`: ID of the owner
+    * `owner_type`: type of the owner
+
+    The all other parameters are passed as-is to `files_file_search`.
+
+    Returns:
+
+    * `count`: total number of files matching filters
+    * `results`: array of dictionaries with file details.
+
+    """
+    if not data_dict["owner_id"] and data_dict["owner_type"] == "user":
+        user = context.get("auth_user_obj")
+
+        if isinstance(user, model.User) or (user := model.User.get(context["user"])):
+            data_dict["owner_id"] = user.id
+
+
+    tk.check_access("files_file_scan", context, data_dict)
+
+    params = data_dict.pop("__extras", {})
+    params.update(data_dict)
+    return tk.get_action("files_file_search")({"ignore_auth": True}, params)
 
 
 @validate(schema.transfer_ownership)

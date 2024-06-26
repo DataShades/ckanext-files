@@ -7,28 +7,64 @@ import ckan.plugins.toolkit as tk
 from ckan import authz, model
 from ckan.types import AuthResult, Context
 
-from ckanext.files import interfaces, shared, types, utils
+from ckanext.files import interfaces, shared, types
 
 
-def _is_allowed(
+def _owner_allows(
     context: Context,
-    file: shared.File | shared.Multipart | None,
-    operation: types.AuthOperation,
-    next_owner: Any | None = None,
-) -> Any:
+    owner_type: str,
+    owner_id: str,
+    operation: types.OwnerOperation,
+) -> bool:
+    """Decide if user is allowed to perform operation on owner."""
+    for plugin in p.PluginImplementations(interfaces.IFiles):
+        result = plugin.files_owner_allows(context, owner_type, owner_id, operation)
+        if result is not None:
+            return result
+
+    if (operation == "file_transfer" and shared.config.transfer_as_update()) or (
+        operation == "file_scan" and shared.config.scan_as_update()
+    ):
+        func_name = f"{owner_type}_update"
+
+    else:
+        func_name = f"{owner_type}_{operation}"
+
+    try:
+        tk.check_access(
+            func_name,
+            tk.fresh_context(context),
+            {"id": owner_id},
+        )
+
+    except tk.NotAuthorized:
+        return False
+
+    except ValueError:
+        pass
+    return False
+
+
+def _file_allows(
+    context: Context,
+    file: shared.File | shared.Multipart,
+    operation: types.FileOperation,
+) -> bool:
     """Decide if user is allowed to perform operation on file."""
+    for plugin in p.PluginImplementations(interfaces.IFiles):
+        result = plugin.files_file_allows(context, file, operation)
+        if result is not None:
+            return result
+
     info = file.owner_info if file else None
 
     if info and info.owner_type in shared.config.cascade_access():
-        if operation == "file_transfer" and shared.config.transfer_as_update():
-            func_name = f"{info.owner_type}_update"
-        else:
-            func_name = f"{info.owner_type}_{operation}"
+        func_name = f"{info.owner_type}_{operation}"
 
         try:
             tk.check_access(
                 func_name,
-                context,
+                tk.fresh_context(context),
                 {"id": info.owner_id},
             )
 
@@ -37,11 +73,7 @@ def _is_allowed(
 
         except ValueError:
             pass
-
-    for plugin in p.PluginImplementations(interfaces.IFiles):
-        result = plugin.files_is_allowed(context, file, operation, next_owner)
-        if result is not None:
-            return result
+    return False
 
 
 def _get_user(context: Context) -> model.User | None:
@@ -103,20 +135,20 @@ def files_owns_file(context: Context, data_dict: dict[str, Any]) -> AuthResult:
 
 @tk.auth_disallow_anonymous_access
 def files_edit_file(context: Context, data_dict: dict[str, Any]) -> AuthResult:
-    file = _get_file(context, data_dict["id"], data_dict.get("completed", True))
-    result = _is_allowed(context, file, "update")
-    if result is None:
-        return authz.is_authorized("files_owns_file", context, data_dict)
+    result = authz.is_authorized_boolean("files_owns_file", context, data_dict)
+    if not result:
+        file = _get_file(context, data_dict["id"], data_dict.get("completed", True))
+        result = bool(file and _file_allows(context, file, "update"))
 
     return {"success": result, "msg": "Not allowed to edit file"}
 
 
 @tk.auth_disallow_anonymous_access
 def files_read_file(context: Context, data_dict: dict[str, Any]) -> AuthResult:
-    file = _get_file(context, data_dict["id"], data_dict.get("completed", True))
-    result = _is_allowed(context, file, file and file.owner, "show")
-    if result is None:
-        return authz.is_authorized("files_edit_file", context, data_dict)
+    result = authz.is_authorized_boolean("files_owns_file", context, data_dict)
+    if not result:
+        file = _get_file(context, data_dict["id"], data_dict.get("completed", True))
+        result = bool(file and _file_allows(context, file, "show"))
 
     return {"success": result, "msg": "Not allowed to read file"}
 
@@ -160,10 +192,10 @@ def files_file_create(context: Context, data_dict: dict[str, Any]) -> AuthResult
 @tk.auth_disallow_anonymous_access
 def files_file_delete(context: Context, data_dict: dict[str, Any]) -> AuthResult:
     """Only owner can remove files."""
-    file = _get_file(context, data_dict["id"], data_dict.get("completed", True))
-    result = _is_allowed(context, file, "delete")
-    if result is None:
-        return authz.is_authorized("files_edit_file", context, data_dict)
+    result = authz.is_authorized_boolean("files_owns_file", context, data_dict)
+    if not result:
+        file = _get_file(context, data_dict["id"], data_dict.get("completed", True))
+        result = bool(file and _file_allows(context, file, "delete"))
 
     return {"success": result, "msg": "Not allowed to delete file"}
 
@@ -237,13 +269,35 @@ def files_transfer_ownership(context: Context, data_dict: dict[str, Any]) -> Aut
     if file and file.owner_info and file.owner_info.pinned and not data_dict["force"]:
         return {"success": False, "msg": "File is pinned"}
 
-    owner = utils.get_owner(data_dict["owner_type"], data_dict["owner_id"])
-    result = _is_allowed(context, file, "file_transfer", owner)
+    result = authz.is_authorized_boolean("files_manage_files", context, data_dict)
+    if not result:
 
-    if result is None:
-        return authz.is_authorized("files_manage_files", context, data_dict)
+        result = bool(
+            file
+            and _file_allows(context, file, "update")
+            and _owner_allows(
+                context,
+                data_dict["owner_type"],
+                data_dict["owner_id"],
+                "file_transfer",
+            )
+        )
 
     return {"success": result, "msg": "Not allowed to edit file"}
+
+
+def files_file_scan(context: Context, data_dict: dict[str, Any]) -> AuthResult:
+    """Only file owner can list files."""
+    result = authz.is_authorized_boolean("files_manage_files", context, data_dict)
+    if not result:
+        result = _owner_allows(
+            context,
+            data_dict["owner_type"],
+            data_dict["owner_id"],
+            "file_scan",
+        )
+
+    return {"success": result, "msg": "Not allowed to list files"}
 
 
 @tk.auth_disallow_anonymous_access

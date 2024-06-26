@@ -65,9 +65,9 @@ def upgrade():
 
     for id, name, storage, ctime, data, plugin_data in bind.execute(stmt):
         data["location"] = data.pop("filename")
-        content_type = data.pop("content_type")
-        size = data.pop("size")
-        hash = data.pop("hash")
+        content_type = data.pop("content_type", "application/octet-stream")
+        size = data.pop("size", 0)
+        hash = data.pop("hash", "")
 
         bind.execute(
             sa.insert(multipart_table).values(

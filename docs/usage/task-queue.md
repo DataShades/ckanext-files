@@ -35,28 +35,30 @@ called when task is executed. This method receives the result of action which
 caused task execution, task's position in queue and the result of previous
 task.
 
-For example, one of `attachment_id` validatos can queue the following `MyTask`
-via `add_task(MyTask(file_id))` to transfer `file_id` ownership to the updated
-dataset:
+!!! example
 
-```python
-from ckanext.files.shared import Task
+    One of `attachment_id` validators can queue the following `MyTask`
+    via `add_task(MyTask(file_id))` to transfer `file_id` ownership to the
+    updated dataset:
 
-class MyTask(Task):
-    def __init__(self, file_id):
-        self.file_id = file_id
+    ```python
+    from ckanext.files.shared import Task
 
-    def run(self, dataset, idx, prev):
-        return tk.get_action("files_transfer_ownership")(
-            {"ignore_auth": True},
-            {
-                "id": self.file_id,
-                "owner_type": "package",
-                "owner_id": dataset["id"],
-                "pin": True,
-            },
-        )
-```
+    class MyTask(Task):
+        def __init__(self, file_id):
+            self.file_id = file_id
+
+        def run(self, dataset, idx, prev):
+            return tk.get_action("files_transfer_ownership")(
+                {"ignore_auth": True},
+                {
+                    "id": self.file_id,
+                    "owner_type": "package",
+                    "owner_id": dataset["id"],
+                    "pin": True,
+                },
+            )
+    ```
 
 As the first argument, `Task.run` receives the result of action which was
 called. Right now only following actions support tasks:

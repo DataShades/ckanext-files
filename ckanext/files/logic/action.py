@@ -746,7 +746,6 @@ def files_file_scan(
         if isinstance(user, model.User) or (user := model.User.get(context["user"])):
             data_dict["owner_id"] = user.id
 
-
     tk.check_access("files_file_scan", context, data_dict)
 
     params = data_dict.pop("__extras", {})
@@ -760,9 +759,6 @@ def files_transfer_ownership(
     data_dict: dict[str, Any],
 ) -> dict[str, Any]:
     """Transfer file ownership.
-
-    Depending on storage this action may require additional parameters. Most
-    likely, `upload` with the fragment of uploaded file.
 
     Params:
 

@@ -254,9 +254,9 @@ class UploadAndAttachTask(Task):
 def with_task_queue(func: Any, name: str | None = None):
     """Decorator for functions that schedule tasks.
 
-    Decorated function automatically initializes separate task queue that is
+    Decorated function automatically initializes separate task queue which is
     processed when function is finished. All tasks receive function's result as
-    execution data(first argument to Task.run).
+    execution data(first argument of `Task.run`).
 
     Without this decorator, you have to manually create task queue context
     before queuing tasks.
@@ -294,7 +294,7 @@ def add_task(task: Task):
     >>>
     >>> task_producer()
 
-    If task queue context can be initialized manually using TaskQueue and
+    Task queue context can be initialized manually using TaskQueue and
     `with` statement:
     >>> queue = TaskQueue()
     >>> with queue:

@@ -19,11 +19,10 @@ nav:
 
     - upload-strategies.md
     - implementation-example.md
+    - Shared: shared.md
     - cli.md
-    - Internals:
-        - API: api.md
-        - validators.md
-        - Shared: shared.md
+    - API: api.md
+    - validators.md
     - interfaces.md
     - Configuration:
         - configuration/index.md
@@ -48,6 +47,12 @@ markdown_extensions:
     - pymdownx.snippets
     - admonition
     - pymdownx.details
+    - pymdownx.emoji:
+        emoji_index: !!python/name:material.extensions.emoji.twemoji
+        emoji_generator: !!python/name:material.extensions.emoji.to_svg
+        options:
+          custom_icons:
+            - overrides/.icons
     - pymdownx.superfences:
         custom_fences:
           - name: mermaid

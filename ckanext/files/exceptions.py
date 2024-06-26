@@ -1,34 +1,31 @@
 """Exception definitions for the extension.
 
-Avoid raising python-native exceptions and prefer defining `FilesError`
-subclass.
-
 Hierarchy:
 
-Exception
-* FilesError
-* * QueueError
-* * * OutOfQueueError
-* * StorageError
-* * * UnknownAdapterError
-* * * UnknownStorageError
-* * * UnsupportedOperationError
-* * * PermissionError
-* * * MissingFileError
-* * * ExistingFileError
-* * * ExtrasError
-* * * * MissingExtrasError
-* * * InvalidStorageConfigurationError
-* * * * MissingStorageConfigurationError
-* * * UploadError
-* * * * WrongUploadTypeError
-* * * * NameStrategyError
-* * * * LargeUploadError
-* * * * * UploadOutOfBoundError
-* * * * UploadMismatchError
-* * * * * UploadTypeMismatchError
-* * * * * UploadHashMismatchError
-* * * * * UploadSizeMismatchError
+* Exception
+    * FilesError
+        * QueueError
+            * OutOfQueueError
+        * StorageError
+            * UnknownAdapterError
+            * UnknownStorageError
+            * UnsupportedOperationError
+            * PermissionError
+            * MissingFileError
+            * ExistingFileError
+            * ExtrasError
+                * MissingExtrasError
+            * InvalidStorageConfigurationError
+                * MissingStorageConfigurationError
+            * UploadError
+                * WrongUploadTypeError
+                * NameStrategyError
+                * LargeUploadError
+                    * UploadOutOfBoundError
+                * UploadMismatchError
+                    * UploadTypeMismatchError
+                    * UploadHashMismatchError
+                    * UploadSizeMismatchError
 
 """
 

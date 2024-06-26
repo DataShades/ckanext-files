@@ -17,9 +17,11 @@ ckanapi action files_transfer_ownership id=FILE_ID \
 ```
 
 Pros:
+
 * simple and transparent
 
 Cons:
+
 * it's easy to forget about ownership transfer and leave the entity with the
   inaccessible file
 * after entity got reference to file and before ownership is transfered data
@@ -32,10 +34,12 @@ entity. When it validated, ownership transfer task is queued and file
 automatically transfered to the entity after the update.
 
 Pros:
+
 * minimal amount of changes if metadata schema already modified
 * relationships between owner and file are up-to-date after any modification
 
 Cons:
+
 * works only with files uploaded in advance and cannot handle native
   implementation of resource form
 
@@ -51,11 +55,13 @@ finished without an error, the task is executed and file uploaded/attached to
 action result.
 
 Pros:
+
 * can be used together with native group/user/resource form after small
   modification of CKAN core.
 * handles upload inside other action as an atomic operation
 
 Cons:
+
 * you have to validate file before upload happens to prevent situation when
   action finished successfully but then upload failed because of file's content
   type or size.
@@ -71,10 +77,12 @@ dataset ID and uploaded file. Internally it will upload the file by calling
 transfer ownership via `files_transfer_ownership`.
 
 Pros:
+
 * no magic. Everything is described in the new action
 * can be extracted into shared extension and used across multiple portals
 
 Cons:
+
 * if you need to upload multiple files and update multipe fields, action
   quickly becomes too compicated.
 * integration with existing workflows, like dataset/resource creation is

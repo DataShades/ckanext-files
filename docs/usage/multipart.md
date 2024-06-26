@@ -20,7 +20,7 @@ multiple stages. It can be used in following situations:
   only notifies the application, when upload is finished, so that the
   application can make file visible. This is a signed upload.
 
-All these situations are handled by 4 API actions, which are available is
+All these situations are handled by 4 API actions, which are available if
 storage has `MULTIPART` capability:
 
 * `files_multipart_start`: initialize multipart upload and set expected final

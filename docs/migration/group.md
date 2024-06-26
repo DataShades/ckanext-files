@@ -1,42 +1,54 @@
-# Migration for group/organization images
+# Group/organization images
 
-Note: internally, groups and organizations are the same entity, so this
-workflow describes both of them.
+!!! note
+
+    internally, groups and organizations are the same entity, so this
+    workflow describes both of them.
 
 First of all, you need a configured storage that supports public links. As all
 group/organization images are stored inside local filesystem, you can use
 `files:public_fs` storage adapter.
 
-This extension expects that the name of group images storage will be
-`group_images`. This name will be used in all other commands of this migration
-workflow. If you want to use different name for group images storage, override
-`ckanext.files.group_images_storage` config option which has default value
-`group_images` and don't forget to adapt commands if you use a different name
-for the storage.
+??? info "Storage name"
 
-This configuration example sets 10MiB restriction on upload size via
-`ckanext.files.storage.group_images.max_size` option. Feel free to change it or
-remove completely to allow any upload size. This restriction is applied to
-future uploads only. Any existing file that exceeds limit is kept.
+    This extension expects that the name of group images storage will be
+    `group_images`. This name will be used in all other commands of this migration
+    workflow. If you want to use different name for group images storage, override
+    `ckanext.files.group_images_storage` config option which has default value
+    `group_images` and don't forget to adapt commands if you use a different name
+    for the storage.
 
-Uploads restricted to `image/*` MIMEtype via
-`ckanext.files.storage.group_images.supported_types` option. You can make this
-option more or less restrictive. This restriction is applied to future uploads
-only. Any existing file with wrong MIMEtype is kept.
+??? info "Size restriction"
 
-`ckanext.files.storage.group_images.path` controls location of the upload
-folder in filesystem. It should match value of `ckan.storage_path` option plus
-`storage/uploads/group`. In example below we assume that value of
-`ckan.storage_path` is `/var/storage/ckan`.
+    This configuration example sets 10MiB restriction on upload size via
+    `ckanext.files.storage.group_images.max_size` option. Feel free to change it or
+    remove completely to allow any upload size. This restriction is applied to
+    future uploads only. Any existing file that exceeds limit is kept.
 
-`ckanext.files.storage.group_images.public_root` option specifies base URL from
-which every group image can be accessed. In most cases it's CKAN URL plus
-`uploads/group`. If you are serving CKAN application from the `ckan.site_url`,
-leave this option unchanged. If you are using `ckan.root_path`, like `/data/`,
-insert this root path into the value of the option. Example below uses
-`%(ckan.site_url)s` wildcard, which will be automatically replaced with the
-value of `ckan.site_url` config option. You can specify site URL explicitely if
-you don't like this wildcard syntax.
+??? info "Type restriction"
+
+    Uploads restricted to `image/*` MIMEtype via
+    `ckanext.files.storage.group_images.supported_types` option. You can make this
+    option more or less restrictive. This restriction is applied to future uploads
+    only. Any existing file with wrong MIMEtype is kept.
+
+??? info "Location"
+
+    `ckanext.files.storage.group_images.path` controls location of the upload
+    folder in filesystem. It should match value of `ckan.storage_path` option plus
+    `storage/uploads/group`. In example below we assume that value of
+    `ckan.storage_path` is `/var/storage/ckan`.
+
+??? info "Public URL"
+
+    `ckanext.files.storage.group_images.public_root` option specifies base URL from
+    which every group image can be accessed. In most cases it's CKAN URL plus
+    `uploads/group`. If you are serving CKAN application from the `ckan.site_url`,
+    leave this option unchanged. If you are using `ckan.root_path`, like `/data/`,
+    insert this root path into the value of the option. Example below uses
+    `%(ckan.site_url)s` wildcard, which will be automatically replaced with the
+    value of `ckan.site_url` config option. You can specify site URL explicitely if
+    you don't like this wildcard syntax.
 
 ```ini
 ckanext.files.storage.group_images.type = files:public_fs
@@ -71,15 +83,17 @@ the system.
 ckan files scan -s group_images -u
 ```
 
-Note, all the file are still available inside storage directory. If previous
-command shows nothing, it only means that CKAN already knows details about each
-file from the storage directory. If you want to see the list of the files
-again, omit `-u` flag(which stands for "untracked") and you'll see again all
-the files in the command output:
+!!! note
 
-```ini
-ckan files scan -s group_images
-```
+    All the file are still available inside storage directory. If previous command
+    shows nothing, it only means that CKAN already knows details about each file
+    from the storage directory. If you want to see the list of the files again,
+    omit `-u` flag(which stands for "untracked") and you'll see again all the files
+    in the command output:
+
+    ```ini
+    ckan files scan -s group_images
+    ```
 
 Now, when all images are tracked by the system, we can give the ownership over
 these files to groups/organizations that are using them. Run the command below
@@ -141,10 +155,12 @@ This approach is different from strategy recommended by ckanext-files. But in
 order to make the migration as simple as possible, we'll stay close to original
 workflow.
 
-Note: suggestet approach resembles existing process of file uploads in
-CKAN. But ckanext-files was designed as a system, that gives you a
-choice. Check [file upload strategies](../upload-strategies.md) to learn more
-about alternative implementations of upload and their pros/cons.
+!!! note
+
+    suggested approach resembles existing process of file uploads in CKAN. But
+    ckanext-files was designed as a system, that gives you a choice. Check [file
+    upload strategies](../upload-strategies.md) to learn more about alternative
+    implementations of upload and their pros/cons.
 
 First, we need to replace **Upload/Link** widget on group/organization form. If
 you are using native group templates, create `group/snippets/group_form.html`
@@ -177,17 +193,21 @@ field from submission payload, making processing of the file too unreliable. We
 changed the name of upload field and CKAN keeps this new field, so that we can
 process it as we wish.
 
-Note: if you are using ckanext-scheming, you only need to replace
-`form_snippet` of the `image_url` field, instead of rewriting the whole
-template.
+!!! tip
+
+    If you are using ckanext-scheming, you only need to replace
+    `form_snippet` of the `image_url` field, instead of rewriting the whole
+    template.
 
 Now, let's define validation rules for this new upload field. We need to create
 plugins that modify validation schema for group and organization. Due to CKAN
 implementation details, you need separate plugin for group and organization.
 
-Note: if you are using ckanext-scheming, you can add `files_image_upload`
-validators to schemas of organization and group. Check the list of validators
-that must be applied to this new field below.
+!!! tip
+
+    If you are using ckanext-scheming, you can add `files_image_upload`
+    validators to schemas of organization and group. Check the list of validators
+    that must be applied to this new field below.
 
 Here's an example of plugins that modify validation schemas of group and
 organization. As you can see, they are mostly the same:
@@ -254,15 +274,16 @@ There are 4 validators that must be applied to the new upload field:
 * `files_upload_as(STORAGE_NAME, GROUP_TYPE, NAME_OF_ID_FIELD, "public_url",
   NAME_OF_PATCH_ACTION, NAME_OF_URL_FIELF)`: this validator is the most
   challenging. It accepts 6 arguments:
-  * the name of storage used for image uploads
-  * `group` or `organization` depending on processed entity
-  * name of the ID field of processed entity. It's `id` in your case.
-  * `public_url` - use this exact value. It tells which property of file you
-    want to use as link to the file.
-  * `group_patch` or `organization_patch` depending on processed entity
-  * `image_url` - name of the field that contains URL of the
-    image. ckanext-files will put the public link of uploaded file into this
-    field when form is processed.
+
+    * the name of storage used for image uploads
+    * `group` or `organization` depending on processed entity
+    * name of the ID field of processed entity. It's `id` in your case.
+    * `public_url` - use this exact value. It tells which property of file you
+      want to use as link to the file.
+    * `group_patch` or `organization_patch` depending on processed entity
+    * `image_url` - name of the field that contains URL of the
+      image. ckanext-files will put the public link of uploaded file into this
+      field when form is processed.
 
 That's all. Now every image upload for group/organization is handled by
 ckanext-files. To verify it, do the following. First, check list of files

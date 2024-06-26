@@ -27,14 +27,16 @@ conflicts. Technically, adapter name can use any character, including spaces,
 newlines and emoji.
 
 
-If you make a typo in the adapter's name, any CKAN CLI command will produce an
-error message with the list of available adapters:
+??? question "See an error?"
 
-```sh
-Invalid configuration values provided:
-ckanext.files.storage.default.type: Value must be one of ['files:fs', 'files:public_fs', 'files:redis']
-Aborted!
-```
+    If you make a typo in the adapter's name, any CKAN CLI command will produce an
+    error message with the list of available adapters:
+
+    ```sh
+    Invalid configuration values provided:
+    ckanext.files.storage.default.type: Value must be one of ['files:fs', 'files:redis']
+    Aborted!
+    ```
 
 Storage is configured, so we can actually upload the file. Let's use
 [ckanapi](https://github.com/ckan/ckanapi) for this task. Files are created via
@@ -100,8 +102,8 @@ redis-cli
 "hello world"
 ```
 
-And before we moved further, let's remove the file, using its `id`:
+!!! tip "Don't forget to remove the file:"
 
-```sh
-ckanapi action files_file_delete id=e21162ab-abfb-476c-b8c5-5fe7cb89eca0
-```
+    ```sh
+    ckanapi action files_file_delete id=e21162ab-abfb-476c-b8c5-5fe7cb89eca0
+    ```

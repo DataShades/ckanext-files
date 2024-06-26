@@ -14,7 +14,15 @@ File = Multipart = Any
 
 # --8<-- [start:interface]
 class IFiles(Interface):
-    """Extension point for ckanext-files."""
+    """Extension point for ckanext-files.
+
+    This interface is not stabilized. Implement it with `inherit=True`.
+
+    Example:
+    >>> class MyPlugin(p.SingletonPlugin):
+    >>>     p.implements(interfaces.IFiles, inherit=True)
+
+    """
 
     def files_get_storage_adapters(self) -> dict[str, Any]:
         """Return mapping of storage type to adapter class.

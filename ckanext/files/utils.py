@@ -105,6 +105,18 @@ class Registry(Generic[T]):
 
 @dataclasses.dataclass
 class Upload:
+    """Standard upload details.
+
+    Example:
+    >>> Upload(
+    >>>     BytesIO(b"hello world"),
+    >>>     "file.txt",
+    >>>     11,
+    >>>     "text/plain",
+    >>> )
+
+    """
+
     stream: types.UploadStream
     filename: str
     size: int

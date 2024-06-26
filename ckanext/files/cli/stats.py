@@ -52,16 +52,14 @@ def overview(storage_name: str | None):
         f"Used space: {click.style(utils.humanize_filesize(size), bold=True)}",
     )
     click.secho(
-        "Newest file created at: {} ({})".format(
-            click.style(format_datetime(newest), bold=True),
-            format_timedelta(newest - _now(), add_direction=True),
-        ),
+        "Newest file created at: "
+        + f"{click.style(format_datetime(newest), bold=True)} "
+        + f"({format_timedelta(newest - _now(), add_direction=True)})",
     )
     click.secho(
-        "Oldest file created at: {} ({})".format(
-            click.style(format_datetime(oldest), bold=True),
-            format_timedelta(oldest - _now(), add_direction=True),
-        ),
+        "Oldest file created at: "
+        + f"{click.style(format_datetime(oldest), bold=True)} "
+        + f"({format_timedelta(oldest - _now(), add_direction=True)})",
     )
 
 
@@ -83,10 +81,8 @@ def types(storage_name: str | None):
 
     total = model.Session.scalar(sa.select(sa.func.sum(stmt.c.count)))
     click.secho(
-        "Storage {} contains {} files".format(
-            click.style(storage_name, bold=True),
-            click.style(total, bold=True),
-        ),
+        f"Storage {click.style(storage_name, bold=True)} contains "
+        + f"{click.style(total, bold=True)} files",
     )
     for content_type, count in model.Session.execute(stmt):
         click.secho(f"\t{content_type}: {click.style(count, bold=True)}")
@@ -128,15 +124,15 @@ def owner(storage_name: str | None, verbose: bool):
 
     total = model.Session.scalar(sa.select(sa.func.sum(stmt.c.count)))
     click.secho(
-        "Storage {} contains {} files".format(
-            click.style(storage_name, bold=True),
-            click.style(total, bold=True),
-        ),
+        f"Storage {click.style(storage_name, bold=True)} contains "
+        + f"{click.style(total, bold=True)} files",
     )
     for owner, count in model.Session.execute(stmt):
+        clean_owner = owner.strip() or click.style(
+            "has no owner",
+            underline=True,
+            bold=True,
+        )
         click.secho(
-            "\t{}: {}".format(
-                owner.strip() or click.style("has no owner", underline=True, bold=True),
-                click.style(count, bold=True),
-            ),
+            f"\t{clean_owner}: {click.style(count, bold=True)}",
         )

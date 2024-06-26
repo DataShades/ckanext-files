@@ -35,4 +35,5 @@ repos:
   rev: v0.4.10
   hooks:
   - id: ruff
+    args: [--fix]
     stages: [pre-commit]

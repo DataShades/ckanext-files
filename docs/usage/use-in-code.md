@@ -39,23 +39,68 @@ accepts a number of different types(`bytes`,
 `werkzeug.datastructures.FileStorage`, `BytesIO`, file descriptor) and converts
 them into expected format.
 
+=== "bytes"
 
-```python
-from ckanext.files.shared import make_upload
+    ```python
+    from ckanext.files.shared import make_upload
 
-upload = make_upload(b"hello world")
-result = storage.upload('file.txt', upload)
+    upload = make_upload(b"hello world")
+    result = storage.upload('file.txt', upload)
 
-print(result)
+    print(result)
 
-... FileData(
-...     location='60b385e7-8137-496c-bb1d-6ae4d7963ab3',
-...     size=11,
-...     content_type='text/plain',
-...     hash='5eb63bbbe01eeed093cb22bb8f5acdc3',
-...     storage_data={}
-... )
-```
+    ... FileData(
+    ...     location='60b385e7-8137-496c-bb1d-6ae4d7963ab3',
+    ...     size=11,
+    ...     content_type='text/plain',
+    ...     hash='5eb63bbbe01eeed093cb22bb8f5acdc3',
+    ...     storage_data={}
+    ... )
+    ```
+
+=== "BytesIO"
+
+    ```python
+    from io import BytesIO
+    from ckanext.files.shared import make_upload
+
+    upload = make_upload(BytesIO(b"hello world"))
+    result = storage.upload('file.txt', upload)
+
+    print(result)
+
+    ... FileData(
+    ...     location='60b385e7-8137-496c-bb1d-6ae4d7963ab3',
+    ...     size=11,
+    ...     content_type='text/plain',
+    ...     hash='5eb63bbbe01eeed093cb22bb8f5acdc3',
+    ...     storage_data={}
+    ... )
+    ```
+
+=== "SpooledTemporaryFile"
+
+    ```python
+    from tempfile import SpooledTemporaryFile
+    from ckanext.files.shared import make_upload
+
+    file = SpooledTemporaryFile()
+    file.write(b"hello world")
+    file.seek(0)
+    upload = make_upload(file)
+    result = storage.upload('file.txt', upload)
+
+    print(result)
+
+    ... FileData(
+    ...     location='60b385e7-8137-496c-bb1d-6ae4d7963ab3',
+    ...     size=11,
+    ...     content_type='text/plain',
+    ...     hash='5eb63bbbe01eeed093cb22bb8f5acdc3',
+    ...     storage_data={}
+    ... )
+    ```
+
 
 `result` is an instance of `ckanext.files.shared.FileData` dataclass. It
 contains all the information required by storage to manage the file.
@@ -86,7 +131,7 @@ content = b"".join(buffer)
 In most cases, storage only needs a location of the file object to read it. So,
 if you don't have `result` generated during the upload, you still can read the
 file as long as you have its location. But remember, that some storage adapters
-may require additional information, and the following example must be adapted
+may require additional information, and the following example must be modified
 depending on the adapter:
 
 ```python

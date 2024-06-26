@@ -95,14 +95,8 @@ def invalid_owner(storage_name: str | None, remove: bool):
     for file in files:
         size = utils.humanize_filesize(file.size)
         click.echo(
-            "\t{}: {} [{}, {}]. Owner: {} {}".format(
-                file.id,
-                file.name,
-                file.content_type,
-                size,
-                file.owner_info.owner_type,
-                file.owner_info.owner_id,
-            ),
+            f"\t{file.id}: {file.name} [{file.content_type}, {size}]. "
+            + f"Owner: {file.owner_info.owner_type} {file.owner_info.owner_id}",
         )
 
     if remove and click.confirm("Do you want to delete these files?"):
@@ -117,7 +111,7 @@ def invalid_owner(storage_name: str | None, remove: bool):
 @storage_option
 @click.option("--remove", is_flag=True, help="Remove files")
 def missing_files(storage_name: str | None, remove: bool):
-    """Manage files do not exist in storage."""
+    """Manage files that do not exist in storage."""
     storage_name = storage_name or shared.config.default_storage()
     try:
         storage = shared.get_storage(storage_name)

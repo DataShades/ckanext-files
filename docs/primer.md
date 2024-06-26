@@ -1,8 +1,7 @@
 # Welcome to MkDocs
 
-For full documentation visit [mkdocs.org](https://www.mkdocs.org){ data-preview }
+For full documentation visit [mkdocs.org](https://www.mkdocs.org)
 
-[Attribute Lists](api.md#files_file_createcontext-context-data_dict-dictstr-any-dictstr-any){ data-preview }
 
 
 !!! note "Some title"
@@ -31,25 +30,25 @@ text__, images, ... basically anything that can be written in Markdown.
 
 === "C"
 
-``` c
-#include <stdio.h>
+    ``` c
+    #include <stdio.h>
 
-int main(void) {
-printf("Hello world!\n");
-return 0;
-}
-```
+    int main(void) {
+    printf("Hello world!\n");
+    return 0;
+    }
+    ```
 
 === "C++"
 
-``` c++
-#include <iostream>
+    ``` c++
+    #include <iostream>
 
-int main(void) {
-std::cout << "Hello world!" << std::endl;
-return 0;
-}
-```
+    int main(void) {
+    std::cout << "Hello world!" << std::endl;
+    return 0;
+    }
+    ```
 
 ``` mermaid
 graph LR

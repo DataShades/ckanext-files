@@ -37,57 +37,67 @@ discoverability: you can use `files_file_search` API action to list all the
 tracked files and optionally filter them by storage, location, content_type,
 etc:
 
-```sh
-ckanapi action files_file_search
+=== "Show all files"
 
-... {
-...   "count": 123,
-...   "results": [
-...     {
-...       "atime": null,
-...       "content_type": "text/plain",
-...       "ctime": "2024-06-02T14:53:12.345358+00:00",
-...       "hash": "5eb63bbbe01eeed093cb22bb8f5acdc3",
-...       "id": "67a0dc8f-be91-48cd-bc8a-9934e12a48d0",
-...       "location": "25c01077-c2cf-484b-a417-f231bb6b448b",
-...       "mtime": null,
-...       "name": "hello.txt",
-...       "size": 11,
-...       "storage": "default",
-...       "storage_data": {}
-...     },
-...     ...
-...   ]
-... }
+    ```sh
+    ckanapi action files_file_search
 
-ckanapi action files_file_search size:5 rows=1
+    ... {
+    ...   "count": 123,
+    ...   "results": [
+    ...     {
+    ...       "atime": null,
+    ...       "content_type": "text/plain",
+    ...       "ctime": "2024-06-02T14:53:12.345358+00:00",
+    ...       "hash": "5eb63bbbe01eeed093cb22bb8f5acdc3",
+    ...       "id": "67a0dc8f-be91-48cd-bc8a-9934e12a48d0",
+    ...       "location": "25c01077-c2cf-484b-a417-f231bb6b448b",
+    ...       "mtime": null,
+    ...       "name": "hello.txt",
+    ...       "size": 11,
+    ...       "storage": "default",
+    ...       "storage_data": {}
+    ...     },
+    ...     ...
+    ...   ]
+    ... }
+    ```
 
-... {
-...   "count": 2,
-...   "results": [
-...     {
-...       "atime": null,
-...       "content_type": "text/plain",
-...       "ctime": "2024-06-02T14:53:12.345358+00:00",
-...       "hash": "5eb63bbbe01eeed093cb22bb8f5acdc3",
-...       "id": "67a0dc8f-be91-48cd-bc8a-9934e12a48d0",
-...       "location": "25c01077-c2cf-484b-a417-f231bb6b448b",
-...       "mtime": null,
-...       "name": "hello.txt",
-...       "size": 5,
-...       "storage": "default",
-...       "storage_data": {}
-...     }
-...   ]
-... }
+=== "Get first file with size 5 bytes"
+    ```sh
+    ckanapi action files_file_search size:5 rows=1
 
-ckanapi action files_file_search content_type=application/pdf
+    ... {
+    ...   "count": 2,
+    ...   "results": [
+    ...     {
+    ...       "atime": null,
+    ...       "content_type": "text/plain",
+    ...       "ctime": "2024-06-02T14:53:12.345358+00:00",
+    ...       "hash": "5eb63bbbe01eeed093cb22bb8f5acdc3",
+    ...       "id": "67a0dc8f-be91-48cd-bc8a-9934e12a48d0",
+    ...       "location": "25c01077-c2cf-484b-a417-f231bb6b448b",
+    ...       "mtime": null,
+    ...       "name": "hello.txt",
+    ...       "size": 5,
+    ...       "storage": "default",
+    ...       "storage_data": {}
+    ...     }
+    ...   ]
+    ... }
 
-... {
-...   "count": 0,
-...   "results": []
-... }
-```
+    ```
+
+=== "Show all PDF files"
+    ```sh
+
+    ckanapi action files_file_search content_type=application/pdf
+
+    ... {
+    ...   "count": 0,
+    ...   "results": []
+    ... }
+    ```
 
 As for untracked files, their discoverability depends on the storage
 adapters. Some of them, `files:fs` for example, can scan the storage and locate

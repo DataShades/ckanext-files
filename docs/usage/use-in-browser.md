@@ -11,7 +11,7 @@ accepts `File` object for upload(the same object you can get from the
 ```js
 sandbox = ckan.sandbox()
 await sandbox.files.upload(
-new File(["content"], "file.txt")
+    new File(["content"], "file.txt")
 )
 
 ... {
@@ -44,6 +44,6 @@ And, as usually, let's remove file using the ID from the `upload` promise:
 
 ```js
 sandbox.client.call("POST", "files_file_delete", {
-id: "18cdaa65-5eed-4078-89a8-469b137627ce"
+    id: "18cdaa65-5eed-4078-89a8-469b137627ce"
 })
 ```

@@ -33,9 +33,9 @@ files.add_command(maintain.group, "maintain")
 
 @files.command()
 @click.argument("file_id")
-@click.option("--start", type=int, default=0)
-@click.option("--end", type=int)
-@click.option("-o", "--output")
+@click.option("--start", type=int, default=0, help="Start streaming from position")
+@click.option("--end", type=int, help="End streaming at position")
+@click.option("-o", "--output", help="Stream into specified file or directory")
 def stream(file_id: str, output: str | None, start: int, end: int | None):
     """Stream content of the file."""
 

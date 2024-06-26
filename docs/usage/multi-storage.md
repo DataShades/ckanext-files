@@ -52,25 +52,32 @@ configuration. But if you want to upload a file into a different storage or you
 don't want to add the `default` storage at all, you can always specify
 explicitly the name of the storage you are going to use.
 
-When using API actions, add `storage` parameter to the call:
+=== "API"
 
-```sh
-echo 'hello world' > /tmp/myfile.txt
-ckanapi action files_file_create name=hello.txt upload@/tmp/myfile.txt storage=memory
-```
+    When using API actions, add `storage` parameter to the call:
 
-When writing python code, pass storage name to `get_storage` function:
-```python
-storage = get_storage("memory")
-```
+    ```sh
+    echo 'hello world' > /tmp/myfile.txt
+    ckanapi action files_file_create name=hello.txt \
+        upload@/tmp/myfile.txt storage=memory
+    ```
 
-When writing JS code, pass object `{requestParams: {storage: "memory"}}` to
-`upload` function:
+=== "Python"
 
-```js
-const sandbox = ckan.sandbox()
-const file = new File(["content"], "file.txt")
-const options = {requestParams: {storage: "memory"}};
+    When writing python code, pass storage name to `get_storage` function:
+    ```python
+    storage = get_storage("memory")
+    ```
 
-await sandbox.files.upload(file, options)
-```
+=== "JS"
+
+    When writing JS code, pass object `{requestParams: {storage: "memory"}}` to
+    `upload` function:
+
+    ```js
+    const sandbox = ckan.sandbox()
+    const file = new File(["content"], "file.txt")
+    const options = {requestParams: {storage: "memory"}};
+
+    await sandbox.files.upload(file, options)
+    ```

@@ -14,6 +14,17 @@ from .owner import Owner
 
 
 class TransferHistory(Base):  # type: ignore
+    """Model for tracking ownership history of the file.
+
+    Example:
+    >>> record = TransferHistory(
+    >>>     item_id=file.id,
+    >>>     item_type="file",
+    >>>     owner_id=prev_owner.owner_id,
+    >>>     owner_type=prev_owner.owner_type,
+    >>> )
+    """
+
     __table__ = sa.Table(
         "files_transfer_history",
         Base.metadata,

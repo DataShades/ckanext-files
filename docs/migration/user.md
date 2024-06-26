@@ -1,30 +1,38 @@
-# Migration for user avatars
+# User avatars
 
-This workflow is similar to group/organization migration. It contains the
-sequence of actions, but explanations are removed, because you already know
-details from the group migration. Only steps that are different will contain
-detailed explanation of the process.
+!!! info
+
+    This workflow is similar to group/organization migration. It contains the
+    sequence of actions, but explanations are removed, because you already know
+    details from the group migration. Only steps that are different will contain
+    detailed explanation of the process.
 
 
 Configure local filesystem storage with support of public
 links(`files:public_fs`) for user images.
 
-This extension expects that the name of user images storage will be
-`user_images`. This name will be used in all other commands of this migration
-workflow. If you want to use different name for user images storage, override
-`ckanext.files.user_images_storage` config option which has default value
-`user_images` and don't forget to adapt commands if you use a different name
-for the storage.
+??? info "Storage name"
 
-`ckanext.files.storage.user_images.path` resembles this option for
-group/organization images storage. But user images are kept inside `user`
-folder by default. As result, value of this option should match value of
-`ckan.storage_path` option plus `storage/uploads/user`. In example below we
-assume that value of `ckan.storage_path` is `/var/storage/ckan`.
+    This extension expects that the name of user images storage will be
+    `user_images`. This name will be used in all other commands of this migration
+    workflow. If you want to use different name for user images storage, override
+    `ckanext.files.user_images_storage` config option which has default value
+    `user_images` and don't forget to adapt commands if you use a different name
+    for the storage.
 
-`ckanext.files.storage.user_images.public_root` resebles this option for
-group/organization images storage. But user images are available at CKAN URL
-plus `uploads/user`.
+??? info "Location"
+
+    `ckanext.files.storage.user_images.path` resembles this option for
+    group/organization images storage. But user images are kept inside `user`
+    folder by default. As result, value of this option should match value of
+    `ckan.storage_path` option plus `storage/uploads/user`. In example below we
+    assume that value of `ckan.storage_path` is `/var/storage/ckan`.
+
+??? info "Public URL"
+
+    `ckanext.files.storage.user_images.public_root` resebles this option for
+    group/organization images storage. But user images are available at CKAN URL
+    plus `uploads/user`.
 
 ```ini
 ckanext.files.storage.user_images.type = files:public_fs

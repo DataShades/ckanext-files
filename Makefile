@@ -8,8 +8,10 @@ help:
 changelog:  ## compile changelog
 	git changelog -c conventional -o CHANGELOG.md $(if $(bump),-B $(bump))
 
+deploy-docs:  ## build and publish documentation
+	mkdocs gh-deploy
 
-test-server:
+test-server:  ## start server for frontend testing
 	yes | ckan -c test.ini db clean
 	ckan -c test.ini db upgrade
 	yes | ckan -ctest.ini sysadmin add admin password=password123 email=admin@test.net

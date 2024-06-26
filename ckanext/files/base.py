@@ -83,11 +83,33 @@ class BaseData(Generic[TFileModel]):
 
 @dataclasses.dataclass
 class FileData(BaseData[model.File]):
+    """Information required by storage to operate the file.
+
+    Example:
+    >>> FileData(
+    >>>     "local/path.txt",
+    >>>     123,
+    >>>     "text/plain",
+    >>>     md5_of_content,
+    >>> )
+    """
+
     content_type: str = "application/octet-stream"
 
 
 @dataclasses.dataclass
 class MultipartData(BaseData[model.Multipart]):
+    """Information required by storage to operate the incomplete upload.
+
+    Example:
+    >>> FileData(
+    >>>     "local/path.txt",
+    >>>     expected_size,
+    >>>     expected_content_type,
+    >>>     expected_hash,
+    >>> )
+    """
+
     location: str = ""
 
 
@@ -233,6 +255,8 @@ class Uploader(StorageService):
 
 
 class Manager(StorageService):
+    """Service responsible for maintenance file operations."""
+
     def remove(self, data: FileData | MultipartData, extras: dict[str, Any]) -> bool:
         """Remove file from the storage."""
         raise NotImplementedError
@@ -289,6 +313,8 @@ class Manager(StorageService):
 
 
 class Reader(StorageService):
+    """Service responsible for reading data from the storage."""
+
     def stream(self, data: FileData, extras: dict[str, Any]) -> Iterable[bytes]:
         """Return byte-stream of the file content."""
         raise NotImplementedError
@@ -347,6 +373,8 @@ class Reader(StorageService):
 
 
 class Storage(OptionChecker, abc.ABC):
+    """Base class for storage implementation."""
+
     hidden = False
     capabilities = utils.Capability.NONE
 

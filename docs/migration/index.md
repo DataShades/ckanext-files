@@ -1,19 +1,23 @@
 # Migration from native CKAN storage system
 
-Important: ckanext-files itself is an independent file-management system. You
-don't have to migrate existing files from groups, users and resources to
-it. You can just start using ckanext-files for **new fields** defined in
-metadata schema or for uploading arbitrary files. And continue using native
-CKAN uploads for group/user images and resource files. Migration workflows
-described here merely exist as a PoC of using ckanext-files for everything in
-CKAN. Don't migrate your production instances yet, because concepts and rules
-may change in future and migration process will change as well. Try migration
-only as an experiment, that gives you an idea of what else you want to see in
-ckanext-file, and share this idea with us.
+!!! warning
 
-Note: every migration workflow described below requires installed
-ckanext-files. Complete [installation](../installation.md) section before going
-further.
+    ckanext-files itself is an independent file-management system. You
+    don't have to migrate existing files from groups, users and resources to
+    it. You can just start using ckanext-files for **new fields** defined in
+    metadata schema or for uploading arbitrary files. And continue using native
+    CKAN uploads for group/user images and resource files. Migration workflows
+    described here merely exist as a PoC of using ckanext-files for everything in
+    CKAN. Don't migrate your production instances yet, because concepts and rules
+    may change in future and migration process will change as well. Try migration
+    only as an experiment, that gives you an idea of what else you want to see in
+    ckanext-file, and share this idea with us.
+
+!!! note
+
+    every migration workflow described below requires installed
+    ckanext-files. Complete [installation](../installation.md) section before going
+    further.
 
 CKAN has following types of files:
 

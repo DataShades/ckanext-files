@@ -59,10 +59,11 @@ has access to `resource_show` of the *resource*, can also see the file owned by
 this resource. If user passes `resource_update` for *resource*, he can also
 modify the file owned by this resource, etc.
 
-Important: be careful and do not add `user` to
-`ckanext.files.owner.cascade_access`. User's own files are considered private
-and most likely you don't really need anyone else to be able to see or modify
-these files.
+!!! danger
+    Be careful and do not add `user` to
+    `ckanext.files.owner.cascade_access`. User's own files are considered
+    private and most likely you don't really need anyone else to be able to see
+    or modify these files.
 
 The second option is `ckanext.files.owner.transfer_as_update`.  When
 transfer-as-update enabled, any user who has `<OWNER_TYPE>_update` permission,

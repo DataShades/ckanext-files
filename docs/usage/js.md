@@ -1,9 +1,11 @@
 # JavaScript utilities
 
-Note: ckanext-files does not provide stable CKAN JS modules at the moment. Try
-creating your own widgets and share with us your examples or
-requirements. We'll consider creating and including widgets into ckanext-files
-if they are generic enough for majority of the users.
+!!! note
+
+    ckanext-files does not provide stable CKAN JS modules at the
+    moment. Try creating your own widgets and share with us your examples or
+    requirements. We'll consider creating and including widgets into
+    ckanext-files if they are generic enough for majority of the users.
 
 ckanext-files registers few utilities inside CKAN JS namespace to help with
 building UI components.

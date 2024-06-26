@@ -10,8 +10,12 @@ SQLAlchemy. There will be just one requirement for the table: it must have
 column for storing unique identifier of the file and another column for storing
 content of the file as bytes.
 
-For the sake of simplicity, our storage will work only with existing
-tables. Create the table manually before we begin.
+!!! info
+
+    For the sake of simplicity, our storage will work only with existing
+    tables. Create the table manually before we begin.
+
+## Storage
 
 First of all, we create an adapter that does nothing and register it in our
 plugin.
@@ -58,6 +62,8 @@ ckan files storages -v
 ```
 
 
+## Settings
+
 Before we start uploading files, let's make sure that storage has proper
 configuration. As files will be stored in the DB table, we need the *name of
 the table* and *DB connection string*. Let's assume that table already exists,
@@ -66,27 +72,30 @@ content and for file's unique identifier. ckanext-files uses term `location`
 instead of identifier, so we'll do the same in our implementation.
 
 There are 4 required options in total:
+
 * `db_url`: DB connection string
 * `table`: name of the table
 * `location_column`: name of column for file's unique identifier
 * `content_column`: name of column for file's content
 
-It's not mandatory, but is highly recommended that you declare config options
-for the adapter. It can be done via `Storage.declare_config_options` class
-method, which accepts `declaration` object and `key` namespace for storage
-options.
+!!! tip
 
-```python
-class DbStorage(shared.Storage):
+    It's not mandatory, but is highly recommended that you declare config options
+    for the adapter. It can be done via `Storage.declare_config_options` class
+    method, which accepts `declaration` object and `key` namespace for storage
+    options.
 
-    @classmethod
-    def declare_config_options(cls, declaration, key) -> None:
-        declaration.declare(key.db_url).required()
-        declaration.declare(key.table).required()
-        declaration.declare(key.location_column).required()
-        declaration.declare(key.content_column).required()
+    ```python
+    class DbStorage(shared.Storage):
 
-```
+        @classmethod
+        def declare_config_options(cls, declaration, key) -> None:
+            declaration.declare(key.db_url).required()
+            declaration.declare(key.table).required()
+            declaration.declare(key.location_column).required()
+            declaration.declare(key.content_column).required()
+
+    ```
 
 And we probably want to initialize DB connection when storage is
 initialized. For this we'll extend constructor, which must be defined as method
@@ -120,6 +129,8 @@ exception.
 The table definition and columns are saved as storage attributes, to simplify
 building SQL queries in future.
 
+## Services
+
 Now we are going to define classes for all 3 storage services and tell storage,
 how to initialize these services.
 
@@ -152,6 +163,8 @@ class DbManager(shared.Manager):
     ...
 ```
 
+### Uploader
+
 Our first target is Uploader service. It's responsible for file creation. For
 the minimal implementation it needs `upload` method and `capabilities`
 attribute which tells the storage, what exactly the Uploader can do.
@@ -160,7 +173,12 @@ attribute which tells the storage, what exactly the Uploader can do.
 class DbUploader(shared.Uploader):
     capabilities = shared.Capability.CREATE
 
-    def upload(self, location: str, upload: shared.Upload, extras: dict[str, Any]) -> shared.FileData:
+    def upload(
+        self,
+        location: str,
+        upload: shared.Upload,
+        extras: dict[str, Any]
+    ) -> shared.FileData:
         ...
 ```
 
@@ -242,6 +260,8 @@ ckanapi action files_file_create storage=db name=hello.txt upload@<(echo -n 'hel
 
 ```
 
+### Reader
+
 File is created, but you cannot read it just yet. Try running `ckan files
 stream` CLI command with file ID:
 
@@ -282,10 +302,12 @@ class DbReader(shared.Reader):
 
 ```
 
-The result may be confusing: we returning Row object from the stream
-method. But our goal is to return *any* iterable that produces bytes. Row is
-iterable(tuple-like). And it contains only one item - value of column with file
-content, i.e, bytes. So it satisfy the requirements.
+!!! info
+
+    The result may be confusing: we returning Row object from the stream
+    method. But our goal is to return *any* iterable that produces bytes. Row is
+    iterable(tuple-like). And it contains only one item - value of column with file
+    content, i.e, bytes. So it satisfies the requirements.
 
 Now you can check content via CLI once again.
 
@@ -294,6 +316,8 @@ ckan files stream bdfc0268-d36d-4f1b-8a03-2f2aaa21de24
 
 ... hello world
 ```
+
+### Manager
 
 Finally, we need to add file removal for the minimal implementation. And it
 also nice to to have `SCAN` capability, as it shows all files currently
@@ -342,4 +366,3 @@ ckanapi action files_file_delete id=bdfc0268-d36d-4f1b-8a03-2f2aaa21de24
 That's all you need for the basic storage. But check definition of base storage
 and services to find details about other methods. And also check implementation
 of other storages for additional ideas.
-<

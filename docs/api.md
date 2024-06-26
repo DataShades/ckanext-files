@@ -1,4 +1,4 @@
-## `files_file_create(context: 'Context', data_dict: 'dict[str, Any]') -> 'dict[str, Any]'`
+## files_file_create
 
 Create a new file.
 
@@ -38,7 +38,7 @@ Returns:
 dictionary with file details.
 
 
-## `files_file_delete(context: 'Context', data_dict: 'dict[str, Any]') -> 'dict[str, Any]'`
+## files_file_delete
 
 Remove file from storage.
 
@@ -65,7 +65,7 @@ Returns:
 dictionary with details of the removed file.
 
 
-## `files_file_pin(context: 'Context', data_dict: 'dict[str, Any]') -> 'dict[str, Any]'`
+## files_file_pin
 
 Pin file to the current owner.
 
@@ -83,7 +83,7 @@ Returns:
 dictionary with details of updated file
 
 
-## `files_file_rename(context: 'Context', data_dict: 'dict[str, Any]') -> 'dict[str, Any]'`
+## files_file_rename
 
 Rename the file.
 
@@ -107,7 +107,7 @@ Returns:
 dictionary with file details
 
 
-## `files_file_scan(context: 'Context', data_dict: 'dict[str, Any]') -> 'dict[str, Any]'`
+## files_file_scan
 
 List files of the owner
 
@@ -129,7 +129,7 @@ Returns:
 * `results`: array of dictionaries with file details.
 
 
-## `files_file_search(context: 'Context', data_dict: 'dict[str, Any]') -> 'dict[str, Any]'`
+## files_file_search
 
 Search files.
 
@@ -194,12 +194,7 @@ Returns:
 * `results`: array of dictionaries with file details.
 
 
-## `files_file_search_by_user(context: 'Context', data_dict: 'dict[str, Any]') -> 'dict[str, Any]'`
-
-Internal action. Do not use it.
-
-
-## `files_file_show(context: 'Context', data_dict: 'dict[str, Any]') -> 'dict[str, Any]'`
+## files_file_show
 
 Show file details.
 
@@ -220,7 +215,7 @@ Returns:
 dictionary with file details
 
 
-## `files_file_unpin(context: 'Context', data_dict: 'dict[str, Any]') -> 'dict[str, Any]'`
+## files_file_unpin
 
 Pin file to the current owner.
 
@@ -238,7 +233,7 @@ Returns:
 dictionary with details of updated file
 
 
-## `files_multipart_complete(context: 'Context', data_dict: 'dict[str, Any]') -> 'dict[str, Any]'`
+## files_multipart_complete
 
 Finalize multipart upload and transform it into completed file.
 
@@ -261,7 +256,7 @@ Returns:
 dictionary with details of the created file
 
 
-## `files_multipart_refresh(context: 'Context', data_dict: 'dict[str, Any]') -> 'dict[str, Any]'`
+## files_multipart_refresh
 
 Refresh details of incomplete upload.
 
@@ -279,7 +274,7 @@ Returns:
 dictionary with details of the updated upload
 
 
-## `files_multipart_start(context: 'Context', data_dict: 'dict[str, Any]') -> 'dict[str, Any]'`
+## files_multipart_start
 
 Initialize multipart(resumable,continuous,signed,etc) upload.
 
@@ -306,7 +301,7 @@ Returns:
 dictionary with details of initiated upload. Depends on used storage
 
 
-## `files_multipart_update(context: 'Context', data_dict: 'dict[str, Any]') -> 'dict[str, Any]'`
+## files_multipart_update
 
 Update incomplete upload.
 
@@ -324,7 +319,7 @@ Returns:
 dictionary with details of the updated upload
 
 
-## `files_resource_upload(context: 'Context', data_dict: 'dict[str, Any]')`
+## files_resource_upload
 
 Create a new file inside resource storage.
 
@@ -344,12 +339,9 @@ Returns:
 dictionary with file details.
 
 
-## `files_transfer_ownership(context: 'Context', data_dict: 'dict[str, Any]') -> 'dict[str, Any]'`
+## files_transfer_ownership
 
 Transfer file ownership.
-
-Depending on storage this action may require additional parameters. Most
-likely, `upload` with the fragment of uploaded file.
 
 Params:
 
@@ -363,5 +355,3 @@ Params:
 Returns:
 
 dictionary with details of updated file
-
-

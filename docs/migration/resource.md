@@ -1,21 +1,27 @@
-### Migration for resource uploads
+# Resource uploads
 
 Configure named storage for resources. Use `files:ckan_resource_fs` storage
 adapter.
 
-This extension expects that the name of resources storage will be
-`resources`. This name will be used in all other commands of this migration
-workflow. If you want to use different name for resources storage, override
-`ckanext.files.resources_storage` config option which has default value
-`resources` and don't forget to adapt commands if you use a different name for
-the storage.
+??? info "Storage name"
 
-`ckanext.files.storage.resources.path` must match value of `ckan.storage_path`
-option, followed by `resources` directory. In example below we assume that
-value of `ckan.storage_path` is `/var/storage/ckan`.
+    This extension expects that the name of resources storage will be
+    `resources`. This name will be used in all other commands of this migration
+    workflow. If you want to use different name for resources storage, override
+    `ckanext.files.resources_storage` config option which has default value
+    `resources` and don't forget to adapt commands if you use a different name for
+    the storage.
 
-Example below sets 10MiB limit on resource size. Modify it if you are using
-different limit set by `ckan.max_resource_size`.
+??? info "Location"
+
+    `ckanext.files.storage.resources.path` must match value of `ckan.storage_path`
+    option, followed by `resources` directory. In example below we assume that
+    value of `ckan.storage_path` is `/var/storage/ckan`.
+
+??? info "Size restriction"
+
+    Example below sets 10MiB limit on resource size. Modify it if you are using
+    different limit set by `ckan.max_resource_size`.
 
 Unlike group and user images, this storage does not need upload type
 restriction and `public_root`.

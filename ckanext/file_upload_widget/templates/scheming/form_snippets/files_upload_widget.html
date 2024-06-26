@@ -23,30 +23,69 @@
             }}
         {%- endif -%}
     </div>
-</div>
 
-<div class="modal fade" tabindex="-1" id="uploadWidget-{{ field.field_name }}" >
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header">
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <div class="d-flex justify-content-center align-items-center text-center">
-                    <div class="fuw-dropzone">
-                        <div class="fuw-dropzone__content">
-                            <div class="fuw-dropzone__drop">
-                                <i class="fas fa-cloud-upload-alt"></i>
-                                <span>{{ _("Drag and drop files here") }}</span>
-                            </div>
-                            <div class="fuw-dropzone__alternative">
-                                <p>{{ _("OR") }}</p>
-                                <button type="button" class="btn btn-primary">{{ _("Browse files") }}</button>
-                                <button type="button" class="btn btn-primary">{{ _("URL") }}</button>
-                                <button type="button" class="btn btn-primary">{{ _("Media gallery") }}</button>
+    <div class="modal fade" tabindex="-1" id="uploadWidget-{{ field.field_name }}" >
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="btn btn-black fuw-cancel-btn" style="display: none;">{{ _("Cancel") }}</button>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <!-- MAIN WINDOW -->
+                    <div class="fuw-main-window">
+                        <div class="fuw-dropzone">
+                            <div class="fuw-dropzone__content">
+                                <div class="fuw-dropzone__drop">
+                                    <i class="fas fa-cloud-upload-alt"></i>
+                                    <span>{{ _("Drag and drop files here") }}</span>
+                                </div>
+                                <div class="fuw-dropzone__alternative">
+                                    <p class="fuw-or">{{ _("OR") }}</p>
+                                    <button type="button" class="btn btn-primary btn-file-input">{{ _("Browse files") }}</button>
+                                    <button type="button" class="btn btn-primary btn-url-input">{{ _("URL") }}</button>
+                                    <button type="button" class="btn btn-primary btn-media-input">{{ _("Media gallery") }}</button>
+                                </div>
                             </div>
                         </div>
                     </div>
+
+                    <!-- URL INPUT WINDOW -->
+                    <div class="fuw-url-input" style="display: none;">
+                        <input type="text" aria-label="Enter URL to import a file" placeholder="Enter URL to import a file" class="form-control">
+                        <button type="button" class="btn btn-primary float-end mt-3">{{ _("Import") }}</button>
+                    </div>
+
+                    <!-- MEDIA GALLERY WINDOW -->
+                    <div class="fuw-media-input" style="display: none;">
+                        <div class="search-input">
+                            <input aria-label="Search files..." id="fuw-media-input--search" type="text" class="form-control input-lg" value="" autocomplete="off" placeholder="Search files...">
+
+                            <span class="input-group-btn">
+                                <i class="fa fa-search"></i>
+                            </span>
+                        </div>
+
+                        <div class="fuw-media-input--files">
+                            <div class="fuw-media-input--file">
+                                <img src="https://via.placeholder.com/150" alt="Placeholder image">
+                                <button type="button" class="btn btn-primary">{{ _("Select") }}</button>
+                            </div>
+                            <div class="fuw-media-input--file">
+                                <img src="https://via.placeholder.com/150" alt="Placeholder image">
+                                <button type="button" class="btn btn-primary">{{ _("Select") }}</button>
+                            </div>
+                            <div class="fuw-media-input--file">
+                                <img src="https://via.placeholder.com/150" alt="Placeholder image">
+                                <button type="button" class="btn btn-primary">{{ _("Select") }}</button>
+                            </div>
+                            <div class="fuw-media-input--file">
+                                <img src="https://via.placeholder.com/150" alt="Placeholder image">
+                                <button type="button" class="btn btn-primary">{{ _("Select") }}</button>
+                            </div>
+                        </div>
+                    </div>
+
                 </div>
             </div>
         </div>

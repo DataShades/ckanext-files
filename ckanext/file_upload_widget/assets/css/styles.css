@@ -1,1 +1,29 @@
-.file-upload-widget .hidden{display:none}
+.file-upload-widget .fuw-main-window {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+}
+.file-upload-widget .fuw-main-window .fuw-or {
+  margin: 1rem 0;
+}
+.file-upload-widget .fuw-media-input .search-input {
+  margin-bottom: 1rem;
+  position: relative;
+}
+.file-upload-widget .fuw-media-input .search-input .input-group-btn {
+  position: absolute;
+  right: 10px;
+  top: 10px;
+}
+.file-upload-widget .fuw-cancel-btn {
+  position: absolute;
+  top: 5px;
+}
+.file-upload-widget .hidden {
+  display: none;
+}
+.file-upload-widget .modal .modal-body {
+  min-height: 145px;
+}
+/*# sourceMappingURL=data:application/json;charset=utf8;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbInN0eWxlcy5zY3NzIl0sIm5hbWVzIjpbXSwibWFwcGluZ3MiOiJBQUlJO0VBQ0k7RUFDQTtFQUNBO0VBQ0E7O0FBRUE7RUFDSTs7QUFLSjtFQUNJO0VBQ0E7O0FBRUE7RUFDSTtFQUNBO0VBQ0E7O0FBS1o7RUFDSTtFQUNBOztBQUdKO0VBQ0k7O0FBSUE7RUFDSSIsImZpbGUiOiJzdHlsZXMuY3NzIiwic291cmNlc0NvbnRlbnQiOlsiQGltcG9ydCBcInZhcmlhYmxlc1wiO1xuQGltcG9ydCBcIm1peGluc1wiO1xuXG4uZmlsZS11cGxvYWQtd2lkZ2V0IHtcbiAgICAuZnV3LW1haW4td2luZG93IHtcbiAgICAgICAgZGlzcGxheTogZmxleDtcbiAgICAgICAganVzdGlmeS1jb250ZW50OiBjZW50ZXI7XG4gICAgICAgIGFsaWduLWl0ZW1zOiBjZW50ZXI7XG4gICAgICAgIHRleHQtYWxpZ246IGNlbnRlcjtcblxuICAgICAgICAuZnV3LW9yIHtcbiAgICAgICAgICAgIG1hcmdpbjogMXJlbSAwO1xuICAgICAgICB9XG4gICAgfVxuXG4gICAgLmZ1dy1tZWRpYS1pbnB1dCB7XG4gICAgICAgIC5zZWFyY2gtaW5wdXQge1xuICAgICAgICAgICAgbWFyZ2luLWJvdHRvbTogMXJlbTtcbiAgICAgICAgICAgIHBvc2l0aW9uOiByZWxhdGl2ZTtcblxuICAgICAgICAgICAgLmlucHV0LWdyb3VwLWJ0biB7XG4gICAgICAgICAgICAgICAgcG9zaXRpb246IGFic29sdXRlO1xuICAgICAgICAgICAgICAgIHJpZ2h0OiAxMHB4O1xuICAgICAgICAgICAgICAgIHRvcDogMTBweDtcbiAgICAgICAgICAgIH1cbiAgICAgICAgfVxuICAgIH1cblxuICAgIC5mdXctY2FuY2VsLWJ0biB7XG4gICAgICAgIHBvc2l0aW9uOiBhYnNvbHV0ZTtcbiAgICAgICAgdG9wOiA1cHg7XG4gICAgfVxuXG4gICAgLmhpZGRlbiB7XG4gICAgICAgIGRpc3BsYXk6IG5vbmU7XG4gICAgfVxuXG4gICAgLm1vZGFsIHtcbiAgICAgICAgLm1vZGFsLWJvZHkge1xuICAgICAgICAgICAgbWluLWhlaWdodDogMTQ1cHg7XG4gICAgICAgIH1cbiAgICB9XG59XG4iXX0= */

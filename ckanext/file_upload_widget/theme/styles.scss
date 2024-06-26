@@ -2,8 +2,42 @@
 @import "mixins";
 
 .file-upload-widget {
+    .fuw-main-window {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+
+        .fuw-or {
+            margin: 1rem 0;
+        }
+    }
+
+    .fuw-media-input {
+        .search-input {
+            margin-bottom: 1rem;
+            position: relative;
+
+            .input-group-btn {
+                position: absolute;
+                right: 10px;
+                top: 10px;
+            }
+        }
+    }
+
+    .fuw-cancel-btn {
+        position: absolute;
+        top: 5px;
+    }
 
     .hidden {
         display: none;
+    }
+
+    .modal {
+        .modal-body {
+            min-height: 145px;
+        }
     }
 }

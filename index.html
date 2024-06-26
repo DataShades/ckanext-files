@@ -69,6 +69,11 @@
     <label class="md-overlay" for="__drawer"></label>
     <div data-md-component="skip">
       
+        
+        <a href="#ckanext-files" class="md-skip">
+          Skip to content
+        </a>
+      
     </div>
     <div data-md-component="announce">
       
@@ -222,6 +227,19 @@
       <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
       
       
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    Home
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
       
       <a href="." class="md-nav__link md-nav__link--active">
         
@@ -232,6 +250,52 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#quickstart" class="md-nav__link">
+    <span class="md-ellipsis">
+      Quickstart
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#development" class="md-nav__link">
+    <span class="md-ellipsis">
+      Development
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#license" class="md-nav__link">
+    <span class="md-ellipsis">
+      License
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
       
     </li>
   
@@ -1168,6 +1232,43 @@
   
   
   
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#quickstart" class="md-nav__link">
+    <span class="md-ellipsis">
+      Quickstart
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#development" class="md-nav__link">
+    <span class="md-ellipsis">
+      Development
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#license" class="md-nav__link">
+    <span class="md-ellipsis">
+      License
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
   
 </nav>
                   </div>
@@ -1185,9 +1286,60 @@
   
 
 
-  <h1>Home</h1>
+<p><a href="https://github.com/DataShades/ckanext-files/actions/workflows/test.yml"><img alt="Tests" src="https://github.com/DataShades/ckanext-files/actions/workflows/test.yml/badge.svg" /></a></p>
+<h1 id="ckanext-files">ckanext-files</h1>
+<p>Files as first-class citizens of CKAN. Upload, manage, remove files directly
+and attach them to datasets, resources, etc.</p>
+<p>Read the <a href="https://datashades.github.io/ckanext-files/">documentation</a> for a full user guide.</p>
+<h2 id="quickstart">Quickstart</h2>
+<ol>
+<li>
+<p>Install the extension
+   <div class="highlight"><pre><span></span><code>pip<span class="w"> </span>install<span class="w"> </span>ckanext-files
+</code></pre></div></p>
+</li>
+<li>
+<p>Add <code>files</code> to the <code>ckan.plugins</code> setting in your CKAN
+   config file.</p>
+</li>
+<li>
+<p>Run DB migrations
+   <div class="highlight"><pre><span></span><code>ckan<span class="w"> </span>db<span class="w"> </span>upgrade<span class="w"> </span>-p<span class="w"> </span>files
+</code></pre></div></p>
+</li>
+<li>
+<p>Configure storage</p>
+<div class="highlight"><pre><span></span><code><span class="na">ckanext.files.storage.default.type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">files:fs</span>
+<span class="na">ckanext.files.storage.default.path</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">/tmp/example</span>
+<span class="na">ckanext.files.storage.default.create_path</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">true</span>
+</code></pre></div>
+</li>
+<li>
+<p>Upload your first file</p>
+<div class="highlight"><pre><span></span><code>ckanapi<span class="w"> </span>action<span class="w"> </span>files_file_create<span class="w"> </span>upload@~/Downloads/file.txt<span class="sb">`</span>
+</code></pre></div>
+</li>
+</ol>
+<h2 id="development">Development</h2>
+<p>Install <code>dev</code> extras and nodeJS dependencies:</p>
+<div class="highlight"><pre><span></span><code>pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span><span class="s1">&#39;.[dev]&#39;</span>
+npm<span class="w"> </span>ci
+</code></pre></div>
+<p>Run unittests:
+<div class="highlight"><pre><span></span><code>pytest
+</code></pre></div></p>
+<p>Run frontend tests:
+<div class="highlight"><pre><span></span><code><span class="c1"># start test server in separate terminal</span>
+make<span class="w"> </span>test-server
 
-
+<span class="c1"># run tests</span>
+npx<span class="w"> </span>cypress<span class="w"> </span>run
+</code></pre></div></p>
+<p>Run typecheck:
+<div class="highlight"><pre><span></span><code>npx<span class="w"> </span>pyright
+</code></pre></div></p>
+<h2 id="license">License</h2>
+<p><a href="https://www.gnu.org/licenses/agpl-3.0.en.html">AGPL</a></p>
 
 
 

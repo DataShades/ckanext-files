@@ -24,7 +24,7 @@ AuthOperation = Literal["show", "update", "delete", "file_transfer"]
 
 Uploadable = Union[
     FileStorage,
-    tempfile.SpooledTemporaryFile[Any],
+    "tempfile.SpooledTemporaryFile[Any]",
     TextIOWrapper,
     bytes,
     bytearray,

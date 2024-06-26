@@ -1,0 +1,20 @@
+{
+  "name": "file_upload_widget",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "dev": "DEBUG=1 gulp watch",
+    "build": "gulp build"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "gulp": "^5.0.0",
+    "gulp-if": "^3.0.0",
+    "gulp-sass": "^5.1.0",
+    "gulp-sourcemaps": "^3.0.0",
+    "gulp-touch-fd": "^2.0.0",
+    "sass": "^1.77.1"
+  }
+}

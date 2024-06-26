@@ -1,0 +1,54 @@
+{% import 'macros/form.html' as form %}
+
+{% asset "file_upload_widget/css" %}
+{% asset "file_upload_widget/js" %}
+
+
+<div class="form-group control-medium file-upload-widget" data-module="file-upload-widget">
+    <label class="form-label" for="{{ field.field_name }}">
+        {% if field.required %}<span title="{{ _("This field is required") }}" class="control-required">*</span> {% endif %}
+        {{ h.scheming_language_text(field.label) }}
+    </label>
+    <div class="controls">
+        <button type="button" class="btn btn-primary fuw-init-btn" data-bs-toggle="modal" data-bs-target="#uploadWidget-{{ field.field_name }}">
+            {{ _("Upload") }}
+        </button>
+        <input id="{{ 'field-' + field.field_name }}" type="file" name="{{ field.field_name }}" value="" placeholder="" class="hidden">
+
+        {%- if field.help_text -%}
+            {% set text = h.scheming_language_text(field.help_text) %}
+            {{ form.info(
+                text=text|safe if field.get('help_allow_html', false) else text,
+                inline=field.get('help_inline', false))
+            }}
+        {%- endif -%}
+    </div>
+</div>
+
+<div class="modal fade" tabindex="-1" id="uploadWidget-{{ field.field_name }}" >
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="d-flex justify-content-center align-items-center text-center">
+                    <div class="fuw-dropzone">
+                        <div class="fuw-dropzone__content">
+                            <div class="fuw-dropzone__drop">
+                                <i class="fas fa-cloud-upload-alt"></i>
+                                <span>{{ _("Drag and drop files here") }}</span>
+                            </div>
+                            <div class="fuw-dropzone__alternative">
+                                <p>{{ _("OR") }}</p>
+                                <button type="button" class="btn btn-primary">{{ _("Browse files") }}</button>
+                                <button type="button" class="btn btn-primary">{{ _("URL") }}</button>
+                                <button type="button" class="btn btn-primary">{{ _("Media gallery") }}</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

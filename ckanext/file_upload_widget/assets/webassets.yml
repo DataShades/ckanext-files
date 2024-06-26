@@ -1,0 +1,17 @@
+js:
+  filter: rjsmin
+  output: ckanext-charts/%(version)s-file-upload-widget.js
+  contents:
+    - js/file-upload-widget.js
+  extra:
+    preload:
+      - base/main
+
+css:
+  filter: rcssmin
+  output: ckanext-charts/%(version)s-file-upload-widget.css
+  contents:
+    - css/styles.css
+  extra:
+    preload:
+      - base/main

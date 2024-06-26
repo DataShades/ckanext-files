@@ -1,0 +1,9 @@
+@import "variables";
+@import "mixins";
+
+.file-upload-widget {
+
+    .hidden {
+        display: none;
+    }
+}

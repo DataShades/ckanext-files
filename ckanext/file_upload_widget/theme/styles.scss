@@ -13,22 +13,71 @@
         }
     }
 
+    .fuw-url-input {
+        width: 100%;
+    }
+
     .fuw-media-input {
+        width: 100%;
+
         .search-input {
             margin-bottom: 1rem;
             position: relative;
 
+            input {
+                padding-left: 2rem;
+            }
+
             .input-group-btn {
                 position: absolute;
-                right: 10px;
+                left: 10px;
                 top: 10px;
             }
+        }
+
+        .fuw-media-input--files {
+            display: flex;
+            flex-direction: column;
+            padding: 0;
+            border-radius: 0.5rem;
+            height: 250px;
+            overflow-y: scroll;
+
+            .files--file-item {
+                display: flex;
+                padding: 7px 15px;
+                gap: 1rem;
+
+                label {
+                    display: flex;
+                    align-items: center;
+                    gap: 0.5rem;
+                    width: 100%;
+
+                    &:after {
+                        display: none;
+                    }
+
+                    .highlight {
+                        background-color: yellow;
+                    }
+                }
+            }
+        }
+
+        .fuw-media-input--empty {
+            align-items: center;
+            color: #939393;
+            display: flex;
+            height: 250px;
+            flex: 1;
+            flex-flow: column wrap;
+            justify-content: center
         }
     }
 
     .fuw-cancel-btn {
-        position: absolute;
-        top: 5px;
+        cursor: pointer;
     }
 
     .hidden {
@@ -38,6 +87,9 @@
     .modal {
         .modal-body {
             min-height: 145px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
     }
 }

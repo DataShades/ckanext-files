@@ -28,7 +28,7 @@
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
-                    <button type="button" class="btn btn-black fuw-cancel-btn" style="display: none;">{{ _("Cancel") }}</button>
+                    <i class="fa-solid fa-angles-left fuw-cancel-btn" style="display: none;"></i>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
@@ -59,33 +59,37 @@
                     <!-- MEDIA GALLERY WINDOW -->
                     <div class="fuw-media-input" style="display: none;">
                         <div class="search-input">
-                            <input aria-label="Search files..." id="fuw-media-input--search" type="text" class="form-control input-lg" value="" autocomplete="off" placeholder="Search files...">
+                            <input aria-label="Search files..." id="fuw-media-input--search" type="search" class="form-control input-lg" value="" autocomplete="off" placeholder="Search files...">
 
                             <span class="input-group-btn">
                                 <i class="fa fa-search"></i>
                             </span>
                         </div>
 
-                        <div class="fuw-media-input--files">
-                            <div class="fuw-media-input--file">
-                                <img src="https://via.placeholder.com/150" alt="Placeholder image">
-                                <button type="button" class="btn btn-primary">{{ _("Select") }}</button>
-                            </div>
-                            <div class="fuw-media-input--file">
-                                <img src="https://via.placeholder.com/150" alt="Placeholder image">
-                                <button type="button" class="btn btn-primary">{{ _("Select") }}</button>
-                            </div>
-                            <div class="fuw-media-input--file">
-                                <img src="https://via.placeholder.com/150" alt="Placeholder image">
-                                <button type="button" class="btn btn-primary">{{ _("Select") }}</button>
-                            </div>
-                            <div class="fuw-media-input--file">
-                                <img src="https://via.placeholder.com/150" alt="Placeholder image">
-                                <button type="button" class="btn btn-primary">{{ _("Select") }}</button>
-                            </div>
+                        <ul class="fuw-media-input--files">
+                            {% for i in range(21) %}
+                                {% set file_name = "Existing file " + i|string + ".csv" %}
+                                <li class="files--file-item" fuw-original-file-name="{{ file_name }}">
+                                    <input type="checkbox" name="{{ 'file-item-{}'.format(i) }}" id="{{ 'file-item-{}'.format(i) }}">
+                                    <label for="{{ 'file-item-{}'.format(i) }}">
+                                        <div class="file-item--icon-wrapper">
+                                            <img src="https://via.placeholder.com/16" referrerpolicy="no-referrer" loading="lazy" width="16" height="16">
+                                        </div>
+                                        <span>{{ file_name }}</span>
+                                    </label>
+                                </li>
+                            {% endfor %}
+                        </ul>
+
+                        <div class="fuw-media-input--empty" style="display: none;">
+                            <p>{{ _("No files found") }}</p>
                         </div>
                     </div>
 
+                </div>
+                <div class="modal-footer" style="display: none;">
+                    <button type="button" class="btn btn-primary btn-file-select">{{ _("Select") }} <span>0</span></button>
+                    <button type="button" class="btn btn-black btn-cancel-file-select">{{ _("Cancel") }}</button>
                 </div>
             </div>
         </div>

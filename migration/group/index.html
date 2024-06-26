@@ -1,0 +1,1534 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+        <link rel="canonical" href="https://datashades.github.io/ckanext-files/migration/group/">
+      
+      
+        <link rel="prev" href="../">
+      
+      
+        <link rel="next" href="../user/">
+      
+      
+      <link rel="icon" href="../../img/favicon.ico">
+      <meta name="generator" content="mkdocs-1.6.0, mkdocs-material-9.5.27">
+    
+    
+      
+        <title>Migration for group/organization images - ckanext-files</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.6543a935.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.06af60db.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="blue" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#migration-for-grouporganization-images" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="ckanext-files" class="md-header__button md-logo" aria-label="ckanext-files" data-md-component="logo">
+      
+  <img src="../../img/logo.png" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2Z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ckanext-files
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Migration for group/organization images
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.5.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256l137.3-137.4c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41Z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/DataShades/ckanext-files" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.5.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="ckanext-files" class="md-nav__button md-logo" aria-label="ckanext-files" data-md-component="logo">
+      
+  <img src="../../img/logo.png" alt="logo">
+
+    </a>
+    ckanext-files
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/DataShades/ckanext-files" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.5.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Home
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../installation/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Installation
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Usage
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            Usage
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../usage/configure/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Configure the storage
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../usage/use-in-code/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Usage in code
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../usage/use-in-browser/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Usage in browser
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../usage/multi-storage/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Multi-storage
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../usage/tracked-files/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Tracked and untracked files
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../usage/permissions/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Permissions
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../usage/ownership/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    File ownership
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../usage/transfer/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Ownership transfer
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../usage/task-queue/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Task queue
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../usage/capabilities/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Capabilities
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../usage/multipart/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Multipart, resumable and signed uploads
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../usage/js/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    JavaScript utilities
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../upload-strategies/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    File upload strategies
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../implementation-example/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Example implementation of custom storage adapter
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../cli/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    CLI
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Internals
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            Internals
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    API
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../validators/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Validators
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../shared/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Shared
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../interfaces/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Interfaces
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../configuration/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Configuration
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_9" id="__nav_9_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_9_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_9">
+            <span class="md-nav__icon md-icon"></span>
+            Configuration
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../configuration/global/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Global configuration
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9_3" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../configuration/storage/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Storage configuration
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_9_3" id="__nav_9_3_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_9_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_9_3">
+            <span class="md-nav__icon md-icon"></span>
+            Storage configuration
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../configuration/redis/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Redis storage configuration
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../configuration/fs/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Filesystem storage configuration
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../configuration/opendal/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    OpenDAL storage configuration
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../configuration/libcloud/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Apache libcloud storage configuration
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_10" checked>
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Migration(experimental)
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_10" id="__nav_10_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_10_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_10">
+            <span class="md-nav__icon md-icon"></span>
+            Migration(experimental)
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  <span class="md-ellipsis">
+    Migration for group/organization images
+  </span>
+  
+
+      </a>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../user/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Migration for user avatars
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../resource/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Resource
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../changelog/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Changelog
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+  
+  
+
+
+<h1 id="migration-for-grouporganization-images">Migration for group/organization images</h1>
+<p>Note: internally, groups and organizations are the same entity, so this
+workflow describes both of them.</p>
+<p>First of all, you need a configured storage that supports public links. As all
+group/organization images are stored inside local filesystem, you can use
+<code>files:public_fs</code> storage adapter.</p>
+<p>This extension expects that the name of group images storage will be
+<code>group_images</code>. This name will be used in all other commands of this migration
+workflow. If you want to use different name for group images storage, override
+<code>ckanext.files.group_images_storage</code> config option which has default value
+<code>group_images</code> and don't forget to adapt commands if you use a different name
+for the storage.</p>
+<p>This configuration example sets 10MiB restriction on upload size via
+<code>ckanext.files.storage.group_images.max_size</code> option. Feel free to change it or
+remove completely to allow any upload size. This restriction is applied to
+future uploads only. Any existing file that exceeds limit is kept.</p>
+<p>Uploads restricted to <code>image/*</code> MIMEtype via
+<code>ckanext.files.storage.group_images.supported_types</code> option. You can make this
+option more or less restrictive. This restriction is applied to future uploads
+only. Any existing file with wrong MIMEtype is kept.</p>
+<p><code>ckanext.files.storage.group_images.path</code> controls location of the upload
+folder in filesystem. It should match value of <code>ckan.storage_path</code> option plus
+<code>storage/uploads/group</code>. In example below we assume that value of
+<code>ckan.storage_path</code> is <code>/var/storage/ckan</code>.</p>
+<p><code>ckanext.files.storage.group_images.public_root</code> option specifies base URL from
+which every group image can be accessed. In most cases it's CKAN URL plus
+<code>uploads/group</code>. If you are serving CKAN application from the <code>ckan.site_url</code>,
+leave this option unchanged. If you are using <code>ckan.root_path</code>, like <code>/data/</code>,
+insert this root path into the value of the option. Example below uses
+<code>%(ckan.site_url)s</code> wildcard, which will be automatically replaced with the
+value of <code>ckan.site_url</code> config option. You can specify site URL explicitely if
+you don't like this wildcard syntax.</p>
+<div class="highlight"><pre><span></span><code><span class="na">ckanext.files.storage.group_images.type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">files:public_fs</span>
+<span class="na">ckanext.files.storage.group_images.max_size</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">10MiB</span>
+<span class="na">ckanext.files.storage.group_images.supported_types</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">image</span>
+<span class="na">ckanext.files.storage.group_images.path</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">/var/storage/ckan/storage/uploads/group</span>
+<span class="na">ckanext.files.storage.group_images.public_root</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">%(ckan.site_url)s/uploads/group</span>
+</code></pre></div>
+<p>Now let's run a command that show us the list of files available under newly
+configured storage:</p>
+<div class="highlight"><pre><span></span><code>ckan<span class="w"> </span>files<span class="w"> </span>scan<span class="w"> </span>-s<span class="w"> </span>group_images
+</code></pre></div>
+<p>All these files are not tracked by files extension yet, i.e they don't have
+corresponding record in DB with base details, like size, MIMEtype, filehash,
+etc. Let's create these details via the command below. It's safe to run this
+command multiple times: it will gather and store information about files not
+registered in system and ignore any previously registered file.</p>
+<div class="highlight"><pre><span></span><code>ckan<span class="w"> </span>files<span class="w"> </span>scan<span class="w"> </span>-s<span class="w"> </span>group_images<span class="w"> </span>-t
+</code></pre></div>
+<p>Finally, let's run the command, that shows only untracked files. Ideally,
+you'll see nothing upon executing it, because you just registered every file in
+the system.</p>
+<div class="highlight"><pre><span></span><code><span class="na">ckan files scan -s group_images -u</span>
+</code></pre></div>
+<p>Note, all the file are still available inside storage directory. If previous
+command shows nothing, it only means that CKAN already knows details about each
+file from the storage directory. If you want to see the list of the files
+again, omit <code>-u</code> flag(which stands for "untracked") and you'll see again all
+the files in the command output:</p>
+<div class="highlight"><pre><span></span><code><span class="na">ckan files scan -s group_images</span>
+</code></pre></div>
+<p>Now, when all images are tracked by the system, we can give the ownership over
+these files to groups/organizations that are using them. Run the command below
+to connect files with their owners. It will search for groups/organizations
+first and report, how many connections were identified. There will be
+suggestion to show identified relationship and the list of files that have no
+owner(if there are such files). Presence of files without owner usually means
+that you removed group/organization from database, but did not remove its
+image.</p>
+<p>Finally, you'll be asked if you want to transfer ownership over files. This
+operation does not change existing data and if you disable ckanext-files after
+ownership transfer, you won't see any difference. The whole ownership transfer
+is managed inside custom DB tables generated by ckanext-files, so it's safe
+operation.</p>
+<div class="highlight"><pre><span></span><code>ckan<span class="w"> </span>files<span class="w"> </span>migrate<span class="w"> </span>groups<span class="w"> </span>group_images
+</code></pre></div>
+<p>Here's an example of output that you can see when running the command:</p>
+<div class="highlight"><pre><span></span><code>Found<span class="w"> </span><span class="m">3</span><span class="w"> </span>files.<span class="w"> </span>Searching<span class="w"> </span>file<span class="w"> </span>owners...
+<span class="o">[</span><span class="c1">####################################] 100% Located owners for 2 files out of 3.</span>
+
+Show<span class="w"> </span>group<span class="w"> </span>IDs<span class="w"> </span>and<span class="w"> </span>corresponding<span class="w"> </span>file?<span class="w"> </span><span class="o">[</span>y/N<span class="o">]</span>:<span class="w"> </span>y
+d7186937-3080-429f-a434-22b74b9a8d39:<span class="w"> </span>file-1.png
+87e2a1aa-7905-4a28-a087-90433f8e169e:<span class="w"> </span>file-2.png
+
+Show<span class="w"> </span>files<span class="w"> </span>that<span class="w"> </span><span class="k">do</span><span class="w"> </span>not<span class="w"> </span>belong<span class="w"> </span>to<span class="w"> </span>any<span class="w"> </span>group?<span class="w"> </span><span class="o">[</span>y/N<span class="o">]</span>:<span class="w"> </span>y
+file-3.png
+
+Transfer<span class="w"> </span>file<span class="w"> </span>ownership<span class="w"> </span>to<span class="w"> </span>group<span class="w"> </span>identified<span class="w"> </span><span class="k">in</span><span class="w"> </span>previous<span class="w"> </span>steps?<span class="w"> </span><span class="o">[</span>y/N<span class="o">]</span>:<span class="w"> </span>y
+Transfering<span class="w"> </span>file-2.png<span class="w">  </span><span class="o">[</span><span class="c1">####################################]  100%</span>
+</code></pre></div>
+<p>Now comes the most complex part. You need to change metadata schema and UI in
+order to:</p>
+<ul>
+<li>make sure that all new files are uploaded and managed by ckanext-files
+  instead of native CKAN's uploader</li>
+<li>generate image URLs using ckanext-files functionality. Right now, while files
+  stored in the original storage folder it makes no difference. But if you
+  change upload directory in future or even decide to move files from local
+  filesystem into different storage backend, it will guarantee that files are
+  remain visible.</li>
+</ul>
+<p>Original CKAN workflow for uploading files was:</p>
+<ul>
+<li>just save image URL provided by user or</li>
+<li>upload a file</li>
+<li>put it into directory that is publicly served by application</li>
+<li>replace uploaded file in the HTML form/group metadata with the public URL of
+  the uploaded file</li>
+</ul>
+<p>This approach is different from strategy recommended by ckanext-files. But in
+order to make the migration as simple as possible, we'll stay close to original
+workflow.</p>
+<p>Note: suggestet approach resembles existing process of file uploads in
+CKAN. But ckanext-files was designed as a system, that gives you a
+choice. Check <a href="../../upload-strategies/">file upload strategies</a> to learn more
+about alternative implementations of upload and their pros/cons.</p>
+<p>First, we need to replace <strong>Upload/Link</strong> widget on group/organization form. If
+you are using native group templates, create <code>group/snippets/group_form.html</code>
+and <code>organization/snippets/organization_form.html</code>. Inside both files, extend
+original template and override block <code>basic_fields</code>. You only need to replace last field</p>
+<div class="highlight"><pre><span></span><code>{{ form.image_upload(
+    data, errors, is_upload_enabled=h.uploads_enabled(),
+    is_url=is_url, is_upload=is_upload) }}
+</code></pre></div>
+<p>with</p>
+<div class="highlight"><pre><span></span><code>{{ form.image_upload(
+    data, errors, is_upload_enabled=h.files_group_images_storage_is_configured(),
+    is_url=is_url, is_upload=is_upload,
+    field_upload=&quot;files_image_upload&quot;) }}
+</code></pre></div>
+<p>There are two differences with the original. First, we use
+<code>h.files_group_images_storage_is_configured()</code> instead of
+<code>h.uploads_enabled()</code>. As we are using different storage for different upload
+types, now upload widgets can be enabled independently. And second, we pass
+<code>field_upload="files_image_upload"</code> argument into macro. It will send uploaded
+file to CKAN inside <code>files_image_upload</code> instead of original <code>image_upload</code>
+field. This must be done because CKAN unconditionally strips <code>image_upload</code>
+field from submission payload, making processing of the file too unreliable. We
+changed the name of upload field and CKAN keeps this new field, so that we can
+process it as we wish.</p>
+<p>Note: if you are using ckanext-scheming, you only need to replace
+<code>form_snippet</code> of the <code>image_url</code> field, instead of rewriting the whole
+template.</p>
+<p>Now, let's define validation rules for this new upload field. We need to create
+plugins that modify validation schema for group and organization. Due to CKAN
+implementation details, you need separate plugin for group and organization.</p>
+<p>Note: if you are using ckanext-scheming, you can add <code>files_image_upload</code>
+validators to schemas of organization and group. Check the list of validators
+that must be applied to this new field below.</p>
+<p>Here's an example of plugins that modify validation schemas of group and
+organization. As you can see, they are mostly the same:</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">ckan.lib.plugins</span> <span class="kn">import</span> <span class="n">DefaultGroupForm</span><span class="p">,</span> <span class="n">DefaultOrganizationForm</span>
+<span class="kn">from</span> <span class="nn">ckan.logic.schema</span> <span class="kn">import</span> <span class="n">default_create_group_schema</span><span class="p">,</span> <span class="n">default_update_group_schema</span>
+
+
+<span class="k">def</span> <span class="nf">_modify_schema</span><span class="p">(</span><span class="n">schema</span><span class="p">,</span> <span class="nb">type</span><span class="p">):</span>
+    <span class="n">schema</span><span class="p">[</span><span class="s2">&quot;files_image_upload&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="n">tk</span><span class="o">.</span><span class="n">get_validator</span><span class="p">(</span><span class="s2">&quot;ignore_empty&quot;</span><span class="p">),</span>
+        <span class="n">tk</span><span class="o">.</span><span class="n">get_validator</span><span class="p">(</span><span class="s2">&quot;files_into_upload&quot;</span><span class="p">),</span>
+        <span class="n">tk</span><span class="o">.</span><span class="n">get_validator</span><span class="p">(</span><span class="s2">&quot;files_validate_with_storage&quot;</span><span class="p">)(</span><span class="s2">&quot;group_images&quot;</span><span class="p">),</span>
+        <span class="n">tk</span><span class="o">.</span><span class="n">get_validator</span><span class="p">(</span><span class="s2">&quot;files_upload_as&quot;</span><span class="p">)(</span>
+            <span class="s2">&quot;group_images&quot;</span><span class="p">,</span>
+            <span class="nb">type</span><span class="p">,</span>
+            <span class="s2">&quot;id&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;public_url&quot;</span><span class="p">,</span>
+            <span class="nb">type</span> <span class="o">+</span> <span class="s2">&quot;_patch&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;image_url&quot;</span><span class="p">,</span>
+        <span class="p">),</span>
+    <span class="p">]</span>
+
+
+<span class="k">class</span> <span class="nc">FilesGroupPlugin</span><span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">SingletonPlugin</span><span class="p">,</span> <span class="n">DefaultGroupForm</span><span class="p">):</span>
+    <span class="n">p</span><span class="o">.</span><span class="n">implements</span><span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">IGroupForm</span><span class="p">,</span> <span class="n">inherit</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">is_organization</span> <span class="o">=</span> <span class="kc">False</span>
+
+    <span class="k">def</span> <span class="nf">group_types</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">[</span><span class="s2">&quot;group&quot;</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">create_group_schema</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">_modify_schema</span><span class="p">(</span><span class="n">default_create_group_schema</span><span class="p">(),</span> <span class="s2">&quot;group&quot;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">update_group_schema</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">_modify_schema</span><span class="p">(</span><span class="n">default_update_group_schema</span><span class="p">(),</span> <span class="s2">&quot;group&quot;</span><span class="p">)</span>
+
+
+<span class="k">class</span> <span class="nc">FilesOrganizationPlugin</span><span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">SingletonPlugin</span><span class="p">,</span> <span class="n">DefaultOrganizationForm</span><span class="p">):</span>
+    <span class="n">p</span><span class="o">.</span><span class="n">implements</span><span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">IGroupForm</span><span class="p">,</span> <span class="n">inherit</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">is_organization</span> <span class="o">=</span> <span class="kc">True</span>
+
+    <span class="k">def</span> <span class="nf">group_types</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">[</span><span class="s2">&quot;organization&quot;</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">create_group_schema</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">_modify_schema</span><span class="p">(</span><span class="n">default_create_group_schema</span><span class="p">(),</span> <span class="s2">&quot;organization&quot;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">update_group_schema</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">_modify_schema</span><span class="p">(</span><span class="n">default_update_group_schema</span><span class="p">(),</span> <span class="s2">&quot;organization&quot;</span><span class="p">)</span>
+</code></pre></div>
+<p>There are 4 validators that must be applied to the new upload field:</p>
+<ul>
+<li><code>ignore_empty</code>: to skip validation, when image URL set manually and no upload
+  selected.</li>
+<li><code>files_into_upload</code>: to convert value of upload field into normalized format,
+  which is expected by ckanext-files</li>
+<li><code>files_validate_with_storage(STORAGE_NAME)</code>: this validator requires an
+  argument: the name of the storage we are using for image uploads. The
+  validator will use storage settings to verify size and MIMEtype of the
+  appload.</li>
+<li><code>files_upload_as(STORAGE_NAME, GROUP_TYPE, NAME_OF_ID_FIELD, "public_url",
+  NAME_OF_PATCH_ACTION, NAME_OF_URL_FIELF)</code>: this validator is the most
+  challenging. It accepts 6 arguments:</li>
+<li>the name of storage used for image uploads</li>
+<li><code>group</code> or <code>organization</code> depending on processed entity</li>
+<li>name of the ID field of processed entity. It's <code>id</code> in your case.</li>
+<li><code>public_url</code> - use this exact value. It tells which property of file you
+    want to use as link to the file.</li>
+<li><code>group_patch</code> or <code>organization_patch</code> depending on processed entity</li>
+<li><code>image_url</code> - name of the field that contains URL of the
+    image. ckanext-files will put the public link of uploaded file into this
+    field when form is processed.</li>
+</ul>
+<p>That's all. Now every image upload for group/organization is handled by
+ckanext-files. To verify it, do the following. First, check list of files
+currently stored in <code>group_images</code> storage via command that we used in the
+beginning of the migration:</p>
+<div class="highlight"><pre><span></span><code>ckan<span class="w"> </span>files<span class="w"> </span>scan<span class="w"> </span>-s<span class="w"> </span>group_images
+</code></pre></div>
+<p>You'll see a list of existing files. Their names follow format
+<code>&lt;ISO_8601_DATETIME&gt;&lt;FILENAME&gt;</code>, e.g <code>2024-06-14-133840.539670photo.jpg</code>.</p>
+<p>Now upload an image into existing group, or create a new group with any
+image. When you check list of files again, you'll see one new record. But this
+time this record resembles UUID: <code>da046887-e76c-4a68-97cf-7477665710ff</code>.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12Z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="Footer" >
+        
+          
+          <a href="../" class="md-footer__link md-footer__link--prev" aria-label="Previous: Migration from native CKAN storage system">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.5.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256l137.3-137.4c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              <div class="md-ellipsis">
+                Migration from native CKAN storage system
+              </div>
+            </div>
+          </a>
+        
+        
+          
+          <a href="../user/" class="md-footer__link md-footer__link--next" aria-label="Next: Migration for user avatars">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              <div class="md-ellipsis">
+                Migration for user avatars
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.5.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg>
+            </div>
+          </a>
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+      <div class="md-progress" data-md-component="progress" role="progressbar"></div>
+    
+    
+    <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.instant", "navigation.instant.prefetch", "navigation.instant.progress", "navigation.top", "content.code.copy", "content.code.select", "content.code.annotate", "navigation.footer", "navigation.indexes"], "search": "../../assets/javascripts/workers/search.b8dbb3d2.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.ad660dcc.min.js"></script>
+      
+    
+  </body>
+</html>

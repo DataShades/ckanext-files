@@ -1,82 +1,1508 @@
-<!DOCTYPE html>
-<html class="writer-html5" lang="en" >
-<head>
-    <meta charset="utf-8" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-      <link rel="shortcut icon" href="../img/favicon.ico" />
-    <title>API - ckanext-files</title>
-    <link rel="stylesheet" href="../css/theme.css" />
-    <link rel="stylesheet" href="../css/theme_extra.css" />
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
     
-      <script>
-        // Current page data
-        var mkdocs_page_name = "API";
-        var mkdocs_page_input_path = "api.md";
-        var mkdocs_page_url = null;
-      </script>
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+        <link rel="canonical" href="https://datashades.github.io/ckanext-files/api/">
+      
+      
+        <link rel="prev" href="../cli/">
+      
+      
+        <link rel="next" href="../validators/">
+      
+      
+      <link rel="icon" href="../img/favicon.ico">
+      <meta name="generator" content="mkdocs-1.6.0, mkdocs-material-9.5.27">
     
-    <!--[if lt IE 9]>
-      <script src="../js/html5shiv.min.js"></script>
-    <![endif]-->
-      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
-      <script>hljs.highlightAll();</script> 
-</head>
+    
+      
+        <title>API - ckanext-files</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.6543a935.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.06af60db.min.css">
+      
+      
 
-<body class="wy-body-for-nav" role="document">
 
-  <div class="wy-grid-for-nav">
-    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
-    <div class="wy-side-scroll">
-      <div class="wy-side-nav-search">
-          <a href=".." class="icon icon-home"> ckanext-files
-        </a><div role="search">
-  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
-      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
-  </form>
-</div>
-      </div>
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
 
-      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <ul>
-                <li class="toctree-l1"><a class="reference internal" href="..">Home</a>
-                </li>
-              </ul>
-              <ul class="current">
-                <li class="toctree-l1 current"><a class="reference internal current" href="#">API</a>
-    <ul class="current">
-    </ul>
-                </li>
-              </ul>
-              <ul>
-                <li class="toctree-l1"><a class="reference internal" href="../shared/">Shared</a>
-                </li>
-              </ul>
+    
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="blue" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#files_file_createcontext-context-data_dict-dictstr-any-dictstr-any" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="ckanext-files" class="md-header__button md-logo" aria-label="ckanext-files" data-md-component="logo">
+      
+  <img src="../img/logo.png" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2Z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ckanext-files
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              API
+            
+          </span>
+        </div>
       </div>
     </div>
-    </nav>
-
-    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
-      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
-          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-          <a href="..">ckanext-files</a>
+    
+      
+    
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
         
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.5.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256l137.3-137.4c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41Z"/></svg>
+        </button>
       </nav>
-      <div class="wy-nav-content">
-        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
-  <ul class="wy-breadcrumbs">
-    <li><a href=".." class="icon icon-home" aria-label="Docs"></a></li>
-      <li class="breadcrumb-item active">API</li>
-    <li class="wy-breadcrumbs-aside">
-    </li>
-  </ul>
-  <hr/>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
-          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
-            <div class="section" itemprop="articleBody">
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/DataShades/ckanext-files" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.5.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
               
-                <h2 id="files_file_createcontext-context-data_dict-dictstr-any-dictstr-any"><code>files_file_create(context: 'Context', data_dict: 'dict[str, Any]') -&gt; 'dict[str, Any]'</code></h2>
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="ckanext-files" class="md-nav__button md-logo" aria-label="ckanext-files" data-md-component="logo">
+      
+  <img src="../img/logo.png" alt="logo">
+
+    </a>
+    ckanext-files
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/DataShades/ckanext-files" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.5.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Home
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../installation/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Installation
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Usage
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            Usage
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../usage/configure/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Configure the storage
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../usage/use-in-code/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Usage in code
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../usage/use-in-browser/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Usage in browser
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../usage/multi-storage/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Multi-storage
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../usage/tracked-files/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Tracked and untracked files
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../usage/permissions/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Permissions
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../usage/ownership/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    File ownership
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../usage/transfer/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Ownership transfer
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../usage/task-queue/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Task queue
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../usage/capabilities/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Capabilities
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../usage/multipart/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Multipart, resumable and signed uploads
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../usage/js/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    JavaScript utilities
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../upload-strategies/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    File upload strategies
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../implementation-example/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Example implementation of custom storage adapter
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cli/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    CLI
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Internals
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            Internals
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    API
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  <span class="md-ellipsis">
+    API
+  </span>
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#files_file_createcontext-context-data_dict-dictstr-any-dictstr-any" class="md-nav__link">
+    <span class="md-ellipsis">
+      files_file_create(context: 'Context', data_dict: 'dict[str, Any]') -&gt; 'dict[str, Any]'
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#files_file_deletecontext-context-data_dict-dictstr-any-dictstr-any" class="md-nav__link">
+    <span class="md-ellipsis">
+      files_file_delete(context: 'Context', data_dict: 'dict[str, Any]') -&gt; 'dict[str, Any]'
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#files_file_pincontext-context-data_dict-dictstr-any-dictstr-any" class="md-nav__link">
+    <span class="md-ellipsis">
+      files_file_pin(context: 'Context', data_dict: 'dict[str, Any]') -&gt; 'dict[str, Any]'
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#files_file_renamecontext-context-data_dict-dictstr-any-dictstr-any" class="md-nav__link">
+    <span class="md-ellipsis">
+      files_file_rename(context: 'Context', data_dict: 'dict[str, Any]') -&gt; 'dict[str, Any]'
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#files_file_scancontext-context-data_dict-dictstr-any-dictstr-any" class="md-nav__link">
+    <span class="md-ellipsis">
+      files_file_scan(context: 'Context', data_dict: 'dict[str, Any]') -&gt; 'dict[str, Any]'
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#files_file_searchcontext-context-data_dict-dictstr-any-dictstr-any" class="md-nav__link">
+    <span class="md-ellipsis">
+      files_file_search(context: 'Context', data_dict: 'dict[str, Any]') -&gt; 'dict[str, Any]'
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#files_file_search_by_usercontext-context-data_dict-dictstr-any-dictstr-any" class="md-nav__link">
+    <span class="md-ellipsis">
+      files_file_search_by_user(context: 'Context', data_dict: 'dict[str, Any]') -&gt; 'dict[str, Any]'
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#files_file_showcontext-context-data_dict-dictstr-any-dictstr-any" class="md-nav__link">
+    <span class="md-ellipsis">
+      files_file_show(context: 'Context', data_dict: 'dict[str, Any]') -&gt; 'dict[str, Any]'
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#files_file_unpincontext-context-data_dict-dictstr-any-dictstr-any" class="md-nav__link">
+    <span class="md-ellipsis">
+      files_file_unpin(context: 'Context', data_dict: 'dict[str, Any]') -&gt; 'dict[str, Any]'
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#files_multipart_completecontext-context-data_dict-dictstr-any-dictstr-any" class="md-nav__link">
+    <span class="md-ellipsis">
+      files_multipart_complete(context: 'Context', data_dict: 'dict[str, Any]') -&gt; 'dict[str, Any]'
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#files_multipart_refreshcontext-context-data_dict-dictstr-any-dictstr-any" class="md-nav__link">
+    <span class="md-ellipsis">
+      files_multipart_refresh(context: 'Context', data_dict: 'dict[str, Any]') -&gt; 'dict[str, Any]'
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#files_multipart_startcontext-context-data_dict-dictstr-any-dictstr-any" class="md-nav__link">
+    <span class="md-ellipsis">
+      files_multipart_start(context: 'Context', data_dict: 'dict[str, Any]') -&gt; 'dict[str, Any]'
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#files_multipart_updatecontext-context-data_dict-dictstr-any-dictstr-any" class="md-nav__link">
+    <span class="md-ellipsis">
+      files_multipart_update(context: 'Context', data_dict: 'dict[str, Any]') -&gt; 'dict[str, Any]'
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#files_resource_uploadcontext-context-data_dict-dictstr-any" class="md-nav__link">
+    <span class="md-ellipsis">
+      files_resource_upload(context: 'Context', data_dict: 'dict[str, Any]')
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#files_transfer_ownershipcontext-context-data_dict-dictstr-any-dictstr-any" class="md-nav__link">
+    <span class="md-ellipsis">
+      files_transfer_ownership(context: 'Context', data_dict: 'dict[str, Any]') -&gt; 'dict[str, Any]'
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../validators/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Validators
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../shared/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Shared
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../interfaces/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Interfaces
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../configuration/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Configuration
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_9" id="__nav_9_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_9_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_9">
+            <span class="md-nav__icon md-icon"></span>
+            Configuration
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../configuration/global/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Global configuration
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9_3" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../configuration/storage/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Storage configuration
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_9_3" id="__nav_9_3_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_9_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_9_3">
+            <span class="md-nav__icon md-icon"></span>
+            Storage configuration
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../configuration/redis/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Redis storage configuration
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../configuration/fs/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Filesystem storage configuration
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../configuration/opendal/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    OpenDAL storage configuration
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../configuration/libcloud/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Apache libcloud storage configuration
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_10" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../migration/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Migration(experimental)
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_10" id="__nav_10_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_10_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_10">
+            <span class="md-nav__icon md-icon"></span>
+            Migration(experimental)
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../migration/group/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Migration for group/organization images
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../migration/user/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Migration for user avatars
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../migration/resource/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Resource
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../changelog/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Changelog
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#files_file_createcontext-context-data_dict-dictstr-any-dictstr-any" class="md-nav__link">
+    <span class="md-ellipsis">
+      files_file_create(context: 'Context', data_dict: 'dict[str, Any]') -&gt; 'dict[str, Any]'
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#files_file_deletecontext-context-data_dict-dictstr-any-dictstr-any" class="md-nav__link">
+    <span class="md-ellipsis">
+      files_file_delete(context: 'Context', data_dict: 'dict[str, Any]') -&gt; 'dict[str, Any]'
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#files_file_pincontext-context-data_dict-dictstr-any-dictstr-any" class="md-nav__link">
+    <span class="md-ellipsis">
+      files_file_pin(context: 'Context', data_dict: 'dict[str, Any]') -&gt; 'dict[str, Any]'
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#files_file_renamecontext-context-data_dict-dictstr-any-dictstr-any" class="md-nav__link">
+    <span class="md-ellipsis">
+      files_file_rename(context: 'Context', data_dict: 'dict[str, Any]') -&gt; 'dict[str, Any]'
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#files_file_scancontext-context-data_dict-dictstr-any-dictstr-any" class="md-nav__link">
+    <span class="md-ellipsis">
+      files_file_scan(context: 'Context', data_dict: 'dict[str, Any]') -&gt; 'dict[str, Any]'
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#files_file_searchcontext-context-data_dict-dictstr-any-dictstr-any" class="md-nav__link">
+    <span class="md-ellipsis">
+      files_file_search(context: 'Context', data_dict: 'dict[str, Any]') -&gt; 'dict[str, Any]'
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#files_file_search_by_usercontext-context-data_dict-dictstr-any-dictstr-any" class="md-nav__link">
+    <span class="md-ellipsis">
+      files_file_search_by_user(context: 'Context', data_dict: 'dict[str, Any]') -&gt; 'dict[str, Any]'
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#files_file_showcontext-context-data_dict-dictstr-any-dictstr-any" class="md-nav__link">
+    <span class="md-ellipsis">
+      files_file_show(context: 'Context', data_dict: 'dict[str, Any]') -&gt; 'dict[str, Any]'
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#files_file_unpincontext-context-data_dict-dictstr-any-dictstr-any" class="md-nav__link">
+    <span class="md-ellipsis">
+      files_file_unpin(context: 'Context', data_dict: 'dict[str, Any]') -&gt; 'dict[str, Any]'
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#files_multipart_completecontext-context-data_dict-dictstr-any-dictstr-any" class="md-nav__link">
+    <span class="md-ellipsis">
+      files_multipart_complete(context: 'Context', data_dict: 'dict[str, Any]') -&gt; 'dict[str, Any]'
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#files_multipart_refreshcontext-context-data_dict-dictstr-any-dictstr-any" class="md-nav__link">
+    <span class="md-ellipsis">
+      files_multipart_refresh(context: 'Context', data_dict: 'dict[str, Any]') -&gt; 'dict[str, Any]'
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#files_multipart_startcontext-context-data_dict-dictstr-any-dictstr-any" class="md-nav__link">
+    <span class="md-ellipsis">
+      files_multipart_start(context: 'Context', data_dict: 'dict[str, Any]') -&gt; 'dict[str, Any]'
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#files_multipart_updatecontext-context-data_dict-dictstr-any-dictstr-any" class="md-nav__link">
+    <span class="md-ellipsis">
+      files_multipart_update(context: 'Context', data_dict: 'dict[str, Any]') -&gt; 'dict[str, Any]'
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#files_resource_uploadcontext-context-data_dict-dictstr-any" class="md-nav__link">
+    <span class="md-ellipsis">
+      files_resource_upload(context: 'Context', data_dict: 'dict[str, Any]')
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#files_transfer_ownershipcontext-context-data_dict-dictstr-any-dictstr-any" class="md-nav__link">
+    <span class="md-ellipsis">
+      files_transfer_ownership(context: 'Context', data_dict: 'dict[str, Any]') -&gt; 'dict[str, Any]'
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+  
+  
+
+
+  <h1>API</h1>
+
+<h2 id="files_file_createcontext-context-data_dict-dictstr-any-dictstr-any"><code>files_file_create(context: 'Context', data_dict: 'dict[str, Any]') -&gt; 'dict[str, Any]'</code></h2>
 <p>Create a new file.</p>
 <p>This action passes uploaded file to the storage without strict
 validation. File is converted into standard upload object and everything
@@ -87,12 +1513,12 @@ approach is to register a different action for handling specific type of
 uploads and call current action internally.</p>
 <p>When uploading a real file(or using <code>werkqeug.datastructures.FileStorage</code>),
 name parameter can be omited. In this case, the name of uploaded file is used.</p>
-<pre><code class="language-python">ckanapi action files_file_create upload@path/to/file.txt
-</code></pre>
+<div class="highlight"><pre><span></span><code><span class="n">ckanapi</span> <span class="n">action</span> <span class="n">files_file_create</span> <span class="n">upload</span><span class="nd">@path</span><span class="o">/</span><span class="n">to</span><span class="o">/</span><span class="n">file</span><span class="o">.</span><span class="n">txt</span>
+</code></pre></div>
 <p>When uploading a raw content of the file using string or bytes object, name
 is mandatory.</p>
-<pre><code class="language-python">ckanapi action files_file_create upload@&lt;(echo -n &quot;hello world&quot;) name=file.txt
-</code></pre>
+<div class="highlight"><pre><span></span><code><span class="n">ckanapi</span> <span class="n">action</span> <span class="n">files_file_create</span> <span class="n">upload</span><span class="o">@&lt;</span><span class="p">(</span><span class="n">echo</span> <span class="o">-</span><span class="n">n</span> <span class="s2">&quot;hello world&quot;</span><span class="p">)</span> <span class="n">name</span><span class="o">=</span><span class="n">file</span><span class="o">.</span><span class="n">txt</span>
+</code></pre></div>
 <p>Requires storage with <code>CREATE</code> capability.</p>
 <p>Params:</p>
 <ul>
@@ -110,8 +1536,8 @@ details removed from DB and file itself removed from the storage.</p>
 or backups. Check storage documentation if you need to know whether there
 are chances that file is not completely removed with this operation.</p>
 <p>Requires storage with <code>REMOVE</code> capability.</p>
-<pre><code class="language-sh">ckanapi action files_file_delete id=226056e2-6f83-47c5-8bd2-102e2b82ab9a
-</code></pre>
+<div class="highlight"><pre><span></span><code>ckanapi<span class="w"> </span>action<span class="w"> </span>files_file_delete<span class="w"> </span><span class="nv">id</span><span class="o">=</span>226056e2-6f83-47c5-8bd2-102e2b82ab9a
+</code></pre></div>
 <p>Params:</p>
 <ul>
 <li><code>id</code>: ID of the file</li>
@@ -135,10 +1561,10 @@ owner.</p>
 <p>Rename the file.</p>
 <p>This action changes human-readable name of the file, which is stored in
 DB. Real location of the file in the storage is not modified.</p>
-<pre><code class="language-sh">ckanapi action files_file_show \
-    id=226056e2-6f83-47c5-8bd2-102e2b82ab9a \
-    name=new-name.txt
-</code></pre>
+<div class="highlight"><pre><span></span><code>ckanapi<span class="w"> </span>action<span class="w"> </span>files_file_show<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span><span class="nv">id</span><span class="o">=</span>226056e2-6f83-47c5-8bd2-102e2b82ab9a<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span><span class="nv">name</span><span class="o">=</span>new-name.txt
+</code></pre></div>
 <p>Params:</p>
 <ul>
 <li><code>id</code>: ID of the file</li>
@@ -174,12 +1600,12 @@ package_search manner, as dict with <code>count</code> and <code>results</code> 
 of column and type of filter value are compared. If they are the same,
 original values are used in search. If type different, column value and
 filter value are casted to string.</p>
-<p>This request produces <code>size = 10</code> SQL expression:</p>
-<pre><code class="language-sh">ckanapi action files_file_search size:10
-</code></pre>
-<p>This request produces <code>size::text = '10'</code> SQL expression:</p>
-<pre><code class="language-sh">ckanapi action files_file_search size=10
-</code></pre>
+<p>This request produces <code>size = 10</code> SQL expression:
+<div class="highlight"><pre><span></span><code>ckanapi<span class="w"> </span>action<span class="w"> </span>files_file_search<span class="w"> </span>size:10
+</code></pre></div></p>
+<p>This request produces <code>size::text = '10'</code> SQL expression:
+<div class="highlight"><pre><span></span><code>ckanapi<span class="w"> </span>action<span class="w"> </span>files_file_search<span class="w"> </span><span class="nv">size</span><span class="o">=</span><span class="m">10</span>
+</code></pre></div></p>
 <p>Even though results are usually not changed, using correct types leads to
 more efficient search.</p>
 <p>Apart from File columns, the following Owner properties can be used for
@@ -192,9 +1618,9 @@ without other structures, like list or sets.</p>
 <p>Experimental feature: File columns can be passed as a pair of operator and
 value. This feature will be replaced by strictly defined query language at
 some point:</p>
-<pre><code class="language-sh">ckanapi action files_file_search size:'[&quot;&lt;&quot;, 100]' content_type:'[&quot;like&quot;, &quot;text/%&quot;]'
-</code></pre>
-<p>Fillowing operators are accepted: <code>=</code>, <code>&lt;</code>, <code>&gt;</code>, <code>!=</code>, <code>like</code></p>
+<p><div class="highlight"><pre><span></span><code>ckanapi<span class="w"> </span>action<span class="w"> </span>files_file_search<span class="w"> </span>size:<span class="s1">&#39;[&quot;&lt;&quot;, 100]&#39;</span><span class="w"> </span>content_type:<span class="s1">&#39;[&quot;like&quot;, &quot;text/%&quot;]&#39;</span>
+</code></pre></div>
+Fillowing operators are accepted: <code>=</code>, <code>&lt;</code>, <code>&gt;</code>, <code>!=</code>, <code>like</code></p>
 <p>Params:</p>
 <ul>
 <li><code>start</code>: index of first row in result/number of rows to skip. Default: <code>0</code></li>
@@ -219,8 +1645,8 @@ some point:</p>
 <p>Show file details.</p>
 <p>This action only displays information from DB record. There is no way to
 get the content of the file using this action(or any other API action).</p>
-<pre><code class="language-sh">ckanapi action files_file_show id=226056e2-6f83-47c5-8bd2-102e2b82ab9a
-</code></pre>
+<div class="highlight"><pre><span></span><code>ckanapi<span class="w"> </span>action<span class="w"> </span>files_file_show<span class="w"> </span><span class="nv">id</span><span class="o">=</span>226056e2-6f83-47c5-8bd2-102e2b82ab9a
+</code></pre></div>
 <p>Params:</p>
 <ul>
 <li><code>id</code>: ID of the file</li>
@@ -324,51 +1750,105 @@ likely, <code>upload</code> with the fragment of uploaded file.</p>
 </ul>
 <p>Returns:</p>
 <p>dictionary with details of updated file</p>
-              
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
             </div>
-          </div><footer>
-    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
-        <a href=".." class="btn btn-neutral float-left" title="Home"><span class="icon icon-circle-arrow-left"></span> Previous</a>
-        <a href="../shared/" class="btn btn-neutral float-right" title="Shared">Next <span class="icon icon-circle-arrow-right"></span></a>
-    </div>
-
-  <hr/>
-
-  <div role="contentinfo">
-    <!-- Copyright etc -->
-  </div>
-
-  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
-</footer>
           
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
         </div>
-      </div>
-
-    </section>
-
-  </div>
-
-  <div class="rst-versions" role="note" aria-label="Versions">
-  <span class="rst-current-version" data-toggle="rst-current-version">
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12Z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
     
+      
+      <nav class="md-footer__inner md-grid" aria-label="Footer" >
+        
+          
+          <a href="../cli/" class="md-footer__link md-footer__link--prev" aria-label="Previous: CLI">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.5.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256l137.3-137.4c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              <div class="md-ellipsis">
+                CLI
+              </div>
+            </div>
+          </a>
+        
+        
+          
+          <a href="../validators/" class="md-footer__link md-footer__link--next" aria-label="Next: Validators">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              <div class="md-ellipsis">
+                Validators
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.5.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg>
+            </div>
+          </a>
+        
+      </nav>
     
-      <span><a href=".." style="color: #fcfcfc">&laquo; Previous</a></span>
-    
-    
-      <span><a href="../shared/" style="color: #fcfcfc">Next &raquo;</a></span>
-    
-  </span>
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
 </div>
-    <script src="../js/jquery-3.6.0.min.js"></script>
-    <script>var base_url = "..";</script>
-    <script src="../js/theme_extra.js"></script>
-    <script src="../js/theme.js"></script>
-      <script src="../search/main.js"></script>
-    <script>
-        jQuery(function () {
-            SphinxRtdTheme.Navigation.enable(true);
-        });
-    </script>
-
-</body>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+      <div class="md-progress" data-md-component="progress" role="progressbar"></div>
+    
+    
+    <script id="__config" type="application/json">{"base": "..", "features": ["navigation.instant", "navigation.instant.prefetch", "navigation.instant.progress", "navigation.top", "content.code.copy", "content.code.select", "content.code.annotate", "navigation.footer", "navigation.indexes"], "search": "../assets/javascripts/workers/search.b8dbb3d2.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.ad660dcc.min.js"></script>
+      
+    
+  </body>
 </html>

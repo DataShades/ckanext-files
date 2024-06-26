@@ -1,0 +1,2103 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+        <link rel="canonical" href="https://datashades.github.io/ckanext-files/changelog/">
+      
+      
+        <link rel="prev" href="../migration/resource/">
+      
+      
+      
+      <link rel="icon" href="../img/favicon.ico">
+      <meta name="generator" content="mkdocs-1.6.0, mkdocs-material-9.5.27">
+    
+    
+      
+        <title>Changelog - ckanext-files</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.6543a935.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.06af60db.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="blue" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#changelog" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="ckanext-files" class="md-header__button md-logo" aria-label="ckanext-files" data-md-component="logo">
+      
+  <img src="../img/logo.png" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2Z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ckanext-files
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Changelog
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.5.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256l137.3-137.4c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41Z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/DataShades/ckanext-files" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.5.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="ckanext-files" class="md-nav__button md-logo" aria-label="ckanext-files" data-md-component="logo">
+      
+  <img src="../img/logo.png" alt="logo">
+
+    </a>
+    ckanext-files
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/DataShades/ckanext-files" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.5.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Home
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../installation/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Installation
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Usage
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            Usage
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../usage/configure/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Configure the storage
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../usage/use-in-code/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Usage in code
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../usage/use-in-browser/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Usage in browser
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../usage/multi-storage/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Multi-storage
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../usage/tracked-files/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Tracked and untracked files
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../usage/permissions/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Permissions
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../usage/ownership/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    File ownership
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../usage/transfer/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Ownership transfer
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../usage/task-queue/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Task queue
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../usage/capabilities/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Capabilities
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../usage/multipart/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Multipart, resumable and signed uploads
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../usage/js/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    JavaScript utilities
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../upload-strategies/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    File upload strategies
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../implementation-example/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Example implementation of custom storage adapter
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cli/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    CLI
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Internals
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            Internals
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    API
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../validators/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Validators
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../shared/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Shared
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../interfaces/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Interfaces
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../configuration/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Configuration
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_9" id="__nav_9_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_9_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_9">
+            <span class="md-nav__icon md-icon"></span>
+            Configuration
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../configuration/global/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Global configuration
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9_3" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../configuration/storage/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Storage configuration
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_9_3" id="__nav_9_3_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_9_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_9_3">
+            <span class="md-nav__icon md-icon"></span>
+            Storage configuration
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../configuration/redis/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Redis storage configuration
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../configuration/fs/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Filesystem storage configuration
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../configuration/opendal/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    OpenDAL storage configuration
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../configuration/libcloud/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Apache libcloud storage configuration
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_10" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../migration/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Migration(experimental)
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_10" id="__nav_10_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_10_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_10">
+            <span class="md-nav__icon md-icon"></span>
+            Migration(experimental)
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../migration/group/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Migration for group/organization images
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../migration/user/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Migration for user avatars
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../migration/resource/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Resource
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    Changelog
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  <span class="md-ellipsis">
+    Changelog
+  </span>
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#unreleased" class="md-nav__link">
+    <span class="md-ellipsis">
+      Unreleased
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Unreleased">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#features" class="md-nav__link">
+    <span class="md-ellipsis">
+      Features
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#code-refactoring" class="md-nav__link">
+    <span class="md-ellipsis">
+      Code Refactoring
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v031-2024-05-22" class="md-nav__link">
+    <span class="md-ellipsis">
+      v0.3.1 - 2024-05-22
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="v0.3.1 - 2024-05-22">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#features_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      Features
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v030-2024-05-16" class="md-nav__link">
+    <span class="md-ellipsis">
+      v0.3.0 - 2024-05-16
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="v0.3.0 - 2024-05-16">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#features_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      Features
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bug-fixes" class="md-nav__link">
+    <span class="md-ellipsis">
+      Bug Fixes
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#code-refactoring_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      Code Refactoring
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v006-2024-04-24" class="md-nav__link">
+    <span class="md-ellipsis">
+      v0.0.6 - 2024-04-24
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="v0.0.6 - 2024-04-24">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#bug-fixes_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      Bug Fixes
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v026-2024-04-24" class="md-nav__link">
+    <span class="md-ellipsis">
+      v0.2.6 - 2024-04-24
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="v0.2.6 - 2024-04-24">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#bug-fixes_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      Bug Fixes
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v024-2024-04-15" class="md-nav__link">
+    <span class="md-ellipsis">
+      v0.2.4 - 2024-04-15
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="v0.2.4 - 2024-04-15">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#features_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      Features
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v023-2024-04-07" class="md-nav__link">
+    <span class="md-ellipsis">
+      v0.2.3 - 2024-04-07
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="v0.2.3 - 2024-04-07">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#features_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      Features
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bug-fixes_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      Bug Fixes
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v022-2024-03-18" class="md-nav__link">
+    <span class="md-ellipsis">
+      v0.2.2 - 2024-03-18
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v021-2024-03-18" class="md-nav__link">
+    <span class="md-ellipsis">
+      v0.2.1 - 2024-03-18
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="v0.2.1 - 2024-03-18">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#features_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      Features
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v020-2024-03-12" class="md-nav__link">
+    <span class="md-ellipsis">
+      v0.2.0 - 2024-03-12
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="v0.2.0 - 2024-03-12">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#features_6" class="md-nav__link">
+    <span class="md-ellipsis">
+      Features
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#code-refactoring_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      Code Refactoring
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v005-2024-02-26" class="md-nav__link">
+    <span class="md-ellipsis">
+      v0.0.5 - 2024-02-26
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="v0.0.5 - 2024-02-26">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#bug-fixes_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      Bug Fixes
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v004-2023-10-25" class="md-nav__link">
+    <span class="md-ellipsis">
+      v0.0.4 - 2023-10-25
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v002-2022-02-09" class="md-nav__link">
+    <span class="md-ellipsis">
+      v0.0.2 - 2022-02-09
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v001-2021-09-21" class="md-nav__link">
+    <span class="md-ellipsis">
+      v0.0.1 - 2021-09-21
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#unreleased" class="md-nav__link">
+    <span class="md-ellipsis">
+      Unreleased
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Unreleased">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#features" class="md-nav__link">
+    <span class="md-ellipsis">
+      Features
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#code-refactoring" class="md-nav__link">
+    <span class="md-ellipsis">
+      Code Refactoring
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v031-2024-05-22" class="md-nav__link">
+    <span class="md-ellipsis">
+      v0.3.1 - 2024-05-22
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="v0.3.1 - 2024-05-22">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#features_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      Features
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v030-2024-05-16" class="md-nav__link">
+    <span class="md-ellipsis">
+      v0.3.0 - 2024-05-16
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="v0.3.0 - 2024-05-16">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#features_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      Features
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bug-fixes" class="md-nav__link">
+    <span class="md-ellipsis">
+      Bug Fixes
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#code-refactoring_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      Code Refactoring
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v006-2024-04-24" class="md-nav__link">
+    <span class="md-ellipsis">
+      v0.0.6 - 2024-04-24
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="v0.0.6 - 2024-04-24">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#bug-fixes_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      Bug Fixes
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v026-2024-04-24" class="md-nav__link">
+    <span class="md-ellipsis">
+      v0.2.6 - 2024-04-24
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="v0.2.6 - 2024-04-24">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#bug-fixes_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      Bug Fixes
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v024-2024-04-15" class="md-nav__link">
+    <span class="md-ellipsis">
+      v0.2.4 - 2024-04-15
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="v0.2.4 - 2024-04-15">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#features_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      Features
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v023-2024-04-07" class="md-nav__link">
+    <span class="md-ellipsis">
+      v0.2.3 - 2024-04-07
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="v0.2.3 - 2024-04-07">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#features_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      Features
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bug-fixes_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      Bug Fixes
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v022-2024-03-18" class="md-nav__link">
+    <span class="md-ellipsis">
+      v0.2.2 - 2024-03-18
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v021-2024-03-18" class="md-nav__link">
+    <span class="md-ellipsis">
+      v0.2.1 - 2024-03-18
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="v0.2.1 - 2024-03-18">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#features_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      Features
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v020-2024-03-12" class="md-nav__link">
+    <span class="md-ellipsis">
+      v0.2.0 - 2024-03-12
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="v0.2.0 - 2024-03-12">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#features_6" class="md-nav__link">
+    <span class="md-ellipsis">
+      Features
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#code-refactoring_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      Code Refactoring
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v005-2024-02-26" class="md-nav__link">
+    <span class="md-ellipsis">
+      v0.0.5 - 2024-02-26
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="v0.0.5 - 2024-02-26">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#bug-fixes_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      Bug Fixes
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v004-2023-10-25" class="md-nav__link">
+    <span class="md-ellipsis">
+      v0.0.4 - 2023-10-25
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v002-2022-02-09" class="md-nav__link">
+    <span class="md-ellipsis">
+      v0.0.2 - 2022-02-09
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#v001-2021-09-21" class="md-nav__link">
+    <span class="md-ellipsis">
+      v0.0.1 - 2021-09-21
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+  
+  
+
+
+<h1 id="changelog">Changelog</h1>
+<p>All notable changes to this project will be documented in this file.</p>
+<p>The format is based on <a href="http://keepachangelog.com/en/1.0.0/">Keep a Changelog</a>
+and this project adheres to <a href="http://semver.org/spec/v2.0.0.html">Semantic Versioning</a>.</p>
+<!-- insertion marker -->
+<h2 id="unreleased">Unreleased</h2>
+<p><small><a href="https://github.com/DataShades/ckanext-files/compare/v0.3.1...HEAD">Compare with latest</a></small></p>
+<h3 id="features">Features</h3>
+<ul>
+<li>transfer_history table (<a href="https://github.com/DataShades/ckanext-files/commit/434abda216b229c7cb69d171f24c0924ed22d1de">434abda</a> by Sergey Motornyuk).</li>
+<li>libcloud adapter (<a href="https://github.com/DataShades/ckanext-files/commit/6594bb9ae60c3d0914d09116433069dc01352dc6">6594bb9</a> by Sergey Motornyuk).</li>
+<li>add SCAN and ANALYZE to redis storage (<a href="https://github.com/DataShades/ckanext-files/commit/96c2706a54bc462f1f1b6b933a5577ebc80c926a">96c2706</a> by Sergey Motornyuk).</li>
+<li>pinned files (<a href="https://github.com/DataShades/ckanext-files/commit/3e1db607fc275b25b246eb790f4144bab77d191a">3e1db60</a> by Sergey Motornyuk).</li>
+<li>files_download_info helper (<a href="https://github.com/DataShades/ckanext-files/commit/2659ae3391ca6bfc254436743c5a960c20f2dc01">2659ae3</a> by Sergey Motornyuk).</li>
+<li>validators for file fields (<a href="https://github.com/DataShades/ckanext-files/commit/a849247e9ac0f3cb0976ba51bcb593541e90d8be">a849247</a> by Sergey Motornyuk).</li>
+<li>add owner details to dictized file (<a href="https://github.com/DataShades/ckanext-files/commit/9ffd09826f62f89a5b26c8314647aa137dd22f37">9ffd098</a> by Sergey Motornyuk).</li>
+<li>restrict list of available storage for authenticated uploads (<a href="https://github.com/DataShades/ckanext-files/commit/a07526337bfcf266079ded9ffbfc469b03e2e98e">a075263</a> by Sergey Motornyuk).</li>
+<li>allow_authenticated_uploads config option (<a href="https://github.com/DataShades/ckanext-files/commit/7737b44eb0d62df6a6da9d6fdd614b3dbad5502f">7737b44</a> by Sergey Motornyuk).</li>
+<li>implement temporal_link for fs (<a href="https://github.com/DataShades/ckanext-files/commit/45ec2426d6aa72b44fa0783fc43da94ae291707c">45ec242</a> by Sergey Motornyuk).</li>
+<li>add public_link method to storage (<a href="https://github.com/DataShades/ckanext-files/commit/15a685bd0af977f9e537263ef403b7457fc739ba">15a685b</a> by Sergey Motornyuk).</li>
+<li>optional hash verification for multipart upload (<a href="https://github.com/DataShades/ckanext-files/commit/28e5f6952295afae401faa18fde9fdbb509211e8">28e5f69</a> by Sergey Motornyuk).</li>
+<li>add supported_types option for storages to restict upload types (<a href="https://github.com/DataShades/ckanext-files/commit/c5b43acabe11e2d5c94f5137df5948b0b29ea00c">c5b43ac</a> by Sergey Motornyuk).</li>
+<li>add files_file_search action (<a href="https://github.com/DataShades/ckanext-files/commit/b8e8b4c638ce4ae1159f47e7ccd62f021550b1e5">b8e8b4c</a> by Sergey Motornyuk).</li>
+<li>File.get method (<a href="https://github.com/DataShades/ckanext-files/commit/591ec48d4043caf486570faa4af586b11c31f6e9">591ec48</a> by Sergey Motornyuk).</li>
+<li>get_storage without arguments returns default storage (<a href="https://github.com/DataShades/ckanext-files/commit/571e021c44c4d719431c05a837bd6336b1896249">571e021</a> by Sergey Motornyuk).</li>
+<li>use timezone-aware date columns in model (<a href="https://github.com/DataShades/ckanext-files/commit/ae91cc79ae3b5e52098232fa9dc294c72942ea0d">ae91cc7</a> by Sergey Motornyuk).</li>
+</ul>
+<h3 id="code-refactoring">Code Refactoring</h3>
+<ul>
+<li>remove HashingReader.reset (<a href="https://github.com/DataShades/ckanext-files/commit/7e67d5f5df2c897debbd5b1cc7177d21cdca2673">7e67d5f</a> by Sergey Motornyuk).</li>
+<li>do not allow str as upload source (<a href="https://github.com/DataShades/ckanext-files/commit/cae738d7203b9991425661c1c2d00ddb68fc2bd9">cae738d</a> by Sergey Motornyuk).</li>
+<li>Capability.combine removed (<a href="https://github.com/DataShades/ckanext-files/commit/332c1a422ae5bdd810e922f718ddf583e42601b8">332c1a4</a> by Sergey Motornyuk).</li>
+<li>access column removed from owner table and now only single owner allowed (<a href="https://github.com/DataShades/ckanext-files/commit/f8d385d82f44696432fb4a28ce284ed19240ab49">f8d385d</a> by Sergey Motornyuk).</li>
+<li>add completed flag for rename, show and delete actions for simultaneous file and multipart support. (<a href="https://github.com/DataShades/ckanext-files/commit/10fb202a6e8c95dceee9a878a869812a84353219">10fb202</a> by Sergey Motornyuk).</li>
+<li>rename files_upload_show to files_multipart_refresh (<a href="https://github.com/DataShades/ckanext-files/commit/ee2a4dfdddad4009636590a28b1d664dc321e42e">ee2a4df</a> by Sergey Motornyuk).</li>
+<li>add kwargs to all Storage methods and extras to all service methods (<a href="https://github.com/DataShades/ckanext-files/commit/1526df10f566f02f70d1f0b88369fa5b69a3a815">1526df1</a> by Sergey Motornyuk).</li>
+<li>rename Storage and Uploader <em><em>multipart_upload into multipart</em></em> for consistency with actions (<a href="https://github.com/DataShades/ckanext-files/commit/ddfd11170286f463fe5115103b7357db106a6802">ddfd111</a> by Sergey Motornyuk).</li>
+<li>rename files_upload_<em> actions to files_multipart_</em>(initialize changed to start) (<a href="https://github.com/DataShades/ckanext-files/commit/6493a1d5cb8225346d5414914d73a8ca3b9276b7">6493a1d</a> by Sergey Motornyuk).</li>
+<li>rename MULTIPART_UPLOAD capability to MULTIPART (<a href="https://github.com/DataShades/ckanext-files/commit/20d01bf32eb52a91f734627664a2ab265238dcdb">20d01bf</a> by Sergey Motornyuk).</li>
+<li>use custom dataclass for Upload instead of werkzeug.datastructures.FileStorage (<a href="https://github.com/DataShades/ckanext-files/commit/78ae63b79d63c095313af6e90a5c583f6d0678d6">78ae63b</a> by Sergey Motornyuk).</li>
+<li>move hash, size, location(former filename) and content_type to the top level of file entity (<a href="https://github.com/DataShades/ckanext-files/commit/45a2679498a874ca6c2a00d154dd73a0bc394b29">45a2679</a> by Sergey Motornyuk).</li>
+<li>extract File.completed==False into Multipart model (<a href="https://github.com/DataShades/ckanext-files/commit/d90d78684829291976a71384a49b40e66234386b">d90d786</a> by Sergey Motornyuk).</li>
+<li>use dataclasses instead of dict in storage (<a href="https://github.com/DataShades/ckanext-files/commit/4965568e22e7a36672c96a26e88e73c21f056730">4965568</a> by Sergey Motornyuk).</li>
+<li>storage_from_settings renamed to make_storage (<a href="https://github.com/DataShades/ckanext-files/commit/08fd76751ba1cb778a4c819613388be25bc099c6">08fd767</a> by Sergey Motornyuk).</li>
+<li>transform combine_capabilities and exclude_capabilities into Capability methods (<a href="https://github.com/DataShades/ckanext-files/commit/73d32d4d9f18b7e2b75fbf985eb29e73eed4183b">73d32d4</a> by Sergey Motornyuk).</li>
+<li>replace CapabilityCluster and CapabilityUnit with Capability (<a href="https://github.com/DataShades/ckanext-files/commit/16d3b7e39cee430e4ae2d2d48256a70827b4c26d">16d3b7e</a> by Sergey Motornyuk).</li>
+<li>remove re-imported types from ckanext.files.types (<a href="https://github.com/DataShades/ckanext-files/commit/4b9e870dcced1d3bffc39719dec8afcada96a913">4b9e870</a> by Sergey Motornyuk).</li>
+<li>remove support of CKAN pre v2.10 (<a href="https://github.com/DataShades/ckanext-files/commit/3e70bc27440a9c21560c50e3c744b247f2087e90">3e70bc2</a> by Sergey Motornyuk).</li>
+<li>UnsupportedOperationError constructed with adapter type instead of name (<a href="https://github.com/DataShades/ckanext-files/commit/55d038d52e3dcfc09fb259122456079a197f4be8">55d038d</a> by Sergey Motornyuk).</li>
+</ul>
+<!-- insertion marker -->
+<h2 id="v031-2024-05-22"><a href="https://github.com/DataShades/ckanext-files/releases/tag/v0.3.1">v0.3.1</a> - 2024-05-22</h2>
+<p><small><a href="https://github.com/DataShades/ckanext-files/compare/v0.3.0...v0.3.1">Compare with v0.3.0</a></small></p>
+<h3 id="features_1">Features</h3>
+<ul>
+<li>generic_download view (<a href="https://github.com/DataShades/ckanext-files/commit/d0004464f12ba76aac2531f33dad72247b1a62ca">d000446</a> by Sergey Motornyuk).</li>
+</ul>
+<h2 id="v030-2024-05-16"><a href="https://github.com/DataShades/ckanext-files/releases/tag/v0.3.0">v0.3.0</a> - 2024-05-16</h2>
+<p><small><a href="https://github.com/DataShades/ckanext-files/compare/v0.2.6...v0.3.0">Compare with v0.2.6</a></small></p>
+<h3 id="features_2">Features</h3>
+<ul>
+<li>files_uploader plugin compatible with native uploader interface (<a href="https://github.com/DataShades/ckanext-files/commit/31aaaa676c3f1a0aba2bb3a706f85deb066895fa">31aaaa6</a> by Sergey Motornyuk).</li>
+</ul>
+<h3 id="bug-fixes">Bug Fixes</h3>
+<ul>
+<li>upload errors rendered outside of view box (<a href="https://github.com/DataShades/ckanext-files/commit/48005ed4229110dfca43fb219ba2bff4b8c9f5ba">48005ed</a> by Sergey Motornyuk).</li>
+<li>upload errors in actions not tracked (<a href="https://github.com/DataShades/ckanext-files/commit/530c6d98dcdb3e923c8eb2639cfef36e1b5e6d42">530c6d9</a> by Sergey Motornyuk).</li>
+</ul>
+<h3 id="code-refactoring_1">Code Refactoring</h3>
+<ul>
+<li>disallow file creation via auth function (<a href="https://github.com/DataShades/ckanext-files/commit/0db289bfbbc3de99c3b49fbc671009db4406ccff">0db289b</a> by Sergey Motornyuk).</li>
+</ul>
+<h2 id="v006-2024-04-24"><a href="https://github.com/DataShades/ckanext-files/releases/tag/v0.0.6">v0.0.6</a> - 2024-04-24</h2>
+<p><small><a href="https://github.com/DataShades/ckanext-files/compare/v0.0.5...v0.0.6">Compare with v0.0.5</a></small></p>
+<h3 id="bug-fixes_1">Bug Fixes</h3>
+<ul>
+<li>declarations are missing from the package (<a href="https://github.com/DataShades/ckanext-files/commit/15fa97b4c9fdaf6211f3e74e9cbf71eb19166a6b">15fa97b</a> by Sergey Motornyuk).</li>
+</ul>
+<h2 id="v026-2024-04-24"><a href="https://github.com/DataShades/ckanext-files/releases/tag/v0.2.6">v0.2.6</a> - 2024-04-24</h2>
+<p><small><a href="https://github.com/DataShades/ckanext-files/compare/v0.2.4...v0.2.6">Compare with v0.2.4</a></small></p>
+<h3 id="bug-fixes_2">Bug Fixes</h3>
+<ul>
+<li>declarations are missing from the package (<a href="https://github.com/DataShades/ckanext-files/commit/16c499945740facc9f8f1c301fc088bbc78a81ab">16c4999</a> by Sergey Motornyuk).</li>
+<li>catch permission error on delete (<a href="https://github.com/DataShades/ckanext-files/commit/9e6d799417ec842cfea5b671446a91657e5fd6c9">9e6d799</a> by Sergey Motornyuk).</li>
+</ul>
+<h2 id="v024-2024-04-15"><a href="https://github.com/DataShades/ckanext-files/releases/tag/v0.2.4">v0.2.4</a> - 2024-04-15</h2>
+<p><small><a href="https://github.com/DataShades/ckanext-files/compare/v0.2.3...v0.2.4">Compare with v0.2.3</a></small></p>
+<h3 id="features_3">Features</h3>
+<ul>
+<li>add dropzone and immediate upload (<a href="https://github.com/DataShades/ckanext-files/commit/0486a007a3eb1178cb8e838160ac84579024fa68">0486a00</a> by Sergey Motornyuk).</li>
+</ul>
+<h2 id="v023-2024-04-07"><a href="https://github.com/DataShades/ckanext-files/releases/tag/v0.2.3">v0.2.3</a> - 2024-04-07</h2>
+<p><small><a href="https://github.com/DataShades/ckanext-files/compare/v0.2.2...v0.2.3">Compare with v0.2.2</a></small></p>
+<h3 id="features_4">Features</h3>
+<ul>
+<li>file search by plugin data (<a href="https://github.com/DataShades/ckanext-files/commit/9dc51bd9f67f58d3f77aeff0247e9eb224ea0a38">9dc51bd</a> by Sergey Motornyuk).</li>
+<li>multipart uploaders accept initialize/complete payloads in JS (<a href="https://github.com/DataShades/ckanext-files/commit/97d9933f69dd4fe4053912c75ba3db41e44c34e2">97d9933</a> by Sergey Motornyuk).</li>
+</ul>
+<h3 id="bug-fixes_3">Bug Fixes</h3>
+<ul>
+<li>python2 fails when content-length accessed (<a href="https://github.com/DataShades/ckanext-files/commit/6e993154d6988d3d144dad0790e9860daa0ab2b6">6e99315</a> by Sergey Motornyuk).</li>
+</ul>
+<h2 id="v022-2024-03-18"><a href="https://github.com/DataShades/ckanext-files/releases/tag/v0.2.2">v0.2.2</a> - 2024-03-18</h2>
+<p><small><a href="https://github.com/DataShades/ckanext-files/compare/v0.2.1...v0.2.2">Compare with v0.2.1</a></small></p>
+<h2 id="v021-2024-03-18"><a href="https://github.com/DataShades/ckanext-files/releases/tag/v0.2.1">v0.2.1</a> - 2024-03-18</h2>
+<p><small><a href="https://github.com/DataShades/ckanext-files/compare/v0.2.0...v0.2.1">Compare with v0.2.0</a></small></p>
+<h3 id="features_5">Features</h3>
+<ul>
+<li>add move and copy operations (<a href="https://github.com/DataShades/ckanext-files/commit/577b5377474afbdc9293655127dacdd4bc325b5b">577b537</a> by Sergey Motornyuk).</li>
+</ul>
+<h2 id="v020-2024-03-12"><a href="https://github.com/DataShades/ckanext-files/releases/tag/v0.2.0">v0.2.0</a> - 2024-03-12</h2>
+<p><small><a href="https://github.com/DataShades/ckanext-files/compare/v0.0.5...v0.2.0">Compare with v0.0.5</a></small></p>
+<h3 id="features_6">Features</h3>
+<ul>
+<li>UI for file uploads (<a href="https://github.com/DataShades/ckanext-files/commit/4121e6f530bfe7cf8bd77759a15e9e859886aa7c">4121e6f</a> by Sergey Motornyuk).</li>
+<li>redis storage (<a href="https://github.com/DataShades/ckanext-files/commit/cced1e898666b14fd4f536405d42800cefa28640">cced1e8</a> by Sergey Motornyuk).</li>
+<li>multipart upload api (<a href="https://github.com/DataShades/ckanext-files/commit/96051d4b8449e6b7f96bf8e05a3860d972624326">96051d4</a> by Sergey Motornyuk).</li>
+<li>GCS storage (<a href="https://github.com/DataShades/ckanext-files/commit/cc5ee76825748ea4988603c409a558d68bcb7434">cc5ee76</a> by Sergey Motornyuk).</li>
+<li>split files into Storage and File (<a href="https://github.com/DataShades/ckanext-files/commit/71a7765304486f637a1d34b71c500a1bc8aaae04">71a7765</a> by Sergey Motornyuk).</li>
+</ul>
+<h3 id="code-refactoring_2">Code Refactoring</h3>
+<ul>
+<li>switch to typescript (<a href="https://github.com/DataShades/ckanext-files/commit/dfb5060e1308c7de9600b0ac4f31aa7ee1bdbc10">dfb5060</a> by Sergey Motornyuk).</li>
+<li>full type coverage (<a href="https://github.com/DataShades/ckanext-files/commit/f399582e2e9a6b6d612823b29709f52aaf45e887">f399582</a> by Sergey Motornyuk).</li>
+<li>get rid of blankets (<a href="https://github.com/DataShades/ckanext-files/commit/dfe901c52b07111799793a7af7c37d0f9a024364">dfe901c</a> by Sergey Motornyuk).</li>
+<li>make types py2 compatible (<a href="https://github.com/DataShades/ckanext-files/commit/c099dfc00534f11ab927406749e6503b509469a7">c099dfc</a> by Sergey Motornyuk).</li>
+<li>remove ckanext-toolbelt dependency (<a href="https://github.com/DataShades/ckanext-files/commit/dc885c7a36e5f1d2103a58c7a4e5882e40bc7e77">dc885c7</a> by Sergey Motornyuk).</li>
+</ul>
+<h2 id="v005-2024-02-26"><a href="https://github.com/DataShades/ckanext-files/releases/tag/v0.0.5">v0.0.5</a> - 2024-02-26</h2>
+<p><small><a href="https://github.com/DataShades/ckanext-files/compare/v0.0.4...v0.0.5">Compare with v0.0.4</a></small></p>
+<h3 id="bug-fixes_4">Bug Fixes</h3>
+<ul>
+<li>fix auth functions (<a href="https://github.com/DataShades/ckanext-files/commit/c76d5ffc0bde5731eb820bf9f4fb262965be5120">c76d5ff</a> by mutantsan).</li>
+<li>collection type without generic (<a href="https://github.com/DataShades/ckanext-files/commit/064735521fc9d704676e40f6199cbc6d1eefd208">0647355</a> by Sergey Motornyuk).</li>
+</ul>
+<h2 id="v004-2023-10-25"><a href="https://github.com/DataShades/ckanext-files/releases/tag/v0.0.4">v0.0.4</a> - 2023-10-25</h2>
+<p><small><a href="https://github.com/DataShades/ckanext-files/compare/v0.0.2...v0.0.4">Compare with v0.0.2</a></small></p>
+<h2 id="v002-2022-02-09"><a href="https://github.com/DataShades/ckanext-files/releases/tag/v0.0.2">v0.0.2</a> - 2022-02-09</h2>
+<p><small><a href="https://github.com/DataShades/ckanext-files/compare/v0.0.1...v0.0.2">Compare with v0.0.1</a></small></p>
+<h2 id="v001-2021-09-21"><a href="https://github.com/DataShades/ckanext-files/releases/tag/v0.0.1">v0.0.1</a> - 2021-09-21</h2>
+<p><small><a href="https://github.com/DataShades/ckanext-files/compare/d57d17e412821d56a9f5262636be89311e8050fc...v0.0.1">Compare with first commit</a></small></p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12Z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="Footer" >
+        
+          
+          <a href="../migration/resource/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Resource">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.5.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256l137.3-137.4c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              <div class="md-ellipsis">
+                Resource
+              </div>
+            </div>
+          </a>
+        
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+      <div class="md-progress" data-md-component="progress" role="progressbar"></div>
+    
+    
+    <script id="__config" type="application/json">{"base": "..", "features": ["navigation.instant", "navigation.instant.prefetch", "navigation.instant.progress", "navigation.top", "content.code.copy", "content.code.select", "content.code.annotate", "navigation.footer", "navigation.indexes"], "search": "../assets/javascripts/workers/search.b8dbb3d2.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.ad660dcc.min.js"></script>
+      
+    
+  </body>
+</html>

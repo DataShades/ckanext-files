@@ -8,26 +8,28 @@
       
       
       
-        <link rel="canonical" href="https://datashades.github.io/ckanext-files/">
+        <link rel="canonical" href="https://datashades.github.io/ckanext-files/usage/multipart/">
       
       
+        <link rel="prev" href="../capabilities/">
       
-        <link rel="next" href="installation/">
+      
+        <link rel="next" href="../js/">
       
       
-      <link rel="icon" href="img/favicon.ico">
+      <link rel="icon" href="../../img/favicon.ico">
       <meta name="generator" content="mkdocs-1.6.0, mkdocs-material-9.5.27">
     
     
       
-        <title>ckanext-files</title>
+        <title>Multipart, resumable and signed uploads - ckanext-files</title>
       
     
     
-      <link rel="stylesheet" href="assets/stylesheets/main.6543a935.min.css">
+      <link rel="stylesheet" href="../../assets/stylesheets/main.6543a935.min.css">
       
         
-        <link rel="stylesheet" href="assets/stylesheets/palette.06af60db.min.css">
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.06af60db.min.css">
       
       
 
@@ -46,7 +48,7 @@
       
     
     
-    <script>__md_scope=new URL(".",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
 
@@ -69,6 +71,11 @@
     <label class="md-overlay" for="__drawer"></label>
     <div data-md-component="skip">
       
+        
+        <a href="#multipart-resumable-and-signed-uploads" class="md-skip">
+          Skip to content
+        </a>
+      
     </div>
     <div data-md-component="announce">
       
@@ -81,9 +88,9 @@
 
 <header class="md-header md-header--shadow" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="Header">
-    <a href="." title="ckanext-files" class="md-header__button md-logo" aria-label="ckanext-files" data-md-component="logo">
+    <a href="../.." title="ckanext-files" class="md-header__button md-logo" aria-label="ckanext-files" data-md-component="logo">
       
-  <img src="img/logo.png" alt="logo">
+  <img src="../../img/logo.png" alt="logo">
 
     </a>
     <label class="md-header__button md-icon" for="__drawer">
@@ -100,7 +107,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Home
+              Multipart, resumable and signed uploads
             
           </span>
         </div>
@@ -187,9 +194,9 @@
 
 <nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href="." title="ckanext-files" class="md-nav__button md-logo" aria-label="ckanext-files" data-md-component="logo">
+    <a href="../.." title="ckanext-files" class="md-nav__button md-logo" aria-label="ckanext-files" data-md-component="logo">
       
-  <img src="img/logo.png" alt="logo">
+  <img src="../../img/logo.png" alt="logo">
 
     </a>
     ckanext-files
@@ -213,17 +220,10 @@
       
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-      
-      <a href="." class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -232,7 +232,6 @@
   
 
       </a>
-      
     </li>
   
 
@@ -244,7 +243,7 @@
   
   
     <li class="md-nav__item">
-      <a href="installation/" class="md-nav__link">
+      <a href="../../installation/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -261,8 +260,10 @@
       
   
   
+    
   
   
+  
     
     
       
@@ -293,11 +294,11 @@
     
     
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
         
           
           <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
@@ -311,7 +312,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_3">
             <span class="md-nav__icon md-icon"></span>
             Usage
@@ -325,7 +326,7 @@
   
   
     <li class="md-nav__item">
-      <a href="usage/configure/" class="md-nav__link">
+      <a href="../configure/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -346,7 +347,7 @@
   
   
     <li class="md-nav__item">
-      <a href="usage/use-in-code/" class="md-nav__link">
+      <a href="../use-in-code/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -367,7 +368,7 @@
   
   
     <li class="md-nav__item">
-      <a href="usage/use-in-browser/" class="md-nav__link">
+      <a href="../use-in-browser/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -388,7 +389,7 @@
   
   
     <li class="md-nav__item">
-      <a href="usage/multi-storage/" class="md-nav__link">
+      <a href="../multi-storage/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -409,7 +410,7 @@
   
   
     <li class="md-nav__item">
-      <a href="usage/tracked-files/" class="md-nav__link">
+      <a href="../tracked-files/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -430,7 +431,7 @@
   
   
     <li class="md-nav__item">
-      <a href="usage/permissions/" class="md-nav__link">
+      <a href="../permissions/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -451,7 +452,7 @@
   
   
     <li class="md-nav__item">
-      <a href="usage/ownership/" class="md-nav__link">
+      <a href="../ownership/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -472,7 +473,7 @@
   
   
     <li class="md-nav__item">
-      <a href="usage/transfer/" class="md-nav__link">
+      <a href="../transfer/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -493,7 +494,7 @@
   
   
     <li class="md-nav__item">
-      <a href="usage/task-queue/" class="md-nav__link">
+      <a href="../task-queue/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -514,7 +515,7 @@
   
   
     <li class="md-nav__item">
-      <a href="usage/capabilities/" class="md-nav__link">
+      <a href="../capabilities/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -532,10 +533,19 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="usage/multipart/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   <span class="md-ellipsis">
@@ -544,6 +554,7 @@
   
 
       </a>
+      
     </li>
   
 
@@ -556,7 +567,7 @@
   
   
     <li class="md-nav__item">
-      <a href="usage/js/" class="md-nav__link">
+      <a href="../js/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -584,7 +595,7 @@
   
   
     <li class="md-nav__item">
-      <a href="upload-strategies/" class="md-nav__link">
+      <a href="../../upload-strategies/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -604,7 +615,7 @@
   
   
     <li class="md-nav__item">
-      <a href="implementation-example/" class="md-nav__link">
+      <a href="../../implementation-example/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -624,7 +635,7 @@
   
   
     <li class="md-nav__item">
-      <a href="cli/" class="md-nav__link">
+      <a href="../../cli/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -687,7 +698,7 @@
   
   
     <li class="md-nav__item">
-      <a href="api/" class="md-nav__link">
+      <a href="../../api/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -708,7 +719,7 @@
   
   
     <li class="md-nav__item">
-      <a href="validators/" class="md-nav__link">
+      <a href="../../validators/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -729,7 +740,7 @@
   
   
     <li class="md-nav__item">
-      <a href="shared/" class="md-nav__link">
+      <a href="../../shared/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -757,7 +768,7 @@
   
   
     <li class="md-nav__item">
-      <a href="interfaces/" class="md-nav__link">
+      <a href="../../interfaces/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -799,7 +810,7 @@
           
           
           <div class="md-nav__link md-nav__container">
-            <a href="configuration/" class="md-nav__link ">
+            <a href="../../configuration/" class="md-nav__link ">
               
   
   <span class="md-ellipsis">
@@ -832,7 +843,7 @@
   
   
     <li class="md-nav__item">
-      <a href="configuration/global/" class="md-nav__link">
+      <a href="../../configuration/global/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -879,7 +890,7 @@
           
           
           <div class="md-nav__link md-nav__container">
-            <a href="configuration/storage/" class="md-nav__link ">
+            <a href="../../configuration/storage/" class="md-nav__link ">
               
   
   <span class="md-ellipsis">
@@ -912,7 +923,7 @@
   
   
     <li class="md-nav__item">
-      <a href="configuration/redis/" class="md-nav__link">
+      <a href="../../configuration/redis/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -933,7 +944,7 @@
   
   
     <li class="md-nav__item">
-      <a href="configuration/fs/" class="md-nav__link">
+      <a href="../../configuration/fs/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -954,7 +965,7 @@
   
   
     <li class="md-nav__item">
-      <a href="configuration/opendal/" class="md-nav__link">
+      <a href="../../configuration/opendal/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -975,7 +986,7 @@
   
   
     <li class="md-nav__item">
-      <a href="configuration/libcloud/" class="md-nav__link">
+      <a href="../../configuration/libcloud/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1035,7 +1046,7 @@
           
           
           <div class="md-nav__link md-nav__container">
-            <a href="migration/" class="md-nav__link ">
+            <a href="../../migration/" class="md-nav__link ">
               
   
   <span class="md-ellipsis">
@@ -1068,7 +1079,7 @@
   
   
     <li class="md-nav__item">
-      <a href="migration/group/" class="md-nav__link">
+      <a href="../../migration/group/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1089,7 +1100,7 @@
   
   
     <li class="md-nav__item">
-      <a href="migration/user/" class="md-nav__link">
+      <a href="../../migration/user/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1110,7 +1121,7 @@
   
   
     <li class="md-nav__item">
-      <a href="migration/resource/" class="md-nav__link">
+      <a href="../../migration/resource/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1138,7 +1149,7 @@
   
   
     <li class="md-nav__item">
-      <a href="changelog/" class="md-nav__link">
+      <a href="../../changelog/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1168,6 +1179,8 @@
   
   
   
+    
+  
   
 </nav>
                   </div>
@@ -1185,9 +1198,162 @@
   
 
 
-  <h1>Home</h1>
+<h1 id="multipart-resumable-and-signed-uploads">Multipart, resumable and signed uploads</h1>
+<p>This feature has many names, but it basically divides a single upload into
+multiple stages. It can be used in following situations:</p>
+<ul>
+<li>a really big file must be uploaded to cloud. It cannot fit into server's
+  temporal storage, so you split the file into smaller part and upload them
+  separately. Every part is uploaded to server and next part must wait till the
+  previous moved from server to cloud. This is a multipart upload.</li>
+<li>client has unstable or slow connection. Any upload takes ages and quite often
+  connection is interrupted so user has to spend extra time for re-uploading
+  files. To improve user experience, you want to track the upload progress and
+  keep incomplete file on server. If connection is interrupted, user can
+  continue upload from the point he stopped the last time, appending content to
+  existing incomplete file. This is a resumable upload.</li>
+<li>files are kept on cloud and uploads are quite intense on the portal. You
+  don't want to spend server resources on transferring content from client to
+  cloud. Instead you generate a URL that allows user to upload a single file
+  directly into specific location on cloud. User sends data to this URL and
+  only notifies the application, when upload is finished, so that the
+  application can make file visible. This is a signed upload.</li>
+</ul>
+<p>All these situations are handled by 4 API actions, which are available is
+storage has <code>MULTIPART</code> capability:</p>
+<ul>
+<li><code>files_multipart_start</code>: initialize multipart upload and set expected final
+  size and MIMEtype. Real multipart upload usually just return upload ID from
+  this action. Resumable upload creates empty file in the storage to accumulate
+  content inside it. Signed upload produces a URL for direct upload.</li>
+<li><code>files_multipart_update</code>: upload the fragment of the file of modify the
+  upload in some other way. Most often this action accepts ID of the upload and
+  <code>upload</code> field with fragment of the uploaded file.</li>
+<li><code>files_multipart_refresh</code>: this action synchronizes and returns current
+  upload progress. It can be used if upload was paused and client does not know
+  how many bytes were uploaded and from which byte the next upload fragment
+  starts.</li>
+<li><code>files_multipart_complete</code>: finalize the upload and convert it into normal
+  file, available to other parts of the application. Multipart upload usually
+  combines all uploaded parts into single file here. Resumable upload verifies
+  that the result has expected MIMEtype and size. Signed upload just registers
+  completed file in the system.</li>
+</ul>
+<p>Implementation of multipart upload depends on the used adapter, so make sure
+you checked its documentation before using any multipart actions. There are
+some common steps in multipart upload workflow that are <em>usually</em> the same
+among all adapters:</p>
+<ul>
+<li><code>files_multipart_start</code> requires <code>content_type</code> and <code>size</code> parameters. These
+  values will be used to validate completed upload.</li>
+<li><code>files_multipart_start</code> allows <code>hash</code> parameter. This value will be used to
+  validate completed upload. Unlike <code>content_type</code> and <code>size</code>, <code>hash</code> is
+  usually optional, because it may be difficult for client to compute it.</li>
+<li><code>files_multipart_update</code> accepts upload ID as <code>id</code> and fragment of the file
+  as <code>upload</code>. Sequence of calls to <code>files_multipart_update</code> with
+  non-overlapping fragments can be used to upload the file. Even if adapter
+  implements signed uploads and client is supposed to send file to the signed
+  URL instead of using <code>files_multipart_update</code>.</li>
+<li><code>files_multipart_complete</code> compares <code>content_type</code>, <code>size</code> and <code>hash</code>(if
+  present) specified during initialization of upload with actual values. If
+  they are different, upload is not converted into normal file. Depending on
+  implementation, storage may just ignore incorrect initial expectations an
+  assign a real values to the file as long as they are allowed by storage
+  configuration. But it's recommended to reject such uploads, so it safer to
+  assume, that incorrect expectations are not accepted.</li>
+</ul>
+<p>Incomplete files support most of normal file actions, but you need to pass
+<code>completed=False</code> to action when working with incomplete files. I.e, if you
+want to remove incomplete upload, use its ID and <code>completed=False</code>:</p>
+<div class="highlight"><pre><span></span><code>ckanapi<span class="w"> </span>action<span class="w"> </span>files_file_delete<span class="w"> </span><span class="nv">id</span><span class="o">=</span>bdfc0268-d36d-4f1b-8a03-2f2aaa21de24<span class="w"> </span><span class="nv">completed</span><span class="o">=</span>False
+</code></pre></div>
+<p>Incompleted files do not support streaming and downloading via public interface
+of the extension. But storage adapter can expose such features via custom
+methods if it's technically possible.</p>
+<p>Example of basic multipart upload is shown above. <code>files:fs</code> adapter can be
+used for running this example, as it implements <code>MULTIPART</code>.</p>
+<p>First, create text file and check its size:</p>
+<div class="highlight"><pre><span></span><code><span class="nb">echo</span><span class="w"> </span><span class="s1">&#39;hello world!&#39;</span><span class="w"> </span>&gt;<span class="w"> </span>/tmp/file.txt
+wc<span class="w"> </span>-c<span class="w"> </span>/tmp/file.txt
 
+...<span class="w"> </span><span class="m">13</span><span class="w"> </span>/tmp/file.txt
+</code></pre></div>
+<p>The size is <code>13</code> bytes and content type is <code>text/plain</code>. These values must be
+used for upload initialization.</p>
+<div class="highlight"><pre><span></span><code>ckanapi<span class="w"> </span>action<span class="w"> </span>files_multipart_start<span class="w"> </span><span class="nv">name</span><span class="o">=</span>file.txt<span class="w"> </span><span class="nv">size</span><span class="o">=</span><span class="m">13</span><span class="w"> </span><span class="nv">content_type</span><span class="o">=</span>text/plain
 
+...<span class="w"> </span><span class="o">{</span>
+...<span class="w">   </span><span class="s2">&quot;content_type&quot;</span>:<span class="w"> </span><span class="s2">&quot;text/plain&quot;</span>,
+...<span class="w">   </span><span class="s2">&quot;ctime&quot;</span>:<span class="w"> </span><span class="s2">&quot;2024-06-22T14:47:01.313016+00:00&quot;</span>,
+...<span class="w">   </span><span class="s2">&quot;hash&quot;</span>:<span class="w"> </span><span class="s2">&quot;&quot;</span>,
+...<span class="w">   </span><span class="s2">&quot;id&quot;</span>:<span class="w"> </span><span class="s2">&quot;90ebd047-96a0-4f32-a810-ffc962cbc380&quot;</span>,
+...<span class="w">   </span><span class="s2">&quot;location&quot;</span>:<span class="w"> </span><span class="s2">&quot;77e629f2-8938-4442-b825-8e344660e119&quot;</span>,
+...<span class="w">   </span><span class="s2">&quot;name&quot;</span>:<span class="w"> </span><span class="s2">&quot;file.txt&quot;</span>,
+...<span class="w">   </span><span class="s2">&quot;owner_id&quot;</span>:<span class="w"> </span><span class="s2">&quot;59ea0f6c-5c2f-438d-9d2e-e045be9a2beb&quot;</span>,
+...<span class="w">   </span><span class="s2">&quot;owner_type&quot;</span>:<span class="w"> </span><span class="s2">&quot;user&quot;</span>,
+...<span class="w">   </span><span class="s2">&quot;pinned&quot;</span>:<span class="w"> </span>false,
+...<span class="w">   </span><span class="s2">&quot;size&quot;</span>:<span class="w"> </span><span class="m">13</span>,
+...<span class="w">   </span><span class="s2">&quot;storage&quot;</span>:<span class="w"> </span><span class="s2">&quot;default&quot;</span>,
+...<span class="w">   </span><span class="s2">&quot;storage_data&quot;</span>:<span class="w"> </span><span class="o">{</span>
+...<span class="w">     </span><span class="s2">&quot;uploaded&quot;</span>:<span class="w"> </span><span class="m">0</span>
+...<span class="w">   </span><span class="o">}</span>
+...<span class="w"> </span><span class="o">}</span>
+</code></pre></div>
+<p>Here <code>storage_data</code> contains <code>{"uploaded": 0}</code>. It may be different for other
+adaptes, especially if they implement non-consecutive uploads, but generally
+it's the recommended way to keep upload progress.</p>
+<p>Now we'll upload first 5 bytes of file.</p>
+<div class="highlight"><pre><span></span><code>ckanapi<span class="w"> </span>action<span class="w"> </span>files_multipart_update<span class="w"> </span><span class="nv">id</span><span class="o">=</span>90ebd047-96a0-4f32-a810-ffc962cbc380<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>upload@&lt;<span class="o">(</span>dd<span class="w"> </span><span class="k">if</span><span class="o">=</span>/tmp/file.txt<span class="w"> </span><span class="nv">bs</span><span class="o">=</span><span class="m">1</span><span class="w"> </span><span class="nv">count</span><span class="o">=</span><span class="m">5</span><span class="o">)</span>
+
+...<span class="w"> </span><span class="o">{</span>
+...<span class="w">   </span><span class="s2">&quot;content_type&quot;</span>:<span class="w"> </span><span class="s2">&quot;text/plain&quot;</span>,
+...<span class="w">   </span><span class="s2">&quot;ctime&quot;</span>:<span class="w"> </span><span class="s2">&quot;2024-06-22T14:47:01.313016+00:00&quot;</span>,
+...<span class="w">   </span><span class="s2">&quot;hash&quot;</span>:<span class="w"> </span><span class="s2">&quot;&quot;</span>,
+...<span class="w">   </span><span class="s2">&quot;id&quot;</span>:<span class="w"> </span><span class="s2">&quot;90ebd047-96a0-4f32-a810-ffc962cbc380&quot;</span>,
+...<span class="w">   </span><span class="s2">&quot;location&quot;</span>:<span class="w"> </span><span class="s2">&quot;77e629f2-8938-4442-b825-8e344660e119&quot;</span>,
+...<span class="w">   </span><span class="s2">&quot;name&quot;</span>:<span class="w"> </span><span class="s2">&quot;file.txt&quot;</span>,
+...<span class="w">   </span><span class="s2">&quot;owner_id&quot;</span>:<span class="w"> </span><span class="s2">&quot;59ea0f6c-5c2f-438d-9d2e-e045be9a2beb&quot;</span>,
+...<span class="w">   </span><span class="s2">&quot;owner_type&quot;</span>:<span class="w"> </span><span class="s2">&quot;user&quot;</span>,
+...<span class="w">   </span><span class="s2">&quot;pinned&quot;</span>:<span class="w"> </span>false,
+...<span class="w">   </span><span class="s2">&quot;size&quot;</span>:<span class="w"> </span><span class="m">13</span>,
+...<span class="w">   </span><span class="s2">&quot;storage&quot;</span>:<span class="w"> </span><span class="s2">&quot;default&quot;</span>,
+...<span class="w">   </span><span class="s2">&quot;storage_data&quot;</span>:<span class="w"> </span><span class="o">{</span>
+...<span class="w">     </span><span class="s2">&quot;uploaded&quot;</span>:<span class="w"> </span><span class="m">5</span>
+...<span class="w">   </span><span class="o">}</span>
+...<span class="w"> </span><span class="o">}</span>
+</code></pre></div>
+<p>If you try finalizing upload right now, you'll get an error.</p>
+<div class="highlight"><pre><span></span><code>ckanapi<span class="w"> </span>action<span class="w"> </span>files_multipart_complete<span class="w"> </span><span class="nv">id</span><span class="o">=</span>90ebd047-96a0-4f32-a810-ffc962cbc380
+
+...<span class="w"> </span>ckan.logic.ValidationError:<span class="w"> </span>None<span class="w"> </span>-<span class="w"> </span><span class="o">{</span><span class="s1">&#39;upload&#39;</span>:<span class="w"> </span><span class="o">[</span><span class="s1">&#39;Actual value of upload size(5) does not match expected value(13)&#39;</span><span class="o">]}</span>
+</code></pre></div>
+<p>Let's upload the rest of bytes and complete the upload.</p>
+<div class="highlight"><pre><span></span><code>ckanapi<span class="w"> </span>action<span class="w"> </span>files_multipart_update<span class="w"> </span><span class="nv">id</span><span class="o">=</span>90ebd047-96a0-4f32-a810-ffc962cbc380<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>upload@&lt;<span class="o">(</span>dd<span class="w"> </span><span class="k">if</span><span class="o">=</span>/tmp/file.txt<span class="w"> </span><span class="nv">bs</span><span class="o">=</span><span class="m">1</span><span class="w"> </span><span class="nv">skip</span><span class="o">=</span><span class="m">5</span><span class="o">)</span>
+
+ckanapi<span class="w"> </span>action<span class="w"> </span>files_multipart_complete<span class="w"> </span><span class="nv">id</span><span class="o">=</span>90ebd047-96a0-4f32-a810-ffc962cbc380
+
+...<span class="w"> </span><span class="o">{</span>
+...<span class="w">   </span><span class="s2">&quot;atime&quot;</span>:<span class="w"> </span>null,
+...<span class="w">   </span><span class="s2">&quot;content_type&quot;</span>:<span class="w"> </span><span class="s2">&quot;text/plain&quot;</span>,
+...<span class="w">   </span><span class="s2">&quot;ctime&quot;</span>:<span class="w"> </span><span class="s2">&quot;2024-06-22T14:57:18.483716+00:00&quot;</span>,
+...<span class="w">   </span><span class="s2">&quot;hash&quot;</span>:<span class="w"> </span><span class="s2">&quot;c897d1410af8f2c74fba11b1db511e9e&quot;</span>,
+...<span class="w">   </span><span class="s2">&quot;id&quot;</span>:<span class="w"> </span><span class="s2">&quot;a740692f-e3d5-492f-82eb-f04e47c13848&quot;</span>,
+...<span class="w">   </span><span class="s2">&quot;location&quot;</span>:<span class="w"> </span><span class="s2">&quot;77e629f2-8938-4442-b825-8e344660e119&quot;</span>,
+...<span class="w">   </span><span class="s2">&quot;mtime&quot;</span>:<span class="w"> </span>null,
+...<span class="w">   </span><span class="s2">&quot;name&quot;</span>:<span class="w"> </span><span class="s2">&quot;file.txt&quot;</span>,
+...<span class="w">   </span><span class="s2">&quot;owner_id&quot;</span>:<span class="w"> </span>null,
+...<span class="w">   </span><span class="s2">&quot;owner_type&quot;</span>:<span class="w"> </span>null,
+...<span class="w">   </span><span class="s2">&quot;pinned&quot;</span>:<span class="w"> </span>false,
+...<span class="w">   </span><span class="s2">&quot;size&quot;</span>:<span class="w"> </span><span class="m">13</span>,
+...<span class="w">   </span><span class="s2">&quot;storage&quot;</span>:<span class="w"> </span><span class="s2">&quot;default&quot;</span>,
+...<span class="w">   </span><span class="s2">&quot;storage_data&quot;</span>:<span class="w"> </span><span class="o">{}</span>
+...<span class="w"> </span><span class="o">}</span>
+</code></pre></div>
+<p>Now file can be used normally. You can transfer file ownership to someone,
+stream or modify it. Pay attention to ID: completed file has its own unique ID,
+which is different from ID of the incomplete upload.</p>
 
 
 
@@ -1222,15 +1388,31 @@
       
       <nav class="md-footer__inner md-grid" aria-label="Footer" >
         
+          
+          <a href="../capabilities/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Capabilities">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.5.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256l137.3-137.4c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              <div class="md-ellipsis">
+                Capabilities
+              </div>
+            </div>
+          </a>
+        
         
           
-          <a href="installation/" class="md-footer__link md-footer__link--next" aria-label="Next: Installation">
+          <a href="../js/" class="md-footer__link md-footer__link--next" aria-label="Next: JavaScript utilities">
             <div class="md-footer__title">
               <span class="md-footer__direction">
                 Next
               </span>
               <div class="md-ellipsis">
-                Installation
+                JavaScript utilities
               </div>
             </div>
             <div class="md-footer__button md-icon">
@@ -1266,10 +1448,10 @@
       <div class="md-progress" data-md-component="progress" role="progressbar"></div>
     
     
-    <script id="__config" type="application/json">{"base": ".", "features": ["navigation.instant", "navigation.instant.prefetch", "navigation.instant.progress", "navigation.top", "content.code.copy", "content.code.select", "content.code.annotate", "navigation.footer", "navigation.indexes"], "search": "assets/javascripts/workers/search.b8dbb3d2.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.instant", "navigation.instant.prefetch", "navigation.instant.progress", "navigation.top", "content.code.copy", "content.code.select", "content.code.annotate", "navigation.footer", "navigation.indexes"], "search": "../../assets/javascripts/workers/search.b8dbb3d2.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
     
     
-      <script src="assets/javascripts/bundle.ad660dcc.min.js"></script>
+      <script src="../../assets/javascripts/bundle.ad660dcc.min.js"></script>
       
     
   </body>

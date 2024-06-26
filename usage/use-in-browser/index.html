@@ -1208,7 +1208,7 @@ accepts <code>File</code> object for upload(the same object you can get from the
 <code>input[type=file]</code>).</p>
 <div class="highlight"><pre><span></span><code><span class="nx">sandbox</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">ckan</span><span class="p">.</span><span class="nx">sandbox</span><span class="p">()</span>
 <span class="k">await</span><span class="w"> </span><span class="nx">sandbox</span><span class="p">.</span><span class="nx">files</span><span class="p">.</span><span class="nx">upload</span><span class="p">(</span>
-<span class="ow">new</span><span class="w"> </span><span class="nx">File</span><span class="p">([</span><span class="s2">&quot;content&quot;</span><span class="p">],</span><span class="w"> </span><span class="s2">&quot;file.txt&quot;</span><span class="p">)</span>
+<span class="w">    </span><span class="ow">new</span><span class="w"> </span><span class="nx">File</span><span class="p">([</span><span class="s2">&quot;content&quot;</span><span class="p">],</span><span class="w"> </span><span class="s2">&quot;file.txt&quot;</span><span class="p">)</span>
 <span class="p">)</span>
 
 <span class="p">...</span><span class="w"> </span><span class="p">{</span>
@@ -1235,7 +1235,7 @@ cat<span class="w"> </span>b53907c3-8434-4dee-9a9e-6c4d3055d200
 </code></pre></div>
 <p>And, as usually, let's remove file using the ID from the <code>upload</code> promise:</p>
 <div class="highlight"><pre><span></span><code><span class="nx">sandbox</span><span class="p">.</span><span class="nx">client</span><span class="p">.</span><span class="nx">call</span><span class="p">(</span><span class="s2">&quot;POST&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;files_file_delete&quot;</span><span class="p">,</span><span class="w"> </span><span class="p">{</span>
-<span class="nx">id</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;18cdaa65-5eed-4078-89a8-469b137627ce&quot;</span>
+<span class="w">    </span><span class="nx">id</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;18cdaa65-5eed-4078-89a8-469b137627ce&quot;</span>
 <span class="p">})</span>
 </code></pre></div>
 

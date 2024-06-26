@@ -1219,12 +1219,15 @@ using adapter defined in the <code>files</code> extension with <code>redis</code
 naming convention is not enforced and its only purpose is avoiding name
 conflicts. Technically, adapter name can use any character, including spaces,
 newlines and emoji.</p>
+<details class="question">
+<summary>See an error?</summary>
 <p>If you make a typo in the adapter's name, any CKAN CLI command will produce an
 error message with the list of available adapters:</p>
 <div class="highlight"><pre><span></span><code>Invalid<span class="w"> </span>configuration<span class="w"> </span>values<span class="w"> </span>provided:
-ckanext.files.storage.default.type:<span class="w"> </span>Value<span class="w"> </span>must<span class="w"> </span>be<span class="w"> </span>one<span class="w"> </span>of<span class="w"> </span><span class="o">[</span><span class="s1">&#39;files:fs&#39;</span>,<span class="w"> </span><span class="s1">&#39;files:public_fs&#39;</span>,<span class="w"> </span><span class="s1">&#39;files:redis&#39;</span><span class="o">]</span>
+ckanext.files.storage.default.type:<span class="w"> </span>Value<span class="w"> </span>must<span class="w"> </span>be<span class="w"> </span>one<span class="w"> </span>of<span class="w"> </span><span class="o">[</span><span class="s1">&#39;files:fs&#39;</span>,<span class="w"> </span><span class="s1">&#39;files:redis&#39;</span><span class="o">]</span>
 Aborted!
 </code></pre></div>
+</details>
 <p>Storage is configured, so we can actually upload the file. Let's use
 <a href="https://github.com/ckan/ckanapi">ckanapi</a> for this task. Files are created via
 <code>files_file_create</code> API action and this time we have to pass 2 parameters into
@@ -1275,9 +1278,11 @@ i.e. something similar to <code>path/to/folder/hello.txt</code>.</p>
 127.0.0.1:6379&gt; GET ckanext:files:default:file_content:24d27fb9-a5f0-42f6-aaa3-7dcb599a0d46
 &quot;hello world&quot;
 </code></pre></div>
-<p>And before we moved further, let's remove the file, using its <code>id</code>:</p>
+<div class="admonition tip">
+<p class="admonition-title">Don't forget to remove the file:</p>
 <div class="highlight"><pre><span></span><code>ckanapi<span class="w"> </span>action<span class="w"> </span>files_file_delete<span class="w"> </span><span class="nv">id</span><span class="o">=</span>e21162ab-abfb-476c-b8c5-5fe7cb89eca0
 </code></pre></div>
+</div>
 
 
 

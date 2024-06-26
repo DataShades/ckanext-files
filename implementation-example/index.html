@@ -612,6 +612,17 @@
         
       
       
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    Example implementation of custom storage adapter
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
       <a href="./" class="md-nav__link md-nav__link--active">
         
   
@@ -621,6 +632,85 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#storage" class="md-nav__link">
+    <span class="md-ellipsis">
+      Storage
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#settings" class="md-nav__link">
+    <span class="md-ellipsis">
+      Settings
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#services" class="md-nav__link">
+    <span class="md-ellipsis">
+      Services
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Services">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#uploader" class="md-nav__link">
+    <span class="md-ellipsis">
+      Uploader
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#reader" class="md-nav__link">
+    <span class="md-ellipsis">
+      Reader
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#manager" class="md-nav__link">
+    <span class="md-ellipsis">
+      Manager
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
       
     </li>
   
@@ -1180,6 +1270,74 @@
     
   
   
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#storage" class="md-nav__link">
+    <span class="md-ellipsis">
+      Storage
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#settings" class="md-nav__link">
+    <span class="md-ellipsis">
+      Settings
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#services" class="md-nav__link">
+    <span class="md-ellipsis">
+      Services
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Services">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#uploader" class="md-nav__link">
+    <span class="md-ellipsis">
+      Uploader
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#reader" class="md-nav__link">
+    <span class="md-ellipsis">
+      Reader
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#manager" class="md-nav__link">
+    <span class="md-ellipsis">
+      Manager
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
 </nav>
                   </div>
                 </div>
@@ -1205,8 +1363,12 @@ logic and register storage via <code>IFiles.files_get_storage_adapters</code>.</
 SQLAlchemy. There will be just one requirement for the table: it must have
 column for storing unique identifier of the file and another column for storing
 content of the file as bytes.</p>
+<div class="admonition info">
+<p class="admonition-title">Info</p>
 <p>For the sake of simplicity, our storage will work only with existing
 tables. Create the table manually before we begin.</p>
+</div>
+<h2 id="storage">Storage</h2>
 <p>First of all, we create an adapter that does nothing and register it in our
 plugin.</p>
 <div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
@@ -1240,17 +1402,22 @@ do anything.</p>
 ...<span class="w">        </span>Supports:<span class="w"> </span>Capability.NONE
 ...<span class="w">        </span>Does<span class="w"> </span>not<span class="w"> </span>support:<span class="w"> </span>Capability.REMOVE<span class="p">|</span>STREAM<span class="p">|</span>CREATE<span class="p">|</span>...
 </code></pre></div>
+<h2 id="settings">Settings</h2>
 <p>Before we start uploading files, let's make sure that storage has proper
 configuration. As files will be stored in the DB table, we need the <em>name of
 the table</em> and <em>DB connection string</em>. Let's assume that table already exists,
 but we don't know which columns to use for files. So we need name of column for
 content and for file's unique identifier. ckanext-files uses term <code>location</code>
 instead of identifier, so we'll do the same in our implementation.</p>
-<p>There are 4 required options in total:
-* <code>db_url</code>: DB connection string
-* <code>table</code>: name of the table
-* <code>location_column</code>: name of column for file's unique identifier
-* <code>content_column</code>: name of column for file's content</p>
+<p>There are 4 required options in total:</p>
+<ul>
+<li><code>db_url</code>: DB connection string</li>
+<li><code>table</code>: name of the table</li>
+<li><code>location_column</code>: name of column for file's unique identifier</li>
+<li><code>content_column</code>: name of column for file's content</li>
+</ul>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
 <p>It's not mandatory, but is highly recommended that you declare config options
 for the adapter. It can be done via <code>Storage.declare_config_options</code> class
 method, which accepts <code>declaration</code> object and <code>key</code> namespace for storage
@@ -1264,6 +1431,7 @@ options.</p>
         <span class="n">declaration</span><span class="o">.</span><span class="n">declare</span><span class="p">(</span><span class="n">key</span><span class="o">.</span><span class="n">location_column</span><span class="p">)</span><span class="o">.</span><span class="n">required</span><span class="p">()</span>
         <span class="n">declaration</span><span class="o">.</span><span class="n">declare</span><span class="p">(</span><span class="n">key</span><span class="o">.</span><span class="n">content_column</span><span class="p">)</span><span class="o">.</span><span class="n">required</span><span class="p">()</span>
 </code></pre></div>
+</div>
 <p>And we probably want to initialize DB connection when storage is
 initialized. For this we'll extend constructor, which must be defined as method
 accepting keyword-only arguments:</p>
@@ -1290,6 +1458,7 @@ method returns the value of specified option from settings or raises an
 exception.</p>
 <p>The table definition and columns are saved as storage attributes, to simplify
 building SQL queries in future.</p>
+<h2 id="services">Services</h2>
 <p>Now we are going to define classes for all 3 storage services and tell storage,
 how to initialize these services.</p>
 <p>There are 3 services: Reader, Uploader and Manager. Each of them initialized
@@ -1318,13 +1487,19 @@ storage itself.</p>
 <span class="k">class</span> <span class="nc">DbManager</span><span class="p">(</span><span class="n">shared</span><span class="o">.</span><span class="n">Manager</span><span class="p">):</span>
     <span class="o">...</span>
 </code></pre></div>
+<h3 id="uploader">Uploader</h3>
 <p>Our first target is Uploader service. It's responsible for file creation. For
 the minimal implementation it needs <code>upload</code> method and <code>capabilities</code>
 attribute which tells the storage, what exactly the Uploader can do.</p>
 <div class="highlight"><pre><span></span><code><span class="k">class</span> <span class="nc">DbUploader</span><span class="p">(</span><span class="n">shared</span><span class="o">.</span><span class="n">Uploader</span><span class="p">):</span>
     <span class="n">capabilities</span> <span class="o">=</span> <span class="n">shared</span><span class="o">.</span><span class="n">Capability</span><span class="o">.</span><span class="n">CREATE</span>
 
-    <span class="k">def</span> <span class="nf">upload</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">location</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">upload</span><span class="p">:</span> <span class="n">shared</span><span class="o">.</span><span class="n">Upload</span><span class="p">,</span> <span class="n">extras</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">shared</span><span class="o">.</span><span class="n">FileData</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">upload</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">location</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">upload</span><span class="p">:</span> <span class="n">shared</span><span class="o">.</span><span class="n">Upload</span><span class="p">,</span>
+        <span class="n">extras</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">shared</span><span class="o">.</span><span class="n">FileData</span><span class="p">:</span>
         <span class="o">...</span>
 </code></pre></div>
 <p><code>upload</code> receives the <code>location</code>(name) of the uploaded file; <code>upload</code> object
@@ -1392,6 +1567,7 @@ whole file and then call <code>reader.get_hash()</code> to receive the hash.</p>
 ...<span class="w">  </span><span class="s2">&quot;storage_data&quot;</span>:<span class="w"> </span><span class="o">{}</span>
 ...<span class="o">}</span>
 </code></pre></div>
+<h3 id="reader">Reader</h3>
 <p>File is created, but you cannot read it just yet. Try running <code>ckan files
 stream</code> CLI command with file ID:</p>
 <div class="highlight"><pre><span></span><code>ckan<span class="w"> </span>files<span class="w"> </span>stream<span class="w"> </span>bdfc0268-d36d-4f1b-8a03-2f2aaa21de24
@@ -1421,15 +1597,19 @@ the caller. The result is any iterable producing bytes.</p>
 
         <span class="k">return</span> <span class="n">row</span>
 </code></pre></div>
+<div class="admonition info">
+<p class="admonition-title">Info</p>
 <p>The result may be confusing: we returning Row object from the stream
 method. But our goal is to return <em>any</em> iterable that produces bytes. Row is
 iterable(tuple-like). And it contains only one item - value of column with file
-content, i.e, bytes. So it satisfy the requirements.</p>
+content, i.e, bytes. So it satisfies the requirements.</p>
+</div>
 <p>Now you can check content via CLI once again.</p>
 <div class="highlight"><pre><span></span><code>ckan<span class="w"> </span>files<span class="w"> </span>stream<span class="w"> </span>bdfc0268-d36d-4f1b-8a03-2f2aaa21de24
 
 ...<span class="w"> </span>hello<span class="w"> </span>world
 </code></pre></div>
+<h3 id="manager">Manager</h3>
 <p>Finally, we need to add file removal for the minimal implementation. And it
 also nice to to have <code>SCAN</code> capability, as it shows all files currently
 available in storage, so we add it as bonus. These operations handled by
@@ -1469,8 +1649,7 @@ you. As for results:</p>
 </code></pre></div>
 <p>That's all you need for the basic storage. But check definition of base storage
 and services to find details about other methods. And also check implementation
-of other storages for additional ideas.
-&lt;</p>
+of other storages for additional ideas.</p>
 
 
 

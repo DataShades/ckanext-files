@@ -1204,18 +1204,19 @@
 deliberately: uncontrolled uploads can turn your portal into user's personal
 cloud-storage.</p>
 <p>There are three ways to grant upload permission to normal users.</p>
-<p>The BAD option is simple. Enable <code>ckanext.files.authenticated_uploads.allow</code>
+<p>The <img alt="👎" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.0.3/assets/svg/1f44e.svg" title=":thumbs_down:" /> BAD option is simple. Enable <code>ckanext.files.authenticated_uploads.allow</code>
 config option and every registered user will be allowed to upload files. But
 only into <code>default</code> storage. If you want to change the list of storages
 available to common user, specify storage names as
 <code>ckanext.files.authenticated_uploads.storages</code> option.</p>
-<p>The GOOD option is relatively simple. Define chained auth function with name
-<code>files_file_create</code>. It's called whenever user initiates an upload. Now you can
-decide whether user is allowed to upload files with specified parameters.</p>
-<p>The BEST option is to leave this restriction unchanged. Do not allow any user
-to call <code>files_file_create</code>. Instead, create a new action for your
-goal. ckanext-files isn't a solution - it's a tool that helps you in building
-the solution.</p>
+<p>The <img alt="👌" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.0.3/assets/svg/1f44c.svg" title=":ok_hand:" /> GOOD option is relatively simple. Define chained auth function
+with name <code>files_file_create</code>. It's called whenever user initiates an
+upload. Now you can decide whether user is allowed to upload files with
+specified parameters.</p>
+<p>The <img alt="👍" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.0.3/assets/svg/1f44d.svg" title=":thumbs_up:" /> BEST option is to leave this restriction unchanged. Do not
+allow any user to call <code>files_file_create</code>. Instead, create a new action for
+your goal. ckanext-files isn't a solution - it's a tool that helps you in
+building the solution.</p>
 <p>If you need to add <em>documents</em> field to dataset that contains uploaded PDF
 files, create a separate action <code>dataset_document_attach</code>. Specify access rules
 and validation for it. Or even hardcode the storage that will be used for

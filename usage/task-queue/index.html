@@ -1228,9 +1228,11 @@ implementing abstract method <code>run(result: Any, idx: int, prev: Any)</code>,
 called when task is executed. This method receives the result of action which
 caused task execution, task's position in queue and the result of previous
 task.</p>
-<p>For example, one of <code>attachment_id</code> validatos can queue the following <code>MyTask</code>
-via <code>add_task(MyTask(file_id))</code> to transfer <code>file_id</code> ownership to the updated
-dataset:</p>
+<div class="admonition example">
+<p class="admonition-title">Example</p>
+<p>One of <code>attachment_id</code> validators can queue the following <code>MyTask</code>
+via <code>add_task(MyTask(file_id))</code> to transfer <code>file_id</code> ownership to the
+updated dataset:</p>
 <div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">ckanext.files.shared</span> <span class="kn">import</span> <span class="n">Task</span>
 
 <span class="k">class</span> <span class="nc">MyTask</span><span class="p">(</span><span class="n">Task</span><span class="p">):</span>
@@ -1248,6 +1250,7 @@ dataset:</p>
             <span class="p">},</span>
         <span class="p">)</span>
 </code></pre></div>
+</div>
 <p>As the first argument, <code>Task.run</code> receives the result of action which was
 called. Right now only following actions support tasks:</p>
 <ul>

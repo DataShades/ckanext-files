@@ -1202,24 +1202,80 @@
 <p>To understand in advance whether specific storage can perform certain actions,
 ckanext-files uses <code>ckanext.files.shared.Capability</code>. It's an enumeration of
 operations that can be supported by storage:</p>
-<ul>
-<li>CREATE: create a file as an atomic object</li>
-<li>STREAM: return file content as stream of bytes</li>
-<li>COPY: make a copy of the file inside the same storage</li>
-<li>REMOVE: remove file from the storage</li>
-<li>MULTIPART: create file in 3 stages: start, upload(repeatable), complete</li>
-<li>MOVE: move file to a different location inside the same storage</li>
-<li>EXISTS: check if file exists</li>
-<li>SCAN: iterate over all files in the storage</li>
-<li>APPEND: add content to the existing file</li>
-<li>COMPOSE: combine multiple files into a new one in the same storage</li>
-<li>RANGE: return specific range of bytes from the file</li>
-<li>ANALYZE: return file details from the storage, as if file was uploaded just now</li>
-<li>PERMANENT_LINK: make permanent download link for private file</li>
-<li>TEMPORAL_LINK: make expiring download link for private file</li>
-<li>ONE_TIME_LINK: make one-time download link for private file</li>
-<li>PUBLIC_LINK: make permanent public link</li>
-</ul>
+<table>
+<thead>
+<tr>
+<th>Capability</th>
+<th>Action performed by storage</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>CREATE</td>
+<td>create a file as an atomic object</td>
+</tr>
+<tr>
+<td>STREAM</td>
+<td>return file content as stream of bytes</td>
+</tr>
+<tr>
+<td>COPY</td>
+<td>make a copy of the file inside the same storage</td>
+</tr>
+<tr>
+<td>REMOVE</td>
+<td>remove file from the storage</td>
+</tr>
+<tr>
+<td>MULTIPART</td>
+<td>create file in 3 stages: start, upload(repeatable), complete</td>
+</tr>
+<tr>
+<td>MOVE</td>
+<td>move file to a different location inside the same storage</td>
+</tr>
+<tr>
+<td>EXISTS</td>
+<td>check if file exists</td>
+</tr>
+<tr>
+<td>SCAN</td>
+<td>iterate over all files in the storage</td>
+</tr>
+<tr>
+<td>APPEND</td>
+<td>add content to the existing file</td>
+</tr>
+<tr>
+<td>COMPOSE</td>
+<td>combine multiple files into a new one in the same storage</td>
+</tr>
+<tr>
+<td>RANGE</td>
+<td>return specific range of bytes from the file</td>
+</tr>
+<tr>
+<td>ANALYZE</td>
+<td>return file details from the storage, as if file was uploaded just now</td>
+</tr>
+<tr>
+<td>PERMANENT_LINK</td>
+<td>make permanent download link for private file</td>
+</tr>
+<tr>
+<td>TEMPORAL_LINK</td>
+<td>make expiring download link for private file</td>
+</tr>
+<tr>
+<td>ONE_TIME_LINK</td>
+<td>make one-time download link for private file</td>
+</tr>
+<tr>
+<td>PUBLIC_LINK</td>
+<td>make permanent public link</td>
+</tr>
+</tbody>
+</table>
 <p>These capabilities are defined when storage is created and are automatically
 checked by actions that work with storage. If you want to check if storage
 supports certain capability, it can be done manually. If you want to check

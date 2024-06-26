@@ -1246,10 +1246,13 @@ like <code>package</code>, <code>resource</code>, <code>group</code> instead of 
 has access to <code>resource_show</code> of the <em>resource</em>, can also see the file owned by
 this resource. If user passes <code>resource_update</code> for <em>resource</em>, he can also
 modify the file owned by this resource, etc.</p>
-<p>Important: be careful and do not add <code>user</code> to
-<code>ckanext.files.owner.cascade_access</code>. User's own files are considered private
-and most likely you don't really need anyone else to be able to see or modify
-these files.</p>
+<div class="admonition danger">
+<p class="admonition-title">Danger</p>
+<p>Be careful and do not add <code>user</code> to
+<code>ckanext.files.owner.cascade_access</code>. User's own files are considered
+private and most likely you don't really need anyone else to be able to see
+or modify these files.</p>
+</div>
 <p>The second option is <code>ckanext.files.owner.transfer_as_update</code>.  When
 transfer-as-update enabled, any user who has <code>&lt;OWNER_TYPE&gt;_update</code> permission,
 can transfer own files to this <code>OWNER_TYPE</code>. Intead of using this option, you

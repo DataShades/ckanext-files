@@ -4,12 +4,33 @@
 .file-upload-widget {
     .fuw-main-window {
         display: flex;
+        flex-direction: column;
         justify-content: center;
         align-items: center;
         text-align: center;
+        width: 100%;
 
         .fuw-or {
             margin: 1rem 0;
+        }
+
+        .fuw-main-window__dropzone {
+            padding: 2rem;
+            border-radius: 0.5rem;
+            border: 2px dashed #ccc;
+            width: 100%;
+
+            &.active {
+                border-color: black;
+            }
+        }
+
+        .fuw-main-window__alternative {
+            label.btn-file-input {
+                &:after {
+                    display: none;
+                }
+            }
         }
     }
 
@@ -32,6 +53,10 @@
                 position: absolute;
                 left: 10px;
                 top: 10px;
+
+                i {
+                    color: #6c757d;
+                }
             }
         }
 

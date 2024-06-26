@@ -13,7 +13,9 @@
         <button type="button" class="btn btn-primary fuw-init-btn" data-bs-toggle="modal" data-bs-target="#uploadWidget-{{ field.field_name }}">
             {{ _("Upload") }}
         </button>
-        <input id="{{ 'field-' + field.field_name }}" type="file" name="{{ field.field_name }}" value="" placeholder="" class="hidden">
+
+        <input id="{{ 'field-' + field.field_name }}-file" type="file" name="{{ field.field_name }}-file" value="" placeholder="" class="hidden">
+        <input id="{{ 'field-' + field.field_name }}" type="hidden" name="{{ field.field_name }}" value="" placeholder="" class="hidden">
 
         {%- if field.help_text -%}
             {% set text = h.scheming_language_text(field.help_text) %}
@@ -34,19 +36,17 @@
                 <div class="modal-body">
                     <!-- MAIN WINDOW -->
                     <div class="fuw-main-window">
-                        <div class="fuw-dropzone">
-                            <div class="fuw-dropzone__content">
-                                <div class="fuw-dropzone__drop">
-                                    <i class="fas fa-cloud-upload-alt"></i>
-                                    <span>{{ _("Drag and drop files here") }}</span>
-                                </div>
-                                <div class="fuw-dropzone__alternative">
-                                    <p class="fuw-or">{{ _("OR") }}</p>
-                                    <button type="button" class="btn btn-primary btn-file-input">{{ _("Browse files") }}</button>
-                                    <button type="button" class="btn btn-primary btn-url-input">{{ _("URL") }}</button>
-                                    <button type="button" class="btn btn-primary btn-media-input">{{ _("Media gallery") }}</button>
-                                </div>
-                            </div>
+                        <div class="fuw-main-window__dropzone">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                            <span>{{ _("Drag and drop files here") }}</span>
+                        </div>
+                        <div class="fuw-main-window__alternative">
+                            <p class="fuw-or">{{ _("OR") }}</p>
+                            <label for="{{ 'field-' + field.field_name }}-file" class="btn btn-primary btn-file-input">
+                                {{ _("Browse files") }}
+                            </label>
+                            <button type="button" class="btn btn-primary btn-url-input">{{ _("URL") }}</button>
+                            <button type="button" class="btn btn-primary btn-media-input">{{ _("Media gallery") }}</button>
                         </div>
                     </div>
 

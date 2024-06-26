@@ -10,6 +10,7 @@ ckan.module("file-upload-widget", function ($, _) {
             urlInputBlock: '.fuw-url-input',
             mediaInputBlock: '.fuw-media-input',
             cancelBtn: '.fuw-cancel-btn',
+            dropZone: '.fuw-main-window__dropzone'
         },
         initialize: function () {
             $.proxyAll(this, /_/);
@@ -27,6 +28,7 @@ ckan.module("file-upload-widget", function ($, _) {
             this.fileSearchInput = this.el.find('#fuw-media-input--search');
             this.fileSelectBtn = this.el.find('.btn-file-select');
             this.cancelFileSelectBtn = this.el.find('.btn-cancel-file-select');
+            this.dropZoneArea = this.el.find(this.const.dropZone);
 
             this.cancelBtn = this.el.find(this.const.cancelBtn);
 
@@ -38,6 +40,24 @@ ckan.module("file-upload-widget", function ($, _) {
             this.fileSearchInput.on('input', this._onFileSearch);
             this.el.find('li.files--file-item input').on('change', this._onFileSelect);
             this.cancelFileSelectBtn.on('click', this._onCancelFileSelect);
+
+            // Dropzone events
+            // Prevent default drag behaviors
+            this.dropZoneArea.on("drop", this._onDropFile);
+
+            ;['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                this.dropZoneArea.on(eventName, this._preventDefaults)
+                $(document.body).on(eventName, this._preventDropDefaults)
+            });
+
+            // Highlight drop area when item is dragged over it
+            ;['dragenter', 'dragover'].forEach(eventName => {
+                this.dropZoneArea.on(eventName, this._highlightDropZone)
+            });
+
+            ;['dragleave', 'drop'].forEach(eventName => {
+                this.dropZoneArea.on(eventName, this._unhighlightDropZone)
+            })
         },
 
         /**
@@ -185,6 +205,23 @@ ckan.module("file-upload-widget", function ($, _) {
         _onCancelFileSelect: function (e) {
             this.el.find('li.files--file-item input:checked').prop('checked', false);
             this.el.find('li.files--file-item input:first').trigger('change');
+        },
+
+        _preventDropDefaults: function (e) {
+            e.preventDefault()
+            e.stopPropagation()
+        },
+
+        _highlightDropZone: function (e) {
+            this.dropZoneArea.addClass('active');
+        },
+
+        _unhighlightDropZone: function (e) {
+            this.dropZoneArea.removeClass('active');
+        },
+
+        _onDropFile: function (e) {
+            console.log(e.originalEvent.dataTransfer.files)
         }
     };
 });

@@ -37,12 +37,10 @@ def _owner_allows(
             {"id": owner_id},
         )
 
-    except tk.NotAuthorized:
+    except (tk.NotAuthorized, ValueError):
         return False
 
-    except ValueError:
-        pass
-    return False
+    return True
 
 
 def _file_allows(
@@ -58,22 +56,22 @@ def _file_allows(
 
     info = file.owner_info if file else None
 
-    if info and info.owner_type in shared.config.cascade_access():
-        func_name = f"{info.owner_type}_{operation}"
+    if not info or info.owner_type not in shared.config.cascade_access():
+        return False
 
-        try:
-            tk.check_access(
-                func_name,
-                tk.fresh_context(context),
-                {"id": info.owner_id},
-            )
+    func_name = f"{info.owner_type}_{operation}"
 
-        except tk.NotAuthorized:
-            return False
+    try:
+        tk.check_access(
+            func_name,
+            tk.fresh_context(context),
+            {"id": info.owner_id},
+        )
 
-        except ValueError:
-            pass
-    return False
+    except (tk.NotAuthorized, ValueError):
+        return False
+
+    return True
 
 
 def _get_user(context: Context) -> model.User | None:

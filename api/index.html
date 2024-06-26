@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <link rel="shortcut icon" href="../img/favicon.ico" />
+    <title>API - ckanext-files</title>
+    <link rel="stylesheet" href="../css/theme.css" />
+    <link rel="stylesheet" href="../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "API";
+        var mkdocs_page_input_path = "api.md";
+        var mkdocs_page_url = null;
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href=".." class="icon icon-home"> ckanext-files
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="..">Home</a>
+                </li>
+              </ul>
+              <ul class="current">
+                <li class="toctree-l1 current"><a class="reference internal current" href="#">API</a>
+    <ul class="current">
+    </ul>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../shared/">Shared</a>
+                </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="..">ckanext-files</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href=".." class="icon icon-home" aria-label="Docs"></a></li>
+      <li class="breadcrumb-item active">API</li>
+    <li class="wy-breadcrumbs-aside">
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h2 id="files_file_createcontext-context-data_dict-dictstr-any-dictstr-any"><code>files_file_create(context: 'Context', data_dict: 'dict[str, Any]') -&gt; 'dict[str, Any]'</code></h2>
+<p>Create a new file.</p>
+<p>This action passes uploaded file to the storage without strict
+validation. File is converted into standard upload object and everything
+else is controlled by storage. The same file may be uploaded to one storage
+and rejected by other, depending on configuration.</p>
+<p>This action is way too powerful to use it directly. The recommended
+approach is to register a different action for handling specific type of
+uploads and call current action internally.</p>
+<p>When uploading a real file(or using <code>werkqeug.datastructures.FileStorage</code>),
+name parameter can be omited. In this case, the name of uploaded file is used.</p>
+<pre><code class="language-python">ckanapi action files_file_create upload@path/to/file.txt
+</code></pre>
+<p>When uploading a raw content of the file using string or bytes object, name
+is mandatory.</p>
+<pre><code class="language-python">ckanapi action files_file_create upload@&lt;(echo -n &quot;hello world&quot;) name=file.txt
+</code></pre>
+<p>Requires storage with <code>CREATE</code> capability.</p>
+<p>Params:</p>
+<ul>
+<li><code>name</code>: human-readable name of the file. Default: guess using upload field</li>
+<li><code>storage</code>: name of the storage that will handle the upload. Default: <code>default</code></li>
+<li><code>upload</code>: content of the file as string, bytes, file descriptor or uploaded file</li>
+</ul>
+<p>Returns:</p>
+<p>dictionary with file details.</p>
+<h2 id="files_file_deletecontext-context-data_dict-dictstr-any-dictstr-any"><code>files_file_delete(context: 'Context', data_dict: 'dict[str, Any]') -&gt; 'dict[str, Any]'</code></h2>
+<p>Remove file from storage.</p>
+<p>Unlike packages, file has no <code>state</code> field. Removal usually means that file
+details removed from DB and file itself removed from the storage.</p>
+<p>Some storage can implement revisions of the file and keep archived versions
+or backups. Check storage documentation if you need to know whether there
+are chances that file is not completely removed with this operation.</p>
+<p>Requires storage with <code>REMOVE</code> capability.</p>
+<pre><code class="language-sh">ckanapi action files_file_delete id=226056e2-6f83-47c5-8bd2-102e2b82ab9a
+</code></pre>
+<p>Params:</p>
+<ul>
+<li><code>id</code>: ID of the file</li>
+<li><code>completed</code>: use <code>False</code> to remove incomplete uploads. Default: <code>True</code></li>
+</ul>
+<p>Returns:</p>
+<p>dictionary with details of the removed file.</p>
+<h2 id="files_file_pincontext-context-data_dict-dictstr-any-dictstr-any"><code>files_file_pin(context: 'Context', data_dict: 'dict[str, Any]') -&gt; 'dict[str, Any]'</code></h2>
+<p>Pin file to the current owner.</p>
+<p>Pinned file cannot be transfered to a different owner. Use it to guarantee
+that file referred by entity is not accidentally transferred to a different
+owner.</p>
+<p>Params:</p>
+<ul>
+<li><code>id</code>: ID of the file</li>
+<li><code>completed</code>: use <code>False</code> to pin incomplete uploads. Default: <code>True</code></li>
+</ul>
+<p>Returns:</p>
+<p>dictionary with details of updated file</p>
+<h2 id="files_file_renamecontext-context-data_dict-dictstr-any-dictstr-any"><code>files_file_rename(context: 'Context', data_dict: 'dict[str, Any]') -&gt; 'dict[str, Any]'</code></h2>
+<p>Rename the file.</p>
+<p>This action changes human-readable name of the file, which is stored in
+DB. Real location of the file in the storage is not modified.</p>
+<pre><code class="language-sh">ckanapi action files_file_show \
+    id=226056e2-6f83-47c5-8bd2-102e2b82ab9a \
+    name=new-name.txt
+</code></pre>
+<p>Params:</p>
+<ul>
+<li><code>id</code>: ID of the file</li>
+<li><code>name</code>: new name of the file</li>
+<li><code>completed</code>: use <code>False</code> to rename incomplete uploads. Default: <code>True</code></li>
+</ul>
+<p>Returns:</p>
+<p>dictionary with file details</p>
+<h2 id="files_file_scancontext-context-data_dict-dictstr-any-dictstr-any"><code>files_file_scan(context: 'Context', data_dict: 'dict[str, Any]') -&gt; 'dict[str, Any]'</code></h2>
+<p>List files of the owner</p>
+<p>This action internally calls files_file_search, but with static values of
+owner filters. If owner is not specified, files filtered by current
+user. If owner is specified, user must pass authorization check to see
+files.</p>
+<p>Params:</p>
+<ul>
+<li><code>owner_id</code>: ID of the owner</li>
+<li><code>owner_type</code>: type of the owner</li>
+</ul>
+<p>The all other parameters are passed as-is to <code>files_file_search</code>.</p>
+<p>Returns:</p>
+<ul>
+<li><code>count</code>: total number of files matching filters</li>
+<li><code>results</code>: array of dictionaries with file details.</li>
+</ul>
+<h2 id="files_file_searchcontext-context-data_dict-dictstr-any-dictstr-any"><code>files_file_search(context: 'Context', data_dict: 'dict[str, Any]') -&gt; 'dict[str, Any]'</code></h2>
+<p>Search files.</p>
+<p>This action is not stabilized yet and will change in future.</p>
+<p>Provides an ability to search files using exact filter by name,
+content_type, size, owner, etc. Results are paginated and returned in
+package_search manner, as dict with <code>count</code> and <code>results</code> items.</p>
+<p>All columns of File model can be used as filters. Before the search, type
+of column and type of filter value are compared. If they are the same,
+original values are used in search. If type different, column value and
+filter value are casted to string.</p>
+<p>This request produces <code>size = 10</code> SQL expression:</p>
+<pre><code class="language-sh">ckanapi action files_file_search size:10
+</code></pre>
+<p>This request produces <code>size::text = '10'</code> SQL expression:</p>
+<pre><code class="language-sh">ckanapi action files_file_search size=10
+</code></pre>
+<p>Even though results are usually not changed, using correct types leads to
+more efficient search.</p>
+<p>Apart from File columns, the following Owner properties can be used for
+searching: <code>owner_id</code>, <code>owner_type</code>, <code>pinned</code>.</p>
+<p><code>storage_data</code> and <code>plugin_data</code> are dictionaries. Filter's value for these
+fields used as a mask. For example, <code>storage_data={"a": {"b": 1}}</code> matches
+any File with <code>storage_data</code> <em>containing</em> item <code>a</code> with value that contains
+<code>b=1</code>. This works only with data represented by nested dictionaries,
+without other structures, like list or sets.</p>
+<p>Experimental feature: File columns can be passed as a pair of operator and
+value. This feature will be replaced by strictly defined query language at
+some point:</p>
+<pre><code class="language-sh">ckanapi action files_file_search size:'[&quot;&lt;&quot;, 100]' content_type:'[&quot;like&quot;, &quot;text/%&quot;]'
+</code></pre>
+<p>Fillowing operators are accepted: <code>=</code>, <code>&lt;</code>, <code>&gt;</code>, <code>!=</code>, <code>like</code></p>
+<p>Params:</p>
+<ul>
+<li><code>start</code>: index of first row in result/number of rows to skip. Default: <code>0</code></li>
+<li><code>rows</code>: number of rows to return. Default: <code>10</code></li>
+<li><code>sort</code>: name of File column used for sorting. Default: <code>name</code></li>
+<li><code>reverse</code>: sort results in descending order. Default: <code>False</code></li>
+<li><code>storage_data</code>: mask for <code>storage_data</code> column. Default: <code>{}</code></li>
+<li><code>plugin_data</code>: mask for <code>plugin_data</code> column. Default: <code>{}</code></li>
+<li><code>owner_type: str</code>: show only specific owner id if present. Default: <code>None</code></li>
+<li><code>owner_type</code>: show only specific owner type if present. Default: <code>None</code></li>
+<li><code>pinned</code>: show only pinned/unpinned items if present. Default: <code>None</code></li>
+<li><code>completed</code>: use <code>False</code> to search incomplete uploads. Default: <code>True</code></li>
+</ul>
+<p>Returns:</p>
+<ul>
+<li><code>count</code>: total number of files matching filters</li>
+<li><code>results</code>: array of dictionaries with file details.</li>
+</ul>
+<h2 id="files_file_search_by_usercontext-context-data_dict-dictstr-any-dictstr-any"><code>files_file_search_by_user(context: 'Context', data_dict: 'dict[str, Any]') -&gt; 'dict[str, Any]'</code></h2>
+<p>Internal action. Do not use it.</p>
+<h2 id="files_file_showcontext-context-data_dict-dictstr-any-dictstr-any"><code>files_file_show(context: 'Context', data_dict: 'dict[str, Any]') -&gt; 'dict[str, Any]'</code></h2>
+<p>Show file details.</p>
+<p>This action only displays information from DB record. There is no way to
+get the content of the file using this action(or any other API action).</p>
+<pre><code class="language-sh">ckanapi action files_file_show id=226056e2-6f83-47c5-8bd2-102e2b82ab9a
+</code></pre>
+<p>Params:</p>
+<ul>
+<li><code>id</code>: ID of the file</li>
+<li><code>completed</code>: use <code>False</code> to show incomplete uploads. Default: <code>True</code></li>
+</ul>
+<p>Returns:</p>
+<p>dictionary with file details</p>
+<h2 id="files_file_unpincontext-context-data_dict-dictstr-any-dictstr-any"><code>files_file_unpin(context: 'Context', data_dict: 'dict[str, Any]') -&gt; 'dict[str, Any]'</code></h2>
+<p>Pin file to the current owner.</p>
+<p>Pinned file cannot be transfered to a different owner. Use it to guarantee
+that file referred by entity is not accidentally transferred to a different
+owner.</p>
+<p>Params:</p>
+<ul>
+<li><code>id</code>: ID of the file</li>
+<li><code>completed</code>: use <code>False</code> to unpin incomplete uploads. Default: <code>True</code></li>
+</ul>
+<p>Returns:</p>
+<p>dictionary with details of updated file</p>
+<h2 id="files_multipart_completecontext-context-data_dict-dictstr-any-dictstr-any"><code>files_multipart_complete(context: 'Context', data_dict: 'dict[str, Any]') -&gt; 'dict[str, Any]'</code></h2>
+<p>Finalize multipart upload and transform it into completed file.</p>
+<p>Depending on storage this action may require additional parameters. But
+usually it just takes ID and verify that content type, size and hash
+provided when upload was initialized, much the actual value.</p>
+<p>If data is valid and file is completed inside the storage, new File entry
+with file details created in DB and file can be used just as any normal
+file.</p>
+<p>Requires storage with <code>MULTIPART</code> capability.</p>
+<p>Params:</p>
+<ul>
+<li><code>id</code>: ID of the incomplete upload</li>
+</ul>
+<p>Returns:</p>
+<p>dictionary with details of the created file</p>
+<h2 id="files_multipart_refreshcontext-context-data_dict-dictstr-any-dictstr-any"><code>files_multipart_refresh(context: 'Context', data_dict: 'dict[str, Any]') -&gt; 'dict[str, Any]'</code></h2>
+<p>Refresh details of incomplete upload.</p>
+<p>Can be used if upload process was interrupted and client does not how many
+bytes were already uploaded.</p>
+<p>Requires storage with <code>MULTIPART</code> capability.</p>
+<p>Params:</p>
+<ul>
+<li><code>id</code>: ID of the incomplete upload</li>
+</ul>
+<p>Returns:</p>
+<p>dictionary with details of the updated upload</p>
+<h2 id="files_multipart_startcontext-context-data_dict-dictstr-any-dictstr-any"><code>files_multipart_start(context: 'Context', data_dict: 'dict[str, Any]') -&gt; 'dict[str, Any]'</code></h2>
+<p>Initialize multipart(resumable,continuous,signed,etc) upload.</p>
+<p>Apart from standard parameters, different storages can require additional
+data, so always check documentation of the storage before initiating
+multipart upload.</p>
+<p>When upload initialized, storage usually returns details required for
+further upload. It may be a presigned URL for direct upload, or just an ID
+of upload which must be used with <code>files_multipart_update</code>.</p>
+<p>Requires storage with <code>MULTIPART</code> capability.</p>
+<p>Params:</p>
+<ul>
+<li><code>storage</code>: name of the storage that will handle the upload. Default: <code>default</code></li>
+<li><code>name</code>: name of the uploaded file.</li>
+<li><code>content_type</code>: MIMEtype of the uploaded file. Used for validation</li>
+<li><code>size</code>: Expected size of upload. Used for validation</li>
+<li><code>hash</code>: Expected content hash. If present, used for validation.</li>
+</ul>
+<p>Returns:</p>
+<p>dictionary with details of initiated upload. Depends on used storage</p>
+<h2 id="files_multipart_updatecontext-context-data_dict-dictstr-any-dictstr-any"><code>files_multipart_update(context: 'Context', data_dict: 'dict[str, Any]') -&gt; 'dict[str, Any]'</code></h2>
+<p>Update incomplete upload.</p>
+<p>Depending on storage this action may require additional parameters. Most
+likely, <code>upload</code> with the fragment of uploaded file.</p>
+<p>Requires storage with <code>MULTIPART</code> capability.</p>
+<p>Params:</p>
+<ul>
+<li><code>id</code>: ID of the incomplete upload</li>
+</ul>
+<p>Returns:</p>
+<p>dictionary with details of the updated upload</p>
+<h2 id="files_resource_uploadcontext-context-data_dict-dictstr-any"><code>files_resource_upload(context: 'Context', data_dict: 'dict[str, Any]')</code></h2>
+<p>Create a new file inside resource storage.</p>
+<p>This action internally calls <code>files_file_create</code> with <code>ignore_auth=True</code>
+and always uses resources storage.</p>
+<p>New file is not attached to resource. You need to call
+<code>files_transfer_ownership</code> manually, when resource created.</p>
+<p>Params:</p>
+<ul>
+<li><code>name</code>: human-readable name of the file. Default: guess using upload field</li>
+<li><code>upload</code>: content of the file as string, bytes, file descriptor or uploaded file</li>
+</ul>
+<p>Returns:</p>
+<p>dictionary with file details.</p>
+<h2 id="files_transfer_ownershipcontext-context-data_dict-dictstr-any-dictstr-any"><code>files_transfer_ownership(context: 'Context', data_dict: 'dict[str, Any]') -&gt; 'dict[str, Any]'</code></h2>
+<p>Transfer file ownership.</p>
+<p>Depending on storage this action may require additional parameters. Most
+likely, <code>upload</code> with the fragment of uploaded file.</p>
+<p>Params:</p>
+<ul>
+<li><code>id</code>: ID of the file upload</li>
+<li><code>completed</code>: use <code>False</code> to transfer incomplete uploads. Default: <code>True</code></li>
+<li><code>owner_id</code>: ID of the new owner</li>
+<li><code>owner_type</code>: type of the new owner</li>
+<li><code>force</code>: move file even if it's pinned. Default: <code>False</code></li>
+<li><code>pin</code>: pin file after transfer to stop future transfers. Default: <code>False</code></li>
+</ul>
+<p>Returns:</p>
+<p>dictionary with details of updated file</p>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href=".." class="btn btn-neutral float-left" title="Home"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../shared/" class="btn btn-neutral float-right" title="Shared">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+    
+      <span><a href=".." style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../shared/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script src="../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "..";</script>
+    <script src="../js/theme_extra.js"></script>
+    <script src="../js/theme.js"></script>
+      <script src="../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>

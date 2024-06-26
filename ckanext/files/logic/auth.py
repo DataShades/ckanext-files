@@ -278,7 +278,7 @@ def files_transfer_ownership(context: Context, data_dict: dict[str, Any]) -> Aut
                 data_dict["owner_type"],
                 data_dict["owner_id"],
                 "file_transfer",
-            )
+            ),
         )
 
     return {"success": result, "msg": "Not allowed to edit file"}

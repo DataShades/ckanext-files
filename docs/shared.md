@@ -1,3 +1,4 @@
+All public utilites are collected inside     `ckanext.files.shared` module. Avoid using anything that     is not listed there. Do not import anything from modules other than     `shared`.
 ## `get_storage(name: 'str | None' = None) -> 'Storage'`
 
 Return existing storage instance.
@@ -27,7 +28,7 @@ storage = make_storage("memo", {"type": "files:redis"})
 ```
 
 
-## `make_upload(value: 'FileStorage | Upload | tempfile.SpooledTemporaryFile[Any] | TextIOWrapper | bytes | bytearray | BinaryIO') -> 'Upload'`
+## `make_upload(value: 'types.Uploadable | Upload') -> 'Upload'`
 
 Convert value into Upload object
 

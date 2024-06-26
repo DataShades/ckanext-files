@@ -35,6 +35,12 @@ def api_docs():
 def shared_docs():
     """Collect and print API documentation."""
 
+    click.echo(
+        """All public utilites are collected inside \
+    `ckanext.files.shared` module. Avoid using anything that \
+    is not listed there. Do not import anything from modules other than \
+    `shared`.""",
+    )
     for name in shared.__all__:
         el = getattr(shared, name)
         if inspect.isfunction(el):

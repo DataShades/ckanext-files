@@ -6,13 +6,13 @@ from __future__ import annotations
 from typing import Any, Callable
 
 from ckan.plugins import Interface
-from ckan.types import Context
 
 from ckanext.files import types
 
 File = Multipart = Any
 
 
+# --8<-- [start:interface]
 class IFiles(Interface):
     """Extension point for ckanext-files."""
 
@@ -44,7 +44,7 @@ class IFiles(Interface):
 
     def files_file_allows(
         self,
-        context: Context,
+        context: types.Context,
         file: File | Multipart,
         operation: types.FileOperation,
     ) -> bool | None:
@@ -80,7 +80,7 @@ class IFiles(Interface):
 
     def files_owner_allows(
         self,
-        context: Context,
+        context: types.Context,
         owner_type: str,
         owner_id: str,
         operation: types.OwnerOperation,
@@ -107,3 +107,6 @@ class IFiles(Interface):
 
         """
         return None
+
+
+# --8<-- [start:interface]

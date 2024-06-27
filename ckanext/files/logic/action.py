@@ -744,6 +744,7 @@ def files_file_scan(
     * `results`: array of dictionaries with file details.
 
     """
+
     if not data_dict["owner_id"] and data_dict["owner_type"] == "user":
         user = context.get("auth_user_obj")
 

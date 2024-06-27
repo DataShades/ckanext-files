@@ -1,0 +1,32 @@
+{#
+
+    owner: Any | None
+    pager: Page
+    pager": pager,
+    owner_type: str
+    owner_id: str
+
+    #}
+{% extends "page.html" %}
+
+
+{% block secondary_content %}
+{% endblock %}
+
+{% block primary_content %}
+
+    {% block files_list %}
+        {% if pager.items %}
+            {% snippet 'files/snippets/file_table.html', files=pager.items, owner_type=owner_type, owner_id=owner_id %}
+
+        {% elif not pager.count %}
+            <p class="text-muted">
+                {{ _("Current owner has available no files.") }}
+            </p>
+
+        {% endif %}
+
+        {{ pager.pager() }}
+    {% endblock %}
+
+{% endblock %}

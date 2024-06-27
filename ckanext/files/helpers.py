@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+from datetime import datetime
 from typing import Any, Iterable, TypedDict
 
 import ckan.plugins.toolkit as tk
@@ -16,6 +17,16 @@ class LinkDetails(TypedDict):
     content_type: str
     size: int
     href: str | None
+
+
+def files_parse_tz_date(value: str, strip_timezone: bool = False):
+    """Transform timezone-aware ISO 8601 value into datetime object."""
+
+    result = datetime.fromisoformat(value)
+    if strip_timezone:
+        result = result.replace(tzinfo=None)
+
+    return result
 
 
 def files_humanize_content_type(content_type: str) -> str:

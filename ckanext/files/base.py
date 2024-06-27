@@ -244,7 +244,6 @@ class Uploader(StorageService):
 
         raise NotImplementedError
 
-    # TODO: rename to refresh or something
     def multipart_refresh(
         self,
         data: MultipartData,

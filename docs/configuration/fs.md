@@ -12,6 +12,8 @@ ckanext.files.storage.NAME.create_path = false
 ## Use this flag if files can be stored inside subfolders
 ## of the main storage path.
 ckanext.files.storage.NAME.recursive = false
+## If file already exists, replace it with new content.
+ckanext.files.storage.NAME.override_existing = false
 ```
 
 
@@ -27,6 +29,8 @@ ckanext.files.storage.NAME.create_path = false
 ## Use this flag if files can be stored inside subfolders
 ## of the main storage path.
 ckanext.files.storage.NAME.recursive = false
+## If file already exists, replace it with new content.
+ckanext.files.storage.NAME.override_existing = false
 ## URL of the storage folder. `public_root + location` must produce a public URL
 ckanext.files.storage.NAME.public_root =
 ```

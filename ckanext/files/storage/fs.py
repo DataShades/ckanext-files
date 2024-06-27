@@ -27,6 +27,56 @@ log = logging.getLogger(__name__)
 CHUNK_SIZE = 16384
 
 
+class FsStorage(Storage):
+    """Store files in local filesystem."""
+
+    def make_uploader(self):
+        return FsUploader(self)
+
+    def make_reader(self):
+        return FsReader(self)
+
+    def make_manager(self):
+        return FsManager(self)
+
+    def __init__(self, **settings: Any) -> None:
+        path = self.ensure_option(settings, "path")
+        settings.setdefault("create_path", False)
+        settings.setdefault("recursive", False)
+        settings.setdefault("override_existing", False)
+
+        if not os.path.exists(path):
+            if tk.asbool(settings["create_path"]):
+                os.makedirs(path)
+            else:
+                raise exceptions.InvalidStorageConfigurationError(
+                    type(self),
+                    f"path `{path}` does not exist",
+                )
+
+        super().__init__(**settings)
+
+    @classmethod
+    def declare_config_options(cls, declaration: Declaration, key: Key):
+        super().declare_config_options(declaration, key)
+        declaration.declare(key.path).required().set_description(
+            "Path to the folder where uploaded data will be stored.",
+        )
+
+        declaration.declare_bool(key.create_path).set_description(
+            "Create storage folder if it does not exist.",
+        )
+
+        declaration.declare_bool(key.recursive).set_description(
+            "Use this flag if files can be stored inside subfolders"
+            + " of the main storage path.",
+        )
+
+        declaration.declare_bool(key.override_existing).set_description(
+            "If file already exists, replace it with new content.",
+        )
+
+
 class FsUploader(Uploader):
     required_options = ["path"]
     capabilities = shared.Capability.CREATE | shared.Capability.MULTIPART
@@ -40,7 +90,7 @@ class FsUploader(Uploader):
         location = self.storage.compute_location(location, upload, **extras)
         dest = os.path.join(self.storage.settings["path"], location)
 
-        if os.path.exists(dest):
+        if os.path.exists(dest) and not self.storage.settings["override_existing"]:
             raise exceptions.ExistingFileError(self.storage, dest)
 
         os.makedirs(os.path.dirname(dest), exist_ok=True)
@@ -174,8 +224,8 @@ class FsManager(Manager):
         """Combine multipe file inside the storage into a new one."""
 
         location = self.storage.compute_location(location, **extras)
-        dest = os.path.join(str(self.storage.settings["path"]), location)
-        if os.path.exists(dest):
+        dest = os.path.join(self.storage.settings["path"], location)
+        if os.path.exists(dest) and not self.storage.settings["override_existing"]:
             raise exceptions.ExistingFileError(self.storage, dest)
 
         sources: list[str] = []
@@ -220,7 +270,7 @@ class FsManager(Manager):
         if not os.path.exists(src):
             raise exceptions.MissingFileError(self.storage, src)
 
-        if os.path.exists(dest):
+        if os.path.exists(dest) and not self.storage.settings["override_existing"]:
             raise exceptions.ExistingFileError(self.storage, dest)
 
         shutil.copy(src, dest)
@@ -243,7 +293,10 @@ class FsManager(Manager):
             raise exceptions.MissingFileError(self.storage, src)
 
         if os.path.exists(dest):
-            raise exceptions.ExistingFileError(self.storage, dest)
+            if self.storage.settings["override_existing"]:
+                os.remove(dest)
+            else:
+                raise exceptions.ExistingFileError(self.storage, dest)
 
         shutil.move(src, dest)
         new_data = copy.deepcopy(data)
@@ -304,50 +357,6 @@ class FsReader(Reader):
             raise exceptions.MissingFileError(self.storage, filepath)
 
         return open(filepath, "rb")  # noqa: SIM115
-
-
-class FsStorage(Storage):
-    """Store files in local filesystem."""
-
-    def make_uploader(self):
-        return FsUploader(self)
-
-    def make_reader(self):
-        return FsReader(self)
-
-    def make_manager(self):
-        return FsManager(self)
-
-    def __init__(self, **settings: Any) -> None:
-        path = self.ensure_option(settings, "path")
-        settings.setdefault("create_path", False)
-        settings.setdefault("recursive", False)
-
-        if not os.path.exists(path):
-            if tk.asbool(settings["create_path"]):
-                os.makedirs(path)
-            else:
-                raise exceptions.InvalidStorageConfigurationError(
-                    type(self),
-                    f"path `{path}` does not exist",
-                )
-
-        super().__init__(**settings)
-
-    @classmethod
-    def declare_config_options(cls, declaration: Declaration, key: Key):
-        super().declare_config_options(declaration, key)
-        declaration.declare(key.path).required().set_description(
-            "Path to the folder where uploaded data will be stored.",
-        )
-
-        declaration.declare_bool(key.create_path).set_description(
-            "Create storage folder if it does not exist.",
-        )
-        declaration.declare_bool(key.recursive).set_description(
-            "Use this flag if files can be stored inside subfolders"
-            + " of the main storage path.",
-        )
 
 
 class PublicFsReader(FsReader):

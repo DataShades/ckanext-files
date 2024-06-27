@@ -1,32 +1,4 @@
 All public utilites are collected inside     `ckanext.files.shared` module. Avoid using anything that     is not listed there. Do not import anything from modules other than     `shared`.
-## add_task
-
-Signature: `(task: Task)`
-
-Add task to the current task queue.
-
-This function can be called only inside task queue context. Such context
-initialized automatically inside functions decorated with
-`with_task_queue`:
-```python
-@with_task_queue
-def taks_producer():
-    add_task(...)
-
-task_producer()
-```
-
-Task queue context can be initialized manually using TaskQueue and
-`with` statement:
-```python
-queue = TaskQueue()
-with queue:
-    add_task(...)
-
-queue.process(execution_data)
-```
-
-
 ## get_storage
 
 Signature: `(name: str | None = None) -> Storage`
@@ -76,24 +48,36 @@ provide correct MIMEtype, size and stream.
 	```
 
 
-## with_task_queue
+## Upload
 
-Signature: `(func: Any, name: str | None = None)`
+Signature: `(stream: types.PUploadStream, filename: str, size: int, content_type: str) -> None`
 
-Decorator for functions that schedule tasks.
-
-Decorated function automatically initializes separate task queue which is
-processed when function is finished. All tasks receive function's result as
-execution data(first argument of `Task.run`).
-
-Without this decorator, you have to manually create task queue context
-before queuing tasks.
+Standard upload details.
 
 !!! example
 	```python
-	@with_task_queue
-	def my_action(context, data_dict):
+	Upload(
+	    BytesIO(b"hello world"),
+	    "file.txt",
+	    11,
+	    "text/plain",
+	)
+	```
+
+
+## HashingReader
+
+Signature: `(stream: types.PUploadStream, chunk_size: int = 16384, algorithm: str = md5) -> None`
+
+IO stream wrapper that computes content hash while stream is consumed.
+
+!!! example
+
+	```python
+	reader = HashingReader(readable_stream)
+	for chunk in reader:
 	    ...
+	print(f"Hash: {reader.get_hash()}")
 	```
 
 
@@ -128,59 +112,6 @@ Model with file details.
 	```
 
 
-## FileData
-
-Signature: `(location: str, size: int = 0, content_type: str = application/octet-stream, hash: str = "", storage_data: dict[str, Any] = <factory>) -> None`
-
-Information required by storage to operate the file.
-
-!!! example
-	```python
-	FileData(
-	    "local/path.txt",
-	    123,
-	    "text/plain",
-	    md5_of_content,
-	)
-	```
-
-
-## HashingReader
-
-Signature: `(stream: types.UploadStream, chunk_size: int = 16384, algorithm: str = md5) -> None`
-
-IO stream wrapper that computes content hash while stream is consumed.
-
-!!! example
-
-	```python
-	reader = HashingReader(readable_stream)
-	for chunk in reader:
-	    ...
-	print(f"Hash: {reader.get_hash()}")
-	```
-
-
-## IFiles
-
-Extension point for ckanext-files.
-
-This interface is not stabilized. Implement it with `inherit=True`.
-
-!!! example
-	```python
-	class MyPlugin(p.SingletonPlugin):
-	    p.implements(interfaces.IFiles, inherit=True)
-	```
-
-
-## Manager
-
-Signature: `(storage: Storage)`
-
-Service responsible for maintenance file operations.
-
-
 ## Multipart
 
 Signature: `(**kwargs)`
@@ -196,23 +127,6 @@ Model with details of incomplete upload.
 	    size=100,
 	    hash="abc123",
 	    storage="default",
-	)
-	```
-
-
-## MultipartData
-
-Signature: `(location: str = "", size: int = 0, content_type: str = "", hash: str = "", storage_data: dict[str, Any] = <factory>) -> None`
-
-Information required by storage to operate the incomplete upload.
-
-!!! example
-	```python
-	FileData(
-	    "local/path.txt",
-	    expected_size,
-	    expected_content_type,
-	    expected_hash,
 	)
 	```
 
@@ -234,27 +148,6 @@ Model with details about current owner of an item.
 	```
 
 
-## Reader
-
-Signature: `(storage: Storage)`
-
-Service responsible for reading data from the storage.
-
-
-## Storage
-
-Signature: `(**settings: Any) -> None`
-
-Base class for storage implementation.
-
-
-## Task
-
-Base task for TaskQueue.
-
-The only requirement for subclasses is implementing Task.run.
-
-
 ## TransferHistory
 
 Signature: `(**kwargs)`
@@ -272,20 +165,70 @@ Model for tracking ownership history of the file.
 	```
 
 
-## Upload
+## FileData
 
-Signature: `(stream: types.UploadStream, filename: str, size: int, content_type: str) -> None`
+Signature: `(location: str, size: int = 0, content_type: str = application/octet-stream, hash: str = "", storage_data: dict[str, Any] = <factory>) -> None`
 
-Standard upload details.
+Information required by storage to operate the file.
 
 !!! example
 	```python
-	Upload(
-	    BytesIO(b"hello world"),
-	    "file.txt",
-	    11,
+	FileData(
+	    "local/path.txt",
+	    123,
 	    "text/plain",
+	    md5_of_content,
 	)
+	```
+
+
+## MultipartData
+
+Signature: `(location: str = "", size: int = 0, content_type: str = "", hash: str = "", storage_data: dict[str, Any] = <factory>) -> None`
+
+Information required by storage to operate the incomplete upload.
+
+!!! example
+	```python
+	FileData(
+	    "local/path.txt",
+	    expected_size,
+	    expected_content_type,
+	    expected_hash,
+	)
+	```
+
+
+## IFiles
+
+Extension point for ckanext-files.
+
+This interface is not stabilized. Implement it with `inherit=True`.
+
+!!! example
+	```python
+	class MyPlugin(p.SingletonPlugin):
+	    p.implements(interfaces.IFiles, inherit=True)
+	```
+
+
+## Storage
+
+Signature: `(**settings: Any)`
+
+Base class for storage implementation.
+
+!!! example
+	```python
+	class MyStorage(Storage):
+	    def make_uploader(self):
+	        return MyUploader(self)
+
+	    def make_reader(self):
+	        return MyReader(self)
+
+	    def make_manager(self):
+	        return MyManager(self)
 	```
 
 
@@ -295,18 +238,148 @@ Signature: `(storage: Storage)`
 
 Service responsible for writing data into a storage.
 
+!!! example
+	```python
+	class MyUploader(Uploader):
+	    def upload(
+	        self, location: str, upload: Upload, extras: dict[str, Any]
+	    ) -> FileData:
+	        reader = upload.hashing_reader()
+
+	        with open(location, "wb") as dest:
+	            dest.write(reader.read())
+
+	        return FileData(
+	            location, upload.size,
+	            upload.content_type,
+	            reader.get_hash()
+	        )
+	```
+
+
+## Reader
+
+Signature: `(storage: Storage)`
+
+Service responsible for reading data from the storage.
+
+!!! example
+	```python
+	class MyReader(Reader):
+	    def stream(
+	        self, data: FileData, extras: dict[str, Any]
+	    ) -> Iterable[bytes]:
+	        return open(data.location, "rb")
+	```
+
+
+## Manager
+
+Signature: `(storage: Storage)`
+
+Service responsible for maintenance file operations.
+
+!!! example
+	```python
+	class MyManager(Manager):
+	    def remove(
+	        self, data: FileData|MultipartData, extras: dict[str, Any]
+	    ) -> bool:
+	        os.remove(data.location)
+	        return True
+	```
+
+
+## add_task
+
+Signature: `(task: types.PTask)`
+
+Add task to the current task queue.
+
+This function can be called only inside task queue context. Such context
+initialized automatically inside functions decorated with
+`with_task_queue`:
+```python
+@with_task_queue
+def taks_producer():
+    add_task(...)
+
+task_producer()
+```
+
+Task queue context can be initialized manually using TaskQueue and
+`with` statement:
+```python
+queue = TaskQueue()
+with queue:
+    add_task(...)
+
+queue.process(execution_data)
+```
+
+
+## with_task_queue
+
+Signature: `(func: Any, name: str | None = None)`
+
+Decorator for functions that schedule tasks.
+
+Decorated function automatically initializes separate task queue which is
+processed when function is finished. All tasks receive function's result as
+execution data(first argument of `Task.run`).
+
+Without this decorator, you have to manually create task queue context
+before queuing tasks.
+
+!!! example
+	```python
+	@with_task_queue
+	def my_action(context, data_dict):
+	    ...
+	```
+
+
+## Task
+
+Base task for TaskQueue.
+
+The only requirement for subclasses is implementing Task.run.
+
+
+## TaskQueue
+
+Thread-safe context for managing tasks.
+
+!!! example
+	```python
+	queue = TaskQueue()
+	with queue:
+	    function_that_adds_tasks_to_queue()
+	data_passed_into_tasks = ...
+	queue.process(data_passed_into_tasks)
+	```
+
 
 ## types (ckanext.files.types module)
 
 Types for the extension.
 
 
+## config (ckanext.files.config module)
+
+Configuration readers of the extension.
+
+This module contains functions that simplify accessing configuration option
+from the CKAN config file.
+
+It's recommended to use these functions istead of accessing config options by
+name, if you want your code to be more compatible with different versions of
+the extension.
+
+
 ## exc (ckanext.files.exceptions module)
 
 Exception definitions for the extension.
-
-Avoid raising python-native exceptions and prefer defining `FilesError`
-subclass.
 
 Hierarchy:
 
@@ -334,15 +407,3 @@ Hierarchy:
                     * UploadTypeMismatchError
                     * UploadHashMismatchError
                     * UploadSizeMismatchError
-
-
-## config (ckanext.files.config module)
-
-Configuration readers of the extension.
-
-This module contains functions that simplify accessing configuration option
-from the CKAN config file.
-
-It's recommended to use these functions istead of accessing config options by
-name, if you want your code to be more compatible with different versions of
-the extension.

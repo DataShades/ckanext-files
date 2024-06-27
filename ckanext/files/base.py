@@ -205,7 +205,24 @@ class StorageService(OptionChecker):
 
 
 class Uploader(StorageService):
-    """Service responsible for writing data into a storage."""
+    """Service responsible for writing data into a storage.
+
+    Example:
+    >>> class MyUploader(Uploader):
+    >>>     def upload(
+    >>>         self, location: str, upload: Upload, extras: dict[str, Any]
+    >>>     ) -> FileData:
+    >>>         reader = upload.hashing_reader()
+    >>>
+    >>>         with open(location, "wb") as dest:
+    >>>             dest.write(reader.read())
+    >>>
+    >>>         return FileData(
+    >>>             location, upload.size,
+    >>>             upload.content_type,
+    >>>             reader.get_hash()
+    >>>         )
+    """
 
     def upload(
         self,
@@ -255,7 +272,16 @@ class Uploader(StorageService):
 
 
 class Manager(StorageService):
-    """Service responsible for maintenance file operations."""
+    """Service responsible for maintenance file operations.
+
+    Example:
+    >>> class MyManager(Manager):
+    >>>     def remove(
+    >>>         self, data: FileData|MultipartData, extras: dict[str, Any]
+    >>>     ) -> bool:
+    >>>         os.remove(data.location)
+    >>>         return True
+    """
 
     def remove(self, data: FileData | MultipartData, extras: dict[str, Any]) -> bool:
         """Remove file from the storage."""
@@ -313,7 +339,15 @@ class Manager(StorageService):
 
 
 class Reader(StorageService):
-    """Service responsible for reading data from the storage."""
+    """Service responsible for reading data from the storage.
+
+    Example:
+    >>> class MyReader(Reader):
+    >>>     def stream(
+    >>>         self, data: FileData, extras: dict[str, Any]
+    >>>     ) -> Iterable[bytes]:
+    >>>         return open(data.location, "rb")
+    """
 
     def stream(self, data: FileData, extras: dict[str, Any]) -> Iterable[bytes]:
         """Return byte-stream of the file content."""
@@ -373,7 +407,19 @@ class Reader(StorageService):
 
 
 class Storage(OptionChecker, abc.ABC):
-    """Base class for storage implementation."""
+    """Base class for storage implementation.
+
+    Example:
+    >>> class MyStorage(Storage):
+    >>>     def make_uploader(self):
+    >>>         return MyUploader(self)
+    >>>
+    >>>     def make_reader(self):
+    >>>         return MyReader(self)
+    >>>
+    >>>     def make_manager(self):
+    >>>         return MyManager(self)
+    """
 
     hidden = False
     capabilities = utils.Capability.NONE
@@ -381,7 +427,7 @@ class Storage(OptionChecker, abc.ABC):
     def __str__(self):
         return self.settings.get("name", "unknown")
 
-    def __init__(self, **settings: Any) -> None:
+    def __init__(self, **settings: Any):
         self.settings = settings
 
         self.uploader = self.make_uploader()

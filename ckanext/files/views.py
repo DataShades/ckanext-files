@@ -96,7 +96,9 @@ def _streaming_file(
 ) -> Response | None:
     if storage.supports(shared.Capability.STREAM):
         resp = streaming_response(storage.stream(data), data.content_type)
-        if not utils.is_supported_type(item.content_type, shared.config.inline_types()):
+        if utils.is_supported_type(item.content_type, shared.config.inline_types()):
+            resp.headers["content-disposition"] = f"inline; filename={item.name}"
+        else:
             resp.headers["content-disposition"] = f"attachment; filename={item.name}"
 
         item.touch()

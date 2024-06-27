@@ -67,7 +67,7 @@ Standard upload details.
 
 ## HashingReader
 
-Signature: `(stream: types.PUploadStream, chunk_size: int = 16384, algorithm: str = md5) -> None`
+Signature: `(stream: types.PUploadStream, chunk_size: int = 16384, algorithm: str = md5)`
 
 IO stream wrapper that computes content hash while stream is consumed.
 
@@ -401,6 +401,7 @@ Hierarchy:
             * UploadError
                 * WrongUploadTypeError
                 * NameStrategyError
+                * ContentError
                 * LargeUploadError
                     * UploadOutOfBoundError
                 * UploadMismatchError

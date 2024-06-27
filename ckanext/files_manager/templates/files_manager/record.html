@@ -1,0 +1,36 @@
+{% extends "collection/serialize/ap_htmx_table/record.html" %}
+
+{% block value %}
+    {% if column == "row_actions" %}
+        {% set info = h.files_link_details(data.id) %}
+        {% set url = info and info.href %}
+
+        {% if url %}
+            <a
+                data-module="ap-tooltip ap-copy-to-clipboard"
+                data-module-content="{{ url }}"
+                title="{{ _('Copy file URL')}}"
+                class="btn btn-black">
+                <i class="fas fa-copy"></i>
+            </a>
+
+            <a
+                href="{{ url }}"
+                download
+                data-module="ap-tooltip"
+                title="{{ _('Download file')}}"
+                class="btn btn-primary">
+                <i class="fas fa-download"></i>
+            </a>
+        {% endif %}
+        <a
+            data-module="ap-tooltip" title="{{ _('Remove a file') }}"
+            class="btn btn-danger"
+            href="{{ h.url_for('files_manager.delete', file_id=data.id) }}"
+            hx-swap="none" hx-trigger="click" hx-post="{{ h.url_for('files_manager.delete', file_id=data.id) }}">
+            <i class="fa fa-trash-alt"></i>
+        </a>
+    {% else %}
+        {{ super() }}
+    {% endif %}
+{% endblock value %}

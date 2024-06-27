@@ -1657,7 +1657,7 @@ provide correct MIMEtype, size and stream.</p>
 </code></pre></div>
 </div>
 <h2 id="hashingreader">HashingReader</h2>
-<p>Signature: <code>(stream: types.PUploadStream, chunk_size: int = 16384, algorithm: str = md5) -&gt; None</code></p>
+<p>Signature: <code>(stream: types.PUploadStream, chunk_size: int = 16384, algorithm: str = md5)</code></p>
 <p>IO stream wrapper that computes content hash while stream is consumed.</p>
 <div class="admonition example">
 <p class="admonition-title">Example</p>
@@ -1915,6 +1915,7 @@ the extension.</p>
 <li>UploadError<ul>
 <li>WrongUploadTypeError</li>
 <li>NameStrategyError</li>
+<li>ContentError</li>
 <li>LargeUploadError<ul>
 <li>UploadOutOfBoundError</li>
 </ul>

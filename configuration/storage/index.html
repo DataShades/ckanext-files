@@ -1191,6 +1191,8 @@ in the same way:</p>
 <span class="c1">## Space-separated list of MIME types or just type or subtype part.</span>
 <span class="c1">## Example: text/csv pdf application video jpeg</span>
 <span class="na">ckanext.files.storage.NAME.supported_types</span><span class="w"> </span><span class="o">=</span>
+<span class="c1">## If file already exists, replace it with new content.</span>
+<span class="na">ckanext.files.storage.NAME.override_existing</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">false</span>
 <span class="c1">## Descriptive name of the storage used for debugging. When empty, name from</span>
 <span class="c1">## the config option is used, i.e: `ckanext.files.storage.DEFAULT_NAME...`</span>
 <span class="na">ckanext.files.storage.NAME.name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">NAME</span>

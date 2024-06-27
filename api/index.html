@@ -741,6 +741,15 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#files_file_replace" class="md-nav__link">
+    <span class="md-ellipsis">
+      files_file_replace
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#files_file_scan" class="md-nav__link">
     <span class="md-ellipsis">
       files_file_scan
@@ -1320,6 +1329,15 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#files_file_replace" class="md-nav__link">
+    <span class="md-ellipsis">
+      files_file_replace
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#files_file_scan" class="md-nav__link">
     <span class="md-ellipsis">
       files_file_scan
@@ -1451,7 +1469,7 @@ is mandatory.</p>
 <ul>
 <li><code>name</code>: human-readable name of the file. Default: guess using upload field</li>
 <li><code>storage</code>: name of the storage that will handle the upload. Default: <code>default</code></li>
-<li><code>upload</code>: content of the file as string, bytes, file descriptor or uploaded file</li>
+<li><code>upload</code>: content of the file as bytes, file descriptor or uploaded file</li>
 </ul>
 <p>Returns:</p>
 <p>dictionary with file details.</p>
@@ -1500,6 +1518,21 @@ DB. Real location of the file in the storage is not modified.</p>
 </ul>
 <p>Returns:</p>
 <p>dictionary with file details</p>
+<h2 id="files_file_replace">files_file_replace</h2>
+<p>Replace content of the file.</p>
+<p>New file must have the same MIMEtype as the original file.</p>
+<p>Size and content hash from the new file will replace original values. All
+other fields, including name, remain unchanged.</p>
+<div class="highlight"><pre><span></span><code><span class="n">ckanapi</span> <span class="n">action</span> <span class="n">files_file_replace</span> <span class="nb">id</span><span class="o">=</span><span class="mi">123</span> <span class="n">upload</span><span class="nd">@path</span><span class="o">/</span><span class="n">to</span><span class="o">/</span><span class="n">file</span><span class="o">.</span><span class="n">txt</span>
+</code></pre></div>
+<p>Requires storage with <code>CREATE</code> and <code>REMOVE</code> capability.</p>
+<p>Params:</p>
+<ul>
+<li><code>id</code>: ID of the replaced file</li>
+<li><code>upload</code>: content of the file as bytes, file descriptor or uploaded file</li>
+</ul>
+<p>Returns:</p>
+<p>dictionary with file details.</p>
 <h2 id="files_file_scan">files_file_scan</h2>
 <p>List files of the owner</p>
 <p>This action internally calls files_file_search, but with static values of
@@ -1656,7 +1689,7 @@ and always uses resources storage.</p>
 <p>Params:</p>
 <ul>
 <li><code>name</code>: human-readable name of the file. Default: guess using upload field</li>
-<li><code>upload</code>: content of the file as string, bytes, file descriptor or uploaded file</li>
+<li><code>upload</code>: content of the file as bytes, file descriptor or uploaded file</li>
 </ul>
 <p>Returns:</p>
 <p>dictionary with file details.</p>

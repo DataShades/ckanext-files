@@ -13,31 +13,32 @@ from .base import (
 )
 from .interfaces import IFiles
 from .model import File, Multipart, Owner, TransferHistory
-from .task import Task, add_task, with_task_queue
+from .task import Task, TaskQueue, add_task, with_task_queue
 from .utils import Capability, HashingReader, Upload, make_upload
 
 __all__ = [
-    "add_task",
     "get_storage",
     "make_storage",
     "make_upload",
-    "with_task_queue",
+    "Upload",
+    "HashingReader",
     "Capability",
     "File",
-    "FileData",
-    "HashingReader",
-    "IFiles",
-    "Manager",
     "Multipart",
-    "MultipartData",
     "Owner",
-    "Reader",
-    "Storage",
-    "Task",
     "TransferHistory",
-    "Upload",
+    "FileData",
+    "MultipartData",
+    "IFiles",
+    "Storage",
     "Uploader",
+    "Reader",
+    "Manager",
+    "add_task",
+    "with_task_queue",
+    "Task",
+    "TaskQueue",
     "types",
-    "exc",
     "config",
+    "exc",
 ]

@@ -117,7 +117,7 @@ class Upload:
 
     """
 
-    stream: types.UploadStream
+    stream: types.PUploadStream
     filename: str
     size: int
     content_type: str
@@ -140,7 +140,7 @@ class HashingReader:
 
     def __init__(
         self,
-        stream: types.UploadStream,
+        stream: types.PUploadStream,
         chunk_size: int = CHUNK_SIZE,
         algorithm: str = CHECKSUM_ALGORITHM,
     ) -> None:

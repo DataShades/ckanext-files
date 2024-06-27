@@ -614,7 +614,7 @@ class Storage(OptionChecker, abc.ABC):
         """Make an Upload with file content."""
         stream = self.stream(data, **kwargs)
         if hasattr(stream, "read"):
-            stream = cast(types.UploadStream, stream)
+            stream = cast(types.PUploadStream, stream)
         else:
             stream = utils.IterableBytesReader(stream)
 

@@ -31,7 +31,7 @@ Params:
 
 * `name`: human-readable name of the file. Default: guess using upload field
 * `storage`: name of the storage that will handle the upload. Default: `default`
-* `upload`: content of the file as string, bytes, file descriptor or uploaded file
+* `upload`: content of the file as bytes, file descriptor or uploaded file
 
 Returns:
 
@@ -105,6 +105,31 @@ Params:
 Returns:
 
 dictionary with file details
+
+
+## files_file_replace
+
+Replace content of the file.
+
+New file must have the same MIMEtype as the original file.
+
+Size and content hash from the new file will replace original values. All
+other fields, including name, remain unchanged.
+
+```python
+ckanapi action files_file_replace id=123 upload@path/to/file.txt
+```
+
+Requires storage with `CREATE` and `REMOVE` capability.
+
+Params:
+
+* `id`: ID of the replaced file
+* `upload`: content of the file as bytes, file descriptor or uploaded file
+
+Returns:
+
+dictionary with file details.
 
 
 ## files_file_scan
@@ -332,7 +357,7 @@ New file is not attached to resource. You need to call
 Params:
 
 * `name`: human-readable name of the file. Default: guess using upload field
-* `upload`: content of the file as string, bytes, file descriptor or uploaded file
+* `upload`: content of the file as bytes, file descriptor or uploaded file
 
 Returns:
 

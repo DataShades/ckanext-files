@@ -62,68 +62,6 @@ def _flat_mask(data: dict[str, Any]) -> dict[tuple[Any, ...], Any]:
 
 
 @tk.side_effect_free
-@validate(schema.file_search_by_user)
-def files_file_search_by_user(  # noqa: C901
-    context: Context,
-    data_dict: dict[str, Any],
-) -> dict[str, Any]:
-    """Internal action. Do not use it."""
-
-    tk.check_access("files_file_search_by_user", context, data_dict)
-    sess = context["session"]
-
-    user = model.User.get(data_dict.get("user", context.get("user", "")))
-    if not user:
-        raise tk.ObjectNotFound("user")
-
-    q = sess.query(File).join(
-        Owner,
-        sa.and_(File.id == Owner.item_id, Owner.item_type == "file"),
-    )
-
-    if "storage" in data_dict:
-        q = q.filter(File.storage == data_dict["storage"])
-
-    q = q.filter(sa.and_(Owner.owner_type == "user", Owner.owner_id == user.id))
-
-    inspector: Any = sa.inspect(File)
-    columns = inspector.columns
-
-    for mask in ["storage_data", "plugin_data"]:
-        if mask in data_dict:
-            for k, v in _flat_mask(data_dict[mask]).items():
-                field = columns[mask]
-                for segment in k:
-                    field = field[segment]
-
-                q = q.filter(field.astext == v)
-
-    total = q.count()
-
-    parts = data_dict["sort"].split(".")
-    sort = parts[0]
-    sort_path = parts[1:]
-
-    if sort not in columns:
-        raise tk.ValidationError({"sort": ["Unknown sort column"]})
-
-    column = columns[sort]
-
-    if sort_path and sort == "storage_data":
-        for part in sort_path:
-            column = column[part]
-
-    if data_dict["reverse"]:
-        column = column.desc()
-
-    q = q.order_by(column)
-
-    q = q.limit(data_dict["rows"]).offset(data_dict["start"])
-
-    return {"count": total, "results": [f.dictize(context) for f in q]}
-
-
-@tk.side_effect_free
 @validate(schema.file_search)
 def files_file_search(  # noqa: C901, PLR0912
     context: Context,
@@ -315,7 +253,7 @@ def files_file_create(context: Context, data_dict: dict[str, Any]) -> dict[str, 
 
     * `name`: human-readable name of the file. Default: guess using upload field
     * `storage`: name of the storage that will handle the upload. Default: `default`
-    * `upload`: content of the file as string, bytes, file descriptor or uploaded file
+    * `upload`: content of the file as bytes, file descriptor or uploaded file
 
     Returns:
 
@@ -354,6 +292,72 @@ def files_file_create(context: Context, data_dict: dict[str, Any]) -> dict[str, 
     context["session"].add(fileobj)
 
     _set_user_owner(context, "file", fileobj.id)
+    context["session"].commit()
+
+    return fileobj.dictize(context)
+
+
+@shared.with_task_queue
+@validate(schema.file_replace)
+def files_file_replace(context: Context, data_dict: dict[str, Any]) -> dict[str, Any]:
+    """Replace content of the file.
+
+    New file must have the same MIMEtype as the original file.
+
+    Size and content hash from the new file will replace original values. All
+    other fields, including name, remain unchanged.
+
+    ```python
+    ckanapi action files_file_replace id=123 upload@path/to/file.txt
+    ```
+
+    Requires storage with `CREATE` and `REMOVE` capability.
+
+    Params:
+
+    * `id`: ID of the replaced file
+    * `upload`: content of the file as bytes, file descriptor or uploaded file
+
+    Returns:
+
+    dictionary with file details.
+
+    """
+
+    tk.check_access("files_file_replace", context, data_dict)
+
+    fileobj = context["session"].get(File, data_dict["id"])
+    if not fileobj:
+        raise tk.ObjectNotFound("file")
+
+    if fileobj.content_type != data_dict["upload"].content_type:
+        raise tk.ValidationError(
+            {
+                "upload": [
+                    "Expected {} but received {}".format(
+                        fileobj.content_type,
+                        data_dict["upload"].content_type,
+                    ),
+                ],
+            },
+        )
+    storage = shared.get_storage(fileobj.storage)
+
+    if not storage.supports(shared.Capability.CREATE | shared.Capability.REMOVE):
+        raise tk.ValidationError({"storage": ["Operation is not supported"]})
+
+    try:
+        storage_data = storage.upload(fileobj.name, data_dict["upload"])
+    except shared.exc.UploadError as err:
+        raise tk.ValidationError({"upload": [str(err)]}) from err
+
+    # with transparent location strategy file will be writted into the same
+    # location, so removal may be not required
+    if storage_data.location != fileobj.location:
+        old_data = shared.FileData.from_model(fileobj)
+        shared.add_task(lambda result, idx, prev: storage.remove(old_data))
+
+    storage_data.into_model(fileobj)
     context["session"].commit()
 
     return fileobj.dictize(context)
@@ -902,7 +906,7 @@ def files_resource_upload(context: Context, data_dict: dict[str, Any]):
     Params:
 
     * `name`: human-readable name of the file. Default: guess using upload field
-    * `upload`: content of the file as string, bytes, file descriptor or uploaded file
+    * `upload`: content of the file as bytes, file descriptor or uploaded file
 
     Returns:
 

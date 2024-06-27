@@ -33,10 +33,14 @@ Uploadable = Union[
 ]
 
 
-class UploadStream(Protocol):
+class PUploadStream(Protocol):
     def read(self, size: Any = ..., /) -> bytes: ...
 
     def __iter__(self) -> Iterator[bytes]: ...
+
+
+class PTask(Protocol):
+    def __call__(self, result: Any, idx: int, prev: Any) -> Any: ...
 
 
 __all__ = [
@@ -50,4 +54,5 @@ __all__ = [
     "FileOperation",
     "OwnerOperation",
     "Key",
+    "PTask",
 ]

@@ -24,16 +24,16 @@ from typing import Any, Literal
 import ckan.plugins.toolkit as tk
 from ckan.types import FlattenKey
 
-from ckanext.files import base, exceptions, utils
+from ckanext.files import base, exceptions, types, utils
 
-_task_queue: contextvars.ContextVar[deque[Task] | None] = contextvars.ContextVar(
+_task_queue: contextvars.ContextVar[deque[types.PTask] | None] = contextvars.ContextVar(
     "transfer_queue",
     default=None,
 )
 
 
 class TaskQueue:
-    """Thread safe context for managing tasks.
+    """Thread-safe context for managing tasks.
 
     Example:
     >>> queue = TaskQueue()
@@ -44,7 +44,7 @@ class TaskQueue:
     """
 
     # container for tasks
-    queue: deque[Any]
+    queue: deque[types.PTask]
 
     # refresh token that restores previous state of queue
     token: contextvars.Token[Any] | None
@@ -79,7 +79,7 @@ class TaskQueue:
         idx = 0
         while self.queue:
             task = self.queue.popleft()
-            prev = task.run(data, idx, prev)
+            prev = task(data, idx, prev)
             idx += 1
 
 
@@ -105,6 +105,9 @@ class Task(abc.ABC):
             source = source[step]
 
         return source
+
+    def __call__(self, result: Any, idx: int, prev: Any):
+        return self.run(result, idx, prev)
 
     @abc.abstractmethod
     def run(self, result: Any, idx: int, prev: Any):
@@ -282,7 +285,7 @@ def with_task_queue(func: Any, name: str | None = None):
     return wrapper
 
 
-def add_task(task: Task):
+def add_task(task: types.PTask):
     """Add task to the current task queue.
 
     This function can be called only inside task queue context. Such context

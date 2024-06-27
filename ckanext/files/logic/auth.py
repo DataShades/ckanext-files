@@ -151,32 +151,11 @@ def files_read_file(context: Context, data_dict: dict[str, Any]) -> AuthResult:
     return {"success": result, "msg": "Not allowed to read file"}
 
 
-@tk.auth_disallow_anonymous_access
-def files_file_search_by_user(
-    context: Context,
-    data_dict: dict[str, Any],
-) -> AuthResult:
-    """Only user himself can view his own files."""
-
-    # `user` from context will be used used when it's not in data_dict, so it's
-    # an access to own files
-    if "user" not in data_dict:
-        return {"success": True}
-
-    user = _get_user(context)
-
-    return {
-        "success": bool(user) and data_dict["user"] in [user.name, user.id],
-        "msg": "Not authorized to view files of this user",
-    }
-
-
 def files_file_search(context: Context, data_dict: dict[str, Any]) -> AuthResult:
     """Only file manager can search files."""
     return authz.is_authorized("files_manage_files", context, data_dict)
 
 
-@tk.auth_disallow_anonymous_access
 def files_file_create(context: Context, data_dict: dict[str, Any]) -> AuthResult:
     if (
         shared.config.authenticated_uploads()
@@ -187,7 +166,6 @@ def files_file_create(context: Context, data_dict: dict[str, Any]) -> AuthResult
     return authz.is_authorized("files_manage_files", context, data_dict)
 
 
-@tk.auth_disallow_anonymous_access
 def files_file_delete(context: Context, data_dict: dict[str, Any]) -> AuthResult:
     """Only owner can remove files."""
     result = authz.is_authorized_boolean("files_owns_file", context, data_dict)
@@ -196,6 +174,11 @@ def files_file_delete(context: Context, data_dict: dict[str, Any]) -> AuthResult
         result = bool(file and _file_allows(context, file, "delete"))
 
     return {"success": result, "msg": "Not allowed to delete file"}
+
+
+def files_file_replace(context: Context, data_dict: dict[str, Any]) -> AuthResult:
+    """Only owner can replace files."""
+    return authz.is_authorized("files_edit_file", context, data_dict)
 
 
 def files_file_show(context: Context, data_dict: dict[str, Any]) -> AuthResult:

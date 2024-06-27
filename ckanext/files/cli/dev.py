@@ -31,9 +31,6 @@ def api_docs():
         if not name.startswith("files_"):
             continue
 
-        if name in ["files_file_search_by_user"]:
-            continue
-
         _doc_action(func)
 
 

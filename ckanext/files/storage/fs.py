@@ -43,7 +43,6 @@ class FsStorage(Storage):
         path = self.ensure_option(settings, "path")
         settings.setdefault("create_path", False)
         settings.setdefault("recursive", False)
-        settings.setdefault("override_existing", False)
 
         if not os.path.exists(path):
             if tk.asbool(settings["create_path"]):
@@ -70,10 +69,6 @@ class FsStorage(Storage):
         declaration.declare_bool(key.recursive).set_description(
             "Use this flag if files can be stored inside subfolders"
             + " of the main storage path.",
-        )
-
-        declaration.declare_bool(key.override_existing).set_description(
-            "If file already exists, replace it with new content.",
         )
 
 

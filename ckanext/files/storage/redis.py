@@ -219,7 +219,10 @@ class RedisManager(Manager):
         if not self.storage.redis.exists(src):
             raise exceptions.MissingFileError(self.storage, src)
 
-        if self.storage.redis.exists(dest):
+        if (
+            self.storage.redis.exists(dest)
+            and not self.storage.settings["override_existing"]
+        ):
             raise exceptions.ExistingFileError(self.storage, dest)
 
         try:
@@ -249,7 +252,10 @@ class RedisManager(Manager):
         if not self.storage.redis.exists(src):
             raise exceptions.MissingFileError(self.storage, src)
 
-        if self.storage.redis.exists(dest):
+        if (
+            self.storage.redis.exists(dest)
+            and not self.storage.settings["override_existing"]
+        ):
             raise exceptions.ExistingFileError(self.storage, dest)
 
         self.storage.redis.rename(src, dest)

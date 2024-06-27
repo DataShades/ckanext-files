@@ -427,6 +427,10 @@ class Storage(OptionChecker, abc.ABC):
         return self.settings.get("name", "unknown")
 
     def __init__(self, **settings: Any):
+        settings.setdefault("override_existing", False)
+        settings.setdefault("supported_types", [])
+        settings.setdefault("max_size", 0)
+
         self.settings = settings
 
         self.uploader = self.make_uploader()
@@ -443,13 +447,13 @@ class Storage(OptionChecker, abc.ABC):
 
         """
 
-        return self.settings.get("max_size", 0)
+        return self.settings["max_size"]
 
     @property
     def supported_types(self) -> list[str]:
         """List of supported MIMEtypes or their parts."""
 
-        return self.settings.get("supported_types", [])
+        return self.settings["supported_types"]
 
     @classmethod
     def declare_config_options(cls, declaration: Declaration, key: Key):
@@ -464,6 +468,10 @@ class Storage(OptionChecker, abc.ABC):
         declaration.declare_list(key.supported_types, None).set_description(
             "Space-separated list of MIME types or just type or subtype part."
             + "\nExample: text/csv pdf application video jpeg",
+        )
+
+        declaration.declare_bool(key.override_existing).set_description(
+            "If file already exists, replace it with new content.",
         )
 
         declaration.declare(key.name, key[-1]).set_description(

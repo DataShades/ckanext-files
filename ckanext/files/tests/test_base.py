@@ -151,8 +151,13 @@ class TestStorage:
         """Storage keeps all incoming arguments as settings."""
 
         settings = faker.pydict()
+
         storage = base.Storage(**settings)
-        assert storage.settings == settings
+        expected = dict(
+            {"supported_types": [], "max_size": 0, "override_existing": False},
+            **settings,
+        )
+        assert storage.settings == expected
 
     def test_max_size(self, faker: Faker):
         """Storage has a dedicated property for `max_size` setting."""

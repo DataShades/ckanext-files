@@ -19,7 +19,7 @@ class OpenDalStorage(shared.Storage):
     def make_manager(self):
         return OpenDalManager(self)
 
-    def __init__(self, **settings: Any) -> None:
+    def __init__(self, **settings: Any):
         scheme = self.ensure_option(settings, "scheme")
         params = settings.setdefault("params", {})
 
@@ -52,7 +52,7 @@ class OpenDalStorage(shared.Storage):
         return cluster
 
     @classmethod
-    def declare_config_options(cls, declaration: Declaration, key: Key) -> None:
+    def declare_config_options(cls, declaration: Declaration, key: Key):
         super().declare_config_options(declaration, key)
         declaration.declare(key.scheme).required().set_description(
             "OpenDAL service type. Check available services at"

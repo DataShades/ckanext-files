@@ -76,7 +76,7 @@ class Registry(Generic[T]):
     >>> assert col.get("one") is None
     """
 
-    def __init__(self, members: dict[str, T] | None = None) -> None:
+    def __init__(self, members: dict[str, T] | None = None):
         if members is None:
             members = {}
         self.members = members
@@ -92,7 +92,7 @@ class Registry(Generic[T]):
 
         self.members.clear()
 
-    def register(self, name: str, member: T) -> None:
+    def register(self, name: str, member: T):
         """Add a member to registry."""
 
         self.members[name] = member
@@ -143,7 +143,7 @@ class HashingReader:
         stream: types.PUploadStream,
         chunk_size: int = CHUNK_SIZE,
         algorithm: str = CHECKSUM_ALGORITHM,
-    ) -> None:
+    ):
         self.stream = stream
         self.chunk_size = chunk_size
         self.algorithm = algorithm

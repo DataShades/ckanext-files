@@ -15,7 +15,7 @@ API_URL = "https://filebin.net"
 class FilebinStorage(shared.Storage):
     hidden = True
 
-    def __init__(self, **settings: Any) -> None:
+    def __init__(self, **settings: Any):
         settings.setdefault("timeout", 10)
         super().__init__(**settings)
 
@@ -33,7 +33,7 @@ class FilebinStorage(shared.Storage):
         return FilebinManager(self)
 
     @classmethod
-    def declare_config_options(cls, declaration: Declaration, key: Key) -> None:
+    def declare_config_options(cls, declaration: Declaration, key: Key):
         super().declare_config_options(declaration, key)
 
         declaration.declare(key.bin).required().set_description("ID of the bin")

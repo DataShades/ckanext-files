@@ -452,7 +452,7 @@ class Storage(OptionChecker, abc.ABC):
         return self.settings.get("supported_types", [])
 
     @classmethod
-    def declare_config_options(cls, declaration: Declaration, key: Key) -> None:
+    def declare_config_options(cls, declaration: Declaration, key: Key):
         declaration.declare(key.max_size, 0).append_validators(
             "files_parse_filesize",
         ).set_description(

@@ -23,7 +23,7 @@ class LibCloudStorage(shared.Storage):
     driver: StorageDriver
     container: Container
 
-    def __init__(self, **settings: Any) -> None:
+    def __init__(self, **settings: Any):
         provider = self.ensure_option(settings, "provider")
         key = self.ensure_option(settings, "key")
         container = self.ensure_option(settings, "container")
@@ -63,7 +63,7 @@ class LibCloudStorage(shared.Storage):
         return LibCloudManager(self)
 
     @classmethod
-    def declare_config_options(cls, declaration: Declaration, key: Key) -> None:
+    def declare_config_options(cls, declaration: Declaration, key: Key):
         super().declare_config_options(declaration, key)
         declaration.declare(key.provider).required().set_description(
             "apache-libcloud storage provider. List of providers available at"

@@ -17,13 +17,13 @@ class DbStorage(shared.Storage):
         cls,
         declaration: types.Declaration,
         key: types.Key,
-    ) -> None:
+    ):
         declaration.declare(key.db_url).required()
         declaration.declare(key.table).required()
         declaration.declare(key.location_column).required()
         declaration.declare(key.content_column).required()
 
-    def __init__(self, **settings: Any) -> None:
+    def __init__(self, **settings: Any):
         db_url = self.ensure_option(settings, "db_url")
 
         self.engine = sa.create_engine(db_url)

@@ -82,6 +82,7 @@ class FilesPlugin(p.SingletonPlugin):
             "files:redis": storage.RedisStorage,
             "files:filebin": storage.FilebinStorage,
             "files:db": storage.DbStorage,
+            "files:link": storage.LinkStorage,
         }
 
         if hasattr(storage, "GoogleCloudStorage"):

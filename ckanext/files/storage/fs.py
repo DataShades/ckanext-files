@@ -39,7 +39,7 @@ class FsStorage(Storage):
     def make_manager(self):
         return FsManager(self)
 
-    def __init__(self, **settings: Any) -> None:
+    def __init__(self, **settings: Any):
         path = self.ensure_option(settings, "path")
         settings.setdefault("create_path", False)
         settings.setdefault("recursive", False)
@@ -389,6 +389,6 @@ class PublicFsStorage(FsStorage):
 
 
 class CkanResourceFsStorage(FsStorage):
-    def __init__(self, **settings: Any) -> None:
+    def __init__(self, **settings: Any):
         settings["recursive"] = True
         super().__init__(**settings)

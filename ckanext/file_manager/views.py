@@ -56,7 +56,7 @@ class FileManagerView(MethodView):
             "1": self._remove_file,
         }.get(value)
 
-    def _remove_file(self, file_id: str) -> None:
+    def _remove_file(self, file_id: str):
         tk.get_action("files_file_delete")(
             {"ignore_auth": True},
             {"id": file_id},

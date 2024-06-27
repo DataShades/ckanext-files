@@ -141,7 +141,7 @@ def files_ensure_name(name_field: str):
         data: FlattenDataDict,
         errors: FlattenErrorDict,
         context: Context,
-    ) -> None:
+    ):
         name_key = key[:-1] + (name_field,)
         if data.get(name_key):
             return
@@ -276,7 +276,7 @@ def files_transfer_ownership(owner_type: str, id_field: str = "id"):
         data: FlattenDataDict,
         errors: FlattenErrorDict,
         context: Context,
-    ) -> None:
+    ):
         msg = "Is not an owner of the file"
 
         value = data[key]
@@ -347,7 +347,7 @@ def files_upload_as(  # noqa: PLR0913
         data: FlattenDataDict,
         errors: FlattenErrorDict,
         context: Context,
-    ) -> None:
+    ):
         value: utils.Upload = data.pop(key)
         id_field_path = key[:-1] + (id_field,)
         shared.add_task(

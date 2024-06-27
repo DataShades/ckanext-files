@@ -89,7 +89,7 @@ There are 4 required options in total:
     class DbStorage(shared.Storage):
 
         @classmethod
-        def declare_config_options(cls, declaration, key) -> None:
+        def declare_config_options(cls, declaration, key):
             declaration.declare(key.db_url).required()
             declaration.declare(key.table).required()
             declaration.declare(key.location_column).required()
@@ -105,7 +105,7 @@ accepting keyword-only arguments:
 class DbStorage(shared.Storage):
     ...
 
-    def __init__(self, **settings: Any) -> None:
+    def __init__(self, **settings: Any):
         db_url = self.ensure_option(settings, "db_url")
 
         self.engine = sa.create_engine(db_url)

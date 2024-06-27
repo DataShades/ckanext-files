@@ -20,6 +20,7 @@ Hierarchy:
             * UploadError
                 * WrongUploadTypeError
                 * NameStrategyError
+                * ContentError
                 * LargeUploadError
                     * UploadOutOfBoundError
                 * UploadMismatchError
@@ -255,3 +256,14 @@ class MissingExtrasError(ExtrasError):
 
     def __str__(self):
         return f"Key {self.key} is missing from extras"
+
+
+class ContentError(UploadError):
+    """Storage cannot accept uploaded content."""
+
+    def __init__(self, storage: Storage, msg: str):
+        self.storage = storage
+        self.msg = msg
+
+    def __str__(self):
+        return f"{self.storage} rejected upload: {self.msg}"

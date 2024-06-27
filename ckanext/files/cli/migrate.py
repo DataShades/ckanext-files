@@ -143,7 +143,7 @@ def migrate_users(storage_name: str):
 
 @group.command("local-resources")
 @click.argument("storage_name")
-def migrate_local_resources(storage_name: str):  # noqa: C901, PLR0915
+def migrate_local_resources(storage_name: str):  # noqa: C901, PLR0915, PLR0912
     """Migrate resources uploaded via original ResourceUploader."""
     content = tk.get_action("files_file_search")(
         {"ignore_auth": True},

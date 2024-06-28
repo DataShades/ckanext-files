@@ -1623,13 +1623,18 @@ always returns the same storage object for the given name.</p>
 </code></pre></div>
 </div>
 <h2 id="make_storage">make_storage</h2>
-<p>Signature: <code>(name: str, settings: dict[str, Any]) -&gt; Storage</code></p>
+<p>Signature: <code>(name: str, settings: dict[str, Any], prepare_settings: bool = False) -&gt; Storage</code></p>
 <p>Initialize storage instance with specified settings.</p>
 <p>Storage adapter is defined by <code>type</code> key of the settings. All other
 settings depend on the specific adapter.</p>
+<p>It's recommended to enable <code>prepare_settings</code> flag. When it's enabled, all
+standard parameters(max_size, supported_types) are added to settings if
+they are missing. But default this flag is disabled, because storages
+usually initialized using CKAN configuration, which is already validated by
+config declarations.</p>
 <div class="admonition example">
 <p class="admonition-title">Example</p>
-<div class="highlight"><pre><span></span><code><span class="n">storage</span> <span class="o">=</span> <span class="n">make_storage</span><span class="p">(</span><span class="s2">&quot;memo&quot;</span><span class="p">,</span> <span class="p">{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;files:redis&quot;</span><span class="p">})</span>
+<div class="highlight"><pre><span></span><code><span class="n">storage</span> <span class="o">=</span> <span class="n">make_storage</span><span class="p">(</span><span class="s2">&quot;memo&quot;</span><span class="p">,</span> <span class="p">{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;files:redis&quot;</span><span class="p">},</span> <span class="kc">True</span><span class="p">)</span>
 </code></pre></div>
 </div>
 <h2 id="make_upload">make_upload</h2>
@@ -1768,7 +1773,7 @@ provide correct MIMEtype, size and stream.</p>
 </code></pre></div>
 </div>
 <h2 id="storage">Storage</h2>
-<p>Signature: <code>(**settings: Any)</code></p>
+<p>Signature: <code>(settings: dict[str, Any], /)</code></p>
 <p>Base class for storage implementation.</p>
 <div class="admonition example">
 <p class="admonition-title">Example</p>
@@ -1786,6 +1791,9 @@ provide correct MIMEtype, size and stream.</p>
 <h2 id="uploader">Uploader</h2>
 <p>Signature: <code>(storage: Storage)</code></p>
 <p>Service responsible for writing data into a storage.</p>
+<p><code>Storage</code> internally calls methods of this service. For example,
+<code>Storage.upload(location, upload, **kwargs)</code> results in
+<code>Uploader.upload(location, upload, kwargs)</code>.</p>
 <div class="admonition example">
 <p class="admonition-title">Example</p>
 <div class="highlight"><pre><span></span><code><span class="k">class</span> <span class="nc">MyUploader</span><span class="p">(</span><span class="n">Uploader</span><span class="p">):</span>
@@ -1807,6 +1815,8 @@ provide correct MIMEtype, size and stream.</p>
 <h2 id="reader">Reader</h2>
 <p>Signature: <code>(storage: Storage)</code></p>
 <p>Service responsible for reading data from the storage.</p>
+<p><code>Storage</code> internally calls methods of this service. For example,
+<code>Storage.stream(data, **kwargs)</code> results in <code>Reader.stream(data, kwargs)</code>.</p>
 <div class="admonition example">
 <p class="admonition-title">Example</p>
 <div class="highlight"><pre><span></span><code><span class="k">class</span> <span class="nc">MyReader</span><span class="p">(</span><span class="n">Reader</span><span class="p">):</span>
@@ -1819,6 +1829,8 @@ provide correct MIMEtype, size and stream.</p>
 <h2 id="manager">Manager</h2>
 <p>Signature: <code>(storage: Storage)</code></p>
 <p>Service responsible for maintenance file operations.</p>
+<p><code>Storage</code> internally calls methods of this service. For example,
+<code>Storage.remove(data, **kwargs)</code> results in <code>Manager.remove(data, kwargs)</code>.</p>
 <div class="admonition example">
 <p class="admonition-title">Example</p>
 <div class="highlight"><pre><span></span><code><span class="k">class</span> <span class="nc">MyManager</span><span class="p">(</span><span class="n">Manager</span><span class="p">):</span>

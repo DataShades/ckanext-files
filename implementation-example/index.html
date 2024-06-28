@@ -1385,7 +1385,7 @@ accepting keyword-only arguments:</p>
 <div class="highlight"><pre><span></span><code><span class="k">class</span> <span class="nc">DbStorage</span><span class="p">(</span><span class="n">shared</span><span class="o">.</span><span class="n">Storage</span><span class="p">):</span>
     <span class="o">...</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">settings</span><span class="p">:</span> <span class="n">Any</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">settings</span><span class="p">:</span> <span class="n">Any</span><span class="p">):</span>
         <span class="n">db_url</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ensure_option</span><span class="p">(</span><span class="n">settings</span><span class="p">,</span> <span class="s2">&quot;db_url&quot;</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">engine</span> <span class="o">=</span> <span class="n">sa</span><span class="o">.</span><span class="n">create_engine</span><span class="p">(</span><span class="n">db_url</span><span class="p">)</span>
@@ -1398,7 +1398,7 @@ accepting keyword-only arguments:</p>
             <span class="bp">self</span><span class="o">.</span><span class="n">location_column</span><span class="p">,</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">content_column</span><span class="p">,</span>
         <span class="p">)</span>
-        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">**</span><span class="n">settings</span><span class="p">)</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">settings</span><span class="p">)</span>
 </code></pre></div>
 <p>You can notice that we are using <code>Storage.ensure_option</code> quite often. This
 method returns the value of specified option from settings or raises an

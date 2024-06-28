@@ -113,14 +113,24 @@ class MultipartData(BaseData[model.Multipart]):
     location: str = ""
 
 
-def make_storage(name: str, settings: dict[str, Any]) -> Storage:
+def make_storage(
+    name: str,
+    settings: dict[str, Any],
+    prepare_settings: bool = False,
+) -> Storage:
     """Initialize storage instance with specified settings.
 
     Storage adapter is defined by `type` key of the settings. All other
     settings depend on the specific adapter.
 
+    It's recommended to enable `prepare_settings` flag. When it's enabled, all
+    standard parameters(max_size, supported_types) are added to settings if
+    they are missing. But default this flag is disabled, because storages
+    usually initialized using CKAN configuration, which is already validated by
+    config declarations.
+
     Example:
-    >>> storage = make_storage("memo", {"type": "files:redis"})
+    >>> storage = make_storage("memo", {"type": "files:redis"}, True)
     """
 
     adapter_type = settings.pop("type", None)
@@ -129,7 +139,11 @@ def make_storage(name: str, settings: dict[str, Any]) -> Storage:
         raise exceptions.UnknownAdapterError(adapter_type)
 
     settings.setdefault("name", name)
-    return adapter(**settings)
+
+    if prepare_settings:
+        settings = adapter.prepare_settings(settings)
+
+    return adapter(settings)
 
 
 def get_storage(name: str | None = None) -> Storage:
@@ -143,7 +157,6 @@ def get_storage(name: str | None = None) -> Storage:
     Example:
     >>> default_storage = get_storage()
     >>> storage = get_storage("storage name")
-
     """
 
     if name is None:
@@ -207,6 +220,10 @@ class StorageService(OptionChecker):
 class Uploader(StorageService):
     """Service responsible for writing data into a storage.
 
+    `Storage` internally calls methods of this service. For example,
+    `Storage.upload(location, upload, **kwargs)` results in
+    `Uploader.upload(location, upload, kwargs)`.
+
     Example:
     >>> class MyUploader(Uploader):
     >>>     def upload(
@@ -222,6 +239,7 @@ class Uploader(StorageService):
     >>>             upload.content_type,
     >>>             reader.get_hash()
     >>>         )
+
     """
 
     def upload(
@@ -273,6 +291,9 @@ class Uploader(StorageService):
 class Manager(StorageService):
     """Service responsible for maintenance file operations.
 
+    `Storage` internally calls methods of this service. For example,
+    `Storage.remove(data, **kwargs)` results in `Manager.remove(data, kwargs)`.
+
     Example:
     >>> class MyManager(Manager):
     >>>     def remove(
@@ -280,6 +301,7 @@ class Manager(StorageService):
     >>>     ) -> bool:
     >>>         os.remove(data.location)
     >>>         return True
+
     """
 
     def remove(self, data: FileData | MultipartData, extras: dict[str, Any]) -> bool:
@@ -340,12 +362,16 @@ class Manager(StorageService):
 class Reader(StorageService):
     """Service responsible for reading data from the storage.
 
+    `Storage` internally calls methods of this service. For example,
+    `Storage.stream(data, **kwargs)` results in `Reader.stream(data, kwargs)`.
+
     Example:
     >>> class MyReader(Reader):
     >>>     def stream(
     >>>         self, data: FileData, extras: dict[str, Any]
     >>>     ) -> Iterable[bytes]:
     >>>         return open(data.location, "rb")
+
     """
 
     def stream(self, data: FileData, extras: dict[str, Any]) -> Iterable[bytes]:
@@ -420,17 +446,42 @@ class Storage(OptionChecker, abc.ABC):
     >>>         return MyManager(self)
     """
 
+    # do not show storage adapter in CLI's `files adapters` output
     hidden = False
+
+    # operations that storage performs. Will be overriden by capabilities of
+    # services inside constructor.
     capabilities = utils.Capability.NONE
 
     def __str__(self):
         return self.settings.get("name", "unknown")
 
-    def __init__(self, **settings: Any):
+    @classmethod
+    def prepare_settings(cls, settings: dict[str, Any]):
+        """Add all required items to settings.
+
+        This is usually done by config declarations. But when storage is
+        initialized manually, via `make_storage`, settings are not validated.
+
+        Use this method to transform arbitrary dictionary into expected form of
+        settings. Don't do too much work, just adding missing parameters should
+        be enough.
+
+        Passing sane values with valid types is still responsibility of the
+        developer.
+
+        Example:
+        >>> settings = Storage.prepare_settings({})
+        >>> storage = Storage(settings)
+        """
+
         settings.setdefault("override_existing", False)
         settings.setdefault("supported_types", [])
         settings.setdefault("max_size", 0)
 
+        return settings
+
+    def __init__(self, settings: dict[str, Any], /):
         self.settings = settings
 
         self.uploader = self.make_uploader()

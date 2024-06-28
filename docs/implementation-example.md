@@ -105,7 +105,7 @@ accepting keyword-only arguments:
 class DbStorage(shared.Storage):
     ...
 
-    def __init__(self, **settings: Any):
+    def __init__(self, settings: Any):
         db_url = self.ensure_option(settings, "db_url")
 
         self.engine = sa.create_engine(db_url)
@@ -118,7 +118,7 @@ class DbStorage(shared.Storage):
             self.location_column,
             self.content_column,
         )
-        super().__init__(**settings)
+        super().__init__(settings)
 
 ```
 

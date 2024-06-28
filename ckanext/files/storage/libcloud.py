@@ -23,12 +23,18 @@ class LibCloudStorage(shared.Storage):
     driver: StorageDriver
     container: Container
 
-    def __init__(self, **settings: Any):
+    @classmethod
+    def prepare_settings(cls, settings: dict[str, Any]):
+        settings.setdefault("secret", None)
+        settings.setdefault("params", {})
+        return super().prepare_settings(settings)
+
+    def __init__(self, settings: Any):
         provider = self.ensure_option(settings, "provider")
         key = self.ensure_option(settings, "key")
         container = self.ensure_option(settings, "container")
-        secret = settings.setdefault("secret", None)
-        params = settings.setdefault("params", {})
+        secret = self.ensure_option(settings, "secret")
+        params = self.ensure_option(settings, "params")
 
         try:
             factory = get_driver(DriverType.STORAGE, provider)
@@ -51,7 +57,7 @@ class LibCloudStorage(shared.Storage):
                 str(err),
             ) from err
 
-        super().__init__(**settings)
+        super().__init__(settings)
 
     def make_uploader(self):
         return LibCloudUploader(self)

@@ -19,16 +19,22 @@ If no name specified, default storage is returned.
 
 ## make_storage
 
-Signature: `(name: str, settings: dict[str, Any]) -> Storage`
+Signature: `(name: str, settings: dict[str, Any], prepare_settings: bool = False) -> Storage`
 
 Initialize storage instance with specified settings.
 
 Storage adapter is defined by `type` key of the settings. All other
 settings depend on the specific adapter.
 
+It's recommended to enable `prepare_settings` flag. When it's enabled, all
+standard parameters(max_size, supported_types) are added to settings if
+they are missing. But default this flag is disabled, because storages
+usually initialized using CKAN configuration, which is already validated by
+config declarations.
+
 !!! example
 	```python
-	storage = make_storage("memo", {"type": "files:redis"})
+	storage = make_storage("memo", {"type": "files:redis"}, True)
 	```
 
 
@@ -214,7 +220,7 @@ This interface is not stabilized. Implement it with `inherit=True`.
 
 ## Storage
 
-Signature: `(**settings: Any)`
+Signature: `(settings: dict[str, Any], /)`
 
 Base class for storage implementation.
 
@@ -237,6 +243,10 @@ Base class for storage implementation.
 Signature: `(storage: Storage)`
 
 Service responsible for writing data into a storage.
+
+`Storage` internally calls methods of this service. For example,
+`Storage.upload(location, upload, **kwargs)` results in
+`Uploader.upload(location, upload, kwargs)`.
 
 !!! example
 	```python
@@ -263,6 +273,9 @@ Signature: `(storage: Storage)`
 
 Service responsible for reading data from the storage.
 
+`Storage` internally calls methods of this service. For example,
+`Storage.stream(data, **kwargs)` results in `Reader.stream(data, kwargs)`.
+
 !!! example
 	```python
 	class MyReader(Reader):
@@ -278,6 +291,9 @@ Service responsible for reading data from the storage.
 Signature: `(storage: Storage)`
 
 Service responsible for maintenance file operations.
+
+`Storage` internally calls methods of this service. For example,
+`Storage.remove(data, **kwargs)` results in `Manager.remove(data, kwargs)`.
 
 !!! example
 	```python

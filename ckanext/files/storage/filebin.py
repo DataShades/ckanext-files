@@ -15,9 +15,10 @@ API_URL = "https://filebin.net"
 class FilebinStorage(shared.Storage):
     hidden = True
 
-    def __init__(self, **settings: Any):
+    @classmethod
+    def prepare_settings(cls, settings: dict[str, Any]):
         settings.setdefault("timeout", 10)
-        super().__init__(**settings)
+        return super().prepare_settings(settings)
 
     @property
     def bin(self):

@@ -274,13 +274,14 @@ class RedisStorage(Storage):
     def make_reader(self):
         return RedisReader(self)
 
-    def __init__(self, **settings: Any):
-        settings.setdefault(
-            "prefix",
-            _default_prefix(),
-        )
+    @classmethod
+    def prepare_settings(cls, settings: dict[str, Any]):
+        settings.setdefault("prefix", _default_prefix())
+        return super().prepare_settings(settings)
+
+    def __init__(self, settings: Any):
         self.redis: redis.Redis = connect_to_redis()
-        super().__init__(**settings)
+        super().__init__(settings)
 
     @classmethod
     def declare_config_options(cls, declaration: Declaration, key: Key):

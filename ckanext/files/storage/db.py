@@ -23,7 +23,7 @@ class DbStorage(shared.Storage):
         declaration.declare(key.location_column).required()
         declaration.declare(key.content_column).required()
 
-    def __init__(self, **settings: Any):
+    def __init__(self, settings: Any):
         db_url = self.ensure_option(settings, "db_url")
 
         self.engine = sa.create_engine(db_url)
@@ -37,7 +37,7 @@ class DbStorage(shared.Storage):
             self.content_column,
         )
 
-        super().__init__(**settings)
+        super().__init__(settings)
 
     def make_reader(self):
         return DbReader(self)

@@ -12,7 +12,7 @@ from ckanext.files.storage import redis
 
 @pytest.fixture()
 def storage(clean_redis: Any):
-    return redis.RedisStorage(name="test")
+    return redis.RedisStorage(redis.RedisStorage.prepare_settings({"name": "test"}))
 
 
 class TestUploader:

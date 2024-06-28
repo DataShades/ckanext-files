@@ -15,7 +15,9 @@ from ckanext.files.storage import fs
 
 @pytest.fixture()
 def storage(tmp_path: Path):
-    return fs.FsStorage(name="test", path=str(tmp_path))
+    return fs.FsStorage(
+        fs.FsStorage.prepare_settings({"name": "test", "path": str(tmp_path)}),
+    )
 
 
 class TestUploader:
@@ -190,11 +192,15 @@ class TestReader:
 class TestStorage:
     def test_missing_path(self, tmp_path: Path):
         with pytest.raises(exceptions.InvalidStorageConfigurationError):
-            fs.FsStorage(path=os.path.join(str(tmp_path), "not-real"))
+            fs.FsStorage(
+                fs.FsStorage.prepare_settings(
+                    {"path": os.path.join(str(tmp_path), "not-real")},
+                ),
+            )
 
     def test_missing_path_created(self, tmp_path: Path):
         path = os.path.join(str(tmp_path), "not-real")
         assert not os.path.exists(path)
 
-        fs.FsStorage(path=path, create_path=True)
+        fs.FsStorage(fs.FsStorage.prepare_settings({"path": path, "create_path": True}))
         assert os.path.exists(path)

@@ -23,9 +23,10 @@ class LinkStorage(shared.Storage):
     def make_manager(self):
         return LinkManager(self)
 
-    def __init__(self, **settings: Any):
+    @classmethod
+    def prepare_settings(cls, settings: dict[str, Any]):
         settings.setdefault("timeout", 5)
-        super().__init__(**settings)
+        return super().prepare_settings(settings)
 
     @classmethod
     def declare_config_options(

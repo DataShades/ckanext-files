@@ -39,13 +39,18 @@ class FsStorage(Storage):
     def make_manager(self):
         return FsManager(self)
 
-    def __init__(self, **settings: Any):
-        path = self.ensure_option(settings, "path")
+    @classmethod
+    def prepare_settings(cls, settings: dict[str, Any]):
         settings.setdefault("create_path", False)
         settings.setdefault("recursive", False)
 
+        return super().prepare_settings(settings)
+
+    def __init__(self, settings: Any):
+        path = self.ensure_option(settings, "path")
+
         if not os.path.exists(path):
-            if tk.asbool(settings["create_path"]):
+            if tk.asbool(self.ensure_option(settings, "create_path")):
                 os.makedirs(path)
             else:
                 raise exceptions.InvalidStorageConfigurationError(
@@ -53,7 +58,7 @@ class FsStorage(Storage):
                     f"path `{path}` does not exist",
                 )
 
-        super().__init__(**settings)
+        super().__init__(settings)
 
     @classmethod
     def declare_config_options(cls, declaration: Declaration, key: Key):
@@ -384,6 +389,6 @@ class PublicFsStorage(FsStorage):
 
 
 class CkanResourceFsStorage(FsStorage):
-    def __init__(self, **settings: Any):
+    def __init__(self, settings: Any):
         settings["recursive"] = True
-        super().__init__(**settings)
+        super().__init__(settings)

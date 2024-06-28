@@ -93,12 +93,14 @@
                                 {% endif %}
 
 
-                                <a class="btn btn-danger btn-sm" aria-label="Remove the file"
-                                    href="{{ h.url_for('files.delete_file',
-                                              file_id=file.id,
-                                              came_from=request.path, owner_type=owner_type, owner_id=owner_id) }}">
-                                    <i class="fa fa-remove"></i>
-                                </a>
+                                {% if h.check_access("files_file_download", {"id": file.id}) %}
+                                    <a class="btn btn-danger btn-sm" aria-label="Remove the file"
+                                        href="{{ h.url_for('files.delete_file',
+                                                  file_id=file.id,
+                                                  came_from=request.path, owner_type=owner_type, owner_id=owner_id) }}">
+                                        <i class="fa fa-remove"></i>
+                                    </a>
+                                {% endif %}
 
                             {% endblock %}
                         </td>

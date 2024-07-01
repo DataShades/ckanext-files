@@ -81,9 +81,11 @@
                             </span>
                         </div>
 
-                        <ul class="fuw-media-input--files">
-                            {% for file in h.fuw_get_user_files(g.userobj.id) %}
-                                <li class="files--file-item" fuw-file-name="{{ file.name }}" fuw-file-id="{{ file.id }}" fuw-file-size="{{ file.size }}">
+                        {% set user_files = h.fuw_get_user_files(g.userobj.id) %}
+
+                        <ul class="fuw-media-input--files" {% if not user_files %}style="display: none;"{% endif %}>
+                            {% for file in user_files %}
+                                <li class="files--file-item" fuw-file-name="{{ file.name }}" fuw-file-id="{{ file.id }}" fuw-file-size="{{ file.size }}" fuw-file-type="file">
                                     <input type="checkbox" name="{{ 'file-item-{}'.format(file.id) }}" id="{{ 'file-item-{}'.format(file.id) }}">
                                     <label for="{{ 'file-item-{}'.format(file.id) }}">
                                         <div class="file-item--icon-wrapper">
@@ -96,7 +98,7 @@
                             {% endfor %}
                         </ul>
 
-                        <div class="fuw-media-input--empty" style="display: none;">
+                        <div class="fuw-media-input--empty" {% if user_files %}style="display: none;"{% endif %}>
                             <p>{{ _("No files found") }}</p>
                         </div>
                     </div>

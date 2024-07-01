@@ -11,7 +11,7 @@ ckan.module("fm-htmx", function ($) {
         },
 
         _onHTMXconfirm: function (evt) {
-            if (evt.detail.path.includes("/file_manager/delete")) {
+            if (evt.detail.path.includes("/files_manager/delete")) {
                 evt.preventDefault();
 
                 swal({
@@ -29,7 +29,7 @@ ckan.module("fm-htmx", function ($) {
         },
 
         _onAfterRequest: function (evt) {
-            if (evt.detail.pathInfo.requestPath.includes("/file_manager/delete/")) {
+            if (evt.detail.pathInfo.requestPath.includes("/files_manager/delete/")) {
                 htmx.trigger(`#${this.options.formId}`, "change");
             }
         }

@@ -22,6 +22,18 @@ def file_create(  # noqa: PLR0913
 
 
 @validator_args
+def file_replace(  # noqa: PLR0913
+    unicode_safe: Validator,
+    files_into_upload: Validator,
+    not_missing: Validator,
+) -> Schema:
+    return {
+        "id": [not_missing, unicode_safe],
+        "upload": [not_missing, files_into_upload],
+    }
+
+
+@validator_args
 def _base_file_search(  # noqa: PLR0913
     unicode_safe: Validator,
     default: ValidatorFactory,
@@ -43,18 +55,6 @@ def _base_file_search(  # noqa: PLR0913
         "owner_id": [ignore_empty],
         "pinned": [ignore_missing, boolean_validator],
     }
-
-
-@validator_args
-def file_search_by_user(
-    ignore_missing: Validator,
-    unicode_safe: Validator,
-    default: ValidatorFactory,
-    ignore_not_sysadmin: Validator,
-) -> Schema:
-    schema = _base_file_search()
-    schema["user"] = [ignore_missing, ignore_not_sysadmin, unicode_safe]
-    return schema
 
 
 @validator_args
@@ -149,6 +149,17 @@ def transfer_ownership(
         "owner_type": [not_empty, unicode_safe],
         "force": [default(False), boolean_validator],
         "pin": [default(False), boolean_validator],
+    }
+
+
+@validator_args
+def file_scan(
+    default: ValidatorFactory,
+    unicode_safe: Validator,
+) -> Schema:
+    return {
+        "owner_id": [default(""), unicode_safe],
+        "owner_type": [default("user"), unicode_safe],
     }
 
 

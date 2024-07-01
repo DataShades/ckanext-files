@@ -82,15 +82,15 @@
                         </div>
 
                         <ul class="fuw-media-input--files">
-                            {% for i in range(21) %}
-                                {% set file_name = "Existing file " + i|string + ".csv" %}
-                                <li class="files--file-item" fuw-original-file-name="{{ file_name }}">
-                                    <input type="checkbox" name="{{ 'file-item-{}'.format(i) }}" id="{{ 'file-item-{}'.format(i) }}">
-                                    <label for="{{ 'file-item-{}'.format(i) }}">
+                            {% for file in h.fuw_get_user_files(g.userobj.id) %}
+                                <li class="files--file-item" fuw-file-name="{{ file.name }}" fuw-file-id="{{ file.id }}" fuw-file-size="{{ file.size }}">
+                                    <input type="checkbox" name="{{ 'file-item-{}'.format(file.id) }}" id="{{ 'file-item-{}'.format(file.id) }}">
+                                    <label for="{{ 'file-item-{}'.format(file.id) }}">
                                         <div class="file-item--icon-wrapper">
                                             <img src="https://via.placeholder.com/16" referrerpolicy="no-referrer" loading="lazy" width="16" height="16">
                                         </div>
-                                        <span>{{ file_name }}</span>
+                                        <span class="file-name">{{ file.name }}</span>
+                                        <span class="file-size text-muted">({{ h.fuw_printable_file_size(file.size) }})</span>
                                     </label>
                                 </li>
                             {% endfor %}

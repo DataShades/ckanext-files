@@ -20,6 +20,19 @@ foreign: Any
 
 
 class Multipart(Base):  # type: ignore
+    """Model with details of incomplete upload.
+
+    Example:
+    >>> upload = Multipart(
+    >>>     name="file.txt",
+    >>>     location="relative/path/safe-name.txt",
+    >>>     content_type="text/plain",
+    >>>     size=100,
+    >>>     hash="abc123",
+    >>>     storage="default",
+    >>> )
+    """
+
     __table__ = sa.Table(
         "files_multipart",
         Base.metadata,
@@ -43,12 +56,13 @@ class Multipart(Base):  # type: ignore
     id: Mapped[str]
 
     name: Mapped[str]
-    storage: Mapped[str]
-
-    ctime: Mapped[datetime]
-    size: Mapped[int]
+    location: Mapped[str]
     content_type: Mapped[str]
+    size: Mapped[int]
     hash: Mapped[str]
+
+    storage: Mapped[str]
+    ctime: Mapped[datetime]
 
     storage_data: Mapped[dict[str, Any]]
     plugin_data: Mapped[dict[str, Any]]

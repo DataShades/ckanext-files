@@ -1,0 +1,89 @@
+site_name: ckanext-files
+site_url: https://datashades.github.io/ckanext-files/
+nav:
+    - index.md
+    - installation.md
+    - Usage:
+        - usage/configure.md
+        - usage/use-in-code.md
+        - usage/use-in-browser.md
+        - usage/multi-storage.md
+        - usage/tracked-files.md
+        - usage/permissions.md
+        - usage/ownership.md
+        - usage/transfer.md
+        - usage/task-queue.md
+        - usage/capabilities.md
+        - usage/multipart.md
+        - usage/js.md
+
+    - upload-strategies.md
+    - implementation-example.md
+    - Shared: shared.md
+    - cli.md
+    - API: api.md
+    - validators.md
+    - interfaces.md
+    - Configuration:
+        - configuration/index.md
+        - configuration/global.md
+        - Storage configuration:
+            - configuration/storage/index.md
+            - configuration/redis.md
+            - configuration/fs.md
+            - configuration/opendal.md
+            - configuration/libcloud.md
+    - Migration(experimental):
+        - migration/index.md
+        - migration/group.md
+        - migration/user.md
+        - migration/resource.md
+
+    - changelog.md
+
+repo_url:  https://github.com/DataShades/ckanext-files
+
+markdown_extensions:
+    - pymdownx.snippets
+    - admonition
+    - pymdownx.details
+    - pymdownx.emoji:
+        emoji_index: !!python/name:material.extensions.emoji.twemoji
+        emoji_generator: !!python/name:material.extensions.emoji.to_svg
+        options:
+          custom_icons:
+            - overrides/.icons
+    - pymdownx.superfences:
+        custom_fences:
+          - name: mermaid
+            class: mermaid
+            format: !!python/name:pymdownx.superfences.fence_code_format
+    - pymdownx.tabbed:
+            alternate_style: true
+
+plugins:
+    - codeinclude
+    - search:
+            separator: '[\s\-\.\_]+'
+
+theme:
+    name: material
+    logo: img/logo.png
+    favicon: img/favicon.ico
+    palette:
+        primary: blue
+    features:
+        - navigation.instant
+        - navigation.instant.prefetch
+        - navigation.instant.progress
+        - navigation.top
+        - content.code.copy
+        - content.code.select
+        - content.code.annotate
+        - navigation.footer
+        - navigation.indexes
+    icon:
+        previous: fontawesome/solid/angle-left
+        next: fontawesome/solid/angle-right
+    # hljs_languages:
+    #     - ini

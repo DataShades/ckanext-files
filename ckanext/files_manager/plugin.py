@@ -8,11 +8,11 @@ from ckan.common import CKANConfig
 from ckan.types import SignalMapping
 
 from ckanext.collection.interfaces import CollectionFactory, ICollection
-from ckanext.file_manager.collection import FileManagerCollection
+from ckanext.files_manager.collection import FilesManagerCollection
 
 
 @tk.blanket.blueprints
-class FileManagerPlugin(p.SingletonPlugin):
+class FilesManagerPlugin(p.SingletonPlugin):
     p.implements(p.IConfigurer)
     p.implements(p.ISignal)
     p.implements(ICollection, inherit=True)
@@ -22,7 +22,7 @@ class FileManagerPlugin(p.SingletonPlugin):
     def update_config(self, config_: CKANConfig):
         tk.add_template_directory(config_, "templates")
         tk.add_public_directory(config_, "public")
-        tk.add_resource("assets", "file_manager")
+        tk.add_resource("assets", "files_manager")
 
     # ISignal
 
@@ -36,7 +36,7 @@ class FileManagerPlugin(p.SingletonPlugin):
     # ICollection
 
     def get_collection_factories(self) -> dict[str, CollectionFactory]:
-        return {"file-manager": FileManagerCollection}
+        return {"files-manager": FilesManagerCollection}
 
 
 def collect_config_sections_subs(sender: None) -> dict[str, Any]:
@@ -45,7 +45,7 @@ def collect_config_sections_subs(sender: None) -> dict[str, Any]:
         "configs": [
             {
                 "name": "File manager",
-                "blueprint": "file_manager.list",
+                "blueprint": "files_manager.list",
                 "info": "Manage uploaded files",
             },
         ],

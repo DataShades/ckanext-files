@@ -13,21 +13,21 @@ from ckanext.ap_main.utils import ap_before_request
 from ckanext.collection.shared import get_collection
 
 log = logging.getLogger(__name__)
-file_manager = Blueprint(
-    "file_manager",
+files_manager = Blueprint(
+    "files_manager",
     __name__,
-    url_prefix="/admin-panel/file_manager",
+    url_prefix="/admin-panel/files_manager",
 )
-file_manager.before_request(ap_before_request)
+files_manager.before_request(ap_before_request)
 
 
-class FileManagerView(MethodView):
+class FilesManagerView(MethodView):
     def get(self) -> str | Response:
         return tk.render(
-            "file_manager/list.html",
+            "files_manager/list.html",
             extra_vars={
                 "collection": get_collection(
-                    "file-manager",
+                    "files-manager",
                     parse_params(tk.request.args),
                 ),
             },
@@ -41,7 +41,7 @@ class FileManagerView(MethodView):
 
         if not action_func:
             tk.h.flash_error(tk._("The bulk action is not implemented"))
-            return tk.redirect_to("file_manager.list")
+            return tk.redirect_to("files_manager.list")
 
         for file_id in file_ids:
             try:
@@ -49,27 +49,27 @@ class FileManagerView(MethodView):
             except tk.ValidationError as e:
                 tk.h.flash_error(str(e))
 
-        return tk.redirect_to("file_manager.list")
+        return tk.redirect_to("files_manager.list")
 
     def _get_bulk_action(self, value: str) -> Callable[[str], None] | None:
         return {
             "1": self._remove_file,
         }.get(value)
 
-    def _remove_file(self, file_id: str) -> None:
+    def _remove_file(self, file_id: str):
         tk.get_action("files_file_delete")(
             {"ignore_auth": True},
             {"id": file_id},
         )
 
 
-class FileManagerUploadView(MethodView):
+class FilesManagerUploadView(MethodView):
     def post(self):
         file = tk.request.files.get("upload")
 
         if not file:
             tk.h.flash_error(tk._("Missing file object"))
-            return tk.redirect_to("file_manager.list")
+            return tk.redirect_to("files_manager.list")
 
         try:
             tk.get_action("files_file_create")(
@@ -81,35 +81,38 @@ class FileManagerUploadView(MethodView):
             )
         except tk.ValidationError as e:
             tk.h.flash_error(str(e.error_summary))
-            return tk.redirect_to("file_manager.list")
+            return tk.redirect_to("files_manager.list")
         except OSError as e:
             tk.h.flash_error(str(e))
-            return tk.redirect_to("file_manager.list")
+            return tk.redirect_to("files_manager.list")
 
         tk.h.flash_success(tk._("File has been uploaded!"))
-        return tk.redirect_to("file_manager.list")
+        return tk.redirect_to("files_manager.list")
 
 
-class FileManagerDeleteView(MethodView):
+class FilesManagerDeleteView(MethodView):
     def post(self, file_id: str):
         try:
             tk.get_action("files_file_delete")({"ignore_auth": True}, {"id": file_id})
         except tk.ValidationError as e:
             tk.h.flash_error(str(e.error_summary))
-            return tk.redirect_to("file_manager.list")
+            return tk.redirect_to("files_manager.list")
         except OSError as e:
             tk.h.flash_error(str(e))
-            return tk.redirect_to("file_manager.list")
+            return tk.redirect_to("files_manager.list")
 
         tk.h.flash_success(tk._("File has been deleted!"))
-        return tk.redirect_to("file_manager.list")
+        return tk.redirect_to("files_manager.list")
 
 
-file_manager.add_url_rule("/manage", view_func=FileManagerView.as_view("list"))
-file_manager.add_url_rule("/upload", view_func=FileManagerUploadView.as_view("upload"))
-file_manager.add_url_rule(
+files_manager.add_url_rule("/manage", view_func=FilesManagerView.as_view("list"))
+files_manager.add_url_rule(
+    "/upload",
+    view_func=FilesManagerUploadView.as_view("upload"),
+)
+files_manager.add_url_rule(
     "/delete/<file_id>",
-    view_func=FileManagerDeleteView.as_view("delete"),
+    view_func=FilesManagerDeleteView.as_view("delete"),
 )
 
-blueprints = [file_manager]
+blueprints = [files_manager]

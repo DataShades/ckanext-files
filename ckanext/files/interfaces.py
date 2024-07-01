@@ -6,15 +6,23 @@ from __future__ import annotations
 from typing import Any, Callable
 
 from ckan.plugins import Interface
-from ckan.types import Context
 
 from ckanext.files import types
 
 File = Multipart = Any
 
 
+# --8<-- [start:interface]
 class IFiles(Interface):
-    """Extension point for ckanext-files."""
+    """Extension point for ckanext-files.
+
+    This interface is not stabilized. Implement it with `inherit=True`.
+
+    Example:
+    >>> class MyPlugin(p.SingletonPlugin):
+    >>>     p.implements(interfaces.IFiles, inherit=True)
+
+    """
 
     def files_get_storage_adapters(self) -> dict[str, Any]:
         """Return mapping of storage type to adapter class.
@@ -42,24 +50,29 @@ class IFiles(Interface):
         """
         return {}
 
-    def files_is_allowed(
+    def files_file_allows(
         self,
-        context: Context,
-        file: File | Multipart | None,
-        operation: types.AuthOperation,
-        next_owner: Any | None,
+        context: types.Context,
+        file: File | Multipart,
+        operation: types.FileOperation,
     ) -> bool | None:
         """Decide if user is allowed to perform specified operation on the file.
 
         Return True/False if user allowed/not allowed. Return `None` to rely on
-        other plugins. If every implementation returns `None`, default logic
-        allows only user who owns the file to perform any operation on it. It
-        means, that nobody is allowed to do anything with file owner by
-        resource, dataset, group, etc.
+        other plugins.
+
+        Default implementation relies on cascade_access config option. If owner
+        of file is included into cascade access, user can perform operation on
+        file if he can perform the same operation with file's owner.
+
+        If current owner is not affected by cascade access, user can perform
+        operation on file only if user owns the file.
 
         Example:
-        >>> def files_is_allowed(
-        >>>         self, context, file, operation, next_owner
+        >>> def files_file_allows(
+        >>>         self, context,
+        >>>         file: shared.File | shared.Multipart,
+        >>>         operation: shared.types.FileOperation
         >>> ) -> bool | None:
         >>>     if file.owner_info and file.owner_info.owner_type == "resource":
         >>>         return is_authorized_boolean(
@@ -72,3 +85,36 @@ class IFiles(Interface):
 
         """
         return None
+
+    def files_owner_allows(
+        self,
+        context: types.Context,
+        owner_type: str,
+        owner_id: str,
+        operation: types.OwnerOperation,
+    ) -> bool | None:
+        """Decide if user is allowed to perform specified operation on the owner.
+
+        Return True/False if user allowed/not allowed. Return `None` to rely on
+        other plugins.
+
+        Example:
+        >>> def files_owner_allows(
+        >>>         self, context,
+        >>>         owner_type: str, owner_id: str,
+        >>>         operation: shared.types.OwnerOperation
+        >>> ) -> bool | None:
+        >>>     if owner_type == "resource" and operation == "file_transfer":
+        >>>         return is_authorized_boolean(
+        >>>             f"resource_update",
+        >>>             context,
+        >>>             {"id": owner_id}
+        >>>         )
+        >>>
+        >>>     return None
+
+        """
+        return None
+
+
+# --8<-- [start:interface]

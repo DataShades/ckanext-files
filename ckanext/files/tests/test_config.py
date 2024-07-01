@@ -31,6 +31,7 @@ class TestStorages:
             "default": {
                 "type": "files:redis",
                 "prefix": "ckanext:files:test.ckan.net:file_content:",
+                "override_existing": False,
                 "name": "default",
                 "supported_types": [],
                 "max_size": 0,
@@ -55,6 +56,7 @@ class TestStorages:
             "default": {
                 "type": "files:redis",
                 "prefix": "ckanext:files:test.ckan.net:file_content:",
+                "override_existing": False,
                 "name": "default",
                 "supported_types": [],
                 "max_size": 0,
@@ -82,6 +84,7 @@ class TestStorages:
             "default": {
                 "type": "files:redis",
                 "prefix": "ckanext:files:test.ckan.net:file_content:",
+                "override_existing": False,
                 "name": "default",
                 "supported_types": [],
                 "max_size": 0,

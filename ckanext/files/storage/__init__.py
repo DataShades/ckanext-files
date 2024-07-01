@@ -3,6 +3,7 @@ import contextlib
 from .db import DbStorage
 from .filebin import FilebinStorage
 from .fs import CkanResourceFsStorage, FsStorage, PublicFsStorage
+from .link import LinkStorage
 from .redis import RedisStorage
 
 with contextlib.suppress(ImportError):
@@ -25,4 +26,5 @@ __all__ = [
     "OpenDalStorage",
     "LibCloudStorage",
     "DbStorage",
+    "LinkStorage",
 ]

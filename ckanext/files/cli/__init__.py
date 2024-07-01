@@ -33,9 +33,9 @@ files.add_command(maintain.group, "maintain")
 
 @files.command()
 @click.argument("file_id")
-@click.option("--start", type=int, default=0)
-@click.option("--end", type=int)
-@click.option("-o", "--output")
+@click.option("--start", type=int, default=0, help="Start streaming from position")
+@click.option("--end", type=int, help="End streaming at position")
+@click.option("-o", "--output", help="Stream into specified file or directory")
 def stream(file_id: str, output: str | None, start: int, end: int | None):
     """Stream content of the file."""
 
@@ -78,11 +78,12 @@ def stream(file_id: str, output: str | None, start: int, end: int | None):
 
 @files.command()
 @click.option("-v", "--verbose", is_flag=True, help="Show adapter's documentation")
-def adapters(verbose: bool):
+@click.option("-H", "--include-hidden", is_flag=True, help="Show hidden adapters")
+def adapters(verbose: bool, include_hidden: bool):
     """Show all awailable storage adapters."""
     for name in sorted(base.adapters):
         adapter = base.adapters[name]
-        if adapter.hidden:
+        if adapter.hidden and not include_hidden:
             continue
 
         click.secho(

@@ -20,6 +20,7 @@ STORAGE_PREFIX = "ckanext.files.storage."
 DEFAULT_STORAGE = "ckanext.files.default_storage"
 CASCADE_ACCESS = "ckanext.files.owner.cascade_access"
 TRANSFER_AS_UPDATE = "ckanext.files.owner.transfer_as_update"
+SCAN_AS_UPDATE = "ckanext.files.owner.scan_as_update"
 AUTHENTICATED_UPLOADS = "ckanext.files.authenticated_uploads.allow"
 AUTHENTICATED_STORAGES = "ckanext.files.authenticated_uploads.storages"
 USER_IMAGES_STORAGE = "ckanext.files.user_images_storage"
@@ -63,9 +64,17 @@ def authenticated_uploads() -> bool:
 
 
 def transfer_as_update() -> bool:
-    """Use `*_update` auth function to check cascade access for ownership transfer."""
+    """Use `*_update` auth function to check cascade access for ownership
+    transfer."""
 
     return tk.config[TRANSFER_AS_UPDATE]
+
+
+def scan_as_update() -> bool:
+    """Use `*_update` auth function to check cascade access when listing files
+    of the owner."""
+
+    return tk.config[SCAN_AS_UPDATE]
 
 
 def authenticated_storages() -> list[str]:

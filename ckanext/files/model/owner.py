@@ -10,6 +10,17 @@ from .base import Base
 
 
 class Owner(Base):  # type: ignore
+    """Model with details about current owner of an item.
+
+    Example:
+    >>> owner = Owner(
+    >>>     item_id=file.id,
+    >>>     item_type="file",
+    >>>     owner_id=user.id,
+    >>>     owner_type="user,
+    >>> )
+    """
+
     __table__ = sa.Table(
         "files_owner",
         Base.metadata,

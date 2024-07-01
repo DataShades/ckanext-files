@@ -1,13 +1,13 @@
 {% extends 'admin_panel/base.html' %}
 
-{% block ap_main_class %} file-manager-list {% endblock %}
+{% block ap_main_class %} files-manager-list {% endblock %}
 
 {% block breadcrumb_content %}
     <li>{% link_for _("File manager"), request.endpoint %}</li>
 {% endblock breadcrumb_content %}
 
 {% block ap_content %}
-    <div class="file-manager--manage mb-2" data-module="fm-htmx" data-module-form-id="{{ collection.serializer.form_id }}">
+    <div class="files-manager--manage mb-2" data-module="fm-htmx" data-module-form-id="{{ collection.serializer.form_id }}">
         <button
             type="button"
             class="btn btn-success"
@@ -17,8 +17,8 @@
         </button>
     </div>
 
-    <form action="{{ h.url_for('file_manager.upload') }}" method="POST" id="ap-cron-add" enctype="multipart/form-data">
-        {% snippet 'file_manager/upload_file_modal.html' %}
+    <form action="{{ h.url_for('files_manager.upload') }}" method="POST" id="ap-cron-add" enctype="multipart/form-data">
+        {% snippet 'files_manager/upload_file_modal.html' %}
     </form>
 
     <div class="row g-3">
@@ -35,6 +35,6 @@
 
 
 {% block scripts %}
-    {% asset 'file_manager/file-manager-js' %}
+    {% asset 'files_manager/files-manager-js' %}
     {{ super() }}
 {% endblock %}

@@ -8,6 +8,7 @@ import yaml
 
 import ckan.plugins as p
 import ckan.plugins.toolkit as tk
+from ckan import model
 from ckan.exceptions import CkanConfigurationException
 from ckan.logic import clear_validators_cache
 
@@ -82,6 +83,7 @@ class FilesPlugin(p.SingletonPlugin):
             "files:redis": storage.RedisStorage,
             "files:filebin": storage.FilebinStorage,
             "files:db": storage.DbStorage,
+            "files:link": storage.LinkStorage,
         }
 
         if hasattr(storage, "GoogleCloudStorage"):
@@ -139,6 +141,13 @@ def _initialize_storages():
 
 def _register_owner_getters():
     """Register functions used by Owner model to locate owner entity."""
+    utils.owner_getters.reset()
+
+    utils.owner_getters.register("user", model.User.get)
+    utils.owner_getters.register("package", model.Package.get)
+    utils.owner_getters.register("resource", model.Resource.get)
+    utils.owner_getters.register("group", model.Group.get)
+    utils.owner_getters.register("organization", model.Group.get)
 
     for plugin in p.PluginImplementations(interfaces.IFiles):
         for name, getter in plugin.files_register_owner_getters().items():

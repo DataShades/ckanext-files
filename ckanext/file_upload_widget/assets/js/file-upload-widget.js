@@ -17,6 +17,7 @@ ckan.module("file-upload-widget", function ($, _) {
             cancelBtn: '.fuw-cancel-btn',
             dropZone: '.fuw-main-window__dropzone',
             selectedFiles: '.fuw-selected-files--list',
+            mediaWindowFooter: '.modal-footer--media'
         },
         options: {
             instanceId: null,
@@ -61,6 +62,7 @@ ckan.module("file-upload-widget", function ($, _) {
             this.mainWindow = this.el.find(this.const.mainWindowBlock);
             this.urlWindow = this.el.find(this.const.urlInputBlock);
             this.mediaWindow = this.el.find(this.const.mediaInputBlock);
+            this.mediaWindowFooter = this.mediaWindow.find(this.const.mediaWindowFooter);
             this.selectionWindow = this.el.find(this.const.selectedBlock);
 
             this.fileSearchInput = this.el.find('#fuw-media-input--search');
@@ -83,6 +85,7 @@ ckan.module("file-upload-widget", function ($, _) {
             this.cancelFileSelectBtn.on("click", this._onCancelFileSelect);
             this.fileInput.on('change', this._onFileSelected);
             this.urlImportBtn.on('click', this._onUrlImport);
+            this.fileSelectBtn.on('click', this._onMediaFileSelected);
 
             // Bind events on non existing elements
             $("body").on("click", ".file-tile--file-remove", this._onRemoveSelectedFile);
@@ -139,7 +142,7 @@ ckan.module("file-upload-widget", function ($, _) {
          * @param {Event} e
          */
         _onMediaInputTriggered: function (e) {
-            this.mediaWindow.toggle();
+            this._enableMediaWindow();
             this.mainWindow.toggle();
             this.cancelBtn.toggle();
         },
@@ -154,8 +157,8 @@ ckan.module("file-upload-widget", function ($, _) {
          */
         _onCancelAction: function (e) {
             this._disableUrlWindow();
+            this._disableMediaWindow();
 
-            this.mediaWindow.hide();
             this.selectionWindow.hide();
             this.mainWindow.toggle();
             this.cancelBtn.toggle();
@@ -169,6 +172,17 @@ ckan.module("file-upload-widget", function ($, _) {
         _disableUrlWindow: function () {
             this.urlWindow.find("input").prop("disabled", true);
             this.urlWindow.hide();
+        },
+
+        _enableMediaWindow: function () {
+            this.mediaWindow.find("input").prop("disabled", false);
+            this.mediaWindow.show();
+        },
+
+        _disableMediaWindow: function () {
+            this.mediaWindow.find("input").prop("disabled", true);
+            this.mediaWindowFooter.hide();
+            this.mediaWindow.hide();
         },
 
         /**
@@ -186,7 +200,7 @@ ckan.module("file-upload-widget", function ($, _) {
             let isEmpty = true;
 
             this.mediaWindow.find('li.files--file-item').each((_, element) => {
-                let title = $(element).find("label span").text().trim().toLowerCase();
+                let title = $(element).find("label span.file-name").text().trim().toLowerCase();
 
                 if (!!search && title.indexOf(search) === -1) {
                     $(element).hide();
@@ -220,19 +234,19 @@ ckan.module("file-upload-widget", function ($, _) {
          * @param {String} text - text to highlight
          */
         _highlightText: function (element, text) {
-            let originalName = $(element).attr("fuw-original-file-name");
+            let originalName = $(element).attr("fuw-file-name");
 
             let highlightedName = originalName;
 
             if (text) {
-                let regex = new RegExp(text, 'gi'); // 'g' for global, 'i' for case-insensitive
+                let regex = new RegExp(text, 'gi');
 
                 highlightedName = originalName.replace(regex, function (match) {
                     return "<span class='highlight'>" + match + "</span>";
                 });
             }
 
-            $(element).find("label span").html(highlightedName);
+            $(element).find("label span.file-name").html(highlightedName);
         },
 
         /**
@@ -245,6 +259,22 @@ ckan.module("file-upload-widget", function ($, _) {
 
             this.fileSelectBtn.find("span").text(selectedFilesNum);
             this.el.find(".modal-footer").toggle(!!selectedFilesNum);
+        },
+
+        _onMediaFileSelected: function (e) {
+            this.el.find('li.files--file-item input:checked').each((_, element) => {
+                let fileItem = $(element).parent("li");
+
+                this._addFileItem(
+                    fileItem.attr("fuw-file-id"),
+                    fileItem.attr("fuw-file-name"),
+                    fileItem.attr("fuw-file-size")
+                );
+            });
+
+            this._disableUrlWindow();
+            this._disableMediaWindow();
+            this.selectionWindow.show();
         },
 
         /**
@@ -295,8 +325,8 @@ ckan.module("file-upload-widget", function ($, _) {
             // TODO: make an ID instead of using the file name
             this._addFileItem(file.name, file.name, file.size);
 
-            this.urlWindow.hide();
-            this.mediaWindow.hide();
+            this._disableUrlWindow();
+            this._disableMediaWindow();
             this.selectionWindow.show();
         },
 
@@ -320,7 +350,6 @@ ckan.module("file-upload-widget", function ($, _) {
             );
 
             for (const file of files) {
-                console.log(file);
                 if (file.name === fileName) {
                     alert("File already selected");
                     return;

@@ -23,12 +23,12 @@ class TestMakeStorage:
         """Wrong configuration causes an exception."""
 
         with pytest.raises(exceptions.InvalidStorageConfigurationError):
-            base.make_storage("", {"type": "files:fs"})
+            base.make_storage("", {"type": "files:fs"}, True)
 
     def test_normal_configuration(self):
         """Valid configuration produces a storage."""
 
-        storage = base.make_storage("", {"type": "files:redis"})
+        storage = base.make_storage("", {"type": "files:redis"}, True)
         assert isinstance(storage, RedisStorage)
 
 
@@ -58,20 +58,20 @@ class TestStorageService:
 
     def test_missing_option(self, service_class: type[base.StorageService]):
         """Service cannot be initialized without required option."""
-        storage = base.Storage()
+        storage = base.Storage({})
         with pytest.raises(exceptions.MissingStorageConfigurationError):
             service_class(storage)
 
     def test_existing_option(self, service_class: type[base.StorageService]):
         """Service works with required options."""
-        storage = base.Storage(test=1)
+        storage = base.Storage({"test": 1})
         service_class(storage)
 
 
 class TestUploader:
     @pytest.fixture()
     def uploader(self):
-        return base.Uploader(base.Storage())
+        return base.Uploader(base.Storage({}))
 
     def test_abstract_methods(self, uploader: base.Uploader, faker: Faker):
         """Abstract methods raise exception."""
@@ -95,7 +95,7 @@ class TestUploader:
 class TestManager:
     @pytest.fixture()
     def manager(self):
-        return base.Manager(base.Storage())
+        return base.Manager(base.Storage({}))
 
     def test_abstract_methods(self, manager: base.Manager):
         """Abstract methods raise exception."""
@@ -107,7 +107,7 @@ class TestManager:
 class TestReader:
     @pytest.fixture()
     def reader(self):
-        return base.Reader(base.Storage())
+        return base.Reader(base.Storage({}))
 
     def test_abstract_methods(self, reader: base.Reader):
         """Abstract methods raise exception."""
@@ -142,7 +142,7 @@ class Storage(base.Storage):
 class TestStorage:
     def test_inherited_capabilities(self):
         """Storage combine capabilities of its services."""
-        storage = Storage()
+        storage = Storage({})
         assert storage.capabilities == (
             Capability.REMOVE | Capability.STREAM | Capability.CREATE
         )
@@ -151,21 +151,34 @@ class TestStorage:
         """Storage keeps all incoming arguments as settings."""
 
         settings = faker.pydict()
-        storage = base.Storage(**settings)
+
+        storage = base.Storage(settings)
         assert storage.settings == settings
+
+        storage = base.Storage(base.Storage.prepare_settings(settings))
+        expected = dict(
+            {"supported_types": [], "max_size": 0, "override_existing": False},
+            **settings,
+        )
+        assert storage.settings == expected
 
     def test_max_size(self, faker: Faker):
         """Storage has a dedicated property for `max_size` setting."""
 
-        assert base.Storage().max_size == 0
+        assert base.Storage(base.Storage.prepare_settings({})).max_size == 0
 
         max_size = faker.pyint()
-        assert base.Storage(max_size=max_size).max_size == max_size
+        assert (
+            base.Storage(
+                base.Storage.prepare_settings({"max_size": max_size}),
+            ).max_size
+            == max_size
+        )
 
     def test_supports(self):
         """Storage can tell whether it supports certain capabilities."""
 
-        storage = Storage()
+        storage = Storage({})
 
         assert storage.supports(Capability.CREATE)
         assert storage.supports(Capability.REMOVE | Capability.STREAM)
@@ -175,29 +188,40 @@ class TestStorage:
 
     def test_not_supported_methods(self, faker: Faker):
         with pytest.raises(exceptions.UnsupportedOperationError):
-            base.Storage().upload(faker.file_name(), make_upload(b""))
+            base.Storage(base.Storage.prepare_settings({})).upload(
+                faker.file_name(),
+                make_upload(b""),
+            )
 
         with pytest.raises(exceptions.UnsupportedOperationError):
-            base.Storage().stream(FileData(""))
+            base.Storage(base.Storage.prepare_settings({})).stream(FileData(""))
 
         with pytest.raises(exceptions.UnsupportedOperationError):
-            base.Storage().remove(FileData(""))
+            base.Storage(base.Storage.prepare_settings({})).remove(FileData(""))
 
         with pytest.raises(exceptions.UnsupportedOperationError):
-            base.Storage().copy(FileData(""), base.Storage(), "")
+            base.Storage(base.Storage.prepare_settings({})).copy(
+                FileData(""),
+                base.Storage(base.Storage.prepare_settings({})),
+                "",
+            )
 
         with pytest.raises(exceptions.UnsupportedOperationError):
-            base.Storage().move(FileData(""), base.Storage(), "")
+            base.Storage(base.Storage.prepare_settings({})).move(
+                FileData(""),
+                base.Storage(base.Storage.prepare_settings({})),
+                "",
+            )
 
     def test_upload_checks_max_size(self, faker: Faker):
         """Storage raises an error if upload exceeds max size."""
-        storage = Storage(max_size=10)
+        storage = Storage(base.Storage.prepare_settings({"max_size": 10}))
         with pytest.raises(exceptions.LargeUploadError):
             storage.upload(faker.file_name(), make_upload(BytesIO(faker.binary(20))))
 
     def test_not_implemented_methods(self, faker: Faker):
         """Storage raises an error if upload is not implemented."""
-        storage = Storage()
+        storage = Storage(base.Storage.prepare_settings({}))
         with pytest.raises(NotImplementedError):
             storage.upload(faker.file_name(), make_upload(b""))
 
@@ -224,7 +248,7 @@ class TestStorage:
 
     def test_compute_location_uuid(self, faker: Faker):
         """`uuid`(default) name strategy produces valid UUID."""
-        storage = Storage()
+        storage = Storage(base.Storage.prepare_settings({}))
 
         extension = faker.file_extension()
         name = faker.file_name(extension=extension)
@@ -234,7 +258,7 @@ class TestStorage:
 
     def test_compute_location_uuid_prefix(self, faker: Faker):
         """`uuid_prefix` name strategy produces valid UUID."""
-        storage = Storage()
+        storage = Storage(base.Storage.prepare_settings({}))
 
         storage.settings["location_strategy"] = "uuid_prefix"
         extension = faker.file_extension()
@@ -245,7 +269,7 @@ class TestStorage:
 
     def test_compute_location_uuid_with_extension(self, faker: Faker):
         """`uuid_with_extension` name strategy produces valid UUID."""
-        storage = Storage()
+        storage = Storage(base.Storage.prepare_settings({}))
         storage.settings["location_strategy"] = "uuid_with_extension"
         extension = faker.file_extension()
         name = faker.file_name(extension=extension)
@@ -260,7 +284,7 @@ class TestStorage:
         files_stopped_time: datetime,
     ):
         """`datetime_prefix` name strategy produces valid UUID."""
-        storage = Storage()
+        storage = Storage(base.Storage.prepare_settings({}))
         storage.settings["location_strategy"] = "datetime_prefix"
         extension = faker.file_extension()
         name = faker.file_name(extension=extension)
@@ -274,7 +298,7 @@ class TestStorage:
         files_stopped_time: datetime,
     ):
         """`datetime_with_extension` name strategy produces valid UUID."""
-        storage = Storage()
+        storage = Storage(base.Storage.prepare_settings({}))
         storage.settings["location_strategy"] = "datetime_with_extension"
         extension = faker.file_extension()
         name = faker.file_name(extension=extension)
@@ -284,7 +308,7 @@ class TestStorage:
 
     def test_compute_location_with_wrong_strategy(self):
         """`datetime_with_extension` name strategy produces valid UUID."""
-        storage = Storage()
+        storage = Storage(base.Storage.prepare_settings({}))
         storage.settings["location_strategy"] = "wrong_strategy"
         with pytest.raises(exceptions.NameStrategyError):
             storage.compute_location("test")

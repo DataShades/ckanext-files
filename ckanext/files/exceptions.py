@@ -1,34 +1,32 @@
 """Exception definitions for the extension.
 
-Avoid raising python-native exceptions and prefer defining `FilesError`
-subclass.
-
 Hierarchy:
 
-Exception
-* FilesError
-* * QueueError
-* * * OutOfQueueError
-* * StorageError
-* * * UnknownAdapterError
-* * * UnknownStorageError
-* * * UnsupportedOperationError
-* * * PermissionError
-* * * MissingFileError
-* * * ExistingFileError
-* * * ExtrasError
-* * * * MissingExtrasError
-* * * InvalidStorageConfigurationError
-* * * * MissingStorageConfigurationError
-* * * UploadError
-* * * * WrongUploadTypeError
-* * * * NameStrategyError
-* * * * LargeUploadError
-* * * * * UploadOutOfBoundError
-* * * * UploadMismatchError
-* * * * * UploadTypeMismatchError
-* * * * * UploadHashMismatchError
-* * * * * UploadSizeMismatchError
+* Exception
+    * FilesError
+        * QueueError
+            * OutOfQueueError
+        * StorageError
+            * UnknownAdapterError
+            * UnknownStorageError
+            * UnsupportedOperationError
+            * PermissionError
+            * MissingFileError
+            * ExistingFileError
+            * ExtrasError
+                * MissingExtrasError
+            * InvalidStorageConfigurationError
+                * MissingStorageConfigurationError
+            * UploadError
+                * WrongUploadTypeError
+                * NameStrategyError
+                * ContentError
+                * LargeUploadError
+                    * UploadOutOfBoundError
+                * UploadMismatchError
+                    * UploadTypeMismatchError
+                    * UploadHashMismatchError
+                    * UploadSizeMismatchError
 
 """
 
@@ -258,3 +256,14 @@ class MissingExtrasError(ExtrasError):
 
     def __str__(self):
         return f"Key {self.key} is missing from extras"
+
+
+class ContentError(UploadError):
+    """Storage cannot accept uploaded content."""
+
+    def __init__(self, storage: Storage, msg: str):
+        self.storage = storage
+        self.msg = msg
+
+    def __str__(self):
+        return f"{self.storage} rejected upload: {self.msg}"

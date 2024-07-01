@@ -280,24 +280,29 @@ class GoogleCloudManager(Manager):
 class GoogleCloudStorage(Storage):
     hidden = True
 
-    def __init__(self, **settings: Any):
-        settings["path"] = settings.setdefault("path", "").lstrip("/")
+    @classmethod
+    def prepare_settings(cls, settings: dict[str, Any]):
+        settings.setdefault("path", "")
         settings.setdefault("resumable_origin", tk.config["ckan.site_url"])
+        settings.get("credentials_file")
+        return super().prepare_settings(settings)
 
+    def __init__(self, settings: Any):
+        settings["path"] = self.ensure_option(settings, "path").lstrip("/")
         credentials = None
-        credentials_file = settings.get("credentials_file", None)
-        if credentials_file:
+
+        if cf := self.ensure_option(settings, "credentials_file"):
             try:
-                credentials = Credentials.from_service_account_file(credentials_file)
+                credentials = Credentials.from_service_account_file(cf)
             except OSError as err:
                 raise exceptions.InvalidStorageConfigurationError(
                     type(self),
-                    f"file `{credentials_file}` does not exist",
+                    f"file `{cf}` does not exist",
                 ) from err
 
         self.client = Client(credentials=credentials)
 
-        super().__init__(**settings)
+        super().__init__(settings)
 
     def make_uploader(self):
         return GoogleCloudUploader(self)

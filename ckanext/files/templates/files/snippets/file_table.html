@@ -52,13 +52,17 @@
                             {{ file.name }}
                         </td>
                         <td>
-                            <div title="{{  h.time_ago_from_timestamp(file.ctime) }}" class=""file-item__creation-time>
-                                {{ h.render_datetime(file.ctime, with_hours=true) }}
-                            </div>
+                            {% with ctime = h.files_parse_tz_date(file.ctime) %}
+                                <div class="file-item__creation-time">
+                                    {{ h.render_datetime(ctime, with_hours=True) }}
+                                </div>
+
+                            {% endwith %}
+
                         </td>
                         <td>
                             {% set content_type = file.content_type %}
-                            <div data-content-type="{{ content_type }}" class="file-item__type" title="{{ content_type }}">
+                            <div data-content-type="{{ content_type }}" class="file-item__type" aria-label="{{ content_type }}">
                                 {% set icon_path = h.files_content_type_icon(content_type, "amy-dark", "svg") %}
                                 {% if icon_path %}
                                     <img alt="type icon" src="{{ icon_path }}"/>
@@ -72,18 +76,28 @@
                         </td>
                         <td>
                             {% block file_actions %}
+                                {% set public_link = h.files_link_details(file.id, "public") %}
+                                {% if public_link %}
+                                    <a class="btn btn-default btn-sm" aria-label="Copy file link"
+                                        data-module="copy-into-buffer"
+                                        data-module-copy-value="{{ public_link.href }}">
+                                        <i class="fas fa-copy"></i>
+                                    </a>
+                                {% endif %}
+
                                 {% if h.check_access("files_file_download", {"id": file.id}) %}
-                                    <a class="btn btn-success btn-sm" title="Download the file"
+                                    <a class="btn btn-default btn-sm" aria-label="Download the file" download
                                         href="{{ h.url_for('files.dispatch_download', file_id=file.id) }}">
                                         <i class="fa fa-download"></i>
                                     </a>
                                 {% endif %}
 
-                                {% if owner_type == "user" and owner_id and h.check_access("files_file_delete", {"id": file.id})%}
-                                    <a class="btn btn-danger btn-sm" title="Remove the file"
-                                       href="{{ h.url_for('files.delete_file',
-                                             file_id=file.id,
-                                             came_from=request.path, user_id=owner_id) }}">
+
+                                {% if h.check_access("files_file_download", {"id": file.id}) %}
+                                    <a class="btn btn-danger btn-sm" aria-label="Remove the file"
+                                        href="{{ h.url_for('files.delete_file',
+                                                  file_id=file.id,
+                                                  came_from=request.path, owner_type=owner_type, owner_id=owner_id) }}">
                                         <i class="fa fa-remove"></i>
                                     </a>
                                 {% endif %}
@@ -93,7 +107,7 @@
                     </tr>
                 {% endblock table_row %}
 
-	    {% endfor %}
+	        {% endfor %}
         </tbody>
     </table>
 {% endblock %}

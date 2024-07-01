@@ -31,7 +31,7 @@ Params:
 
 * `name`: human-readable name of the file. Default: guess using upload field
 * `storage`: name of the storage that will handle the upload. Default: `default`
-* `upload`: content of the file as string, bytes, file descriptor or uploaded file
+* `upload`: content of the file as bytes, file descriptor or uploaded file
 
 Returns:
 
@@ -107,6 +107,53 @@ Returns:
 dictionary with file details
 
 
+## files_file_replace
+
+Replace content of the file.
+
+New file must have the same MIMEtype as the original file.
+
+Size and content hash from the new file will replace original values. All
+other fields, including name, remain unchanged.
+
+```python
+ckanapi action files_file_replace id=123 upload@path/to/file.txt
+```
+
+Requires storage with `CREATE` and `REMOVE` capability.
+
+Params:
+
+* `id`: ID of the replaced file
+* `upload`: content of the file as bytes, file descriptor or uploaded file
+
+Returns:
+
+dictionary with file details.
+
+
+## files_file_scan
+
+List files of the owner
+
+This action internally calls files_file_search, but with static values of
+owner filters. If owner is not specified, files filtered by current
+user. If owner is specified, user must pass authorization check to see
+files.
+
+Params:
+
+* `owner_id`: ID of the owner
+* `owner_type`: type of the owner
+
+The all other parameters are passed as-is to `files_file_search`.
+
+Returns:
+
+* `count`: total number of files matching filters
+* `results`: array of dictionaries with file details.
+
+
 ## files_file_search
 
 Search files.
@@ -168,13 +215,8 @@ Params:
 
 Returns:
 
-* `count`: total number of files mathing filters
+* `count`: total number of files matching filters
 * `results`: array of dictionaries with file details.
-
-
-## files_file_search_by_user
-
-Internal action. Do not use it.
 
 
 ## files_file_show
@@ -315,7 +357,7 @@ New file is not attached to resource. You need to call
 Params:
 
 * `name`: human-readable name of the file. Default: guess using upload field
-* `upload`: content of the file as string, bytes, file descriptor or uploaded file
+* `upload`: content of the file as bytes, file descriptor or uploaded file
 
 Returns:
 
@@ -325,9 +367,6 @@ dictionary with file details.
 ## files_transfer_ownership
 
 Transfer file ownership.
-
-Depending on storage this action may require additional parameters. Most
-likely, `upload` with the fragment of uploaded file.
 
 Params:
 

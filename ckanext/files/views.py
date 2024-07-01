@@ -6,7 +6,6 @@ from typing import Any
 
 import jwt
 from flask import Blueprint, jsonify
-from flask.views import MethodView
 
 import ckan.plugins.toolkit as tk
 from ckan import model
@@ -96,7 +95,9 @@ def _streaming_file(
 ) -> Response | None:
     if storage.supports(shared.Capability.STREAM):
         resp = streaming_response(storage.stream(data), data.content_type)
-        if not utils.is_supported_type(item.content_type, shared.config.inline_types()):
+        if utils.is_supported_type(item.content_type, shared.config.inline_types()):
+            resp.headers["content-disposition"] = f"inline; filename={item.name}"
+        else:
             resp.headers["content-disposition"] = f"attachment; filename={item.name}"
 
         item.touch()
@@ -156,13 +157,12 @@ def _pager_url(*args: Any, **kwargs: Any) -> str:
     return tk.h.pager_url(*args, **params)
 
 
-@bp.route("/user/<user_id>/files")
-@bp.route("/user/<user_id>/files/storage/<storage>")
-def user(user_id: str, storage: str | None = None) -> str:
-    user_dict = tk.get_action("user_show")(
-        {},
-        {"id": user_id, "include_num_followers": True},
-    )
+@bp.route("/<owner_type>/<owner_id>/files/list")
+def list_files(owner_type: str, owner_id: str) -> str:
+
+    owner = utils.get_owner(owner_type, owner_id)
+    if owner and hasattr(owner, "id"):
+        owner_id = owner.id
 
     rows = 10
     params = tk.request.args
@@ -172,79 +172,68 @@ def user(user_id: str, storage: str | None = None) -> str:
     search_dict: dict[str, Any] = {
         "rows": rows,
         "start": start,
-        "user": user_id,
+        "owner_type": owner_type,
+        "owner_id": owner_id,
         "sort": params.get("sort", "ctime"),
         "reverse": params.get("reverse", True),
     }
 
-    if storage:
-        search_dict["storage"] = storage
+    if "storage" in params:
+        search_dict["storage"] = params["storage"]
 
+    result: dict[str, Any]
     try:
-        files = tk.get_action("files_file_search_by_user")({}, search_dict)
+        result = tk.get_action("files_file_scan")({}, search_dict)
     except tk.ValidationError as err:
         for k, v in err.error_summary.items():
             tk.h.flash_error(f"{k}: {v}")
 
-        files: dict[str, Any] = {"count": 0, "results": []}
+        result = {"count": 0, "results": []}
 
     pager = Page(
-        [],
+        result["results"],
         items_per_page=rows,
         page=page,
-        item_count=files["count"],
+        item_count=result["count"],
         url=partial(_pager_url),
     )
 
-    tpl_names = ["files/user/index.html"]
     tpl_data: dict[str, Any] = {
-        "user_dict": user_dict,
-        "files": files,
+        "owner": owner,
         "pager": pager,
+        "owner_type": owner_type,
+        "owner_id": owner_id,
     }
 
-    if storage:
-        tpl_data["storage"] = storage
-        tpl_names.insert(0, f"files/user/index.{storage}.html")
-
-    return tk.render(tpl_names, tpl_data)  # type: ignore
+    return tk.render("files/index.html", tpl_data)
 
 
-class DeleteFile(MethodView):
-    def post(self, user_id: str, file_id: str) -> Response | str:
+@bp.route("/<owner_type>/<owner_id>/files/delete/<file_id>", methods=["POST", "GET"])
+def delete_file(
+    owner_type: str,
+    owner_id: str,
+    file_id: str,
+) -> str | shared.types.Response:
+
+    if tk.request.method == "POST":
         try:
             tk.get_action("files_file_delete")({}, {"id": file_id})
         except tk.NotAuthorized as err:
             tk.h.flash_error(err)
-            return self.get(user_id, file_id)
+        else:
+            came_from = tk.h.get_request_param("came_from")
+            if came_from:
+                return tk.redirect_to(came_from)
 
-        came_from = tk.h.get_request_param("came_from")
-        if came_from:
-            return tk.redirect_to(came_from)
+            return tk.redirect_to(
+                "files.list_files",
+                owner_type=owner_type,
+                owner_id=owner_id,
+            )
 
-        return tk.redirect_to("files.user", user_id=user_id)
-
-    def get(self, user_id: str, file_id: str) -> str:
-        tk.check_access("files_file_delete", {}, {"id": file_id})
-        info = tk.get_action("files_file_show")({}, {"id": file_id})
-        user_dict = tk.get_action("user_show")(
-            {},
-            {"id": user_id, "include_num_followers": True},
-        )
-
-        return tk.render(
-            "files/user/delete.html",
-            {
-                "file": info,
-                "user_dict": user_dict,
-            },
-        )
-
-
-bp.add_url_rule(
-    "/user/<user_id>/files/delete/<file_id>",
-    view_func=DeleteFile.as_view("delete_file"),
-)
+    tk.check_access("files_file_delete", {}, {"id": file_id})
+    info = tk.get_action("files_file_show")({}, {"id": file_id})
+    return tk.render("files/delete.html", {"file": info})
 
 
 @bp.route("/api/util/files_autocomplete_own_files")

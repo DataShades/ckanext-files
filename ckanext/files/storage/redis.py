@@ -24,6 +24,7 @@ from ckanext.files.shared import (
     Upload,
     Uploader,
 )
+from ckanext.files.utils import IterableBytesReader
 
 connect_to_redis: Any
 
@@ -32,7 +33,7 @@ class RedisUploader(Uploader):
     storage: RedisStorage
 
     required_options = ["prefix"]
-    capabilities = Capability.CREATE
+    capabilities = Capability.CREATE | Capability.MULTIPART
 
     def upload(
         self,
@@ -56,6 +57,89 @@ class RedisUploader(Uploader):
             upload.content_type,
             reader.get_hash(),
         )
+
+    def multipart_start(
+        self,
+        location: str,
+        data: MultipartData,
+        extras: dict[str, Any],
+    ) -> MultipartData:
+        """Prepare everything for multipart(resumable) upload."""
+        safe_location = self.storage.compute_location(location)
+        key = self.storage.settings["prefix"] + safe_location
+        self.storage.redis.set(key, b"")
+        data.location = safe_location
+        data.storage_data["uploaded"] = 0
+        return data
+
+    def multipart_refresh(
+        self,
+        data: MultipartData,
+        extras: dict[str, Any],
+    ) -> MultipartData:
+        """Show details of the incomplete upload."""
+        return data
+
+    def multipart_update(
+        self,
+        data: MultipartData,
+        extras: dict[str, Any],
+    ) -> MultipartData:
+        """Add data to the incomplete upload."""
+
+        data = copy.deepcopy(data)
+        schema = {
+            "upload": [
+                tk.get_validator("not_missing"),
+                tk.get_validator("files_into_upload"),
+            ],
+            "__extras": [tk.get_validator("ignore")],
+        }
+        valid_extras, errors = tk.navl_validate(extras, schema)
+
+        if errors:
+            raise tk.ValidationError(errors)
+
+        key = self.storage.settings["prefix"] + data.location
+        size = cast(int, self.storage.redis.strlen(key))
+
+        upload: Upload = valid_extras["upload"]
+        expected_size = size + upload.size
+        if expected_size > data.size:
+            raise exceptions.UploadOutOfBoundError(expected_size, data.size)
+
+        self.storage.redis.append(key, upload.stream.read())
+        data.storage_data["uploaded"] = expected_size
+        return data
+
+    def multipart_complete(
+        self,
+        data: MultipartData,
+        extras: dict[str, Any],
+    ) -> FileData:
+        """Verify file integrity and finalize incomplete upload."""
+        key = self.storage.settings["prefix"] + data.location
+        size = cast(int, self.storage.redis.strlen(key))
+
+        if size != data.size:
+            raise exceptions.UploadSizeMismatchError(size, data.size)
+
+        reader = HashingReader(
+            IterableBytesReader(self.storage.stream(FileData(data.location))),
+        )
+
+        content_type = magic.from_buffer(next(reader, b""), True)
+        if data.content_type and content_type != data.content_type:
+            raise exceptions.UploadTypeMismatchError(
+                content_type,
+                data.content_type,
+            )
+        reader.exhaust()
+
+        if data.hash and data.hash != reader.get_hash():
+            raise exceptions.UploadHashMismatchError(reader.get_hash(), data.hash)
+
+        return FileData(data.location, size, content_type, reader.get_hash())
 
 
 class RedisReader(Reader):
@@ -108,7 +192,7 @@ class RedisManager(Manager):
 
         return FileData(
             location,
-            size=cast(int, self.storage.redis.memory_usage(key)),
+            size=cast(int, self.storage.redis.strlen(key)),
             content_type=content_type,
             hash=reader.get_hash(),
         )
@@ -135,7 +219,10 @@ class RedisManager(Manager):
         if not self.storage.redis.exists(src):
             raise exceptions.MissingFileError(self.storage, src)
 
-        if self.storage.redis.exists(dest):
+        if (
+            self.storage.redis.exists(dest)
+            and not self.storage.settings["override_existing"]
+        ):
             raise exceptions.ExistingFileError(self.storage, dest)
 
         try:
@@ -165,7 +252,10 @@ class RedisManager(Manager):
         if not self.storage.redis.exists(src):
             raise exceptions.MissingFileError(self.storage, src)
 
-        if self.storage.redis.exists(dest):
+        if (
+            self.storage.redis.exists(dest)
+            and not self.storage.settings["override_existing"]
+        ):
             raise exceptions.ExistingFileError(self.storage, dest)
 
         self.storage.redis.rename(src, dest)
@@ -184,13 +274,14 @@ class RedisStorage(Storage):
     def make_reader(self):
         return RedisReader(self)
 
-    def __init__(self, **settings: Any):
-        settings.setdefault(
-            "prefix",
-            _default_prefix(),
-        )
+    @classmethod
+    def prepare_settings(cls, settings: dict[str, Any]):
+        settings.setdefault("prefix", _default_prefix())
+        return super().prepare_settings(settings)
+
+    def __init__(self, settings: Any):
         self.redis: redis.Redis = connect_to_redis()
-        super().__init__(**settings)
+        super().__init__(settings)
 
     @classmethod
     def declare_config_options(cls, declaration: Declaration, key: Key):

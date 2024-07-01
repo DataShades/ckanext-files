@@ -20,6 +20,19 @@ foreign: Any
 
 
 class File(Base):  # type: ignore
+    """Model with file details.
+
+    Example:
+    >>> file = File(
+    >>>     name="file.txt",
+    >>>     location="relative/path/safe-name.txt",
+    >>>     content_type="text/plain",
+    >>>     size=100,
+    >>>     hash="abc123",
+    >>>     storage="default",
+    >>> )
+    """
+
     __table__ = sa.Table(
         "files_file",
         Base.metadata,
@@ -64,8 +77,6 @@ class File(Base):  # type: ignore
 
     storage_data: Mapped[dict[str, Any]]
     plugin_data: Mapped[dict[str, Any]]
-
-    completed: Mapped[bool]
 
     owner_info: Mapped[Owner | None] = relationship(
         Owner,

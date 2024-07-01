@@ -33,10 +33,14 @@ def storage() -> gc.GoogleCloudStorage:
     )
 
     return gc.GoogleCloudStorage(
-        name="test",
-        path="test",
-        bucket=TEST_BUCKET,
-        credentials_file=credentials_file,
+        gc.GoogleCloudStorage.prepare_settings(
+            {
+                "name": "test",
+                "path": "test",
+                "bucket": TEST_BUCKET,
+                "credentials_file": credentials_file,
+            },
+        ),
     )
 
 
@@ -299,4 +303,8 @@ class TestManager:
 class TestStorage:
     def test_missing_path(self, tmp_path: Any):
         with pytest.raises(exceptions.InvalidStorageConfigurationError):
-            gc.GoogleCloudStorage(bucket=TEST_BUCKET, credentials_file="/not-real")
+            gc.GoogleCloudStorage(
+                gc.GoogleCloudStorage(
+                    {"bucket": TEST_BUCKET, "credentials_file": "/not-real"},
+                ),
+            )

@@ -4,11 +4,12 @@
 {% asset "file_upload_widget/js" %}
 
 
-<div class="form-group control-medium file-upload-widget" data-module="file-upload-widget">
+<div class="form-group control-medium file-upload-widget" data-module="file-upload-widget" data-module-instance-id="{{ field.field_name }}">
     <label class="form-label" for="{{ field.field_name }}">
         {% if field.required %}<span title="{{ _("This field is required") }}" class="control-required">*</span> {% endif %}
         {{ h.scheming_language_text(field.label) }}
     </label>
+
     <div class="controls">
         <button type="button" class="btn btn-primary fuw-init-btn" data-bs-toggle="modal" data-bs-target="#uploadWidget-{{ field.field_name }}">
             {{ _("Upload") }}
@@ -52,14 +53,28 @@
 
                     <!-- URL INPUT WINDOW -->
                     <div class="fuw-url-input" style="display: none;">
-                        <input type="text" aria-label="Enter URL to import a file" placeholder="Enter URL to import a file" class="form-control">
-                        <button type="button" class="btn btn-primary float-end mt-3">{{ _("Import") }}</button>
+                        <input
+                            type="url"
+                            required
+                            disabled
+                            aria-label="Enter URL to import a file"
+                            placeholder="Enter URL to import a file" class="form-control"
+                        >
+                        <button type="button" class="btn btn-primary float-end mt-3 btn-url-import">{{ _("Import") }}</button>
                     </div>
 
                     <!-- MEDIA GALLERY WINDOW -->
                     <div class="fuw-media-input" style="display: none;">
                         <div class="search-input">
-                            <input aria-label="Search files..." id="fuw-media-input--search" type="search" class="form-control input-lg" value="" autocomplete="off" placeholder="Search files...">
+                            <input
+                                aria-label="Search files..."
+                                id="fuw-media-input--search"
+                                type="search" class="form-control input-lg"
+                                value=""
+                                autocomplete="off"
+                                placeholder="Search files..."
+                                disabled
+                            >
 
                             <span class="input-group-btn">
                                 <i class="fa fa-search"></i>
@@ -87,24 +102,18 @@
                     </div>
 
                     <!-- SELECTED FILES -->
-                    <div class="fuw-selected-files">
+                    <div class="fuw-selected-files" style="display: none;">
                         <ul class="fuw-selected-files--list list-unstyled">
-                            {% for i in range (1, 11) %}
-                                <li class="fuw-selected-files--file-item-wrapper">
-                                    <div class="fuw-selected-files--file-tile">
-                                        <i class="fa-solid fa-times file-tile--file-remove"></i>
-                                        <div class="file-tile--file-icon">
-                                            <svg aria-hidden="true" focusable="false" class="uppy-c-icon" width="25" height="25" viewBox="0 0 25 25"><g fill="#A7AFB7" fillRule="nonzero"><path d="M5.5 22a.5.5 0 0 1-.5-.5v-18a.5.5 0 0 1 .5-.5h10.719a.5.5 0 0 1 .367.16l3.281 3.556a.5.5 0 0 1 .133.339V21.5a.5.5 0 0 1-.5.5h-14zm.5-1h13V7.25L16 4H6v17z"></path><path d="M15 4v3a1 1 0 0 0 1 1h3V7h-3V4h-1z"></path></g></svg>
-                                        </div>
-                                    </div>
-                                    <div class="fuw-selected-files--file-name">File {{ i }}.csv</div>
-                                    <div class="fuw-selected-files--file-size">{{i}}1 KB</div>
-                                </li>
-                            {% endfor %}
                         </ul>
+
+                        <div class="modal-inner-footer modal-footer--selected" style="display: none;">
+                            <button type="button" class="btn btn-primary btn-upload-all"></button>
+                            <button type="button" class="btn btn-black btn-cancel-for-upload">{{ _("Cancel") }}</button>
+                        </div>
                     </div>
                 </div>
-                <div class="modal-footer" style="display: none;">
+
+                <div class="modal-footer modal-footer--media" style="display: none;">
                     <button type="button" class="btn btn-primary btn-file-select">{{ _("Select") }} <span>0</span></button>
                     <button type="button" class="btn btn-black btn-cancel-file-select">{{ _("Cancel") }}</button>
                 </div>

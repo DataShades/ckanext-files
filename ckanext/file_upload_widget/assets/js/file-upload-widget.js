@@ -48,7 +48,7 @@ ckan.module("file-upload-widget", function ($, _) {
 
 
             this.fileAdapter = new ckan.CKANEXT_FILES.adapters.Standard();
-            this.urlAdapter = new ckan.CKANEXT_FILES.adapters.Standard({"storage": "link"});
+            this.urlAdapter = new ckan.CKANEXT_FILES.adapters.Standard({"storage": "link"}, true);
 
             this.lsSelectedFilesKey = 'fuw-selected-files:' + this.options.instanceId,
 
@@ -280,9 +280,13 @@ ckan.module("file-upload-widget", function ($, _) {
                 this._addFileItem(
                     fileItem.attr("fuw-file-id"),
                     fileItem.attr("fuw-file-name"),
-                    fileItem.attr("fuw-file-size")
+                    fileItem.attr("fuw-file-size"),
+                    "media",
+                    true
                 );
             });
+
+            this.el.find('li.files--file-item input:checked').prop('checked', false);
 
             this._disableUrlWindow();
             this._disableMediaWindow();
@@ -372,7 +376,10 @@ ckan.module("file-upload-widget", function ($, _) {
             ));
 
             for (const file of files) {
-                if (file.name === fileName) {
+                if (file.id && file.id === fileId) {
+                    alert("File already selected");
+                    return;
+                } else if (!file.id && file.name === fileName) {
                     alert("File already selected");
                     return;
                 }
@@ -479,9 +486,10 @@ ckan.module("file-upload-widget", function ($, _) {
 
             if (fileItem.attr("fuw-file-type") === "url") {
                 let url = fileItem.attr("fuw-file-name");
-                const file = new File([url], "URL", { type: "text/plain" });
+                // use url both as a content and file name
+                const file = new File([url], url, { type: "text/plain" });
 
-                this.urlAdapter.upload(file)
+                this.urlAdapter.upload(file, {"max_size": 0})
             }
         },
 
@@ -574,8 +582,9 @@ ckan.module("file-upload-widget", function ($, _) {
         },
 
         _onCloseSelectedFiles: function (e) {
-            // this._onCancelAction();
             this.selectionWindow.hideEl();
+            this.cancelBtn.hideEl();
+            this.mainWindow.showEl();
         },
 
         _onOpenSelectedFiles: function (e) {

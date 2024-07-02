@@ -37,6 +37,7 @@ class LinkStorage(shared.Storage):
         declaration.declare_int(key.timeout, 5).set_description(
             "Request timeout used when link details fetched during ANALYZE",
         )
+        super().declare_config_options(declaration, key)
 
 
 class LinkReader(shared.Reader):

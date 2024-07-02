@@ -92,7 +92,7 @@
                                         <div class="file-item--icon-wrapper">
                                             <img src="https://via.placeholder.com/16" referrerpolicy="no-referrer" loading="lazy" width="16" height="16">
                                         </div>
-                                        <span class="file-name">{{ file.name }}</span>
+                                        <span class="file-name">{{ h.fuw_truncate_file_name(file.name) }}</span>
                                         <span class="file-size text-muted">({{ h.fuw_printable_file_size(file.size) }})</span>
                                     </label>
                                 </li>
@@ -122,6 +122,7 @@
                     </ul>
                 </div>
 
+                <div class="upload-progress-bar"></div>
                 <div class="modal-footer modal-footer--selected">
                     <button type="button" class="btn btn-danger btn-cancel-all">{{ _("Cancel upload") }}</button>
                     <button type="button" class="btn btn-primary btn-upload-all">{{ _("Upload all") }}</button>

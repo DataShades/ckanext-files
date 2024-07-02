@@ -2,6 +2,7 @@ js:
   filter: rjsmin
   output: ckanext-charts/%(version)s-file-upload-widget.js
   contents:
+    - js/vendor/progressbar.min.js
     - js/file-upload-widget.js
   extra:
     preload:

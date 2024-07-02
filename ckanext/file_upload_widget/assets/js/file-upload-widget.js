@@ -14,6 +14,18 @@ $.fn.toggleEl = function (flag) {
     flag ? this.showEl() : this.hideEl();
 }
 
+/**
+ * Generate UUID v4
+ * @see https://stackoverflow.com/a/2117523
+ *
+ * @returns {String} - UUID v4
+ */
+function generateUUID4() {
+    return "10000000-1000-4000-8000-100000000000".replace(/[018]/g, c =>
+        (+c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> +c / 4).toString(16)
+    );
+}
+
 ckan.module("file-upload-widget", function ($, _) {
     "use strict";
 
@@ -40,6 +52,12 @@ ckan.module("file-upload-widget", function ($, _) {
             attrFileSize: 'fuw-file-size',
             attrFileType: 'fuw-file-type',
             attrFileUploaded: 'fuw-file-uploaded',
+
+            type: {
+                file: "file",
+                url: "url",
+                media: "media"
+            }
         },
         options: {
             instanceId: null,
@@ -54,9 +72,11 @@ ckan.module("file-upload-widget", function ($, _) {
 
 
             this.fileAdapter = new ckan.CKANEXT_FILES.adapters.Standard();
-            this.urlAdapter = new ckan.CKANEXT_FILES.adapters.Standard({"storage": "link"}, true);
+            this.urlAdapter = new ckan.CKANEXT_FILES.adapters.Standard({
+                "storage": "link"
+            }, true);
 
-            this.lsSelectedFilesKey = 'fuw-selected-files:' + this.options.instanceId,
+            this.lsSelectedFilesKey = 'fuw-selected-files:' + this.options.instanceId;
 
             this._clearStoredData();
 
@@ -98,13 +118,10 @@ ckan.module("file-upload-widget", function ($, _) {
             this.fileInput.on('change', this._onFileSelected);
             this.openSelectedFilesBtn.on('click', this._onOpenSelectedFiles);
 
-            this.fileAdapter.addEventListener("progress", (e) => {
-                console.log(e.detail)
-            });
-
-            this.urlAdapter.addEventListener("progress", (e) => {
-                console.log(e.detail)
-            });
+            this.fileAdapter.addEventListener("progress", this._onUploadProgress);
+            this.urlAdapter.addEventListener("progress", this._onUploadProgress);
+            this.fileAdapter.addEventListener("finish", this._onFinishUpload);
+            this.urlAdapter.addEventListener("finish", this._onFinishUpload);
 
             // Bind events on non existing elements
             $("body").on("click", ".file-tile--file-remove", this._onRemoveSelectedFile);
@@ -114,18 +131,21 @@ ckan.module("file-upload-widget", function ($, _) {
             this.dropZoneArea.on("drop", this._onDropFile);
 
             // Prevent default drag behaviors
-            ;["dragenter", "dragover", "dragleave", "drop"].forEach(eventName => {
+            ;
+            ["dragenter", "dragover", "dragleave", "drop"].forEach(eventName => {
                 this.dropZoneArea.on(eventName, this._preventDropDefaults)
                 $(document.body).on(eventName, this._preventDropDefaults)
             });
 
             // Highlight drop area when item is dragged over it
-            ;["dragenter", "dragover"].forEach(eventName => {
+            ;
+            ["dragenter", "dragover"].forEach(eventName => {
                 this.dropZoneArea.on(eventName, this._highlightDropZone)
             });
 
             // Unhighlight drop area when item is dragged out of it
-            ;["dragleave", "drop"].forEach(eventName => {
+            ;
+            ["dragleave", "drop"].forEach(eventName => {
                 this.dropZoneArea.on(eventName, this._unhighlightDropZone)
             })
         },
@@ -287,7 +307,7 @@ ckan.module("file-upload-widget", function ($, _) {
                     fileItem.attr(this.const.attrFileId),
                     fileItem.attr(this.const.attrFileName),
                     fileItem.attr(this.const.attrFileSize),
-                    "media",
+                    this.const.type.media,
                     true
                 );
             });
@@ -333,8 +353,8 @@ ckan.module("file-upload-widget", function ($, _) {
 
         _onDropFile: function (e) {
             Array.from(e.originalEvent.dataTransfer.files).forEach(file => {
-                file.id = "";
-                file.fuw_type = "file";
+                file.id = generateUUID4();
+                file.fuw_type = this.const.type.file;
                 this._handleFile(file);
             });
         },
@@ -342,8 +362,8 @@ ckan.module("file-upload-widget", function ($, _) {
         _onFileSelected: function (e) {
             console.log(e);
             Array.from(e.target.files).forEach(file => {
-                file.id = "";
-                file.fuw_type = "file";
+                file.id = generateUUID4();
+                file.fuw_type = this.const.type.file;
                 this._handleFile(file);
             })
         },
@@ -353,7 +373,12 @@ ckan.module("file-upload-widget", function ($, _) {
 
             if (fileUrl.length && this.urlWindow.find("input").isValid()) {
                 this.urlWindow.find("input").val("");
-                this._handleFile({ id: "", name: fileUrl, size: 0, fuw_type: "url" });
+                this._handleFile({
+                    id: generateUUID4(),
+                    name: fileUrl,
+                    size: 0,
+                    fuw_type: this.const.type.url
+                });
             } else {
                 this.urlWindow.find("input").focus();
                 this.urlWindow.find("input").get(0).reportValidity();
@@ -371,7 +396,7 @@ ckan.module("file-upload-widget", function ($, _) {
             this.selectionWindow.showEl();
         },
 
-        _addFileItem: function (fileId, fileName, fileSize, fileType = "file", fileUploaded = false) {
+        _addFileItem: function (fileId, fileName, fileSize, fileType = this.const.type.file, fileUploaded = false) {
             const files = this.getDataFromLocalStorage(this.lsSelectedFilesKey) || [];
             const fileItem = $(this._selectedFileItemTemplate(
                 fileId,
@@ -385,13 +410,17 @@ ckan.module("file-upload-widget", function ($, _) {
                 if (file.id && file.id === fileId) {
                     alert("File already selected");
                     return;
-                } else if (!file.id && file.name === fileName) {
+                } else if (fileType == this.const.type.url && file.name === fileName) {
                     alert("File already selected");
                     return;
                 }
             }
 
-            files.push({ id: fileId, name: fileName, size: fileSize });
+            files.push({
+                id: fileId,
+                name: fileName,
+                size: fileSize
+            });
 
             this.storeDataInLocalStorage(this.lsSelectedFilesKey, files);
             this.selectedFilesContainer.append(fileItem);
@@ -445,7 +474,7 @@ ckan.module("file-upload-widget", function ($, _) {
             fileEl.remove();
 
             // Remove file from the file input
-            if (fileEl.attr("fuw-file-type") === "file" && !fileEl.attr(this.const.attrFileId)) {
+            if (fileEl.attr("fuw-file-type") === this.const.type.file && !fileEl.attr(this.const.attrFileId)) {
                 let dt = new DataTransfer();
                 let file_list = this.fileInput.get(0).files;
 
@@ -486,16 +515,42 @@ ckan.module("file-upload-widget", function ($, _) {
         _onUploadSelectedFile: function (e) {
             let fileItem = $(e.target).closest(this.const.selectedFileItem);
 
-            if (fileItem.attr("fuw-file-uploaded") === "true") {
+            if (fileItem.attr(this.const.attrFileUploaded) === "true") {
                 return;
             }
 
-            if (fileItem.attr("fuw-file-type") === "url") {
+            let fileType = fileItem.attr(this.const.attrFileType);
+            let fileId = fileItem.attr(this.const.attrFileId);
+
+            this.uploadBar = new ProgressBar.Line('.upload-progress-bar', {
+                easing: 'easeInOut'
+            });
+            this.uploadBar.animate(0);
+
+            if (fileType === this.const.type.url) {
                 let url = fileItem.attr(this.const.attrFileName);
                 // use url both as a content and file name
-                const file = new File([url], url, { type: "text/plain" });
+                const file = new File([url], url, {
+                    type: "text/plain",
+                });
 
-                this.urlAdapter.upload(file, {"max_size": 0})
+                file.fuw_type = this.const.type.url;
+                file.id = fileId;
+                this.urlAdapter.upload(file, {})
+            } else if (fileType === this.const.type.file) {
+                let file = null;
+                let files = this.fileInput.get(0).files;
+
+                for (let i = 0; i < files.length; i++) {
+                    if (files[i].id !== fileId) {
+                        continue;
+                    }
+
+                    file = files[i];
+                    break;
+                }
+
+                this.fileAdapter.upload(file, {})
             }
         },
 
@@ -570,7 +625,7 @@ ckan.module("file-upload-widget", function ($, _) {
                     <div class="fuw-selected-files--file-name">${mungedFileName}</div>
                     <div class="fuw-selected-files--file-size">${formattedFileSize}</div>
                 </div>
-                ${!fileId && !fileUploaded ? '<i class="fa-solid fa-upload file-tile--file-upload"></i>' : ""}
+                ${!fileUploaded ? '<i class="fa-solid fa-upload file-tile--file-upload"></i>' : ""}
                 <i class="fa-solid fa-times file-tile--file-remove"></i>
             </li>
             `
@@ -590,6 +645,8 @@ ckan.module("file-upload-widget", function ($, _) {
         _onCloseSelectedFiles: function (e) {
             this.selectionWindow.hideEl();
             this.cancelBtn.hideEl();
+            this.urlWindow.hideEl();
+            this.mediaWindow.hideEl();
             this.mainWindow.showEl();
         },
 
@@ -607,6 +664,31 @@ ckan.module("file-upload-widget", function ($, _) {
          */
         _countSelectedUploadFiles: function () {
             return this.el.find('li.files--file-item input:checked').length;
+        },
+
+        _onUploadProgress: function (e) {
+            let progress = e.detail.loaded / e.detail.total;
+
+            this.uploadBar.animate(progress);
+        },
+
+        _onFinishUpload: function (e) {
+            console.log(e.detail);
+            this.uploadBar.destroy();
+
+            this._removeUploadButtonForFile(e.detail.file.id);
+            this._replaceWithUploadedFileId(e.detail.file.id, e.detail.result.id);
+        },
+
+        _removeUploadButtonForFile: function (fileId) {
+            this.el.find(`li[fuw-file-id="${fileId}"] .file-tile--file-upload`).remove();
+        },
+
+        _replaceWithUploadedFileId: function (currentId, uploadedId) {
+            let fileItem = this.el.find(`li[fuw-file-id="${currentId}"]`);
+
+            fileItem.attr(this.const.attrFileId, uploadedId);
+            fileItem.attr(this.const.attrFileUploaded, true);
         },
     };
 });

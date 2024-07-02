@@ -113,7 +113,6 @@ var ckan;
                 _sendRequest(request, file, params) {
                     const data = new FormData();
                     data.append("upload", file);
-                    console.log(params);
                     if (!params.storage) {
                         data.append("storage", this.settings.storage);
                     }

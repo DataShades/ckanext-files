@@ -34,6 +34,12 @@ ckan.module("file-upload-widget", function ($, _) {
             selectedFiles: '.fuw-selected-files--list',
             mediaWindowFooter: '.modal-footer--media',
             selectedFileItem: 'li.fuw-selected-file',
+
+            attrFileName: 'fuw-file-name',
+            attrFileId: 'fuw-file-id',
+            attrFileSize: 'fuw-file-size',
+            attrFileType: 'fuw-file-type',
+            attrFileUploaded: 'fuw-file-uploaded',
         },
         options: {
             instanceId: null,
@@ -246,7 +252,7 @@ ckan.module("file-upload-widget", function ($, _) {
          * @param {String} text - text to highlight
          */
         _highlightText: function (element, text) {
-            let originalName = $(element).attr("fuw-file-name");
+            let originalName = $(element).attr(this.const.attrFileName);
 
             let highlightedName = originalName;
 
@@ -278,9 +284,9 @@ ckan.module("file-upload-widget", function ($, _) {
                 let fileItem = $(element).parent("li");
 
                 this._addFileItem(
-                    fileItem.attr("fuw-file-id"),
-                    fileItem.attr("fuw-file-name"),
-                    fileItem.attr("fuw-file-size"),
+                    fileItem.attr(this.const.attrFileId),
+                    fileItem.attr(this.const.attrFileName),
+                    fileItem.attr(this.const.attrFileSize),
                     "media",
                     true
                 );
@@ -434,17 +440,17 @@ ckan.module("file-upload-widget", function ($, _) {
             let fileEl = $(e.target).closest(this.const.selectedFileItem);
 
             let files = this.getDataFromLocalStorage(this.lsSelectedFilesKey) || [];
-            files = files.filter(file => file.name !== fileEl.attr("fuw-file-name"));
+            files = files.filter(file => file.name !== fileEl.attr(this.const.attrFileName));
 
             fileEl.remove();
 
             // Remove file from the file input
-            if (fileEl.attr("fuw-file-type") === "file" && !fileEl.attr("fuw-file-id")) {
+            if (fileEl.attr("fuw-file-type") === "file" && !fileEl.attr(this.const.attrFileId)) {
                 let dt = new DataTransfer();
                 let file_list = this.fileInput.get(0).files;
 
                 for (let i = 0; i < file_list.length; i++) {
-                    if (file_list[i].name != fileEl.attr("fuw-file-name")) {
+                    if (file_list[i].name != fileEl.attr(this.const.attrFileName)) {
                         dt.items.add(file_list[i]);
                     };
 
@@ -485,7 +491,7 @@ ckan.module("file-upload-widget", function ($, _) {
             }
 
             if (fileItem.attr("fuw-file-type") === "url") {
-                let url = fileItem.attr("fuw-file-name");
+                let url = fileItem.attr(this.const.attrFileName);
                 // use url both as a content and file name
                 const file = new File([url], url, { type: "text/plain" });
 

@@ -2,6 +2,14 @@ $.fn.isValid = function () {
     return this[0].checkValidity()
 }
 
+$.fn.hideEl = function () {
+    this[0].addClass('hidden');
+}
+
+$.fn.showEl = function () {
+    this[0].removeClass('hidden');
+}
+
 ckan.module("file-upload-widget", function ($, _) {
     "use strict";
 
@@ -15,9 +23,13 @@ ckan.module("file-upload-widget", function ($, _) {
             mediaInputBlock: '.fuw-media-input',
             selectedBlock: '.fuw-selected-files',
             cancelBtn: '.fuw-cancel-btn',
+            cancelAllSelectedBtn: '.btn-cancel-all',
+            closeSelectedFilesBtn: '.fuw-close-selected-btn',
+            openSelectedFilesBtn: '.fuw-open-selected-btn',
             dropZone: '.fuw-main-window__dropzone',
             selectedFiles: '.fuw-selected-files--list',
-            mediaWindowFooter: '.modal-footer--media'
+            mediaWindowFooter: '.modal-footer--media',
+            selectedFileItem: 'li.fuw-selected-file',
         },
         options: {
             instanceId: null,
@@ -32,7 +44,7 @@ ckan.module("file-upload-widget", function ($, _) {
 
             this.lsSelectedFilesKey = 'fuw-selected-files:' + this.options.instanceId,
 
-                this._clearStoredData();
+            this._clearStoredData();
 
             this.fileInputBtn = this.el.find(this.const.fileInputButton);
             this.urlInputBtn = this.el.find(this.const.urlInputButton);
@@ -53,18 +65,24 @@ ckan.module("file-upload-widget", function ($, _) {
             this.urlImportBtn = this.urlWindow.find(".btn-url-import");
 
             this.cancelBtn = this.el.find(this.const.cancelBtn);
+            this.cancelAllSelectedBtn = this.el.find(this.const.cancelAllSelectedBtn);
+            this.closeSelectedFilesBtn = this.el.find(this.const.closeSelectedFilesBtn);
+            this.openSelectedFilesBtn = this.el.find(this.const.openSelectedFilesBtn);
 
             // Bind events
-            // this.fileInputBtn.on("click", this._onFileInputTriggered);
+            this.fileInputBtn.on("click", this._onFileInputTriggered);
             this.urlInputBtn.on("click", this._onUrlInputTriggered);
             this.mediaInputBtn.on("click", this._onMediaInputTriggered);
             this.cancelBtn.on("click", this._onCancelAction);
             this.fileSearchInput.on('input', this._onFileSearch);
-            this.el.find('li.files--file-item input').on('change', this._onFileSelect);
-            this.cancelFileSelectBtn.on("click", this._onCancelFileSelect);
-            this.fileInput.on('change', this._onFileSelected);
+            this.el.find('li.files--file-item input').on('change', this._onMediaFileSelect);
+            this.cancelFileSelectBtn.on("click", this._onCancelMediaFileSelect);
             this.urlImportBtn.on('click', this._onUrlImport);
             this.fileSelectBtn.on('click', this._onMediaFileSelected);
+            this.cancelAllSelectedBtn.on('click', this._onCancelAllSelectedFiles);
+            this.closeSelectedFilesBtn.on('click', this._onCloseSelectedFiles);
+            this.fileInput.on('change', this._onFileSelected);
+            this.openSelectedFilesBtn.on('click', this._onOpenSelectedFiles);
 
             // Bind events on non existing elements
             $("body").on("click", ".file-tile--file-remove", this._onRemoveSelectedFile);
@@ -89,16 +107,14 @@ ckan.module("file-upload-widget", function ($, _) {
             })
         },
 
-        // /**
-        //  * Handle file input trigger
-        //  *
-        //  * On file input trigger show an HTML file selector
-        //  *
-        //  * @param {Event} e
-        //  */
-        // _onFileInputTriggered: function (e) {
-        //     console.log('file input triggered');
-        // },
+        /**
+         * Clear the file input value to allow selecting the same file
+         *
+         * @param {Event} e
+         */
+        _onFileInputTriggered: function (e) {
+            this.fileInput.val("");
+        },
 
         /**
          * Handle url input trigger
@@ -139,8 +155,8 @@ ckan.module("file-upload-widget", function ($, _) {
             this._disableMediaWindow();
 
             this.selectionWindow.hide();
-            this.mainWindow.toggle();
-            this.cancelBtn.toggle();
+            this.cancelBtn.hide();
+            this.mainWindow.show();
         },
 
         _enableUrlWindow: function () {
@@ -233,8 +249,8 @@ ckan.module("file-upload-widget", function ($, _) {
          *
          * @param {Event} e
          */
-        _onFileSelect: function (e) {
-            let selectedFilesNum = this._countSelectedFiles();
+        _onMediaFileSelect: function (e) {
+            let selectedFilesNum = this._countSelectedMediaFiles();
 
             this.fileSelectBtn.find("span").text(selectedFilesNum);
             this.el.find(".modal-footer").toggle(!!selectedFilesNum);
@@ -257,11 +273,11 @@ ckan.module("file-upload-widget", function ($, _) {
         },
 
         /**
-         * Count selected files
+         * Count selected media files
          *
          * @returns {Number} - number of selected files
          */
-        _countSelectedFiles: function () {
+        _countSelectedMediaFiles: function () {
             return this.el.find('li.files--file-item input:checked').length;
         },
 
@@ -270,7 +286,7 @@ ckan.module("file-upload-widget", function ($, _) {
          *
          * @param {Event} e
          */
-        _onCancelFileSelect: function (e) {
+        _onCancelMediaFileSelect: function (e) {
             this.el.find('li.files--file-item input:checked').prop('checked', false);
             this.el.find('li.files--file-item input:first').trigger('change');
         },
@@ -389,7 +405,7 @@ ckan.module("file-upload-widget", function ($, _) {
         },
 
         _onRemoveSelectedFile: function (e) {
-            let fileEl = $(e.target).closest(".fuw-selected-file");
+            let fileEl = $(e.target).closest(this.const.selectedFileItem);
 
             let files = this.getDataFromLocalStorage(this.lsSelectedFilesKey) || [];
             files = files.filter(file => file.name !== fileEl.attr("fuw-file-name"));
@@ -412,11 +428,14 @@ ckan.module("file-upload-widget", function ($, _) {
             };
 
             this.storeDataInLocalStorage(this.lsSelectedFilesKey, files);
-            this._toggleFileSelectionWindow(this._calculateSelectedFilesNum() > 0);
+
+            let selectedFiles = this._calculateSelectedFilesNum() > 0;
+            this._toggleFileSelectionWindow(selectedFiles);
+            this._toggleSelectedFilesButton(selectedFiles);
         },
 
         _calculateSelectedFilesNum: function () {
-            return this.el.find(".fuw-selected-file").length;
+            return this.el.find(this.const.selectedFileItem).length;
         },
 
         _toggleFileSelectionWindow: function (flag) {
@@ -426,6 +445,10 @@ ckan.module("file-upload-widget", function ($, _) {
                 this.mainWindow.show();
                 this.cancelBtn.hide();
             }
+        },
+
+        _toggleSelectedFilesButton: function (flag) {
+            this.openSelectedFilesBtn.toggle(flag);
         },
 
         /**
@@ -466,10 +489,10 @@ ckan.module("file-upload-widget", function ($, _) {
          * Create a template for the selected file element
          *
          * @param {String} fileId - file id
-         * @param {*} fileName - file name
-         * @param {*} fileSize - file size
-         * @param {*} fileType - file type
-         * @param {*} fileUploaded - is file already uploaded
+         * @param {String} fileName - file name
+         * @param {Number} fileSize - file size
+         * @param {String} fileType - file type
+         * @param {Boolean} fileUploaded - is file already uploaded
          *
          * @returns {String} - template for the selected file element
          */
@@ -503,6 +526,38 @@ ckan.module("file-upload-widget", function ($, _) {
                 <i class="fa-solid fa-times file-tile--file-remove"></i>
             </li>
             `
-        }
+        },
+
+        _onCancelAllSelectedFiles: function (e) {
+            // remove all files from the file input
+            this.fileInput.get(0).files = new DataTransfer().files;
+
+            this._clearStoredData();
+
+            this.el.find(this.const.selectedFileItem).remove();
+
+            this._onCloseSelectedFiles();
+        },
+
+        _onCloseSelectedFiles: function (e) {
+            // this._onCancelAction();
+            this.selectionWindow.hide();
+        },
+
+        _onOpenSelectedFiles: function (e) {
+            this.selectionWindow.show();
+        },
+
+
+        /**
+         * Count files we've selected. This is not the same, as selected
+         * media files. Those files are the ones that will be sent to the server
+         * and saved for the field.
+         *
+         * @returns {Number} - number of selected files
+         */
+        _countSelectedUploadFiles: function () {
+            return this.el.find('li.files--file-item input:checked').length;
+        },
     };
 });

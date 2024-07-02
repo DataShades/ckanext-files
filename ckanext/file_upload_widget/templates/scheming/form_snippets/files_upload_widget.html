@@ -31,7 +31,8 @@
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
-                    <i class="fa-solid fa-angles-left fuw-cancel-btn" style="display: none;"></i>
+                    <i class="fa-solid fa-angles-left fuw-cancel-btn hidden"></i>
+                    <button type="button" class="btn fuw-open-selected-btn">{{ _("Selected Files") }}</button>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
@@ -102,22 +103,28 @@
                             <p>{{ _("No files found") }}</p>
                         </div>
                     </div>
-
-                    <!-- SELECTED FILES -->
-                    <div class="fuw-selected-files" style="display: none;">
-                        <ul class="fuw-selected-files--list list-unstyled">
-                        </ul>
-
-                        <div class="modal-inner-footer modal-footer--selected" style="display: none;">
-                            <button type="button" class="btn btn-primary btn-upload-all"></button>
-                            <button type="button" class="btn btn-black btn-cancel-for-upload">{{ _("Cancel") }}</button>
-                        </div>
-                    </div>
                 </div>
 
                 <div class="modal-footer modal-footer--media" style="display: none;">
                     <button type="button" class="btn btn-primary btn-file-select">{{ _("Select") }} <span>0</span></button>
                     <button type="button" class="btn btn-black btn-cancel-file-select">{{ _("Cancel") }}</button>
+                </div>
+            </div>
+
+            <!-- SELECTED FILES -->
+            <div class="modal-content fuw-selected-files" style="display: none;">
+                <div class="modal-header">
+                    <i class="fa-solid fa-angles-left fuw-close-selected-btn"></i>
+                </div>
+
+                <div class="modal-body">
+                    <ul class="fuw-selected-files--list list-unstyled">
+                    </ul>
+                </div>
+
+                <div class="modal-footer modal-footer--selected">
+                    <button type="button" class="btn btn-primary btn-upload-all">{{ _("Upload all") }}</button>
+                    <button type="button" class="btn btn-black btn-cancel-all">{{ _("Cancel upload") }}</button>
                 </div>
             </div>
         </div>

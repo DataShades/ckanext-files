@@ -65,7 +65,7 @@
             flex-direction: column;
             padding: 0;
             border-radius: 0.5rem;
-            height: 250px;
+            height: 310px;
             overflow-y: scroll;
 
             .files--file-item {
@@ -102,9 +102,10 @@
     }
 
     .fuw-selected-files {
-        width: 100%;
+        position: absolute;
 
         ul.fuw-selected-files--list {
+            width: 100%;
             height: 250px;
             overflow-y: scroll;
             padding-right: 1rem;
@@ -144,6 +145,7 @@
                         font-weight: bold;
                         line-height: 1.3;
                         word-break: break-all;
+                        max-width: 90%;
                     }
 
                     .fuw-selected-files--file-size {
@@ -177,7 +179,8 @@
         }
     }
 
-    .fuw-cancel-btn {
+    .fuw-cancel-btn,
+    .fuw-close-selected-btn {
         cursor: pointer;
     }
 
@@ -186,6 +189,9 @@
     }
 
     .modal {
+        .modal-header {
+            gap: 0.5rem;
+        }
         .modal-body {
             min-height: 145px;
             display: flex;
@@ -197,5 +203,9 @@
         .modal-inner-footer {
             padding: 0.75rem 0 0 0;
         }
+    }
+
+    &.form-group .btn {
+        position: static;
     }
 }

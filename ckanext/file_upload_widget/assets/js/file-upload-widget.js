@@ -22,35 +22,6 @@ ckan.module("file-upload-widget", function ($, _) {
         options: {
             instanceId: null,
         },
-        templates: {
-            selectedFileItem: (fileId, fileName, fileSize, fileType, fileUploaded) => `
-                <li
-                    class="fuw-selected-files--file-item-wrapper fuw-selected-file"
-                    fuw-file-name="${fileName}"
-                    fuw-file-id="${fileId}"
-                    fuw-file-size="${fileSize}"
-                    fuw-file-type="${fileType}"
-                    fuw-file-uploaded="${fileUploaded}"
-                    >
-                    <div class="fuw-selected-files--file-preview">
-                        <div class="file-tile--file-icon">
-                            <svg aria-hidden="true" focusable="false" width="25" height="25" viewBox="0 0 25 25">
-                                <g fill="#A7AFB7" fill-rule="nonzero">
-                                    <path d="M5.5 22a.5.5 0 0 1-.5-.5v-18a.5.5 0 0 1 .5-.5h10.719a.5.5 0 0 1 .367.16l3.281 3.556a.5.5 0 0 1 .133.339V21.5a.5.5 0 0 1-.5.5h-14zm.5-1h13V7.25L16 4H6v17z"></path>
-                                    <path d="M15 4v3a1 1 0 0 0 1 1h3V7h-3V4h-1z"></path>
-                                </g>
-                            </svg>
-                        </div>
-                    </div>
-                    <div class="fuw-selected-files--file-info">
-                        <div class="fuw-selected-files--file-name">${fileName}</div>
-                        <div class="fuw-selected-files--file-size">${fileSize}</div>
-                    </div>
-                    ${!fileUploaded ? '<i class="fa-solid fa-upload file-tile--file-upload"></i>' : ""}
-                    <i class="fa-solid fa-times file-tile--file-remove"></i>
-                </li>
-            `
-        },
         initialize: function () {
             $.proxyAll(this, /_/);
 
@@ -339,7 +310,7 @@ ckan.module("file-upload-widget", function ($, _) {
 
             if (fileUrl.length && this.urlWindow.find("input").isValid()) {
                 this.urlWindow.find("input").val("");
-                this._handleFile({ name: fileUrl, size: 0, fuw_type: "url"});
+                this._handleFile({ id: "", name: fileUrl, size: 0, fuw_type: "url" });
             } else {
                 this.urlWindow.find("input").focus();
                 this.urlWindow.find("input").get(0).reportValidity();
@@ -357,10 +328,10 @@ ckan.module("file-upload-widget", function ($, _) {
 
         _addFileItem: function (fileId, fileName, fileSize, fileType = "file", fileUploaded = false) {
             const files = this.getDataFromLocalStorage(this.lsSelectedFilesKey) || [];
-            const fileItem = $(this.templates.selectedFileItem(
+            const fileItem = $(this._selectedFileItemTemplate(
                 fileId,
-                this._truncateFileName(fileName),
-                this._formatFileSize(fileSize),
+                fileName,
+                fileSize,
                 fileType,
                 fileUploaded
             ));
@@ -425,7 +396,7 @@ ckan.module("file-upload-widget", function ($, _) {
 
             fileEl.remove();
 
-            debugger
+            // Remove file from the file input
             if (fileEl.attr("fuw-file-type") === "file" && !fileEl.attr("fuw-file-id")) {
                 let dt = new DataTransfer();
                 let file_list = this.fileInput.get(0).files;
@@ -488,8 +459,50 @@ ckan.module("file-upload-widget", function ($, _) {
          * in the local storage
          */
         _clearStoredData: function () {
-            console.log(this.lsSelectedFilesKey);
             localStorage.removeItem(this.lsSelectedFilesKey);
+        },
+
+        /**
+         * Create a template for the selected file element
+         *
+         * @param {String} fileId - file id
+         * @param {*} fileName - file name
+         * @param {*} fileSize - file size
+         * @param {*} fileType - file type
+         * @param {*} fileUploaded - is file already uploaded
+         *
+         * @returns {String} - template for the selected file element
+         */
+        _selectedFileItemTemplate: function (fileId, fileName, fileSize, fileType, fileUploaded) {
+            let mungedFileName = this._truncateFileName(fileName);
+            let formattedFileSize = this._formatFileSize(fileSize);
+
+            return `<li
+                class="fuw-selected-files--file-item-wrapper fuw-selected-file"
+                fuw-file-name="${fileName}"
+                fuw-file-id="${fileId}"
+                fuw-file-size="${fileSize}"
+                fuw-file-type="${fileType}"
+                fuw-file-uploaded="${fileUploaded}"
+                >
+                <div class="fuw-selected-files--file-preview">
+                    <div class="file-tile--file-icon">
+                        <svg aria-hidden="true" focusable="false" width="25" height="25" viewBox="0 0 25 25">
+                            <g fill="#A7AFB7" fill-rule="nonzero">
+                                <path d="M5.5 22a.5.5 0 0 1-.5-.5v-18a.5.5 0 0 1 .5-.5h10.719a.5.5 0 0 1 .367.16l3.281 3.556a.5.5 0 0 1 .133.339V21.5a.5.5 0 0 1-.5.5h-14zm.5-1h13V7.25L16 4H6v17z"></path>
+                                <path d="M15 4v3a1 1 0 0 0 1 1h3V7h-3V4h-1z"></path>
+                            </g>
+                        </svg>
+                    </div>
+                </div>
+                <div class="fuw-selected-files--file-info">
+                    <div class="fuw-selected-files--file-name">${mungedFileName}</div>
+                    <div class="fuw-selected-files--file-size">${formattedFileSize}</div>
+                </div>
+                ${!fileUploaded ? '<i class="fa-solid fa-upload file-tile--file-upload"></i>' : ""}
+                <i class="fa-solid fa-times file-tile--file-remove"></i>
+            </li>
+            `
         }
     };
 });

@@ -3,11 +3,15 @@ $.fn.isValid = function () {
 }
 
 $.fn.hideEl = function () {
-    this[0].addClass('hidden');
+    this[0].classList.add('hidden');
 }
 
 $.fn.showEl = function () {
-    this[0].removeClass('hidden');
+    this[0].classList.remove('hidden');
+}
+
+$.fn.toggleEl = function (flag) {
+    flag ? this.showEl() : this.hideEl();
 }
 
 ckan.module("file-upload-widget", function ($, _) {
@@ -42,6 +46,10 @@ ckan.module("file-upload-widget", function ($, _) {
                 return
             };
 
+
+            this.fileAdapter = new ckan.CKANEXT_FILES.adapters.Standard();
+            this.urlAdapter = new ckan.CKANEXT_FILES.adapters.Standard({"storage": "link"});
+
             this.lsSelectedFilesKey = 'fuw-selected-files:' + this.options.instanceId,
 
             this._clearStoredData();
@@ -53,7 +61,7 @@ ckan.module("file-upload-widget", function ($, _) {
             this.mainWindow = this.el.find(this.const.mainWindowBlock);
             this.urlWindow = this.el.find(this.const.urlInputBlock);
             this.mediaWindow = this.el.find(this.const.mediaInputBlock);
-            this.mediaWindowFooter = this.mediaWindow.find(this.const.mediaWindowFooter);
+            this.mediaWindowFooter = this.el.find(this.const.mediaWindowFooter);
             this.selectionWindow = this.el.find(this.const.selectedBlock);
 
             this.fileSearchInput = this.el.find('#fuw-media-input--search');
@@ -84,8 +92,17 @@ ckan.module("file-upload-widget", function ($, _) {
             this.fileInput.on('change', this._onFileSelected);
             this.openSelectedFilesBtn.on('click', this._onOpenSelectedFiles);
 
+            this.fileAdapter.addEventListener("progress", (e) => {
+                console.log(e.detail)
+            });
+
+            this.urlAdapter.addEventListener("progress", (e) => {
+                console.log(e.detail)
+            });
+
             // Bind events on non existing elements
             $("body").on("click", ".file-tile--file-remove", this._onRemoveSelectedFile);
+            $("body").on("click", ".file-tile--file-upload", this._onUploadSelectedFile);
 
             // Dropzone events
             this.dropZoneArea.on("drop", this._onDropFile);
@@ -125,8 +142,8 @@ ckan.module("file-upload-widget", function ($, _) {
          */
         _onUrlInputTriggered: function (e) {
             this._enableUrlWindow();
-            this.mainWindow.toggle();
-            this.cancelBtn.toggle();
+            this.mainWindow.hideEl();
+            this.cancelBtn.showEl();
         },
 
         /**
@@ -138,8 +155,8 @@ ckan.module("file-upload-widget", function ($, _) {
          */
         _onMediaInputTriggered: function (e) {
             this._enableMediaWindow();
-            this.mainWindow.toggle();
-            this.cancelBtn.toggle();
+            this.mainWindow.hideEl();
+            this.cancelBtn.showEl();
         },
 
         /**
@@ -154,30 +171,30 @@ ckan.module("file-upload-widget", function ($, _) {
             this._disableUrlWindow();
             this._disableMediaWindow();
 
-            this.selectionWindow.hide();
-            this.cancelBtn.hide();
-            this.mainWindow.show();
+            this.selectionWindow.hideEl();
+            this.cancelBtn.hideEl();
+            this.mainWindow.showEl();
         },
 
         _enableUrlWindow: function () {
             this.urlWindow.find("input").prop("disabled", false);
-            this.urlWindow.show();
+            this.urlWindow.showEl();
         },
 
         _disableUrlWindow: function () {
             this.urlWindow.find("input").prop("disabled", true);
-            this.urlWindow.hide();
+            this.urlWindow.hideEl();
         },
 
         _enableMediaWindow: function () {
             this.mediaWindow.find("input").prop("disabled", false);
-            this.mediaWindow.show();
+            this.mediaWindow.showEl();
         },
 
         _disableMediaWindow: function () {
             this.mediaWindow.find("input").prop("disabled", true);
-            this.mediaWindowFooter.hide();
-            this.mediaWindow.hide();
+            this.mediaWindowFooter.hideEl();
+            this.mediaWindow.hideEl();
         },
 
         /**
@@ -198,9 +215,9 @@ ckan.module("file-upload-widget", function ($, _) {
                 let title = $(element).find("label span.file-name").text().trim().toLowerCase();
 
                 if (!!search && title.indexOf(search) === -1) {
-                    $(element).hide();
+                    $(element).hideEl();
                 } else {
-                    $(element).show();
+                    $(element).showEl();
 
                     isEmpty = false;
 
@@ -211,11 +228,11 @@ ckan.module("file-upload-widget", function ($, _) {
             let visibleFilesNum = this.el.find("li.files--file-item:visible").length;
 
             if (isEmpty && !visibleFilesNum) {
-                this.el.find(".fuw-media-input--empty").show();
-                this.el.find(".fuw-media-input--files").hide();
+                this.el.find(".fuw-media-input--empty").showEl();
+                this.el.find(".fuw-media-input--files").hideEl();
             } else {
-                this.el.find(".fuw-media-input--empty").hide();
-                this.el.find(".fuw-media-input--files").show();
+                this.el.find(".fuw-media-input--empty").hideEl();
+                this.el.find(".fuw-media-input--files").showEl();
             }
         },
 
@@ -253,7 +270,7 @@ ckan.module("file-upload-widget", function ($, _) {
             let selectedFilesNum = this._countSelectedMediaFiles();
 
             this.fileSelectBtn.find("span").text(selectedFilesNum);
-            this.el.find(".modal-footer").toggle(!!selectedFilesNum);
+            this.el.find(".modal-footer").toggleEl(!!selectedFilesNum);
         },
 
         _onMediaFileSelected: function (e) {
@@ -269,7 +286,7 @@ ckan.module("file-upload-widget", function ($, _) {
 
             this._disableUrlWindow();
             this._disableMediaWindow();
-            this.selectionWindow.show();
+            this.selectionWindow.showEl();
         },
 
         /**
@@ -339,7 +356,9 @@ ckan.module("file-upload-widget", function ($, _) {
 
             this._disableUrlWindow();
             this._disableMediaWindow();
-            this.selectionWindow.show();
+
+            this._toggleSelectedFilesButton(1);
+            this.selectionWindow.showEl();
         },
 
         _addFileItem: function (fileId, fileName, fileSize, fileType = "file", fileUploaded = false) {
@@ -439,16 +458,31 @@ ckan.module("file-upload-widget", function ($, _) {
         },
 
         _toggleFileSelectionWindow: function (flag) {
-            this.selectionWindow.toggle(flag);
+            this.selectionWindow.toggleEl(flag);
 
             if (!flag) {
-                this.mainWindow.show();
-                this.cancelBtn.hide();
+                this.mainWindow.showEl();
+                this.cancelBtn.hideEl();
             }
         },
 
         _toggleSelectedFilesButton: function (flag) {
-            this.openSelectedFilesBtn.toggle(flag);
+            this.openSelectedFilesBtn.toggleEl(flag);
+        },
+
+        _onUploadSelectedFile: function (e) {
+            let fileItem = $(e.target).closest(this.const.selectedFileItem);
+
+            if (fileItem.attr("fuw-file-uploaded") === "true") {
+                return;
+            }
+
+            if (fileItem.attr("fuw-file-type") === "url") {
+                let url = fileItem.attr("fuw-file-name");
+                const file = new File([url], "URL", { type: "text/plain" });
+
+                this.urlAdapter.upload(file)
+            }
         },
 
         /**
@@ -522,7 +556,7 @@ ckan.module("file-upload-widget", function ($, _) {
                     <div class="fuw-selected-files--file-name">${mungedFileName}</div>
                     <div class="fuw-selected-files--file-size">${formattedFileSize}</div>
                 </div>
-                ${!fileUploaded ? '<i class="fa-solid fa-upload file-tile--file-upload"></i>' : ""}
+                ${!fileId && !fileUploaded ? '<i class="fa-solid fa-upload file-tile--file-upload"></i>' : ""}
                 <i class="fa-solid fa-times file-tile--file-remove"></i>
             </li>
             `
@@ -541,11 +575,11 @@ ckan.module("file-upload-widget", function ($, _) {
 
         _onCloseSelectedFiles: function (e) {
             // this._onCancelAction();
-            this.selectionWindow.hide();
+            this.selectionWindow.hideEl();
         },
 
         _onOpenSelectedFiles: function (e) {
-            this.selectionWindow.show();
+            this.selectionWindow.showEl();
         },
 
 

@@ -1,18 +1,18 @@
 $.fn.isValid = function () {
-    return this[0].checkValidity()
-}
+    return this[0].checkValidity();
+};
 
 $.fn.hideEl = function () {
-    this[0].classList.add('hidden');
-}
+    this[0].classList.add("hidden");
+};
 
 $.fn.showEl = function () {
-    this[0].classList.remove('hidden');
-}
+    this[0].classList.remove("hidden");
+};
 
 $.fn.toggleEl = function (flag) {
     flag ? this.showEl() : this.hideEl();
-}
+};
 
 /**
  * Generate UUID v4
@@ -21,8 +21,11 @@ $.fn.toggleEl = function (flag) {
  * @returns {String} - UUID v4
  */
 function generateUUID4() {
-    return "10000000-1000-4000-8000-100000000000".replace(/[018]/g, c =>
-        (+c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> +c / 4).toString(16)
+    return "10000000-1000-4000-8000-100000000000".replace(/[018]/g, (c) =>
+        (
+            +c ^
+            (crypto.getRandomValues(new Uint8Array(1))[0] & (15 >> (+c / 4)))
+        ).toString(16)
     );
 }
 
@@ -31,39 +34,39 @@ ckan.module("file-upload-widget", function ($, _) {
 
     return {
         const: {
-            fileInputButton: '.btn-file-input',
-            urlInputButton: '.btn-url-input',
-            mediaInputButton: '.btn-media-input',
-            mainWindowBlock: '.fuw-main-window',
-            urlInputBlock: '.fuw-url-input',
-            mediaInputBlock: '.fuw-media-input',
-            selectedBlock: '.fuw-selected-files',
-            cancelBtn: '.fuw-cancel-btn',
-            discardBtn: '.fuw-discard-btn',
-            uploadAllSelectedBtn: '.fuw-upload-all-btn',
-            closeSelectedFilesBtn: '.fuw-close-selected-btn',
-            openSelectedFilesBtn: '.fuw-open-selected-btn',
-            mediaSelectBtn: '.fuw-media-select-btn',
-            dropZone: '.fuw-main-window__dropzone',
-            selectedFiles: '.fuw-selected-files--list',
-            mediaFilesContainer: '.fuw-media-input--files',
-            mediaFilesEmptyContainer: '.fuw-media-input--empty',
-            mediaWindowFooter: '.modal-footer--media',
-            selectedFileItem: 'li.fuw-selected-file',
-            fileProgressContainer: '.fuw-selected-files--progress',
+            fileInputButton: ".btn-file-input",
+            urlInputButton: ".btn-url-input",
+            mediaInputButton: ".btn-media-input",
+            mainWindowBlock: ".fuw-main-window",
+            urlInputBlock: ".fuw-url-input",
+            mediaInputBlock: ".fuw-media-input",
+            selectedBlock: ".fuw-selected-files",
+            cancelBtn: ".fuw-cancel-btn",
+            discardBtn: ".fuw-discard-btn",
+            uploadAllSelectedBtn: ".fuw-upload-all-btn",
+            closeSelectedFilesBtn: ".fuw-close-selected-btn",
+            openSelectedFilesBtn: ".fuw-open-selected-btn",
+            mediaSelectBtn: ".fuw-media-select-btn",
+            dropZone: ".fuw-main-window__dropzone",
+            selectedFiles: ".fuw-selected-files--list",
+            mediaFilesContainer: ".fuw-media-input--files",
+            mediaFilesEmptyContainer: ".fuw-media-input--empty",
+            mediaWindowFooter: ".modal-footer--media",
+            selectedFileItem: "li.fuw-selected-file",
+            fileProgressContainer: ".fuw-selected-files--progress",
             uploadedFilesCounter: ".fuw-uploaded-files-counter",
 
-            attrFileName: 'fuw-file-name',
-            attrFileId: 'fuw-file-id',
-            attrFileSize: 'fuw-file-size',
-            attrFileType: 'fuw-file-type',
-            attrFileUploaded: 'fuw-file-uploaded',
+            attrFileName: "fuw-file-name",
+            attrFileId: "fuw-file-id",
+            attrFileSize: "fuw-file-size",
+            attrFileType: "fuw-file-type",
+            attrFileUploaded: "fuw-file-uploaded",
 
             type: {
                 file: "file",
                 url: "url",
-                media: "media"
-            }
+                media: "media",
+            },
         },
         options: {
             instanceId: null,
@@ -73,17 +76,19 @@ ckan.module("file-upload-widget", function ($, _) {
 
             if (!this.options.instanceId) {
                 log.error("Widget instance ID is required");
-                return
-            };
+                return;
+            }
 
             window.fuwProgressBars = window.fuwProgressBars || {};
+            window.fuwProgressBars[this.options.instanceId] = {};
 
             this.fileAdapter = new ckan.CKANEXT_FILES.adapters.Standard();
             this.urlAdapter = new ckan.CKANEXT_FILES.adapters.Standard({
-                "storage": "link"
-            }, true);
+                storage: "link",
+            });
 
-            this.lsSelectedFilesKey = 'fuw-selected-files:' + this.options.instanceId;
+            this.lsSelectedFilesKey =
+                "fuw-selected-files:" + this.options.instanceId;
 
             this._clearStoredData();
 
@@ -97,68 +102,110 @@ ckan.module("file-upload-widget", function ($, _) {
             this.mediaWindowFooter = this.el.find(this.const.mediaWindowFooter);
             this.selectionWindow = this.el.find(this.const.selectedBlock);
 
-            this.fileIdsInput = this.el.find(`[name="${this.options.instanceId}"]`);
-            this.fileSearchInput = this.el.find('#fuw-media-input--search');
+            this.fileIdsInput = this.el.find(
+                `[name="${this.options.instanceId}"]`
+            );
+            this.fileSearchInput = this.el.find("#fuw-media-input--search");
             this.mediaSelectBtn = this.el.find(this.const.mediaSelectBtn);
-            this.cancelFileSelectBtn = this.el.find('.btn-cancel-file-select');
+            this.cancelFileSelectBtn = this.el.find(".btn-cancel-file-select");
             this.dropZoneArea = this.el.find(this.const.dropZone);
             this.fileInput = this.el.find('input[type="file"]');
-            this.selectedFilesContainer = this.el.find(this.const.selectedFiles);
+            this.selectedFilesContainer = this.el.find(
+                this.const.selectedFiles
+            );
             this.urlImportBtn = this.urlWindow.find(".btn-url-import");
-            this.mediaFilesContainer = this.el.find(this.const.mediaFilesContainer);
-            this.mediaFilesEmptyContainer = this.el.find(this.const.mediaFilesEmptyContainer);
-            this.uploadedFilesCounter = this.el.find(this.const.uploadedFilesCounter);
+            this.mediaFilesContainer = this.el.find(
+                this.const.mediaFilesContainer
+            );
+            this.mediaFilesEmptyContainer = this.el.find(
+                this.const.mediaFilesEmptyContainer
+            );
+            this.uploadedFilesCounter = this.el.find(
+                this.const.uploadedFilesCounter
+            );
 
             this.cancelBtn = this.el.find(this.const.cancelBtn);
             this.discardBtn = this.el.find(this.const.discardBtn);
-            this.closeSelectedFilesBtn = this.el.find(this.const.closeSelectedFilesBtn);
-            this.openSelectedFilesBtn = this.el.find(this.const.openSelectedFilesBtn);
-            this.uploadAllSelectedBtn = this.el.find(this.const.uploadAllSelectedBtn);
+            this.closeSelectedFilesBtn = this.el.find(
+                this.const.closeSelectedFilesBtn
+            );
+            this.openSelectedFilesBtn = this.el.find(
+                this.const.openSelectedFilesBtn
+            );
+            this.uploadAllSelectedBtn = this.el.find(
+                this.const.uploadAllSelectedBtn
+            );
 
             // Bind events
             this.fileInputBtn.on("click", this._onFileInputTriggered);
             this.urlInputBtn.on("click", this._onUrlInputTriggered);
             this.mediaInputBtn.on("click", this._onMediaInputTriggered);
             this.cancelBtn.on("click", this._onCancelAction);
-            this.fileSearchInput.on('input', this._onFileSearch);
+            this.fileSearchInput.on("input", this._onFileSearch);
             this.cancelFileSelectBtn.on("click", this._onCancelMediaFileSelect);
-            this.urlImportBtn.on('click', this._onUrlImport);
-            this.mediaSelectBtn.on('click', this._onMediaFileSelected);
-            this.discardBtn.on('click', this._onDiscardSelectedFiles);
-            this.uploadAllSelectedBtn.on('click', this._onUploadAllSelectedFiles);
-            this.closeSelectedFilesBtn.on('click', this._onCloseSelectedFiles);
-            this.fileInput.on('change', this._onFileSelected);
-            this.openSelectedFilesBtn.on('click', this._onOpenSelectedFiles);
+            this.urlImportBtn.on("click", this._onUrlImport);
+            this.mediaSelectBtn.on("click", this._onMediaFileSelected);
+            this.discardBtn.on("click", this._onDiscardSelectedFiles);
+            this.uploadAllSelectedBtn.on(
+                "click",
+                this._onUploadAllSelectedFiles
+            );
+            this.closeSelectedFilesBtn.on("click", this._onCloseSelectedFiles);
+            this.fileInput.on("change", this._onFileSelected);
+            this.openSelectedFilesBtn.on("click", this._onOpenSelectedFiles);
 
-            this.fileAdapter.addEventListener("progress", this._onUploadProgress);
-            this.urlAdapter.addEventListener("progress", this._onUploadProgress);
+            this.fileAdapter.addEventListener(
+                "progress",
+                this._onUploadProgress
+            );
+            this.urlAdapter.addEventListener(
+                "progress",
+                this._onUploadProgress
+            );
             this.fileAdapter.addEventListener("finish", this._onFinishUpload);
             this.urlAdapter.addEventListener("finish", this._onFinishUpload);
             this.fileAdapter.addEventListener("fail", this._onFailUpload);
             this.urlAdapter.addEventListener("fail", this._onFailUpload);
 
             // Bind events on non existing elements
-            $("body").on("click", ".file-tile--file-remove", this._onRemoveSelectedFile);
-            $("body").on("click", ".file-tile--file-upload", this._onUploadSelectedFile);
-            $("body").on('li.files--file-item input').on('change', this._onMediaFileSelect);
+            $("body").on(
+                "click",
+                ".file-tile--file-remove",
+                this._onRemoveSelectedFile
+            );
+            $("body").on(
+                "click",
+                ".file-tile--file-upload",
+                this._onUploadSelectedFile
+            );
+            $("body")
+                .on("li.files--file-item input")
+                .on("change", this._onMediaFileSelect);
 
             // Dropzone events
             this.dropZoneArea.on("drop", this._onDropFile);
-            ["dragenter", "dragover", "dragleave", "drop"].forEach(eventName => {
-                this.dropZoneArea.on(eventName, this._preventDropDefaults)
-                $(document.body).on(eventName, this._preventDropDefaults)
+            ["dragenter", "dragover", "dragleave", "drop"].forEach(
+                (eventName) => {
+                    this.dropZoneArea.on(eventName, this._preventDropDefaults);
+                    $(document.body).on(eventName, this._preventDropDefaults);
+                }
+            );
+            ["dragenter", "dragover"].forEach((eventName) => {
+                this.dropZoneArea.on(eventName, this._highlightDropZone);
             });
-            ["dragenter", "dragover"].forEach(eventName => {
-                this.dropZoneArea.on(eventName, this._highlightDropZone)
+            ["dragleave", "drop"].forEach((eventName) => {
+                this.dropZoneArea.on(eventName, this._unhighlightDropZone);
             });
-            ["dragleave", "drop"].forEach(eventName => {
-                this.dropZoneArea.on(eventName, this._unhighlightDropZone)
-            })
 
             // ON INIT
             this._recreateSelectedFiles();
             this._updateMediaGallery();
-            this._updateUploadedFilesCounter(this.fileIdsInput.val().split(",").filter(i => i).length);
+            this._updateUploadedFilesCounter(
+                this.fileIdsInput
+                    .val()
+                    .split(",")
+                    .filter((i) => i).length
+            );
         },
 
         /**
@@ -248,8 +295,12 @@ ckan.module("file-upload-widget", function ($, _) {
             let search = this.fileSearchInput.val().toLowerCase();
             let isEmpty = true;
 
-            this.mediaWindow.find('li.files--file-item').each((_, element) => {
-                let title = $(element).find("label span.file-name").text().trim().toLowerCase();
+            this.mediaWindow.find("li.files--file-item").each((_, element) => {
+                let title = $(element)
+                    .find("label span.file-name")
+                    .text()
+                    .trim()
+                    .toLowerCase();
 
                 if (!!search && title.indexOf(search) === -1) {
                     $(element).hideEl();
@@ -259,10 +310,12 @@ ckan.module("file-upload-widget", function ($, _) {
                     isEmpty = false;
 
                     this._highlightText(element, search);
-                };
+                }
             });
 
-            let visibleFilesNum = this.el.find("li.files--file-item:visible").length;
+            let visibleFilesNum = this.el.find(
+                "li.files--file-item:visible"
+            ).length;
 
             if (isEmpty && !visibleFilesNum) {
                 this.el.find(".fuw-media-input--empty").showEl();
@@ -288,7 +341,7 @@ ckan.module("file-upload-widget", function ($, _) {
             let highlightedName = originalName;
 
             if (text) {
-                let regex = new RegExp(text, 'gi');
+                let regex = new RegExp(text, "gi");
 
                 highlightedName = originalName.replace(regex, function (match) {
                     return "<span class='highlight'>" + match + "</span>";
@@ -311,19 +364,23 @@ ckan.module("file-upload-widget", function ($, _) {
         },
 
         _onMediaFileSelected: function (e) {
-            this.el.find('li.files--file-item input:checked').each((_, element) => {
-                let fileItem = $(element).parent("li");
+            this.el
+                .find("li.files--file-item input:checked")
+                .each((_, element) => {
+                    let fileItem = $(element).parent("li");
 
-                this._addFileItem(
-                    fileItem.attr(this.const.attrFileId),
-                    fileItem.attr(this.const.attrFileName),
-                    fileItem.attr(this.const.attrFileSize),
-                    this.const.type.media,
-                    true
-                );
-            });
+                    this._addFileItem(
+                        fileItem.attr(this.const.attrFileId),
+                        fileItem.attr(this.const.attrFileName),
+                        fileItem.attr(this.const.attrFileSize),
+                        this.const.type.media,
+                        true
+                    );
+                });
 
-            this.el.find('li.files--file-item input:checked').prop('checked', false);
+            this.el
+                .find("li.files--file-item input:checked")
+                .prop("checked", false);
 
             this._disableUrlWindow();
             this._disableMediaWindow();
@@ -338,7 +395,7 @@ ckan.module("file-upload-widget", function ($, _) {
          * @returns {Number} - number of selected files
          */
         _countSelectedMediaFiles: function () {
-            return this.el.find('li.files--file-item input:checked').length;
+            return this.el.find("li.files--file-item input:checked").length;
         },
 
         /**
@@ -347,21 +404,23 @@ ckan.module("file-upload-widget", function ($, _) {
          * @param {Event} e
          */
         _onCancelMediaFileSelect: function (e) {
-            this.el.find('li.files--file-item input:checked').prop('checked', false);
-            this.el.find('li.files--file-item input:first').trigger('change');
+            this.el
+                .find("li.files--file-item input:checked")
+                .prop("checked", false);
+            this.el.find("li.files--file-item input:first").trigger("change");
         },
 
         _preventDropDefaults: function (e) {
-            e.preventDefault()
-            e.stopPropagation()
+            e.preventDefault();
+            e.stopPropagation();
         },
 
         _highlightDropZone: function (e) {
-            this.dropZoneArea.addClass('active');
+            this.dropZoneArea.addClass("active");
         },
 
         _unhighlightDropZone: function (e) {
-            this.dropZoneArea.removeClass('active');
+            this.dropZoneArea.removeClass("active");
         },
 
         _onDropFile: function (e) {
@@ -375,7 +434,7 @@ ckan.module("file-upload-widget", function ($, _) {
                 dt.items.add(file_list[i]);
             }
 
-            Array.from(e.originalEvent.dataTransfer.files).forEach(file => {
+            Array.from(e.originalEvent.dataTransfer.files).forEach((file) => {
                 file.id = generateUUID4();
                 file.fuw_type = this.const.type.file;
                 this._handleFile(file);
@@ -387,11 +446,11 @@ ckan.module("file-upload-widget", function ($, _) {
         },
 
         _onFileSelected: function (e) {
-            Array.from(e.target.files).forEach(file => {
+            Array.from(e.target.files).forEach((file) => {
                 file.id = generateUUID4();
                 file.fuw_type = this.const.type.file;
                 this._handleFile(file);
-            })
+            });
         },
 
         _onUrlImport: function (e) {
@@ -403,13 +462,12 @@ ckan.module("file-upload-widget", function ($, _) {
                     id: generateUUID4(),
                     name: fileUrl,
                     size: 0,
-                    fuw_type: this.const.type.url
+                    fuw_type: this.const.type.url,
                 });
             } else {
                 this.urlWindow.find("input").focus();
                 this.urlWindow.find("input").get(0).reportValidity();
             }
-
         },
 
         _handleFile: function (file) {
@@ -422,21 +480,33 @@ ckan.module("file-upload-widget", function ($, _) {
             this.selectionWindow.showEl();
         },
 
-        _addFileItem: function (fileId, fileName, fileSize, fileType = this.const.type.file, fileUploaded = false) {
-            const files = this.getDataFromLocalStorage(this.lsSelectedFilesKey) || [];
-            const fileItem = $(this._selectedFileItemTemplate(
-                fileId,
-                fileName,
-                fileSize,
-                fileType,
-                fileUploaded
-            ));
+        _addFileItem: function (
+            fileId,
+            fileName,
+            fileSize,
+            fileType = this.const.type.file,
+            fileUploaded = false
+        ) {
+            const files =
+                this.getDataFromLocalStorage(this.lsSelectedFilesKey) || [];
+            const fileItem = $(
+                this._selectedFileItemTemplate(
+                    fileId,
+                    fileName,
+                    fileSize,
+                    fileType,
+                    fileUploaded
+                )
+            );
 
             for (const file of files) {
                 if (file.id && file.id === fileId) {
                     alert("File already selected");
                     return;
-                } else if (fileType == this.const.type.url && file.name === fileName) {
+                } else if (
+                    fileType == this.const.type.url &&
+                    file.name === fileName
+                ) {
                     alert("File already selected");
                     return;
                 }
@@ -445,7 +515,7 @@ ckan.module("file-upload-widget", function ($, _) {
             files.push({
                 id: fileId,
                 name: fileName,
-                size: fileSize
+                size: fileSize,
             });
 
             this.storeDataInLocalStorage(this.lsSelectedFilesKey, files);
@@ -460,12 +530,14 @@ ckan.module("file-upload-widget", function ($, _) {
          * @returns {String} formatted file size
          */
         _formatFileSize: function (bytes) {
-            if (bytes === 0) return '0 Bytes';
+            if (bytes === 0) return "0 Bytes";
             const k = 1024;
-            const sizes = ['B', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
+            const sizes = ["B", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"];
             const i = Math.floor(Math.log(bytes) / Math.log(k));
 
-            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+            return (
+                parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i]
+            );
         },
 
         /**
@@ -494,25 +566,33 @@ ckan.module("file-upload-widget", function ($, _) {
         _onRemoveSelectedFile: function (e) {
             let fileEl = $(e.target).closest(this.const.selectedFileItem);
 
-            let files = this.getDataFromLocalStorage(this.lsSelectedFilesKey) || [];
-            files = files.filter(file => file.name !== fileEl.attr(this.const.attrFileName));
+            let files =
+                this.getDataFromLocalStorage(this.lsSelectedFilesKey) || [];
+            files = files.filter(
+                (file) => file.name !== fileEl.attr(this.const.attrFileName)
+            );
 
             fileEl.remove();
 
             // Remove file from the file input
-            if (fileEl.attr("fuw-file-type") === this.const.type.file && !fileEl.attr(this.const.attrFileId)) {
+            if (
+                fileEl.attr("fuw-file-type") === this.const.type.file &&
+                !fileEl.attr(this.const.attrFileId)
+            ) {
                 let dt = new DataTransfer();
                 let file_list = this.fileInput.get(0).files;
 
                 for (let i = 0; i < file_list.length; i++) {
-                    if (file_list[i].name != fileEl.attr(this.const.attrFileName)) {
+                    if (
+                        file_list[i].name !=
+                        fileEl.attr(this.const.attrFileName)
+                    ) {
                         dt.items.add(file_list[i]);
-                    };
-
+                    }
                 }
 
                 this.fileInput.get(0).files = dt.files;
-            };
+            }
 
             this.storeDataInLocalStorage(this.lsSelectedFilesKey, files);
 
@@ -536,7 +616,10 @@ ckan.module("file-upload-widget", function ($, _) {
         },
 
         _toggleSelectedFilesButton: function (fileNum = null) {
-            let selectedFiles = fileNum ? fileNum : this._calculateSelectedFilesNum();
+            console.log(fileNum);
+            let selectedFiles = fileNum
+                ? fileNum
+                : this._calculateSelectedFilesNum();
 
             this.openSelectedFilesBtn.find("span").text(selectedFiles);
             this.openSelectedFilesBtn.toggleEl(selectedFiles);
@@ -560,12 +643,15 @@ ckan.module("file-upload-widget", function ($, _) {
         _uploadFile(fileItem) {
             let fileType = fileItem.attr(this.const.attrFileType);
             let fileId = fileItem.attr(this.const.attrFileId);
-            let fileProgressContainer = fileItem.find(this.const.fileProgressContainer);
+            let fileProgressContainer = fileItem.find(
+                this.const.fileProgressContainer
+            );
 
-            window.fuwProgressBars[fileId] = new ProgressBar.Line(fileProgressContainer.get(0), {
-                easing: 'easeInOut'
-            })
-            window.fuwProgressBars[fileId].animate(0);
+            window.fuwProgressBars[this.options.instanceId][fileId] =
+                new ProgressBar.Line(fileProgressContainer.get(0), {
+                    easing: "easeInOut",
+                });
+            window.fuwProgressBars[this.options.instanceId][fileId].animate(0);
 
             if (fileType === this.const.type.url) {
                 let url = fileItem.attr(this.const.attrFileName);
@@ -576,7 +662,7 @@ ckan.module("file-upload-widget", function ($, _) {
 
                 file.fuw_type = this.const.type.url;
                 file.id = fileId;
-                this.urlAdapter.upload(file, {})
+                this.urlAdapter.upload(file, {});
             } else if (fileType === this.const.type.file) {
                 let file = null;
                 let files = this.fileInput.get(0).files;
@@ -590,7 +676,7 @@ ckan.module("file-upload-widget", function ($, _) {
                     break;
                 }
 
-                this.fileAdapter.upload(file, {})
+                this.fileAdapter.upload(file, {});
             }
         },
 
@@ -639,7 +725,13 @@ ckan.module("file-upload-widget", function ($, _) {
          *
          * @returns {String} - template for the selected file element
          */
-        _selectedFileItemTemplate: function (fileId, fileName, fileSize, fileType, fileUploaded) {
+        _selectedFileItemTemplate: function (
+            fileId,
+            fileName,
+            fileSize,
+            fileType,
+            fileUploaded
+        ) {
             let mungedFileName = this._truncateFileName(fileName);
             let formattedFileSize = this._formatFileSize(fileSize);
 
@@ -665,13 +757,25 @@ ckan.module("file-upload-widget", function ($, _) {
                     <div class="fuw-selected-files--file-name">${mungedFileName}</div>
                     <div class="fuw-selected-files--file-size">${formattedFileSize}</div>
                 </div>
-                ${!fileUploaded ? '<i class="fa-solid fa-upload file-tile--file-upload"></i>' : ""}
+                ${
+                    !fileUploaded
+                        ? '<i class="fa-solid fa-upload file-tile--file-upload"></i>'
+                        : ""
+                }
                 <i class="fa-solid fa-times file-tile--file-remove"></i>
                 <div class="fuw-selected-files--progress"></div>
             </li>
-            `
+            `;
         },
 
+        /**
+         * Triggers when user want to discard all selected files for upload.
+         *
+         * We have to remove all files from the file input, clear the stored data
+         * so user would be able to select same files again.
+         *
+         * @param {Event} e - event
+         */
         _onDiscardSelectedFiles: function (e) {
             // remove all files from the file input
             this.fileInput.get(0).files = new DataTransfer().files;
@@ -684,14 +788,27 @@ ckan.module("file-upload-widget", function ($, _) {
             this._toggleSelectedFilesButton();
         },
 
+        /**
+         * Triggers when user wants to upload all selected files. This function
+         * will upload only files marked as not uploaded.
+         *
+         * @param {Event} e - event
+         */
         _onUploadAllSelectedFiles: function (e) {
-            let files = this.el.find(`${this.const.selectedFileItem}[${this.const.attrFileUploaded}="false"]`);
+            let files = this.el.find(
+                `${this.const.selectedFileItem}[${this.const.attrFileUploaded}="false"]`
+            );
 
             for (let i = 0; i < files.length; i++) {
                 this._uploadFile($(files[i]));
             }
         },
 
+        /**
+         * Triggers when user wants to close the selected files list
+         *
+         * @param {Event} e - event
+         */
         _onCloseSelectedFiles: function (e) {
             this.selectionWindow.hideEl();
             this.cancelBtn.hideEl();
@@ -700,10 +817,14 @@ ckan.module("file-upload-widget", function ($, _) {
             this.mainWindow.showEl();
         },
 
+        /**
+         * Triggers when user want to open a list of selected files
+         *
+         * @param {Event} e - event
+         */
         _onOpenSelectedFiles: function (e) {
             this.selectionWindow.showEl();
         },
-
 
         /**
          * Count files we've selected. This is not the same, as selected
@@ -713,38 +834,80 @@ ckan.module("file-upload-widget", function ($, _) {
          * @returns {Number} - number of selected files
          */
         _countSelectedUploadFiles: function () {
-            return this.el.find('li.files--file-item input:checked').length;
+            return this.el.find("li.files--file-item input:checked").length;
         },
 
+        /**
+         * Triggers when the file upload is in progress.
+         * We have to update the progress bar for the file.
+         *
+         * @param {Event} e - event
+         */
         _onUploadProgress: function (e) {
-            let progressbar = window.fuwProgressBars[e.detail.file.id];
+            let progressbar =
+                window.fuwProgressBars[this.options.instanceId][
+                    e.detail.file.id
+                ];
 
             if (progressbar) {
                 progressbar.animate(e.detail.loaded / e.detail.total);
             }
         },
 
+        /**
+         * Triggers when the file upload is finished.
+         *
+         * We have to remove the progress bar and replace the file id with the
+         * real file id. Also, we're updating some attributes for the file item.
+         *
+         * And we have to update the media gallery to represent the current state
+         * of the user file list.
+         *
+         * @param {Event} e - event
+         */
         _onFinishUpload: function (e) {
             console.log(e.detail);
 
-            let progressBar = window.fuwProgressBars[e.detail.file.id];
+            let progressBar =
+                window.fuwProgressBars[this.options.instanceId][
+                    e.detail.file.id
+                ];
 
             if (progressBar) {
                 progressBar.destroy();
             }
 
             this._removeUploadButtonForFile(e.detail.file.id);
-            this._replaceWithUploadedFileId(e.detail.file.id, e.detail.result.id);
-            this._updateUploadedFileSize(e.detail.result.id, e.detail.result.size);
+            this._replaceWithUploadedFileId(
+                e.detail.file.id,
+                e.detail.result.id
+            );
+            this._updateUploadedFileSize(
+                e.detail.result.id,
+                e.detail.result.size
+            );
 
             this._updateFileIdsInput();
             this._updateMediaGallery();
         },
 
+        /**
+         * Remove upload button for a file after a successful upload
+         *
+         * @param {String} fileId - file id
+         */
         _removeUploadButtonForFile: function (fileId) {
-            this.el.find(`li[fuw-file-id="${fileId}"] .file-tile--file-upload`).remove();
+            this.el
+                .find(`li[fuw-file-id="${fileId}"] .file-tile--file-upload`)
+                .remove();
         },
 
+        /**
+         * Replace a fake file uuid4 with the real file id after a success upload
+         *
+         * @param {String} currentId - current file id
+         * @param {String} uploadedId - uploaded file id
+         */
         _replaceWithUploadedFileId: function (currentId, uploadedId) {
             let fileItem = this.el.find(`li[fuw-file-id="${currentId}"]`);
 
@@ -762,20 +925,35 @@ ckan.module("file-upload-widget", function ($, _) {
             let fileItem = this.el.find(`li[fuw-file-id="${fileId}"]`);
 
             fileItem.attr(this.const.attrFileSize, fileSize);
-            fileItem.find(".fuw-selected-files--file-size").text(this._formatFileSize(fileSize));
+            fileItem
+                .find(".fuw-selected-files--file-size")
+                .text(this._formatFileSize(fileSize));
         },
 
+        /**
+         * Update file ids input with the selected files.
+         *
+         * We are doing it on:
+         *  - selectin a file from media gallery
+         *  - removing a selected file
+         *  - uploading a file
+         */
         _updateFileIdsInput: function () {
-            let files = this.el.find(`${this.const.selectedFileItem}[${this.const.attrFileUploaded}="true"]`);
+            let files = this.el.find(
+                `${this.const.selectedFileItem}[${this.const.attrFileUploaded}="true"]`
+            );
 
             let fileIds = files.map((_, element) => {
                 return $(element).attr(this.const.attrFileId);
-            })
+            });
 
             this._updateUploadedFilesCounter(fileIds.length);
             this.fileIdsInput.val(fileIds.get().join(","));
         },
 
+        /**
+         * Recreate selected files from the file ids input on script init
+         */
         _recreateSelectedFiles: function () {
             let fileIdsVal = this.fileIdsInput.val();
 
@@ -785,7 +963,7 @@ ckan.module("file-upload-widget", function ($, _) {
 
             let fileIds = this.fileIdsInput.val().split(",");
 
-            fileIds.forEach(fileId => {
+            fileIds.forEach((fileId) => {
                 this.sandbox.client.call(
                     "GET",
                     "files_file_show",
@@ -796,19 +974,31 @@ ckan.module("file-upload-widget", function ($, _) {
                             data.result.name,
                             data.result.size,
                             this.const.type.file,
-                            true)
-                    }, (resp) => {
-                        if (resp.responseJSON.error.message === "Not found: file") {
+                            true
+                        );
+                    },
+                    (resp) => {
+                        if (
+                            resp.responseJSON.error.message ===
+                            "Not found: file"
+                        ) {
                             this._removeMissingFile(fileId);
                         }
                         // TODO: some toast message?
                     }
                 );
-            })
+            });
 
             this._toggleSelectedFilesButton(fileIds.length);
         },
 
+        /**
+         * Triggers when the file upload fails for some reason.
+         *
+         * We need to kill the progress bar and show some error message.
+         *
+         * @param {Event} e - event
+         */
         _onFailUpload: function (e) {
             // implement some toast message system
             Object.entries(e.detail.reasons).forEach(([key, value]) => {
@@ -816,19 +1006,33 @@ ckan.module("file-upload-widget", function ($, _) {
                     return;
                 }
                 console.log(`${key}: ${value}`);
-            })
+            });
 
-            let progressBar = window.fuwProgressBars[e.detail.file.id];
+            let progressBar =
+                window.fuwProgressBars[this.options.instanceId][
+                    e.detail.file.id
+                ];
 
             if (progressBar) {
                 progressBar.destroy();
             }
         },
 
+        /**
+         * If the file was removed from the server, we need to remove it from
+         * the file ids input and the selected files list.
+         *
+         * This shouldn't be a really common situation, but it can happen if
+         * the file was removed from the server by an admin. Or we're syndicating
+         * the data from another CKAN instance and the file with the same id
+         * doesn't exist for an obvious reason.
+         *
+         * @param {String} fileId - file id
+         */
         _removeMissingFile: function (fileId) {
             let fileIds = this.fileIdsInput.val().split(",");
 
-            fileIds = fileIds.filter(id => id !== fileId);
+            fileIds = fileIds.filter((id) => id !== fileId);
 
             this.fileIdsInput.val(fileIds.join(","));
 
@@ -837,55 +1041,127 @@ ckan.module("file-upload-widget", function ($, _) {
             this._toggleSelectedFilesButton();
         },
 
+        /**
+         * Populate media gallery with files on a script init and when we
+         * upload a new file
+         */
         _updateMediaGallery: function () {
             this.sandbox.client.call(
                 "GET",
                 "files_file_scan",
-                "",
+                "?rows=1000", // TODO: probably it's better to implement
+                // autocomplete and do not fetch all files at once
                 (data) => {
                     let mediaFiles = data.result.results;
 
                     this.mediaFilesContainer.toggleEl(mediaFiles.length);
-                    this.mediaFilesEmptyContainer.toggleEl(mediaFiles.length === 0);
+                    this.mediaFilesEmptyContainer.toggleEl(
+                        mediaFiles.length === 0
+                    );
 
                     this.mediaFilesContainer.empty();
 
-                    data.result.results.forEach(file => {
-                        this.mediaFilesContainer.append($(this._mediaFileItemTemplate(
-                            file.id,
-                            file.name,
-                            file.size
-                        )));
+                    data.result.results.forEach((file) => {
+                        this.mediaFilesContainer.append(
+                            $(
+                                this._mediaFileItemTemplate(
+                                    file.id,
+                                    file.name,
+                                    file.size,
+                                    file.content_type
+                                )
+                            )
+                        );
                     });
-                }, (resp) => {
+                },
+                (resp) => {
                     console.error(resp);
                     // TODO: some toast message?
                 }
             );
         },
 
-        _mediaFileItemTemplate: function (fileId, fileName, fileSize) {
-            let fileIconType = "data";
+        /**
+         * Create a template for the media file item HTML element
+         *
+         * @param {String} fileId - file id
+         * @param {String} fileName - file name
+         * @param {Number} fileSize - file size
+         * @param {String} fileContentType - file content type
+         *
+         * @returns {String} - template for the media file item
+         */
+        _mediaFileItemTemplate: function (
+            fileId,
+            fileName,
+            fileSize,
+            fileContentType
+        ) {
+            let fileIconType = this._getFAIconBasedOnFileType(fileContentType);
             let mungedFileName = this._truncateFileName(fileName);
             let formattedFileSize = this._formatFileSize(fileSize);
 
-            let inputId = `file-item-${this.options.instanceId}-${fileId}`
+            let inputId = `file-item-${this.options.instanceId}-${fileId}`;
 
             return `
                 <li class="files--file-item" fuw-file-name="${fileName}" fuw-file-id="${fileId}" fuw-file-size="${fileSize}" fuw-file-type="${this.const.type.media}">
                     <input type="checkbox" name="${inputId}" id="${inputId}">
                     <label for="${inputId}">
-                        <div class="file-item--icon-wrapper file-item--icon-${fileIconType}"></div>
+                        <div class="file-item--icon-wrapper ${fileIconType}"></div>
                         <span class="file-name">${mungedFileName}</span>
                         <span class="file-size text-muted">(${formattedFileSize})</span>
                     </label>
                 </li>
-            `
+            `;
         },
 
+        /**
+         * Update uploaded files counter on an upload button
+         *
+         * @param {Number} count - number of uploaded files
+         */
         _updateUploadedFilesCounter: function (count) {
             this.uploadedFilesCounter.toggleEl(count);
             this.uploadedFilesCounter.text(count);
-        }
+        },
+
+        /**
+         * Get font awesome icon class based on a file content type
+         *
+         * @param {String} contentType - file content type
+         * @returns {String} - font awesome icon class
+         */
+        _getFAIconBasedOnFileType: function (contentType) {
+            let iconType = "fa-file";
+
+            if (contentType.startsWith("image")) {
+                iconType = "fa-file-image";
+            } else if (contentType.startsWith("audio")) {
+                iconType = "fa-file-audio";
+            } else if (contentType.startsWith("video")) {
+                iconType = "fa-file-video";
+            } else if (contentType.startsWith("text")) {
+                iconType = "fa-file-alt";
+            } else if (contentType.startsWith("application/pdf")) {
+                iconType = "fa-file-pdf";
+            } else if (contentType.startsWith("application/vnd.ms-excel")) {
+                iconType = "fa-file-excel";
+            } else if (contentType.startsWith("application/zip")) {
+                iconType = "fa-file-archive";
+            } else if (
+                contentType.startsWith("application/vnd.ms-powerpoint")
+            ) {
+                iconType = "fa-file-powerpoint";
+            } else if (
+                contentType.startsWith("application/msword") ||
+                contentType.startsWith(
+                    "application/vnd.openxmlformats-officedocument"
+                )
+            ) {
+                iconType = "fa-file-word";
+            }
+
+            return `fa ${iconType}`;
+        },
     };
 });

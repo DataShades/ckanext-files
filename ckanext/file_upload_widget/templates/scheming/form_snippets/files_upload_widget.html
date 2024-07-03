@@ -17,8 +17,8 @@
             <span class="fuw-uploaded-files-counter hidden">0</span>
         </button>
 
-        <input id="{{ 'field-' + field.field_name }}-file" type="file" name="{{ field.field_name }}-file" value="" placeholder="" class="hidden">
-        <input id="{{ 'field-' + field.field_name }}" type="hidden" name="{{ field.field_name }}" value="{{ data[field.field_name] }}" placeholder="" class="hidden">
+        <input id="{{ 'field-' + field.field_name }}-file" type="file" name="{{ field.field_name }}-file" value="" placeholder="" style="display: none">
+        <input id="{{ 'field-' + field.field_name }}" type="hidden" name="{{ field.field_name }}" value="{{ data[field.field_name] }}" placeholder="" style="display: none">
 
         {%- if field.help_text -%}
             {% set text = h.scheming_language_text(field.help_text) %}
@@ -34,7 +34,7 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <i class="fa-solid fa-angles-left fuw-cancel-btn hidden"></i>
-                    <button type="button" class="btn btn-default fuw-open-selected-btn hidden">{{ _("Selected Files") }} <span>0</span></button>
+                    <button type="button" class="btn btn-default fuw-open-selected-btn hidden">{{ _("Selected files:") }} <span>0</span></button>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">

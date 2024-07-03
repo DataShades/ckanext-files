@@ -86,6 +86,10 @@
                     .highlight {
                         background-color: yellow;
                     }
+
+                    .file-item--icon-wrapper {
+
+                    }
                 }
             }
         }
@@ -221,6 +225,9 @@
             padding: 4px 7px;
             line-height: 1;
             font-weight: bold;
+            width: 22px;
+            height: 22px;
+            display: inline-block;
         }
     }
 }

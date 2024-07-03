@@ -78,6 +78,9 @@ ckan.module("file-upload-widget", function ($, _) {
         },
         options: {
             instanceId: null,
+            maxFiles: 0,
+            disableUrl: false,
+            disableMedia: false,
         },
         initialize: function () {
             $.proxyAll(this, /_/);
@@ -86,6 +89,8 @@ ckan.module("file-upload-widget", function ($, _) {
                 log.error("Widget instance ID is required");
                 return;
             }
+
+            console.log(this.options);
 
             window.fuwProgressBars = window.fuwProgressBars || {};
             window.fuwProgressBars[this.options.instanceId] = {};
@@ -152,7 +157,7 @@ ckan.module("file-upload-widget", function ($, _) {
             this.fileSearchInput.on("input", this._onFileSearch);
             this.cancelFileSelectBtn.on("click", this._onCancelMediaFileSelect);
             this.urlImportBtn.on("click", this._onUrlImport);
-            this.mediaSelectBtn.on("click", this._onMediaFileSelected);
+            this.mediaSelectBtn.on("click", this._onMediaFilesSelected);
             this.discardBtn.on("click", this._onDiscardSelectedFiles);
             this.uploadAllSelectedBtn.on(
                 "click",
@@ -176,19 +181,9 @@ ckan.module("file-upload-widget", function ($, _) {
             this.urlAdapter.addEventListener("fail", this._onFailUpload);
 
             // Bind events on non existing elements
-            $("body").on(
-                "click",
-                ".file-tile--file-remove",
-                this._onRemoveSelectedFile
-            );
-            $("body").on(
-                "click",
-                ".file-tile--file-upload",
-                this._onUploadSelectedFile
-            );
-            $("body")
-                .on("li.files--file-item input")
-                .on("change", this._onMediaFileSelect);
+            this.selectionWindow.on("click", ".file-tile--file-remove", this._onRemoveSelectedFile);
+            this.selectionWindow.on("click", ".file-tile--file-upload", this._onUploadSelectedFile);
+            this.mediaFilesContainer.on("change", "li.files--file-item input", this._onMediaFileCheck);
 
             // Dropzone events
             this.dropZoneArea.on("drop", this._onDropFile);
@@ -208,12 +203,21 @@ ckan.module("file-upload-widget", function ($, _) {
             // ON INIT
             this._recreateSelectedFiles();
             this._updateMediaGallery();
-            this._updateUploadedFilesCounter(
-                this.fileIdsInput
-                    .val()
-                    .split(",")
-                    .filter((i) => i).length
-            );
+            this._updateUploadedFilesCounter(this._getUploadedFilesNum());
+
+            // Disable URL input
+            if (this.options.disableUrl) {
+                this.urlInputBtn.hideEl();
+                this.urlInputBtn.unbind();
+                this.urlWindow.empty();
+            }
+
+            // Disable media input
+            if (this.options.disableMedia) {
+                this.mediaInputBtn.hideEl();
+                this.mediaInputBtn.unbind();
+                this.mediaWindow.empty();
+            }
         },
 
         /**
@@ -222,6 +226,10 @@ ckan.module("file-upload-widget", function ($, _) {
          * @param {Event} e
          */
         _onFileInputTriggered: function (e) {
+            if (this._isFileNumLimitReached(e)) {
+                return e.preventDefault();
+            }
+
             this.fileInput.val("");
         },
 
@@ -233,6 +241,10 @@ ckan.module("file-upload-widget", function ($, _) {
          * @param {Event} e
          */
         _onUrlInputTriggered: function (e) {
+            if (this._isFileNumLimitReached(e)) {
+                return e.preventDefault();
+            }
+
             this._enableUrlWindow();
             this.mainWindow.hideEl();
             this.cancelBtn.showEl();
@@ -246,6 +258,10 @@ ckan.module("file-upload-widget", function ($, _) {
          * @param {Event} e
          */
         _onMediaInputTriggered: function (e) {
+            if (this._isFileNumLimitReached(e)) {
+                return e.preventDefault();
+            }
+
             this._enableMediaWindow();
             this.mainWindow.hideEl();
             this.cancelBtn.showEl();
@@ -321,9 +337,7 @@ ckan.module("file-upload-widget", function ($, _) {
                 }
             });
 
-            let visibleFilesNum = this.el.find(
-                "li.files--file-item:visible"
-            ).length;
+            let visibleFilesNum = this.el.find("li.files--file-item:visible").length;
 
             if (isEmpty && !visibleFilesNum) {
                 this.el.find(".fuw-media-input--empty").showEl();
@@ -360,18 +374,23 @@ ckan.module("file-upload-widget", function ($, _) {
         },
 
         /**
-         * Handle file selection
+         * Handle media file item selection
          *
          * @param {Event} e
          */
-        _onMediaFileSelect: function (e) {
+        _onMediaFileCheck: function (e) {
+            if (this._isFileNumLimitReached(e)) {
+                $(e.target).prop("checked", false);
+                return e.preventDefault();
+            }
+
             let selectedFilesNum = this._countSelectedMediaFiles();
 
             this.mediaSelectBtn.find("span").text(selectedFilesNum);
             this.el.find(".modal-footer").toggleEl(!!selectedFilesNum);
         },
 
-        _onMediaFileSelected: function (e) {
+        _onMediaFilesSelected: function (e) {
             this.el
                 .find("li.files--file-item input:checked")
                 .each((_, element) => {
@@ -433,6 +452,21 @@ ckan.module("file-upload-widget", function ($, _) {
         },
 
         _onDropFile: function (e) {
+            if (this._isFileNumLimitReached(e)) {
+                return e.preventDefault();
+            }
+
+            let filesLimitLeft =
+                this.options.maxFiles - this._calculateSelectedFilesNum();
+
+            if (e.originalEvent.dataTransfer.items.length > filesLimitLeft) {
+                alert(
+`You can't upload more files than the limit (${this.options.maxFiles}).
+Select not more than ${filesLimitLeft} file(s).`
+                );
+                return e.preventDefault();
+            }
+
             // add dropped files to the file input
             let dt = new DataTransfer();
 
@@ -463,6 +497,10 @@ ckan.module("file-upload-widget", function ($, _) {
         },
 
         _onUrlImport: function (e) {
+            if (this._isFileNumLimitReached(e)) {
+                return e.preventDefault();
+            }
+
             let fileUrl = this.urlWindow.find("input").val();
 
             if (fileUrl.length && this.urlWindow.find("input").isValid()) {
@@ -481,7 +519,14 @@ ckan.module("file-upload-widget", function ($, _) {
 
         _handleFile: function (file) {
             console.log(file.type);
-            this._addFileItem(file.id, file.name, file.size, file.fuw_type, false, file.type);
+            this._addFileItem(
+                file.id,
+                file.name,
+                file.size,
+                file.fuw_type,
+                false,
+                file.type
+            );
 
             this._disableUrlWindow();
             this._disableMediaWindow();
@@ -499,7 +544,8 @@ ckan.module("file-upload-widget", function ($, _) {
             fileContentType
         ) {
             console.log(fileContentType);
-            const files = this.getDataFromLocalStorage(this.lsSelectedFilesKey) || [];
+            const files =
+                this.getDataFromLocalStorage(this.lsSelectedFilesKey) || [];
             const fileItem = $(
                 this._selectedFileItemTemplate(
                     fileId,
@@ -578,8 +624,7 @@ ckan.module("file-upload-widget", function ($, _) {
         _onRemoveSelectedFile: function (e) {
             let fileEl = $(e.target).closest(this.const.selectedFileItem);
 
-            let files =
-                this.getDataFromLocalStorage(this.lsSelectedFilesKey) || [];
+            let files = this.getDataFromLocalStorage(this.lsSelectedFilesKey) || [];
             files = files.filter(
                 (file) => file.name !== fileEl.attr(this.const.attrFileName)
             );
@@ -588,7 +633,7 @@ ckan.module("file-upload-widget", function ($, _) {
 
             // Remove file from the file input
             if (
-                fileEl.attr("fuw-file-type") === this.const.type.file &&
+                fileEl.attr(this.const.attrFileType) === this.const.type.file &&
                 !fileEl.attr(this.const.attrFileId)
             ) {
                 let dt = new DataTransfer();
@@ -611,7 +656,12 @@ ckan.module("file-upload-widget", function ($, _) {
             let selectedFiles = this._calculateSelectedFilesNum() > 0;
             this._toggleFileSelectionWindow(selectedFiles);
             this._toggleSelectedFilesButton();
-            this._updateFileIdsInput();
+
+            // we want to update the file ids input only if the file was uploaded,
+            // otherwise we woudn't save it in a file ids input
+            if (fileEl.attr(this.const.attrFileUploaded) === "true") {
+                this._updateFileIdsInput();
+            }
         },
 
         _calculateSelectedFilesNum: function () {
@@ -731,7 +781,7 @@ ckan.module("file-upload-widget", function ($, _) {
             fileSize,
             fileType,
             fileUploaded,
-            fileContentType = "text/plain",
+            fileContentType = "text/plain"
         ) {
             let mungedFileName = this._truncateFileName(fileName);
             let formattedFileSize = this._formatFileSize(fileSize);
@@ -750,7 +800,10 @@ ckan.module("file-upload-widget", function ($, _) {
                     <div class="file-tile--file-icon">
                         ${
                             isImageFile
-                                ? `<object data="${this._createUrlForImagePreview(fileId, fileUploaded)}" type="${fileContentType}"></object>`
+                                ? `<object data="${this._createUrlForImagePreview(
+                                      fileId,
+                                      fileUploaded
+                                  )}" type="${fileContentType}"></object>`
                                 : ""
                         }
                         ${isImageFile ? "" : `<i class="${fileIconType}"></i>`}
@@ -918,9 +971,10 @@ ckan.module("file-upload-widget", function ($, _) {
          * @param {Event} e - event
          */
         _onFinishUpload: function (e) {
-            let progressBar = window.fuwProgressBars[this.options.instanceId][
-                e.detail.file.id
-            ];
+            let progressBar =
+                window.fuwProgressBars[this.options.instanceId][
+                    e.detail.file.id
+                ];
 
             if (progressBar) {
                 progressBar.destroy();
@@ -996,8 +1050,8 @@ ckan.module("file-upload-widget", function ($, _) {
                 return $(element).attr(this.const.attrFileId);
             });
 
-            this._updateUploadedFilesCounter(fileIds.length);
             this.fileIdsInput.val(fileIds.get().join(","));
+            this._updateUploadedFilesCounter(this._getUploadedFilesNum());
         },
 
         /**
@@ -1156,7 +1210,8 @@ ckan.module("file-upload-widget", function ($, _) {
 
             return `
                 <li class="files--file-item" fuw-file-name="${fileName}" fuw-file-id="${fileId}" fuw-file-size="${fileSize}" fuw-file-type="${
-                this.const.type.media}" fuw-file-content-type="${fileContentType}">
+                this.const.type.media
+            }" fuw-file-content-type="${fileContentType}">
                     <input type="checkbox" name="${inputId}" id="${inputId}">
                     <label for="${inputId}">
                         ${
@@ -1230,6 +1285,39 @@ ckan.module("file-upload-widget", function ($, _) {
          */
         _isImageContentType: function (contentType) {
             return contentType.startsWith("image");
+        },
+
+        /**
+         * Calculate the number of selected files that will be saved upon form submit
+         *
+         * @returns {Number} - number of selected files
+         */
+        _getUploadedFilesNum: function () {
+            return this.fileIdsInput
+                .val()
+                .split(",")
+                .filter((i) => i).length;
+        },
+
+        /**
+         * Check if the maximum number of files is reached
+         *
+         * @param {Event} e - event
+         *
+         * @returns {Boolean} - is file number limit reached flag
+         */
+        _isFileNumLimitReached: function (e) {
+            if (this._calculateSelectedFilesNum() >= this.options.maxFiles) {
+                e.preventDefault();
+
+                alert(
+                    `You have reached the maximum number of files (${this.options.maxFiles})`
+                );
+
+                return true;
+            }
+
+            return false;
         },
     };
 });

@@ -1,10 +1,13 @@
 {% import 'macros/form.html' as form %}
+{% from "macros/form/attributes.html" import attributes %}
 
 {% asset "file_upload_widget/css" %}
 {% asset "file_upload_widget/js" %}
 
 
-<div class="form-group control-medium file-upload-widget" data-module="file-upload-widget" data-module-instance-id="{{ field.field_name }}">
+{% set attrs = field.get('form_attrs', {}) %}
+
+<div class="form-group control-medium file-upload-widget" data-module="file-upload-widget" data-module-instance-id="{{ field.field_name }}" "{{ attributes(attrs) }}">
     <label class="form-label" for="{{ field.field_name }}">
         {% if field.required %}<span title="{{ _("This field is required") }}" class="control-required">*</span> {% endif %}
         {{ h.scheming_language_text(field.label) }}

@@ -16,7 +16,7 @@
         </button>
 
         <input id="{{ 'field-' + field.field_name }}-file" type="file" name="{{ field.field_name }}-file" value="" placeholder="" class="hidden">
-        <input id="{{ 'field-' + field.field_name }}" type="hidden" name="{{ field.field_name }}" value="" placeholder="" class="hidden">
+        <input id="{{ 'field-' + field.field_name }}" type="hidden" name="{{ field.field_name }}" value="{{ data[field.field_name] }}" placeholder="" class="hidden">
 
         {%- if field.help_text -%}
             {% set text = h.scheming_language_text(field.help_text) %}
@@ -106,7 +106,7 @@
                 </div>
 
                 <div class="modal-footer modal-footer--media hidden">
-                    <button type="button" class="btn btn-primary btn-file-select">{{ _("Select") }} <span>0</span></button>
+                    <button type="button" class="btn btn-primary fuw-media-select-btn">{{ _("Select") }} <span>0</span></button>
                     <button type="button" class="btn btn-black btn-cancel-file-select">{{ _("Cancel") }}</button>
                 </div>
             </div>
@@ -115,6 +115,7 @@
             <div class="modal-content fuw-selected-files hidden">
                 <div class="modal-header">
                     <i class="fa-solid fa-angles-left fuw-close-selected-btn"></i>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
 
                 <div class="modal-body">
@@ -124,8 +125,8 @@
 
                 <div class="upload-progress-bar"></div>
                 <div class="modal-footer modal-footer--selected">
-                    <button type="button" class="btn btn-danger btn-cancel-all">{{ _("Cancel upload") }}</button>
-                    <button type="button" class="btn btn-primary btn-upload-all">{{ _("Upload all") }}</button>
+                    <button type="button" class="btn btn-danger fuw-discard-btn">{{ _("Discard") }}</button>
+                    <button type="button" class="btn btn-primary fuw-upload-all-btn">{{ _("Upload all") }}</button>
                 </div>
             </div>
         </div>

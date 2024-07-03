@@ -2,6 +2,10 @@ $.fn.isValid = function () {
     return this[0].checkValidity();
 };
 
+/**
+ * Default .hide func add display: none to the element. We need to hide
+ * the element by adding a class to it.
+ */
 $.fn.hideEl = function () {
     this[0].classList.add("hidden");
 };
@@ -17,6 +21,9 @@ $.fn.toggleEl = function (flag) {
 /**
  * Generate UUID v4
  * @see https://stackoverflow.com/a/2117523
+ *
+ * We are generating UUID inside JS just to track the files that are uploaded
+ * and to manipulate such files before we will have a real file id.
  *
  * @returns {String} - UUID v4
  */
@@ -61,6 +68,7 @@ ckan.module("file-upload-widget", function ($, _) {
             attrFileSize: "fuw-file-size",
             attrFileType: "fuw-file-type",
             attrFileUploaded: "fuw-file-uploaded",
+            attrContentType: "fuw-file-content-type",
 
             type: {
                 file: "file",
@@ -374,7 +382,8 @@ ckan.module("file-upload-widget", function ($, _) {
                         fileItem.attr(this.const.attrFileName),
                         fileItem.attr(this.const.attrFileSize),
                         this.const.type.media,
-                        true
+                        true,
+                        fileItem.attr(this.const.attrContentType)
                     );
                 });
 
@@ -471,7 +480,8 @@ ckan.module("file-upload-widget", function ($, _) {
         },
 
         _handleFile: function (file) {
-            this._addFileItem(file.id, file.name, file.size, file.fuw_type);
+            console.log(file.type);
+            this._addFileItem(file.id, file.name, file.size, file.fuw_type, false, file.type);
 
             this._disableUrlWindow();
             this._disableMediaWindow();
@@ -485,17 +495,19 @@ ckan.module("file-upload-widget", function ($, _) {
             fileName,
             fileSize,
             fileType = this.const.type.file,
-            fileUploaded = false
+            fileUploaded = false,
+            fileContentType
         ) {
-            const files =
-                this.getDataFromLocalStorage(this.lsSelectedFilesKey) || [];
+            console.log(fileContentType);
+            const files = this.getDataFromLocalStorage(this.lsSelectedFilesKey) || [];
             const fileItem = $(
                 this._selectedFileItemTemplate(
                     fileId,
                     fileName,
                     fileSize,
                     fileType,
-                    fileUploaded
+                    fileUploaded,
+                    fileContentType
                 )
             );
 
@@ -664,19 +676,7 @@ ckan.module("file-upload-widget", function ($, _) {
                 file.id = fileId;
                 this.urlAdapter.upload(file, {});
             } else if (fileType === this.const.type.file) {
-                let file = null;
-                let files = this.fileInput.get(0).files;
-
-                for (let i = 0; i < files.length; i++) {
-                    if (files[i].id !== fileId) {
-                        continue;
-                    }
-
-                    file = files[i];
-                    break;
-                }
-
-                this.fileAdapter.upload(file, {});
+                this.fileAdapter.upload(this._getFileObjectById(fileId), {});
             }
         },
 
@@ -730,10 +730,13 @@ ckan.module("file-upload-widget", function ($, _) {
             fileName,
             fileSize,
             fileType,
-            fileUploaded
+            fileUploaded,
+            fileContentType = "text/plain",
         ) {
             let mungedFileName = this._truncateFileName(fileName);
             let formattedFileSize = this._formatFileSize(fileSize);
+            let isImageFile = this._isImageContentType(fileContentType);
+            let fileIconType = this._getFAIconBasedOnFileType(fileContentType);
 
             return `<li
                 class="fuw-selected-files--file-item-wrapper fuw-selected-file"
@@ -745,12 +748,12 @@ ckan.module("file-upload-widget", function ($, _) {
                 >
                 <div class="fuw-selected-files--file-preview">
                     <div class="file-tile--file-icon">
-                        <svg aria-hidden="true" focusable="false" width="25" height="25" viewBox="0 0 25 25">
-                            <g fill="#A7AFB7" fill-rule="nonzero">
-                                <path d="M5.5 22a.5.5 0 0 1-.5-.5v-18a.5.5 0 0 1 .5-.5h10.719a.5.5 0 0 1 .367.16l3.281 3.556a.5.5 0 0 1 .133.339V21.5a.5.5 0 0 1-.5.5h-14zm.5-1h13V7.25L16 4H6v17z"></path>
-                                <path d="M15 4v3a1 1 0 0 0 1 1h3V7h-3V4h-1z"></path>
-                            </g>
-                        </svg>
+                        ${
+                            isImageFile
+                                ? `<object data="${this._createUrlForImagePreview(fileId, fileUploaded)}" type="${fileContentType}"></object>`
+                                : ""
+                        }
+                        ${isImageFile ? "" : `<i class="${fileIconType}"></i>`}
                     </div>
                 </div>
                 <div class="fuw-selected-files--file-info">
@@ -766,6 +769,55 @@ ckan.module("file-upload-widget", function ($, _) {
                 <div class="fuw-selected-files--progress"></div>
             </li>
             `;
+        },
+
+        /**
+         * Create a URL for an image file preview. If it's uploaded, we
+         * are using the file download endpoint, otherwise we are using the
+         * URL.createObjectURL(file) method.
+         *
+         * @param {String} fileId - file id
+         * @param {Boolean} isUploaded - is file uploaded
+         *
+         * @returns {String} - URL for the image preview
+         */
+        _createUrlForImagePreview: function (fileId, isUploaded) {
+            if (isUploaded) {
+                return `/file/download/${fileId}`;
+            }
+
+            let file = this._getFileObjectById(fileId);
+
+            if (!file) {
+                // TODO: maybe we need a placeholder in this case?
+                // this shouldn't happen in a normal situation...
+                return "";
+            }
+
+            return URL.createObjectURL(file);
+        },
+
+        /**
+         * Retrieve the File object from a file input by a pseudo file ID
+         * we've generated.
+         *
+         * @param {String} fileId - file id
+         * @returns {File | null} - file object or null
+         */
+        _getFileObjectById: function (fileId) {
+            let file = null;
+            let files = this.fileInput.get(0).files;
+
+            for (let i = 0; i < files.length; i++) {
+                if (files[i].id !== fileId) {
+                    continue;
+                }
+
+                file = files[i];
+                break;
+            }
+
+            return file;
         },
 
         /**
@@ -866,12 +918,9 @@ ckan.module("file-upload-widget", function ($, _) {
          * @param {Event} e - event
          */
         _onFinishUpload: function (e) {
-            console.log(e.detail);
-
-            let progressBar =
-                window.fuwProgressBars[this.options.instanceId][
-                    e.detail.file.id
-                ];
+            let progressBar = window.fuwProgressBars[this.options.instanceId][
+                e.detail.file.id
+            ];
 
             if (progressBar) {
                 progressBar.destroy();
@@ -974,7 +1023,8 @@ ckan.module("file-upload-widget", function ($, _) {
                             data.result.name,
                             data.result.size,
                             this.const.type.file,
-                            true
+                            true,
+                            data.result.content_type
                         );
                     },
                     (resp) => {
@@ -1005,7 +1055,7 @@ ckan.module("file-upload-widget", function ($, _) {
                 if (key.startsWith("__")) {
                     return;
                 }
-                console.log(`${key}: ${value}`);
+                console.error(`${key}: ${value}`);
             });
 
             let progressBar =
@@ -1100,29 +1150,26 @@ ckan.module("file-upload-widget", function ($, _) {
             let fileIconType = this._getFAIconBasedOnFileType(fileContentType);
             let mungedFileName = this._truncateFileName(fileName);
             let formattedFileSize = this._formatFileSize(fileSize);
+            let isImageFile = this._isImageContentType(fileContentType);
 
             let inputId = `file-item-${this.options.instanceId}-${fileId}`;
 
             return `
-                <li class="files--file-item" fuw-file-name="${fileName}" fuw-file-id="${fileId}" fuw-file-size="${fileSize}" fuw-file-type="${this.const.type.media}">
+                <li class="files--file-item" fuw-file-name="${fileName}" fuw-file-id="${fileId}" fuw-file-size="${fileSize}" fuw-file-type="${
+                this.const.type.media}" fuw-file-content-type="${fileContentType}">
                     <input type="checkbox" name="${inputId}" id="${inputId}">
                     <label for="${inputId}">
-                        <div class="file-item--icon-wrapper ${fileIconType}"></div>
+                        ${
+                            isImageFile
+                                ? `<object data="/file/download/${fileId}" type="${fileContentType}"></object>`
+                                : ""
+                        }
+                        ${isImageFile ? "" : `<i class="${fileIconType}"></i>`}
                         <span class="file-name">${mungedFileName}</span>
                         <span class="file-size text-muted">(${formattedFileSize})</span>
                     </label>
                 </li>
             `;
-        },
-
-        /**
-         * Update uploaded files counter on an upload button
-         *
-         * @param {Number} count - number of uploaded files
-         */
-        _updateUploadedFilesCounter: function (count) {
-            this.uploadedFilesCounter.toggleEl(count);
-            this.uploadedFilesCounter.text(count);
         },
 
         /**
@@ -1162,6 +1209,27 @@ ckan.module("file-upload-widget", function ($, _) {
             }
 
             return `fa ${iconType}`;
+        },
+
+        /**
+         * Update uploaded files counter on an upload button
+         *
+         * @param {Number} count - number of uploaded files
+         */
+        _updateUploadedFilesCounter: function (count) {
+            this.uploadedFilesCounter.toggleEl(count);
+            this.uploadedFilesCounter.text(count);
+        },
+
+        /**
+         * Check if the content type is an image
+         *
+         * @param {String} contentType - file content type
+         *
+         * @returns {Boolean} - is content type an image
+         */
+        _isImageContentType: function (contentType) {
+            return contentType.startsWith("image");
         },
     };
 });

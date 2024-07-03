@@ -46,8 +46,11 @@ ckan.module("file-upload-widget", function ($, _) {
             mediaSelectBtn: '.fuw-media-select-btn',
             dropZone: '.fuw-main-window__dropzone',
             selectedFiles: '.fuw-selected-files--list',
+            mediaFilesContainer: '.fuw-media-input--files',
+            mediaFilesEmptyContainer: '.fuw-media-input--empty',
             mediaWindowFooter: '.modal-footer--media',
             selectedFileItem: 'li.fuw-selected-file',
+            fileProgressContainer: '.fuw-selected-files--progress',
 
             attrFileName: 'fuw-file-name',
             attrFileId: 'fuw-file-id',
@@ -71,6 +74,8 @@ ckan.module("file-upload-widget", function ($, _) {
                 log.error("Widget instance ID is required");
                 return
             };
+
+            window.fuwProgressBars = window.fuwProgressBars || {};
 
             this.fileAdapter = new ckan.CKANEXT_FILES.adapters.Standard();
             this.urlAdapter = new ckan.CKANEXT_FILES.adapters.Standard({
@@ -99,6 +104,8 @@ ckan.module("file-upload-widget", function ($, _) {
             this.fileInput = this.el.find('input[type="file"]');
             this.selectedFilesContainer = this.el.find(this.const.selectedFiles);
             this.urlImportBtn = this.urlWindow.find(".btn-url-import");
+            this.mediaFilesContainer = this.el.find(this.const.mediaFilesContainer);
+            this.mediaFilesEmptyContainer = this.el.find(this.const.mediaFilesEmptyContainer);
 
             this.cancelBtn = this.el.find(this.const.cancelBtn);
             this.discardBtn = this.el.find(this.const.discardBtn);
@@ -126,6 +133,8 @@ ckan.module("file-upload-widget", function ($, _) {
             this.urlAdapter.addEventListener("progress", this._onUploadProgress);
             this.fileAdapter.addEventListener("finish", this._onFinishUpload);
             this.urlAdapter.addEventListener("finish", this._onFinishUpload);
+            this.fileAdapter.addEventListener("fail", this._onFailUpload);
+            this.urlAdapter.addEventListener("fail", this._onFailUpload);
 
             // Bind events on non existing elements
             $("body").on("click", ".file-tile--file-remove", this._onRemoveSelectedFile);
@@ -133,25 +142,20 @@ ckan.module("file-upload-widget", function ($, _) {
 
             // Dropzone events
             this.dropZoneArea.on("drop", this._onDropFile);
-
-            // Prevent default drag behaviors
-            ;
             ["dragenter", "dragover", "dragleave", "drop"].forEach(eventName => {
                 this.dropZoneArea.on(eventName, this._preventDropDefaults)
                 $(document.body).on(eventName, this._preventDropDefaults)
             });
-
-            // Highlight drop area when item is dragged over it
-            ;
             ["dragenter", "dragover"].forEach(eventName => {
                 this.dropZoneArea.on(eventName, this._highlightDropZone)
             });
-
-            // Unhighlight drop area when item is dragged out of it
-            ;
             ["dragleave", "drop"].forEach(eventName => {
                 this.dropZoneArea.on(eventName, this._unhighlightDropZone)
             })
+
+            // ON INIT
+            this._recreateSelectedFiles();
+            this._updateMediaGallery();
         },
 
         /**
@@ -259,10 +263,10 @@ ckan.module("file-upload-widget", function ($, _) {
 
             if (isEmpty && !visibleFilesNum) {
                 this.el.find(".fuw-media-input--empty").showEl();
-                this.el.find(".fuw-media-input--files").hideEl();
+                this.mediaFilesContainer.hideEl();
             } else {
                 this.el.find(".fuw-media-input--empty").hideEl();
-                this.el.find(".fuw-media-input--files").showEl();
+                this.mediaFilesContainer.showEl();
             }
         },
 
@@ -380,7 +384,6 @@ ckan.module("file-upload-widget", function ($, _) {
         },
 
         _onFileSelected: function (e) {
-            console.log(e);
             Array.from(e.target.files).forEach(file => {
                 file.id = generateUUID4();
                 file.fuw_type = this.const.type.file;
@@ -412,7 +415,7 @@ ckan.module("file-upload-widget", function ($, _) {
             this._disableUrlWindow();
             this._disableMediaWindow();
 
-            this._toggleSelectedFilesButton(1);
+            this._toggleSelectedFilesButton();
             this.selectionWindow.showEl();
         },
 
@@ -512,7 +515,7 @@ ckan.module("file-upload-widget", function ($, _) {
 
             let selectedFiles = this._calculateSelectedFilesNum() > 0;
             this._toggleFileSelectionWindow(selectedFiles);
-            this._toggleSelectedFilesButton(selectedFiles);
+            this._toggleSelectedFilesButton();
             this._updateFileIdsInput();
         },
 
@@ -529,8 +532,11 @@ ckan.module("file-upload-widget", function ($, _) {
             }
         },
 
-        _toggleSelectedFilesButton: function (flag) {
-            this.openSelectedFilesBtn.toggleEl(flag);
+        _toggleSelectedFilesButton: function (fileNum = null) {
+            let selectedFiles = fileNum ? fileNum : this._calculateSelectedFilesNum();
+
+            this.openSelectedFilesBtn.find("span").text(selectedFiles);
+            this.openSelectedFilesBtn.toggleEl(selectedFiles);
         },
 
         _onUploadSelectedFile: function (e) {
@@ -551,11 +557,12 @@ ckan.module("file-upload-widget", function ($, _) {
         _uploadFile(fileItem) {
             let fileType = fileItem.attr(this.const.attrFileType);
             let fileId = fileItem.attr(this.const.attrFileId);
+            let fileProgressContainer = fileItem.find(this.const.fileProgressContainer);
 
-            this.uploadBar = new ProgressBar.Line('.upload-progress-bar', {
+            window.fuwProgressBars[fileId] = new ProgressBar.Line(fileProgressContainer.get(0), {
                 easing: 'easeInOut'
-            });
-            this.uploadBar.animate(0);
+            })
+            window.fuwProgressBars[fileId].animate(0);
 
             if (fileType === this.const.type.url) {
                 let url = fileItem.attr(this.const.attrFileName);
@@ -582,8 +589,6 @@ ckan.module("file-upload-widget", function ($, _) {
 
                 this.fileAdapter.upload(file, {})
             }
-
-            this._updateFileIdsInput();
         },
 
         /**
@@ -659,6 +664,7 @@ ckan.module("file-upload-widget", function ($, _) {
                 </div>
                 ${!fileUploaded ? '<i class="fa-solid fa-upload file-tile--file-upload"></i>' : ""}
                 <i class="fa-solid fa-times file-tile--file-remove"></i>
+                <div class="fuw-selected-files--progress"></div>
             </li>
             `
         },
@@ -672,7 +678,7 @@ ckan.module("file-upload-widget", function ($, _) {
             this.el.find(this.const.selectedFileItem).remove();
 
             this._onCloseSelectedFiles();
-            this._toggleSelectedFilesButton(0);
+            this._toggleSelectedFilesButton();
         },
 
         _onUploadAllSelectedFiles: function (e) {
@@ -708,18 +714,28 @@ ckan.module("file-upload-widget", function ($, _) {
         },
 
         _onUploadProgress: function (e) {
-            let progress = e.detail.loaded / e.detail.total;
+            let progressbar = window.fuwProgressBars[e.detail.file.id];
 
-            this.uploadBar.animate(progress);
+            if (progressbar) {
+                progressbar.animate(e.detail.loaded / e.detail.total);
+            }
         },
 
         _onFinishUpload: function (e) {
             console.log(e.detail);
-            this.uploadBar.destroy();
+
+            let progressBar = window.fuwProgressBars[e.detail.file.id];
+
+            if (progressBar) {
+                progressBar.destroy();
+            }
 
             this._removeUploadButtonForFile(e.detail.file.id);
             this._replaceWithUploadedFileId(e.detail.file.id, e.detail.result.id);
             this._updateUploadedFileSize(e.detail.result.id, e.detail.result.size);
+
+            this._updateFileIdsInput();
+            this._updateMediaGallery();
         },
 
         _removeUploadButtonForFile: function (fileId) {
@@ -755,6 +771,107 @@ ckan.module("file-upload-widget", function ($, _) {
 
             console.log(fileIds.get().join(","));
             this.fileIdsInput.val(fileIds.get().join(","));
+        },
+
+        _recreateSelectedFiles: function () {
+            let fileIdsVal = this.fileIdsInput.val();
+
+            if (!fileIdsVal) {
+                return;
+            }
+
+            let fileIds = this.fileIdsInput.val().split(",");
+
+            fileIds.forEach(fileId => {
+                this.sandbox.client.call(
+                    "GET",
+                    "files_file_show",
+                    `?id=${fileId}`,
+                    (data) => {
+                        this._addFileItem(
+                            data.result.id,
+                            data.result.name,
+                            data.result.size,
+                            this.const.type.file,
+                            true)
+                    }, (resp) => {
+                        if (resp.responseJSON.error.message === "Not found: file") {
+                            this._removeMissingFile(fileId);
+                        }
+                        // TODO: some toast message?
+                    }
+                );
+            })
+
+            this._toggleSelectedFilesButton(fileIds.length);
+        },
+
+        _onFailUpload: function (e) {
+            // implement some toast message system
+            Object.entries(e.detail.reasons).forEach(([key, value]) => {
+                if (key.startsWith("__")) {
+                    return;
+                }
+                console.log(`${key}: ${value}`);
+            })
+
+            this.uploadBar.destroy();
+        },
+
+        _removeMissingFile: function (fileId) {
+            let fileIds = this.fileIdsInput.val().split(",");
+
+            fileIds = fileIds.filter(id => id !== fileId);
+
+            this.fileIdsInput.val(fileIds.join(","));
+
+            let fileEl = this.el.find(`li[fuw-file-id="${fileId}"]`);
+            fileEl.remove();
+            this._toggleSelectedFilesButton();
+        },
+
+        _updateMediaGallery: function () {
+            this.sandbox.client.call(
+                "GET",
+                "files_file_scan",
+                "",
+                (data) => {
+                    let mediaFiles = data.result.results;
+
+                    this.mediaFilesContainer.toggleEl(mediaFiles.length);
+                    this.mediaFilesEmptyContainer.toggleEl(mediaFiles.length === 0);
+
+                    this.mediaFilesContainer.empty();
+
+                    data.result.results.forEach(file => {
+                        this.mediaFilesContainer.append($(this._mediaFileItemTemplate(
+                            file.id,
+                            file.name,
+                            file.size
+                        )));
+                    });
+                }, (resp) => {
+                    console.error(resp);
+                    // TODO: some toast message?
+                }
+            );
+        },
+
+        _mediaFileItemTemplate: function (fileId, fileName, fileSize) {
+            let fileIconType = "data";
+            let mungedFileName = this._truncateFileName(fileName);
+            let formattedFileSize = this._formatFileSize(fileSize);
+
+            return `
+                <li class="files--file-item" fuw-file-name="${fileName}" fuw-file-id="${fileId}" fuw-file-size="${fileSize}" fuw-file-type="${this.const.type.media}">
+                    <input type="checkbox" name="file-item-${fileId}" id="file-item-${fileId}">
+                    <label for="file-item-${fileId}">
+                        <div class="file-item--icon-wrapper file-item--icon-${fileIconType}"></div>
+                        <span class="file-name">${mungedFileName}</span>
+                        <span class="file-size text-muted">(${formattedFileSize})</span>
+                    </label>
+                </li>
+            `
         },
     };
 });

@@ -32,7 +32,7 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <i class="fa-solid fa-angles-left fuw-cancel-btn hidden"></i>
-                    <button type="button" class="btn fuw-open-selected-btn hidden">{{ _("Selected Files") }}</button>
+                    <button type="button" class="btn btn-default fuw-open-selected-btn hidden">{{ _("Selected Files") }} <span>0</span></button>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
@@ -82,24 +82,9 @@
                             </span>
                         </div>
 
-                        {% set user_files = h.fuw_get_user_files(g.userobj.id) %}
+                        <ul class="fuw-media-input--files"></ul>
 
-                        <ul class="fuw-media-input--files {{ 'hidden' if not user_files }}">
-                            {% for file in user_files %}
-                                <li class="files--file-item" fuw-file-name="{{ file.name }}" fuw-file-id="{{ file.id }}" fuw-file-size="{{ file.size }}" fuw-file-type="file">
-                                    <input type="checkbox" name="{{ 'file-item-{}'.format(file.id) }}" id="{{ 'file-item-{}'.format(file.id) }}">
-                                    <label for="{{ 'file-item-{}'.format(file.id) }}">
-                                        <div class="file-item--icon-wrapper">
-                                            <img src="https://via.placeholder.com/16" referrerpolicy="no-referrer" loading="lazy" width="16" height="16">
-                                        </div>
-                                        <span class="file-name">{{ h.fuw_truncate_file_name(file.name) }}</span>
-                                        <span class="file-size text-muted">({{ h.fuw_printable_file_size(file.size) }})</span>
-                                    </label>
-                                </li>
-                            {% endfor %}
-                        </ul>
-
-                        <div class="fuw-media-input--empty {{ 'hidden' if user_files }}">
+                        <div class="fuw-media-input--empty">
                             <p>{{ _("No files found") }}</p>
                         </div>
                     </div>
@@ -123,7 +108,6 @@
                     </ul>
                 </div>
 
-                <div class="upload-progress-bar"></div>
                 <div class="modal-footer modal-footer--selected">
                     <button type="button" class="btn btn-danger fuw-discard-btn">{{ _("Discard") }}</button>
                     <button type="button" class="btn btn-primary fuw-upload-all-btn">{{ _("Upload all") }}</button>

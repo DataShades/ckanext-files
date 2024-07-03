@@ -109,7 +109,6 @@
             height: 310px;
             overflow-y: scroll;
             padding-right: 1rem;
-            padding-top: 1rem;
 
             li.fuw-selected-files--file-item-wrapper {
                 display: flex;
@@ -174,6 +173,12 @@
                 .file-tile--file-upload {
                     right: 30px;
                 }
+            }
+
+            .fuw-selected-files--progress {
+                position: absolute;
+                bottom: 0;
+                width: 100%;
             }
         }
     }

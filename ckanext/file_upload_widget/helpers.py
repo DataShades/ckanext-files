@@ -1,14 +1,6 @@
 from __future__ import annotations
 
 import math
-from typing import Any
-
-import ckan.plugins.toolkit as tk
-
-
-def fuw_get_user_files(user: str) -> list[dict[str, Any]]:
-    return tk.get_action("files_file_scan")({}, {}).get("results", [])
-
 
 def fuw_printable_file_size(size_bytes: int) -> str:
     if size_bytes == 0:

@@ -119,7 +119,6 @@ ckan.module("file-upload-widget", function ($, _) {
             this.mediaInputBtn.on("click", this._onMediaInputTriggered);
             this.cancelBtn.on("click", this._onCancelAction);
             this.fileSearchInput.on('input', this._onFileSearch);
-            this.el.find('li.files--file-item input').on('change', this._onMediaFileSelect);
             this.cancelFileSelectBtn.on("click", this._onCancelMediaFileSelect);
             this.urlImportBtn.on('click', this._onUrlImport);
             this.mediaSelectBtn.on('click', this._onMediaFileSelected);
@@ -139,6 +138,7 @@ ckan.module("file-upload-widget", function ($, _) {
             // Bind events on non existing elements
             $("body").on("click", ".file-tile--file-remove", this._onRemoveSelectedFile);
             $("body").on("click", ".file-tile--file-upload", this._onUploadSelectedFile);
+            $("body").on('li.files--file-item input').on('change', this._onMediaFileSelect);
 
             // Dropzone events
             this.dropZoneArea.on("drop", this._onDropFile);

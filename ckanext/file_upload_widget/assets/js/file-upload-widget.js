@@ -815,7 +815,11 @@ ckan.module("file-upload-widget", function ($, _) {
                 console.log(`${key}: ${value}`);
             })
 
-            this.uploadBar.destroy();
+            let progressBar = window.fuwProgressBars[e.detail.file.id];
+
+            if (progressBar) {
+                progressBar.destroy();
+            }
         },
 
         _removeMissingFile: function (fileId) {

@@ -11,8 +11,10 @@
     </label>
 
     <div class="controls">
-        <button type="button" class="btn btn-primary fuw-init-btn" data-bs-toggle="modal" data-bs-target="#uploadWidget-{{ field.field_name }}">
+        <button type="button" class="btn btn-primary fuw-upload-btn" data-bs-toggle="modal" data-bs-target="#uploadWidget-{{ field.field_name }}">
             {{ _("Upload") }}
+
+            <span class="fuw-uploaded-files-counter hidden">0</span>
         </button>
 
         <input id="{{ 'field-' + field.field_name }}-file" type="file" name="{{ field.field_name }}-file" value="" placeholder="" class="hidden">

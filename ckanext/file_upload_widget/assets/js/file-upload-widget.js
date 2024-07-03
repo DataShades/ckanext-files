@@ -51,6 +51,7 @@ ckan.module("file-upload-widget", function ($, _) {
             mediaWindowFooter: '.modal-footer--media',
             selectedFileItem: 'li.fuw-selected-file',
             fileProgressContainer: '.fuw-selected-files--progress',
+            uploadedFilesCounter: ".fuw-uploaded-files-counter",
 
             attrFileName: 'fuw-file-name',
             attrFileId: 'fuw-file-id',
@@ -106,6 +107,7 @@ ckan.module("file-upload-widget", function ($, _) {
             this.urlImportBtn = this.urlWindow.find(".btn-url-import");
             this.mediaFilesContainer = this.el.find(this.const.mediaFilesContainer);
             this.mediaFilesEmptyContainer = this.el.find(this.const.mediaFilesEmptyContainer);
+            this.uploadedFilesCounter = this.el.find(this.const.uploadedFilesCounter);
 
             this.cancelBtn = this.el.find(this.const.cancelBtn);
             this.discardBtn = this.el.find(this.const.discardBtn);
@@ -156,6 +158,7 @@ ckan.module("file-upload-widget", function ($, _) {
             // ON INIT
             this._recreateSelectedFiles();
             this._updateMediaGallery();
+            this._updateUploadedFilesCounter(this.fileIdsInput.val().split(",").filter(i => i).length);
         },
 
         /**
@@ -769,7 +772,7 @@ ckan.module("file-upload-widget", function ($, _) {
                 return $(element).attr(this.const.attrFileId);
             })
 
-            console.log(fileIds.get().join(","));
+            this._updateUploadedFilesCounter(fileIds.length);
             this.fileIdsInput.val(fileIds.get().join(","));
         },
 
@@ -866,10 +869,12 @@ ckan.module("file-upload-widget", function ($, _) {
             let mungedFileName = this._truncateFileName(fileName);
             let formattedFileSize = this._formatFileSize(fileSize);
 
+            let inputId = `file-item-${this.options.instanceId}-${fileId}`
+
             return `
                 <li class="files--file-item" fuw-file-name="${fileName}" fuw-file-id="${fileId}" fuw-file-size="${fileSize}" fuw-file-type="${this.const.type.media}">
-                    <input type="checkbox" name="file-item-${fileId}" id="file-item-${fileId}">
-                    <label for="file-item-${fileId}">
+                    <input type="checkbox" name="${inputId}" id="${inputId}">
+                    <label for="${inputId}">
                         <div class="file-item--icon-wrapper file-item--icon-${fileIconType}"></div>
                         <span class="file-name">${mungedFileName}</span>
                         <span class="file-size text-muted">(${formattedFileSize})</span>
@@ -877,5 +882,10 @@ ckan.module("file-upload-widget", function ($, _) {
                 </li>
             `
         },
+
+        _updateUploadedFilesCounter: function (count) {
+            this.uploadedFilesCounter.toggleEl(count);
+            this.uploadedFilesCounter.text(count);
+        }
     };
 });

@@ -1,11 +1,11 @@
 
 {% if data[field.field_name] %}
-    <ul class="list-unstyled list-group-numbered">
+    <ul class="list-unstyled list-group-numbered fuw-links-list">
         {% for file_id in data[field.field_name].split(",") %}
             {% set file_info = h.files_link_details(file_id) %}
 
             {% if file_info %}
-                <li>
+                <li style="word-break: break-all">
                     {{ h.link_to(file_info.label, file_info.href, target='_blank') }}
                 </li>
             {% endif %}

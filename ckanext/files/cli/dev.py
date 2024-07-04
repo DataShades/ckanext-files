@@ -93,7 +93,6 @@ def _doc_class(cls: type):
 
 
 def _doc_module(name: str, module: ModuleType):
-
     click.echo(f"## {name} ({module.__name__} module)\n")
 
     for line in _mdize_doc(module):

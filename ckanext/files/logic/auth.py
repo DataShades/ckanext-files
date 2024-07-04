@@ -252,7 +252,6 @@ def files_transfer_ownership(context: Context, data_dict: dict[str, Any]) -> Aut
 
     result = authz.is_authorized_boolean("files_manage_files", context, data_dict)
     if not result:
-
         result = bool(
             file
             and _file_allows(context, file, "update")

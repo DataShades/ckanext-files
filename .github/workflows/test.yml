@@ -11,7 +11,7 @@ jobs:
   test:
     strategy:
       matrix:
-        ckan-version: ["2.10"]
+        ckan-version: ["2.11", "2.10"]
       fail-fast: false
 
     runs-on: ubuntu-latest
@@ -19,10 +19,10 @@ jobs:
       # The CKAN version tag of the Solr and Postgres containers should match
       # the one of the container the tests run on.
       # You can switch this base image with a custom image tailored to your project
-      image: openknowledge/ckan-dev:${{ matrix.ckan-version }}
+      image: ckan/ckan-dev:${{ matrix.ckan-version }}
     services:
       solr:
-        image: ckan/ckan-solr:${{ matrix.ckan-version }}
+        image: ckan/ckan-solr:${{ matrix.ckan-version }}-solr9
       postgres:
         image: ckan/ckan-postgres-dev:${{ matrix.ckan-version }}
         env:

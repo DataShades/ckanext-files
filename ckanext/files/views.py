@@ -159,7 +159,6 @@ def _pager_url(*args: Any, **kwargs: Any) -> str:
 
 @bp.route("/<owner_type>/<owner_id>/files/list")
 def list_files(owner_type: str, owner_id: str) -> str:
-
     owner = utils.get_owner(owner_type, owner_id)
     if owner and hasattr(owner, "id"):
         owner_id = owner.id
@@ -214,7 +213,6 @@ def delete_file(
     owner_id: str,
     file_id: str,
 ) -> str | shared.types.Response:
-
     if tk.request.method == "POST":
         try:
             tk.get_action("files_file_delete")({}, {"id": file_id})

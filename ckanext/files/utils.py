@@ -422,3 +422,29 @@ class IterableBytesReader:
 
     def read(self, size: int | None = None):
         return bytes(itertools.islice(self.source, 0, size))
+
+
+class ContextCache:
+    def __init__(self, context: types.Context):
+        self.cache = cast("dict[str, Any]", context).setdefault("files_cache", {})
+
+    def invalidate(self, type: str, id: str):
+        self.cache.setdefault(type, {}).pop(id, None)
+
+    def bucket(self, type: str) -> dict[str, Any]:
+        return self.cache.setdefault(type, {})
+
+    def set(self, type: str, id: str, value: T) -> T:
+        bucket = self.bucket(type)
+        bucket[id] = value
+        return value
+
+    def get(self, type: str, id: str, compute: Callable[[], T]) -> T:
+        bucket = self.bucket(type)
+        if id not in bucket:
+            bucket[id] = compute()
+
+        return bucket[id]
+
+    def get_model(self, type: str, id: str, model_class: type[T]) -> T | None:
+        return self.get(type, id, lambda: model.Session.get(model_class, id))

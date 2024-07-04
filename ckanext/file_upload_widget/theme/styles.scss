@@ -173,21 +173,27 @@
                     }
                 }
 
-                .file-tile--file-remove,
-                .file-tile--file-upload {
-                    cursor: pointer;
-                    position: absolute;
-                    right: 0;
-                    background: black;
-                    color: white;
-                    border: 1px solid black;
-                    border-radius: 50%;
-                    width: 25px;
-                    height: 25px;
+                .fuw-selected-files--file-control {
                     display: flex;
                     align-items: center;
-                    justify-content: center;
+
+                    .file-tile--file-remove,
+                    .file-tile--file-upload {
+                        cursor: pointer;
+                        position: absolute;
+                        right: 0;
+                        background: black;
+                        color: white;
+                        border: 1px solid black;
+                        border-radius: 50%;
+                        width: 25px;
+                        height: 25px;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                    }
                 }
+
 
                 .file-tile--file-upload {
                     right: 30px;

@@ -3,6 +3,7 @@ js:
   output: ckanext-charts/%(version)s-file-upload-widget.js
   contents:
     - js/vendor/progressbar.min.js
+    - js/vendor/iziToast.min.js
     - js/file-upload-widget.js
   extra:
     preload:
@@ -12,6 +13,7 @@ css:
   filter: rcssmin
   output: ckanext-charts/%(version)s-file-upload-widget.css
   contents:
+    - css/vendor/iziToast.min.css
     - css/styles.css
   extra:
     preload:

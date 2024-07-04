@@ -218,6 +218,14 @@ ckan.module("file-upload-widget", function ($, _) {
                 this.mediaInputBtn.unbind();
                 this.mediaWindow.empty();
             }
+
+            // Default settings for iziToast
+            iziToast.settings({
+                timeout: 7000,
+                transitionIn: 'fadeInLeft',
+                transitionOut: 'fadeOutRight',
+                messageColor: '#333',
+            });
         },
 
         /**
@@ -460,10 +468,12 @@ ckan.module("file-upload-widget", function ($, _) {
                 this.options.maxFiles - this._calculateSelectedFilesNum();
 
             if (e.originalEvent.dataTransfer.items.length > filesLimitLeft) {
-                alert(
-`You can't upload more files than the limit (${this.options.maxFiles}).
-Select not more than ${filesLimitLeft} file(s).`
-                );
+                iziToast.error({
+                    message: `
+                    You can't upload more files than the limit (${this.options.maxFiles}).
+                    Select not more than ${filesLimitLeft} file(s).`
+                });
+
                 return e.preventDefault();
             }
 
@@ -558,14 +568,11 @@ Select not more than ${filesLimitLeft} file(s).`
             );
 
             for (const file of files) {
-                if (file.id && file.id === fileId) {
-                    alert("File already selected");
-                    return;
-                } else if (
-                    fileType == this.const.type.url &&
-                    file.name === fileName
-                ) {
-                    alert("File already selected");
+                if ((file.id && file.id === fileId) || fileType == this.const.type.url && file.name === fileName) {
+                    iziToast.error({
+                        title: fileName,
+                        message: `File has already been selected.`
+                    });
                     return;
                 }
             }
@@ -798,14 +805,13 @@ Select not more than ${filesLimitLeft} file(s).`
                 >
                 <div class="fuw-selected-files--file-preview">
                     <div class="file-tile--file-icon">
-                        ${
-                            isImageFile
-                                ? `<object data="${this._createUrlForImagePreview(
-                                      fileId,
-                                      fileUploaded
-                                  )}" type="${fileContentType}"></object>`
-                                : ""
-                        }
+                        ${isImageFile
+                    ? `<object data="${this._createUrlForImagePreview(
+                        fileId,
+                        fileUploaded
+                    )}" type="${fileContentType}"></object>`
+                    : ""
+                }
                         ${isImageFile ? "" : `<i class="${fileIconType}"></i>`}
                     </div>
                 </div>
@@ -813,10 +819,9 @@ Select not more than ${filesLimitLeft} file(s).`
                     <div class="fuw-selected-files--file-name">${mungedFileName}</div>
                     <div class="fuw-selected-files--file-size">${formattedFileSize}</div>
                 </div>
-                ${
-                    !fileUploaded
-                        ? '<i class="fa-solid fa-upload file-tile--file-upload"></i>'
-                        : ""
+                ${!fileUploaded
+                    ? '<i class="fa-solid fa-upload file-tile--file-upload"></i>'
+                    : ""
                 }
                 <i class="fa-solid fa-times file-tile--file-remove"></i>
                 <div class="fuw-selected-files--progress"></div>
@@ -951,7 +956,7 @@ Select not more than ${filesLimitLeft} file(s).`
         _onUploadProgress: function (e) {
             let progressbar =
                 window.fuwProgressBars[this.options.instanceId][
-                    e.detail.file.id
+                e.detail.file.id
                 ];
 
             if (progressbar) {
@@ -973,7 +978,7 @@ Select not more than ${filesLimitLeft} file(s).`
         _onFinishUpload: function (e) {
             let progressBar =
                 window.fuwProgressBars[this.options.instanceId][
-                    e.detail.file.id
+                e.detail.file.id
                 ];
 
             if (progressBar) {
@@ -1088,7 +1093,10 @@ Select not more than ${filesLimitLeft} file(s).`
                         ) {
                             this._removeMissingFile(fileId);
                         }
-                        // TODO: some toast message?
+
+                        iziToast.error({
+                            message: `File with id ${fileId} was not found.`
+                        });
                     }
                 );
             });
@@ -1104,17 +1112,21 @@ Select not more than ${filesLimitLeft} file(s).`
          * @param {Event} e - event
          */
         _onFailUpload: function (e) {
-            // implement some toast message system
+            iziToast.error({
+                message: "An error occurred while uploading the file.",
+            });
+
             Object.entries(e.detail.reasons).forEach(([key, value]) => {
                 if (key.startsWith("__")) {
                     return;
                 }
-                console.error(`${key}: ${value}`);
+
+                iziToast.error({ message: `${key}: ${value}` });
             });
 
             let progressBar =
                 window.fuwProgressBars[this.options.instanceId][
-                    e.detail.file.id
+                e.detail.file.id
                 ];
 
             if (progressBar) {
@@ -1179,8 +1191,7 @@ Select not more than ${filesLimitLeft} file(s).`
                     });
                 },
                 (resp) => {
-                    console.error(resp);
-                    // TODO: some toast message?
+                    iziToast.error({ message: resp });
                 }
             );
         },
@@ -1209,16 +1220,19 @@ Select not more than ${filesLimitLeft} file(s).`
             let inputId = `file-item-${this.options.instanceId}-${fileId}`;
 
             return `
-                <li class="files--file-item" fuw-file-name="${fileName}" fuw-file-id="${fileId}" fuw-file-size="${fileSize}" fuw-file-type="${
-                this.const.type.media
-            }" fuw-file-content-type="${fileContentType}">
+                <li
+                    class="files--file-item"
+                    fuw-file-name="${fileName}"
+                    fuw-file-id="${fileId}"
+                    fuw-file-size="${fileSize}"
+                    fuw-file-type="${this.const.type.media}"
+                    fuw-file-content-type="${fileContentType}">
                     <input type="checkbox" name="${inputId}" id="${inputId}">
                     <label for="${inputId}">
-                        ${
-                            isImageFile
-                                ? `<object data="/file/download/${fileId}" type="${fileContentType}"></object>`
-                                : ""
-                        }
+                        ${isImageFile
+                    ? `<object data="/file/download/${fileId}" type="${fileContentType}"></object>`
+                    : ""
+                }
                         ${isImageFile ? "" : `<i class="${fileIconType}"></i>`}
                         <span class="file-name">${mungedFileName}</span>
                         <span class="file-size text-muted">(${formattedFileSize})</span>
@@ -1310,9 +1324,9 @@ Select not more than ${filesLimitLeft} file(s).`
             if (this._calculateSelectedFilesNum() >= this.options.maxFiles) {
                 e.preventDefault();
 
-                alert(
-                    `You have reached the maximum number of files (${this.options.maxFiles})`
-                );
+                iziToast.error({
+                    message: `You have reached the maximum number of files (${this.options.maxFiles})`,
+                });
 
                 return true;
             }

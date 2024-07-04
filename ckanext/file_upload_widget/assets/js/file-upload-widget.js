@@ -62,6 +62,7 @@ ckan.module("file-upload-widget", function ($, _) {
             selectedFileItem: "li.fuw-selected-file",
             fileProgressContainer: ".fuw-selected-files--progress",
             uploadedFilesCounter: ".fuw-uploaded-files-counter",
+            selectedFileControl: ".fuw-selected-files--file-control",
 
             attrFileName: "fuw-file-name",
             attrFileId: "fuw-file-id",
@@ -88,6 +89,11 @@ ckan.module("file-upload-widget", function ($, _) {
             if (!this.options.instanceId) {
                 log.error("Widget instance ID is required");
                 return;
+            }
+
+            // "disable" the limit if it's set to 0
+            if (this.options.maxFiles === 0) {
+                this.options.maxFiles = 9999;
             }
 
             console.log(this.options);
@@ -152,12 +158,14 @@ ckan.module("file-upload-widget", function ($, _) {
             // Bind events
             this.fileInputBtn.on("click", this._onFileInputTriggered);
             this.urlInputBtn.on("click", this._onUrlInputTriggered);
-            this.mediaInputBtn.on("click", this._onMediaInputTriggered);
             this.cancelBtn.on("click", this._onCancelAction);
             this.fileSearchInput.on("input", this._onFileSearch);
-            this.cancelFileSelectBtn.on("click", this._onCancelMediaFileSelect);
             this.urlImportBtn.on("click", this._onUrlImport);
+
+            this.mediaInputBtn.on("click", this._onMediaInputTriggered);
             this.mediaSelectBtn.on("click", this._onMediaFilesSelected);
+            this.cancelFileSelectBtn.on("click", this._onCancelMediaFileSelect);
+
             this.discardBtn.on("click", this._onDiscardSelectedFiles);
             this.uploadAllSelectedBtn.on(
                 "click",
@@ -181,9 +189,21 @@ ckan.module("file-upload-widget", function ($, _) {
             this.urlAdapter.addEventListener("fail", this._onFailUpload);
 
             // Bind events on non existing elements
-            this.selectionWindow.on("click", ".file-tile--file-remove", this._onRemoveSelectedFile);
-            this.selectionWindow.on("click", ".file-tile--file-upload", this._onUploadSelectedFile);
-            this.mediaFilesContainer.on("change", "li.files--file-item input", this._onMediaFileCheck);
+            this.selectionWindow.on(
+                "click",
+                ".file-tile--file-remove",
+                this._onRemoveSelectedFile
+            );
+            this.selectionWindow.on(
+                "click",
+                ".file-tile--file-upload",
+                this._onUploadSelectedFile
+            );
+            this.mediaFilesContainer.on(
+                "change",
+                "li.files--file-item input",
+                this._onMediaFileCheck
+            );
 
             // Dropzone events
             this.dropZoneArea.on("drop", this._onDropFile);
@@ -222,9 +242,10 @@ ckan.module("file-upload-widget", function ($, _) {
             // Default settings for iziToast
             iziToast.settings({
                 timeout: 7000,
-                transitionIn: 'fadeInLeft',
-                transitionOut: 'fadeOutRight',
-                messageColor: '#333',
+                transitionIn: "fadeInLeft",
+                transitionOut: "fadeOutRight",
+                messageColor: "#333",
+                displayMode: 1,
             });
         },
 
@@ -345,7 +366,9 @@ ckan.module("file-upload-widget", function ($, _) {
                 }
             });
 
-            let visibleFilesNum = this.el.find("li.files--file-item:visible").length;
+            let visibleFilesNum = this.el.find(
+                "li.files--file-item:visible"
+            ).length;
 
             if (isEmpty && !visibleFilesNum) {
                 this.el.find(".fuw-media-input--empty").showEl();
@@ -387,7 +410,17 @@ ckan.module("file-upload-widget", function ($, _) {
          * @param {Event} e
          */
         _onMediaFileCheck: function (e) {
-            if (this._isFileNumLimitReached(e)) {
+            let checkedFilesNum = this.el
+                .find("li.files--file-item input:checked")
+                .not(`[name='${e.target.name}']`).length;
+
+            if (
+                this._isFileNumLimitReached(
+                    e,
+                    checkedFilesNum,
+                    `You can't select more files than the limit: ${this.options.maxFiles}.`
+                )
+            ) {
                 $(e.target).prop("checked", false);
                 return e.preventDefault();
             }
@@ -399,20 +432,35 @@ ckan.module("file-upload-widget", function ($, _) {
         },
 
         _onMediaFilesSelected: function (e) {
-            this.el
-                .find("li.files--file-item input:checked")
-                .each((_, element) => {
-                    let fileItem = $(element).parent("li");
+            let selectedFiles = this.el.find(
+                "li.files--file-item input:checked"
+            );
 
-                    this._addFileItem(
-                        fileItem.attr(this.const.attrFileId),
-                        fileItem.attr(this.const.attrFileName),
-                        fileItem.attr(this.const.attrFileSize),
-                        this.const.type.media,
-                        true,
-                        fileItem.attr(this.const.attrContentType)
-                    );
-                });
+            // do extra check in case if someone smart will try to bypass the limit
+            if (
+                this._isFileNumLimitReached(
+                    e,
+                    selectedFiles.length -
+                        (this.options.maxFiles -
+                            this._calculateSelectedFilesNum()),
+                    `You can't select more files than the limit: ${this.options.maxFiles}.`
+                )
+            ) {
+                return e.preventDefault();
+            }
+
+            selectedFiles.each((_, element) => {
+                let fileItem = $(element).parent("li");
+
+                this._addFileItem(
+                    fileItem.attr(this.const.attrFileId),
+                    fileItem.attr(this.const.attrFileName),
+                    fileItem.attr(this.const.attrFileSize),
+                    this.const.type.media,
+                    true,
+                    fileItem.attr(this.const.attrContentType)
+                );
+            });
 
             this.el
                 .find("li.files--file-item input:checked")
@@ -423,6 +471,7 @@ ckan.module("file-upload-widget", function ($, _) {
             this.selectionWindow.showEl();
 
             this._updateFileIdsInput();
+            this._toggleSelectedFilesButton();
         },
 
         /**
@@ -471,7 +520,7 @@ ckan.module("file-upload-widget", function ($, _) {
                 iziToast.error({
                     message: `
                     You can't upload more files than the limit (${this.options.maxFiles}).
-                    Select not more than ${filesLimitLeft} file(s).`
+                    Select not more than ${filesLimitLeft} file(s).`,
                 });
 
                 return e.preventDefault();
@@ -553,7 +602,6 @@ ckan.module("file-upload-widget", function ($, _) {
             fileUploaded = false,
             fileContentType
         ) {
-            console.log(fileContentType);
             const files =
                 this.getDataFromLocalStorage(this.lsSelectedFilesKey) || [];
             const fileItem = $(
@@ -568,10 +616,13 @@ ckan.module("file-upload-widget", function ($, _) {
             );
 
             for (const file of files) {
-                if ((file.id && file.id === fileId) || fileType == this.const.type.url && file.name === fileName) {
+                if (
+                    (file.id && file.id === fileId) ||
+                    (fileType == this.const.type.url && file.name === fileName)
+                ) {
                     iziToast.error({
                         title: fileName,
-                        message: `File has already been selected.`
+                        message: `File has already been selected.`,
                     });
                     return;
                 }
@@ -631,7 +682,8 @@ ckan.module("file-upload-widget", function ($, _) {
         _onRemoveSelectedFile: function (e) {
             let fileEl = $(e.target).closest(this.const.selectedFileItem);
 
-            let files = this.getDataFromLocalStorage(this.lsSelectedFilesKey) || [];
+            let files =
+                this.getDataFromLocalStorage(this.lsSelectedFilesKey) || [];
             files = files.filter(
                 (file) => file.name !== fileEl.attr(this.const.attrFileName)
             );
@@ -685,7 +737,6 @@ ckan.module("file-upload-widget", function ($, _) {
         },
 
         _toggleSelectedFilesButton: function (fileNum = null) {
-            console.log(fileNum);
             let selectedFiles = fileNum
                 ? fileNum
                 : this._calculateSelectedFilesNum();
@@ -701,6 +752,7 @@ ckan.module("file-upload-widget", function ($, _) {
                 return;
             }
 
+            fileItem.find(this.const.selectedFileControl).hideEl();
             this._uploadFile(fileItem);
         },
 
@@ -805,13 +857,14 @@ ckan.module("file-upload-widget", function ($, _) {
                 >
                 <div class="fuw-selected-files--file-preview">
                     <div class="file-tile--file-icon">
-                        ${isImageFile
-                    ? `<object data="${this._createUrlForImagePreview(
-                        fileId,
-                        fileUploaded
-                    )}" type="${fileContentType}"></object>`
-                    : ""
-                }
+                        ${
+                            isImageFile
+                                ? `<object data="${this._createUrlForImagePreview(
+                                      fileId,
+                                      fileUploaded
+                                  )}" type="${fileContentType}"></object>`
+                                : ""
+                        }
                         ${isImageFile ? "" : `<i class="${fileIconType}"></i>`}
                     </div>
                 </div>
@@ -819,11 +872,14 @@ ckan.module("file-upload-widget", function ($, _) {
                     <div class="fuw-selected-files--file-name">${mungedFileName}</div>
                     <div class="fuw-selected-files--file-size">${formattedFileSize}</div>
                 </div>
-                ${!fileUploaded
-                    ? '<i class="fa-solid fa-upload file-tile--file-upload"></i>'
-                    : ""
-                }
-                <i class="fa-solid fa-times file-tile--file-remove"></i>
+                <div class="fuw-selected-files--file-control">
+                    ${
+                        !fileUploaded
+                            ? '<i class="fa-solid fa-upload file-tile--file-upload"></i>'
+                            : ""
+                    }
+                    <i class="fa-solid fa-times file-tile--file-remove"></i>
+                </div>
                 <div class="fuw-selected-files--progress"></div>
             </li>
             `;
@@ -876,6 +932,17 @@ ckan.module("file-upload-widget", function ($, _) {
             }
 
             return file;
+        },
+
+        /**
+         * Get a file item element by its ID
+         *
+         * @param {String} fileId - file element ID
+         *
+         * @returns {HTMLElement | null} - file element
+         */
+        _getFileItemById: function (fileId) {
+            return this.el.find(`li[fuw-file-id="${fileId}"]`);
         },
 
         /**
@@ -956,7 +1023,7 @@ ckan.module("file-upload-widget", function ($, _) {
         _onUploadProgress: function (e) {
             let progressbar =
                 window.fuwProgressBars[this.options.instanceId][
-                e.detail.file.id
+                    e.detail.file.id
                 ];
 
             if (progressbar) {
@@ -978,7 +1045,7 @@ ckan.module("file-upload-widget", function ($, _) {
         _onFinishUpload: function (e) {
             let progressBar =
                 window.fuwProgressBars[this.options.instanceId][
-                e.detail.file.id
+                    e.detail.file.id
                 ];
 
             if (progressBar) {
@@ -986,6 +1053,10 @@ ckan.module("file-upload-widget", function ($, _) {
             }
 
             this._removeUploadButtonForFile(e.detail.file.id);
+            this._getFileItemById(e.detail.file.id)
+                .find(this.const.selectedFileControl)
+                .showEl();
+
             this._replaceWithUploadedFileId(
                 e.detail.file.id,
                 e.detail.result.id
@@ -997,6 +1068,11 @@ ckan.module("file-upload-widget", function ($, _) {
 
             this._updateFileIdsInput();
             this._updateMediaGallery();
+
+            iziToast.success({
+                title: e.detail.result.name,
+                message: "File has been uploaded.",
+            });
         },
 
         /**
@@ -1095,7 +1171,7 @@ ckan.module("file-upload-widget", function ($, _) {
                         }
 
                         iziToast.error({
-                            message: `File with id ${fileId} was not found.`
+                            message: `File with id ${fileId} was not found.`,
                         });
                     }
                 );
@@ -1126,12 +1202,16 @@ ckan.module("file-upload-widget", function ($, _) {
 
             let progressBar =
                 window.fuwProgressBars[this.options.instanceId][
-                e.detail.file.id
+                    e.detail.file.id
                 ];
 
             if (progressBar) {
                 progressBar.destroy();
             }
+
+            this._getFileItemById(e.detail.file.id)
+                .find(this.const.selectedFileControl)
+                .showEl();
         },
 
         /**
@@ -1229,10 +1309,11 @@ ckan.module("file-upload-widget", function ($, _) {
                     fuw-file-content-type="${fileContentType}">
                     <input type="checkbox" name="${inputId}" id="${inputId}">
                     <label for="${inputId}">
-                        ${isImageFile
-                    ? `<object data="/file/download/${fileId}" type="${fileContentType}"></object>`
-                    : ""
-                }
+                        ${
+                            isImageFile
+                                ? `<object data="/file/download/${fileId}" type="${fileContentType}"></object>`
+                                : ""
+                        }
                         ${isImageFile ? "" : `<i class="${fileIconType}"></i>`}
                         <span class="file-name">${mungedFileName}</span>
                         <span class="file-size text-muted">(${formattedFileSize})</span>
@@ -1317,15 +1398,27 @@ ckan.module("file-upload-widget", function ($, _) {
          * Check if the maximum number of files is reached
          *
          * @param {Event} e - event
+         * @param {Number | null} selectedNum - number of selected files. We're using
+         * it for media checkbox selection
+         * @param {String | null} message - alternative error message
          *
          * @returns {Boolean} - is file number limit reached flag
          */
-        _isFileNumLimitReached: function (e) {
-            if (this._calculateSelectedFilesNum() >= this.options.maxFiles) {
+        _isFileNumLimitReached: function (
+            e,
+            selectedNum = null,
+            message = null
+        ) {
+            if (
+                selectedNum ||
+                this._calculateSelectedFilesNum() >= this.options.maxFiles
+            ) {
                 e.preventDefault();
 
                 iziToast.error({
-                    message: `You have reached the maximum number of files (${this.options.maxFiles})`,
+                    message:
+                        message ||
+                        `You have reached the maximum number of files (${this.options.maxFiles})`,
                 });
 
                 return true;

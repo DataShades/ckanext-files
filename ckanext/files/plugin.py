@@ -116,7 +116,6 @@ class FilesPlugin(p.SingletonPlugin):
 
 def _register_adapters():
     """Register all storage types provided by extensions."""
-
     base.adapters.reset()
     for plugin in p.PluginImplementations(interfaces.IFiles):
         for name, adapter in plugin.files_get_storage_adapters().items():
@@ -128,7 +127,6 @@ def _initialize_storages():
 
     Raise an exception if storage type is not registered.
     """
-
     base.storages.reset()
     for name, settings in config.storages().items():
         try:

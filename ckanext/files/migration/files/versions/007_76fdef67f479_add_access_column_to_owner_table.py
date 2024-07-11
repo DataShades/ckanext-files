@@ -1,4 +1,4 @@
-"""add access column to owner table
+"""add access column to owner table.
 
 Revision ID: 76fdef67f479
 Revises: 64ca007bf3eb

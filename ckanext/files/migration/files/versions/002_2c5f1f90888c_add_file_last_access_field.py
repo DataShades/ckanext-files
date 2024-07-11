@@ -1,4 +1,4 @@
-"""Add file last_access field
+"""Add file last_access field.
 
 Revision ID: 2c5f1f90888c
 Revises: cc1a832108c5

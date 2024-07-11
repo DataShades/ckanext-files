@@ -111,24 +111,20 @@ def files_file_search(  # noqa: C901, PLR0912
     ```
     Fillowing operators are accepted: `=`, `<`, `>`, `!=`, `like`
 
-    Params:
-
-    * `start`: index of first row in result/number of rows to skip. Default: `0`
-    * `rows`: number of rows to return. Default: `10`
-    * `sort`: name of File column used for sorting. Default: `name`
-    * `reverse`: sort results in descending order. Default: `False`
-    * `storage_data`: mask for `storage_data` column. Default: `{}`
-    * `plugin_data`: mask for `plugin_data` column. Default: `{}`
-    * `owner_type: str`: show only specific owner id if present. Default: `None`
-    * `owner_type`: show only specific owner type if present. Default: `None`
-    * `pinned`: show only pinned/unpinned items if present. Default: `None`
-    * `completed`: use `False` to search incomplete uploads. Default: `True`
+    Args:
+        start (int): index of first row in result/number of rows to skip. Default: `0`
+        rows (int): number of rows to return. Default: `10`
+        sort (str): name of File column used for sorting. Default: `name`
+        reverse (bool): sort results in descending order. Default: `False`
+        storage_data (dict[str, Any]): mask for `storage_data` column. Default: `{}`
+        plugin_data (dict[str, Any]): mask for `plugin_data` column. Default: `{}`
+        owner_id (str): show only specific owner id if present. Default: `None`
+        owner_type (str): show only specific owner type if present. Default: `None`
+        pinned (bool): show only pinned/unpinned items if present. Default: `None`
+        completed (bool): use `False` to search incomplete uploads. Default: `True`
 
     Returns:
-
-    * `count`: total number of files matching filters
-    * `results`: array of dictionaries with file details.
-
+        dictionary with `count` and `results`
     """
     tk.check_access("files_file_search", context, data_dict)
     sess = context["session"]
@@ -236,31 +232,30 @@ def files_file_create(context: Context, data_dict: dict[str, Any]) -> dict[str, 
     When uploading a real file(or using `werkqeug.datastructures.FileStorage`),
     name parameter can be omited. In this case, the name of uploaded file is used.
 
-    ```python
+    ```sh
     ckanapi action files_file_create upload@path/to/file.txt
     ```
 
     When uploading a raw content of the file using string or bytes object, name
     is mandatory.
 
-    ```python
+    ```sh
     ckanapi action files_file_create upload@<(echo -n "hello world") name=file.txt
     ```
 
     Requires storage with `CREATE` capability.
 
-    Params:
-
-    * `name`: human-readable name of the file. Default: guess using upload field
-    * `storage`: name of the storage that will handle the upload. Default: `default`
-    * `upload`: content of the file as bytes, file descriptor or uploaded file
+    Args:
+        name (str, optional): human-readable name of the file.
+            Default: guess using upload field
+        storage (str, optional): name of the storage that will handle the upload.
+            Default: `default`
+        upload (shared.types.Uploadable): content of the file as bytes,
+            file descriptor or uploaded file
 
     Returns:
-
-    dictionary with file details.
-
+        dictionary with file details.
     """
-
     tk.check_access("files_file_create", context, data_dict)
     extras = data_dict.get("__extras", {})
 
@@ -307,23 +302,21 @@ def files_file_replace(context: Context, data_dict: dict[str, Any]) -> dict[str,
     Size and content hash from the new file will replace original values. All
     other fields, including name, remain unchanged.
 
-    ```python
+    ```sh
     ckanapi action files_file_replace id=123 upload@path/to/file.txt
     ```
 
     Requires storage with `CREATE` and `REMOVE` capability.
 
-    Params:
-
-    * `id`: ID of the replaced file
-    * `upload`: content of the file as bytes, file descriptor or uploaded file
+    Args:
+        id (str): ID of the replaced file
+        upload (shared.types.Uploadable): content of the file as bytes,
+            file descriptor or uploaded file
 
     Returns:
-
-    dictionary with file details.
+        dictionary with file details.
 
     """
-
     tk.check_access("files_file_replace", context, data_dict)
 
     fileobj = context["session"].get(File, data_dict["id"])
@@ -365,7 +358,6 @@ def files_file_replace(context: Context, data_dict: dict[str, Any]) -> dict[str,
 
 def _set_user_owner(context: Context, item_type: str, item_id: str):
     """Add user from context as file owner."""
-
     user = model.User.get(context.get("user", ""))
     if user:
         owner = Owner(
@@ -394,16 +386,13 @@ def files_file_delete(context: Context, data_dict: dict[str, Any]) -> dict[str, 
     ckanapi action files_file_delete id=226056e2-6f83-47c5-8bd2-102e2b82ab9a
     ```
 
-    Params:
-
-    * `id`: ID of the file
-    * `completed`: use `False` to remove incomplete uploads. Default: `True`
+    Args:
+        id (str): ID of the file
+        completed (bool): use `False` to remove incomplete uploads. Default: `True`
 
     Returns:
-
-    dictionary with details of the removed file.
+        dictionary with details of the removed file.
     """
-
     tk.check_access("files_file_delete", context, data_dict)
 
     fileobj = context["session"].get(
@@ -442,17 +431,13 @@ def files_file_show(context: Context, data_dict: dict[str, Any]) -> dict[str, An
     ckanapi action files_file_show id=226056e2-6f83-47c5-8bd2-102e2b82ab9a
     ```
 
-    Params:
-
-    * `id`: ID of the file
-    * `completed`: use `False` to show incomplete uploads. Default: `True`
+    Args:
+        id (str): ID of the file
+        completed (bool): use `False` to show incomplete uploads. Default: `True`
 
     Returns:
-
-    dictionary with file details
-
+        dictionary with file details
     """
-
     tk.check_access("files_file_show", context, data_dict)
 
     fileobj = context["session"].get(
@@ -477,19 +462,15 @@ def files_file_rename(context: Context, data_dict: dict[str, Any]) -> dict[str, 
         id=226056e2-6f83-47c5-8bd2-102e2b82ab9a \\
         name=new-name.txt
     ```
-
-    Params:
-
-    * `id`: ID of the file
-    * `name`: new name of the file
-    * `completed`: use `False` to rename incomplete uploads. Default: `True`
+    Args:
+        id (str): ID of the file
+        name (str): new name of the file
+        completed (bool): use `False` to rename incomplete uploads. Default: `True`
 
     Returns:
-
-    dictionary with file details
+        dictionary with file details
 
     """
-
     tk.check_access("files_file_rename", context, data_dict)
 
     fileobj = context["session"].get(
@@ -523,19 +504,17 @@ def files_multipart_start(
 
     Requires storage with `MULTIPART` capability.
 
-    Params:
-
-    * `storage`: name of the storage that will handle the upload. Default: `default`
-    * `name`: name of the uploaded file.
-    * `content_type`: MIMEtype of the uploaded file. Used for validation
-    * `size`: Expected size of upload. Used for validation
-    * `hash`: Expected content hash. If present, used for validation.
+    Args:
+        storage (str): name of the storage that will handle the upload.
+            Default: `default`
+        name (str): name of the uploaded file.
+        content_type (str): MIMEtype of the uploaded file. Used for validation
+        size (oint): Expected size of upload. Used for validation
+        hash (str): Expected content hash. If present, used for validation.
 
     Returns:
-
-    dictionary with details of initiated upload. Depends on used storage
+        dictionary with details of initiated upload. Depends on used storage
     """
-
     tk.check_access("files_multipart_start", context, data_dict)
     extras = data_dict.get("__extras", {})
 
@@ -587,16 +566,12 @@ def files_multipart_refresh(
 
     Requires storage with `MULTIPART` capability.
 
-    Params:
-
-    * `id`: ID of the incomplete upload
+    Args:
+        id (str): ID of the incomplete upload
 
     Returns:
-
-    dictionary with details of the updated upload
-
+        dictionary with details of the updated upload
     """
-
     tk.check_access("files_multipart_refresh", context, data_dict)
 
     fileobj = context["session"].get(Multipart, data_dict["id"])
@@ -624,16 +599,13 @@ def files_multipart_update(
 
     Requires storage with `MULTIPART` capability.
 
-    Params:
-
-    * `id`: ID of the incomplete upload
+    Args:
+        id (str): ID of the incomplete upload
 
     Returns:
-
-    dictionary with details of the updated upload
+        dictionary with details of the updated upload
 
     """
-
     tk.check_access("files_multipart_update", context, data_dict)
 
     extras = data_dict.get("__extras", {})
@@ -674,14 +646,11 @@ def files_multipart_complete(
 
     Requires storage with `MULTIPART` capability.
 
-    Params:
-
-    * `id`: ID of the incomplete upload
+    Args:
+        id (str): ID of the incomplete upload
 
     Returns:
-
-    dictionary with details of the created file
-
+        dictionary with details of the created file
     """
     tk.check_access("files_multipart_complete", context, data_dict)
     sess = context["session"]
@@ -724,27 +693,21 @@ def files_file_scan(
     context: Context,
     data_dict: dict[str, Any],
 ) -> dict[str, Any]:
-    """List files of the owner
+    """List files of the owner.
 
     This action internally calls files_file_search, but with static values of
     owner filters. If owner is not specified, files filtered by current
     user. If owner is specified, user must pass authorization check to see
     files.
 
-    Params:
-
-    * `owner_id`: ID of the owner
-    * `owner_type`: type of the owner
-
-    The all other parameters are passed as-is to `files_file_search`.
+    Args:
+        owner_id (str): ID of the owner
+        owner_type (str): type of the owner
+        **rest (Any): The all other parameters are passed as-is to `files_file_search`.
 
     Returns:
-
-    * `count`: total number of files matching filters
-    * `results`: array of dictionaries with file details.
-
+        dictionary with `count` and `results`
     """
-
     if not data_dict["owner_id"] and data_dict["owner_type"] == "user":
         user = context.get("auth_user_obj")
 
@@ -765,20 +728,17 @@ def files_transfer_ownership(
 ) -> dict[str, Any]:
     """Transfer file ownership.
 
-    Params:
-
-    * `id`: ID of the file upload
-    * `completed`: use `False` to transfer incomplete uploads. Default: `True`
-    * `owner_id`: ID of the new owner
-    * `owner_type`: type of the new owner
-    * `force`: move file even if it's pinned. Default: `False`
-    * `pin`: pin file after transfer to stop future transfers. Default: `False`
+    Args:
+        id (str): ID of the file upload
+        completed (bool): use `False` to transfer incomplete uploads. Default: `True`
+        owner_id (str): ID of the new owner
+        owner_type (str): type of the new owner
+        force (bool): move file even if it's pinned. Default: `False`
+        pin (bool): pin file after transfer to stop future transfers. Default: `False`
 
     Returns:
-
-    dictionary with details of updated file
+        dictionary with details of updated file
     """
-
     tk.check_access("files_transfer_ownership", context, data_dict)
     sess = context["session"]
     fileobj = context["session"].get(
@@ -827,17 +787,13 @@ def files_file_pin(context: Context, data_dict: dict[str, Any]) -> dict[str, Any
     that file referred by entity is not accidentally transferred to a different
     owner.
 
-    Params:
-
-    * `id`: ID of the file
-    * `completed`: use `False` to pin incomplete uploads. Default: `True`
+    Args:
+        id (str): ID of the file
+        completed (bool): use `False` to pin incomplete uploads. Default: `True`
 
     Returns:
-
-    dictionary with details of updated file
-
+        dictionary with details of updated file
     """
-
     tk.check_access("files_file_pin", context, data_dict)
     sess = context["session"]
     fileobj = context["session"].get(
@@ -865,15 +821,12 @@ def files_file_unpin(context: Context, data_dict: dict[str, Any]) -> dict[str, A
     that file referred by entity is not accidentally transferred to a different
     owner.
 
-    Params:
-
-    * `id`: ID of the file
-    * `completed`: use `False` to unpin incomplete uploads. Default: `True`
+    Args:
+        id (str): ID of the file
+        completed (bool): use `False` to unpin incomplete uploads. Default: `True`
 
     Returns:
-
-    dictionary with details of updated file
-
+        dictionary with details of updated file
     """
     tk.check_access("files_file_unpin", context, data_dict)
     sess = context["session"]
@@ -895,7 +848,9 @@ def files_file_unpin(context: Context, data_dict: dict[str, Any]) -> dict[str, A
 
 
 @validate(schema.resource_upload)
-def files_resource_upload(context: Context, data_dict: dict[str, Any]):
+def files_resource_upload(
+    context: Context, data_dict: dict[str, Any]
+) -> dict[str, Any]:
     """Create a new file inside resource storage.
 
     This action internally calls `files_file_create` with `ignore_auth=True`
@@ -904,17 +859,15 @@ def files_resource_upload(context: Context, data_dict: dict[str, Any]):
     New file is not attached to resource. You need to call
     `files_transfer_ownership` manually, when resource created.
 
-    Params:
-
-    * `name`: human-readable name of the file. Default: guess using upload field
-    * `upload`: content of the file as bytes, file descriptor or uploaded file
+    Args:
+        name (str): human-readable name of the file.
+            Default: guess using upload field
+        upload (shared.types.Uploadable): content of the file as bytes,
+            file descriptor or uploaded file
 
     Returns:
-
-    dictionary with file details.
-
+        dictionary with file details
     """
-
     tk.check_access("files_resource_upload", context, data_dict)
     storage_name = shared.config.resources_storage()
     if not storage_name:

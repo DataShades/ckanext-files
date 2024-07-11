@@ -1,4 +1,4 @@
-"""alter files table
+"""alter files table.
 
 Revision ID: d94bacc491e4
 Revises: 76fdef67f479

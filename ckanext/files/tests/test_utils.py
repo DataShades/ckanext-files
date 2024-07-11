@@ -1,6 +1,7 @@
 import hashlib
 import tempfile
 from io import BytesIO
+from typing import Any
 
 import pytest
 from faker import Faker
@@ -12,7 +13,6 @@ from ckanext.files.shared import Capability
 
 def test_registry(faker: Faker):
     """Brief test of registry functionality."""
-
     registry = utils.Registry[object]()
     key = faker.word()
     value = object()
@@ -34,11 +34,7 @@ def test_registry(faker: Faker):
 
 class TestHasingReader:
     def test_empty_hash(self):
-        """Empty reader produces the hash of empty string and doesn't add any
-        default bytes.
-
-        """
-
+        """Empty reader produces the hash of empty string."""
         reader = shared.HashingReader(BytesIO())
         reader.exhaust()
 
@@ -46,7 +42,6 @@ class TestHasingReader:
 
     def test_hash(self, faker: Faker):
         """Reader's hash is based on the stream content."""
-
         content = faker.binary(100)
         expected = hashlib.md5(content).hexdigest()
 
@@ -69,14 +64,12 @@ class TestCapabilities:
 
     def test_exclusion_of_single_unit(self):
         """Single unit exclusion leaves all other units inside cluster."""
-
         cluster = Capability.CREATE | Capability.REMOVE
 
         assert Capability.exclude(cluster, Capability.CREATE) is Capability.REMOVE
 
     def test_multi_unit_exclusion(self):
         """Multiple units can be excluded at once."""
-
         cluster = Capability.CREATE | Capability.REMOVE | Capability.STREAM
         assert (
             Capability.exclude(cluster, Capability.REMOVE, Capability.CREATE)
@@ -85,7 +78,6 @@ class TestCapabilities:
 
     def test_exclusion_of_cluster(self):
         """The whole cluster can be excluded at once."""
-
         cluster = Capability.CREATE | Capability.REMOVE | Capability.STREAM
 
         empty = Capability.exclude(cluster, Capability.CREATE | Capability.STREAM)
@@ -139,17 +131,15 @@ class TestParseFilesize:
     )
     def test_valid_sizes(self, value: str, size: int):
         """Human-readable filesize is parsed into number of bytes."""
-
         assert utils.parse_filesize(value) == size
 
     def test_empty_string(self):
-        """Empty string causes an exception"""
+        """Empty string causes an exception."""
         with pytest.raises(ValueError):  # noqa: PT011
             utils.parse_filesize("")
 
     def test_invalid_multiplier(self):
-        """Empty string causes an exception"""
-
+        """Empty string causes an exception."""
         with pytest.raises(ValueError):  # noqa: PT011
             utils.parse_filesize("1PB")
 
@@ -171,7 +161,7 @@ class TestMakeUpload:
 
     def test_str(self, faker: Faker):
         """Strings converted into Upload."""
-        string = faker.pystr()
+        string: Any = faker.pystr()
         with pytest.raises(TypeError):
             utils.make_upload(string)
 

@@ -20,7 +20,10 @@ from ckan.types import (
 )
 
 FileOperation = Literal["show", "update", "delete"]
+"""Operation that performed on file."""
+
 OwnerOperation = Literal["show", "update", "delete", "file_transfer", "file_scan"]
+"""Operation that performed on owner."""
 
 Uploadable = Union[
     FileStorage,
@@ -30,12 +33,19 @@ Uploadable = Union[
     bytearray,
     BinaryIO,
 ]
+"""Content that can be converted into Upload."""
 
 
 class PUploadStream(Protocol):
     def read(self, size: Any = ..., /) -> bytes: ...
 
     def __iter__(self) -> Iterator[bytes]: ...
+
+
+class PSeekableStream(PUploadStream):
+    def tell(self) -> int: ...
+
+    def seek(self, offset: int, whence: int = 0) -> int: ...
 
 
 class PTask(Protocol):

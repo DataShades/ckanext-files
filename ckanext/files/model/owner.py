@@ -12,13 +12,22 @@ from .base import Base
 class Owner(Base):  # type: ignore
     """Model with details about current owner of an item.
 
+    Keyword Args:
+        item_id (str): ID of the owned object
+        item_type (str): type of the owned object
+        owner_id (str): ID of the owner
+        owner_type (str): Type of the owner
+        pinned (bool): is ownership protected from transfer
+
     Example:
-    >>> owner = Owner(
-    >>>     item_id=file.id,
-    >>>     item_type="file",
-    >>>     owner_id=user.id,
-    >>>     owner_type="user,
-    >>> )
+        ```python
+        owner = Owner(
+            item_id=file.id,
+            item_type="file",
+            owner_id=user.id,
+            owner_type="user,
+        )
+        ```
     """
 
     __table__ = sa.Table(

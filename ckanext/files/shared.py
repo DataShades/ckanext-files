@@ -1,6 +1,5 @@
-from . import config
+from . import config, types
 from . import exceptions as exc
-from . import types
 from .base import (
     FileData,
     Manager,

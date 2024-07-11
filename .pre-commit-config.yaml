@@ -15,25 +15,12 @@ repos:
   - id: debug-statements
     stages: [pre-push]
 
-## Isort
-- repo: https://github.com/pycqa/isort
-  rev: 5.13.2
-  hooks:
-  - id: isort
-    name: isort
-    stages: [pre-commit]
-
-## Black
-- repo: https://github.com/psf/black
-  rev: 24.4.2
-  hooks:
-  - id: black
-    stages: [pre-commit]
-
 ## Ruff
 - repo: https://github.com/charliermarsh/ruff-pre-commit
-  rev: v0.4.10
+  rev: v0.5.0
   hooks:
   - id: ruff
     args: [--fix]
+    stages: [pre-commit]
+  - id: ruff-format
     stages: [pre-commit]

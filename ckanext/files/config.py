@@ -59,29 +59,21 @@ def cascade_access() -> list[str]:
 
 def authenticated_uploads() -> bool:
     """Any authenticated user can upload files."""
-
     return tk.config[AUTHENTICATED_UPLOADS]
 
 
 def transfer_as_update() -> bool:
-    """Use `*_update` auth function to check cascade access for ownership
-    transfer."""
-
+    """Use `*_update` auth when transfering ownership."""
     return tk.config[TRANSFER_AS_UPDATE]
 
 
 def scan_as_update() -> bool:
-    """Use `*_update` auth function to check cascade access when listing files
-    of the owner."""
-
+    """Use `*_update` auth when listing files of the owner."""
     return tk.config[SCAN_AS_UPDATE]
 
 
 def authenticated_storages() -> list[str]:
-    """Names of storages that can by used by non-sysadmin users when
-    authenticated uploads enabled.
-    """
-
+    """Names of storages that can by used by non-sysadmins."""
     return tk.config[AUTHENTICATED_STORAGES]
 
 
@@ -92,13 +84,11 @@ def group_images_storage() -> str:
 
 def user_images_storage() -> str:
     """Storage used for user image uploads."""
-
     return tk.config[USER_IMAGES_STORAGE]
 
 
 def resources_storage() -> str:
     """Storage used for resource uploads."""
-
     return tk.config[RESOURCE_STORAGE]
 
 

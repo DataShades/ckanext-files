@@ -24,7 +24,7 @@ __all__ = ["bp"]
 
 
 def not_found_handler(error: tk.ObjectNotFound) -> tuple[str, int]:
-    """Generic handler for ObjectNotFound exception"""
+    """Generic handler for ObjectNotFound exception."""
     return (
         tk.render(
             "error_document_template.html",
@@ -39,7 +39,7 @@ def not_found_handler(error: tk.ObjectNotFound) -> tuple[str, int]:
 
 
 def not_authorized_handler(error: tk.NotAuthorized) -> tuple[str, int]:
-    """Generic handler for NotAuthorized exception"""
+    """Generic handler for NotAuthorized exception."""
     return (
         tk.render(
             "error_document_template.html",
@@ -150,8 +150,9 @@ def _pager_url(*args: Any, **kwargs: Any) -> str:
     string.
     """
     params = {k: v for k, v in tk.request.args.items() if k != "page"}
+    view_args: dict[str, Any] = tk.request.view_args or {}
     params.update(
-        {k: v for k, v in (tk.request.view_args or {}).items()},
+        dict(view_args.items()),
     )
     params.update(kwargs)
     return tk.h.pager_url(*args, **params)

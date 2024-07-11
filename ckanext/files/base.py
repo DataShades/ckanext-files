@@ -85,13 +85,22 @@ class BaseData(Generic[TFileModel]):
 class FileData(BaseData[model.File]):
     """Information required by storage to operate the file.
 
+    Args:
+        location: filepath, filename or any other type of unique identifier
+        size: size of the file in bytes
+        content_type: MIMEtype of the file
+        hash: checksum of the file
+        storage_data: additional details set by storage adapter
+
     Example:
-    >>> FileData(
-    >>>     "local/path.txt",
-    >>>     123,
-    >>>     "text/plain",
-    >>>     md5_of_content,
-    >>> )
+        ```
+        FileData(
+            "local/path.txt",
+            123,
+            "text/plain",
+            md5_of_content,
+        )
+        ```
     """
 
     content_type: str = "application/octet-stream"
@@ -101,13 +110,22 @@ class FileData(BaseData[model.File]):
 class MultipartData(BaseData[model.Multipart]):
     """Information required by storage to operate the incomplete upload.
 
+    Args:
+        location: filepath, filename or any other type of unique identifier
+        size: expected size of the file in bytes
+        content_type: expected MIMEtype of the file
+        hash: expected checksum of the file
+        storage_data: additional details set by storage adapter
+
     Example:
-    >>> FileData(
-    >>>     "local/path.txt",
-    >>>     expected_size,
-    >>>     expected_content_type,
-    >>>     expected_hash,
-    >>> )
+        ```
+        MultipartData(
+            "local/path.txt",
+            expected_size,
+            expected_content_type,
+            expected_hash,
+        )
+        ```
     """
 
     location: str = ""
@@ -129,10 +147,22 @@ def make_storage(
     usually initialized using CKAN configuration, which is already validated by
     config declarations.
 
-    Example:
-    >>> storage = make_storage("memo", {"type": "files:redis"}, True)
-    """
+    Args:
+        name: name of the new storage
+        settings: configuration for the storage
+        prepare_settings: add default values for missing options
 
+    Returns:
+        storage instance
+
+    Raises:
+        exceptions.UnknownAdapterError: storage adapter is not registered
+
+    Example:
+        ```
+        storage = make_storage("memo", {"type": "files:redis"}, True)
+        ```
+    """
     adapter_type = settings.pop("type", None)
     adapter = adapters.get(adapter_type)
     if not adapter:
@@ -154,11 +184,23 @@ def get_storage(name: str | None = None) -> Storage:
 
     If no name specified, default storage is returned.
 
-    Example:
-    >>> default_storage = get_storage()
-    >>> storage = get_storage("storage name")
-    """
+    Args:
+        name: name of the configured storage
 
+    Returns:
+        storage instance
+
+    Raises:
+        exceptions.UnknownStorageError: storage with the given name is not
+            configured
+
+    Example:
+        ```
+        default_storage = get_storage()
+        storage = get_storage("storage name")
+        ```
+
+    """
     if name is None:
         name = config.default_storage()
 
@@ -181,7 +223,6 @@ class OptionChecker:
     @classmethod
     def ensure_option(cls, settings: dict[str, Any], option: str) -> Any:
         """Return value of the option or rise an exception."""
-
         if option not in settings:
             raise exceptions.MissingStorageConfigurationError(cls, option)
         return settings[option]
@@ -225,21 +266,22 @@ class Uploader(StorageService):
     `Uploader.upload(location, upload, kwargs)`.
 
     Example:
-    >>> class MyUploader(Uploader):
-    >>>     def upload(
-    >>>         self, location: str, upload: Upload, extras: dict[str, Any]
-    >>>     ) -> FileData:
-    >>>         reader = upload.hashing_reader()
-    >>>
-    >>>         with open(location, "wb") as dest:
-    >>>             dest.write(reader.read())
-    >>>
-    >>>         return FileData(
-    >>>             location, upload.size,
-    >>>             upload.content_type,
-    >>>             reader.get_hash()
-    >>>         )
+        ```python
+        class MyUploader(Uploader):
+            def upload(
+                self, location: str, upload: Upload, extras: dict[str, Any]
+            ) -> FileData:
+                reader = upload.hashing_reader()
 
+                with open(location, "wb") as dest:
+                    dest.write(reader.read())
+
+                return FileData(
+                    location, upload.size,
+                    upload.content_type,
+                    reader.get_hash()
+                )
+        ```
     """
 
     def upload(
@@ -249,7 +291,6 @@ class Uploader(StorageService):
         extras: dict[str, Any],
     ) -> FileData:
         """Upload file using single stream."""
-
         raise NotImplementedError
 
     def multipart_start(
@@ -259,7 +300,6 @@ class Uploader(StorageService):
         extras: dict[str, Any],
     ) -> MultipartData:
         """Prepare everything for multipart(resumable) upload."""
-
         raise NotImplementedError
 
     def multipart_refresh(
@@ -284,7 +324,6 @@ class Uploader(StorageService):
         extras: dict[str, Any],
     ) -> FileData:
         """Verify file integrity and finalize incomplete upload."""
-
         raise NotImplementedError
 
 
@@ -295,13 +334,14 @@ class Manager(StorageService):
     `Storage.remove(data, **kwargs)` results in `Manager.remove(data, kwargs)`.
 
     Example:
-    >>> class MyManager(Manager):
-    >>>     def remove(
-    >>>         self, data: FileData|MultipartData, extras: dict[str, Any]
-    >>>     ) -> bool:
-    >>>         os.remove(data.location)
-    >>>         return True
-
+        ```python
+        class MyManager(Manager):
+            def remove(
+                self, data: FileData|MultipartData, extras: dict[str, Any]
+            ) -> bool:
+                os.remove(data.location)
+                return True
+        ```
     """
 
     def remove(self, data: FileData | MultipartData, extras: dict[str, Any]) -> bool:
@@ -319,7 +359,6 @@ class Manager(StorageService):
         extras: dict[str, Any],
     ) -> FileData:
         """Combine multipe file inside the storage into a new one."""
-
         raise NotImplementedError
 
     def append(
@@ -338,7 +377,6 @@ class Manager(StorageService):
         extras: dict[str, Any],
     ) -> FileData:
         """Copy file inside the storage."""
-
         raise NotImplementedError
 
     def move(
@@ -366,12 +404,13 @@ class Reader(StorageService):
     `Storage.stream(data, **kwargs)` results in `Reader.stream(data, kwargs)`.
 
     Example:
-    >>> class MyReader(Reader):
-    >>>     def stream(
-    >>>         self, data: FileData, extras: dict[str, Any]
-    >>>     ) -> Iterable[bytes]:
-    >>>         return open(data.location, "rb")
-
+        ```python
+        class MyReader(Reader):
+            def stream(
+                self, data: FileData, extras: dict[str, Any]
+            ) -> Iterable[bytes]:
+                return open(data.location, "rb")
+        ```
     """
 
     def stream(self, data: FileData, extras: dict[str, Any]) -> Iterable[bytes]:
@@ -411,7 +450,6 @@ class Reader(StorageService):
         extras["ttl"] controls lifetime of the link(30 seconds by default).
 
         """
-
         token = utils.encode_token(
             {
                 "topic": "download_file",
@@ -434,16 +472,21 @@ class Reader(StorageService):
 class Storage(OptionChecker, abc.ABC):
     """Base class for storage implementation.
 
+    Args:
+        settings: storage configuration
+
     Example:
-    >>> class MyStorage(Storage):
-    >>>     def make_uploader(self):
-    >>>         return MyUploader(self)
-    >>>
-    >>>     def make_reader(self):
-    >>>         return MyReader(self)
-    >>>
-    >>>     def make_manager(self):
-    >>>         return MyManager(self)
+        ```python
+        class MyStorage(Storage):
+            def make_uploader(self):
+                return MyUploader(self)
+
+            def make_reader(self):
+                return MyReader(self)
+
+            def make_manager(self):
+                return MyManager(self)
+        ```
     """
 
     # do not show storage adapter in CLI's `files adapters` output
@@ -470,11 +513,15 @@ class Storage(OptionChecker, abc.ABC):
         Passing sane values with valid types is still responsibility of the
         developer.
 
-        Example:
-        >>> settings = Storage.prepare_settings({})
-        >>> storage = Storage(settings)
-        """
+        Args:
+            settings: configuration that required preparation
 
+        Example:
+            ```python
+            settings = Storage.prepare_settings({})
+            storage = Storage(settings)
+            ```
+        """
         settings.setdefault("override_existing", False)
         settings.setdefault("supported_types", [])
         settings.setdefault("max_size", 0)
@@ -497,13 +544,11 @@ class Storage(OptionChecker, abc.ABC):
         Max size set to 0 removes all limitations.
 
         """
-
         return self.settings["max_size"]
 
     @property
     def supported_types(self) -> list[str]:
         """List of supported MIMEtypes or their parts."""
-
         return self.settings["supported_types"]
 
     @classmethod

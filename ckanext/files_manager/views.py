@@ -46,7 +46,7 @@ class FilesManagerView(MethodView):
         for file_id in file_ids:
             try:
                 action_func(file_id)
-            except tk.ValidationError as e:
+            except tk.ValidationError as e:  # noqa: PERF203
                 tk.h.flash_error(str(e))
 
         return tk.redirect_to("files_manager.list")

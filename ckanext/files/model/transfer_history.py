@@ -16,13 +16,23 @@ from .owner import Owner
 class TransferHistory(Base):  # type: ignore
     """Model for tracking ownership history of the file.
 
+    Keyword Args:
+        item_id (str): ID of the owned object
+        item_type (str): type of the owned object
+        owner_id (str): ID of the owner
+        owner_type (str): Type of the owner
+        leave_date (datetime): date of ownership transfer to a different owner
+        actor (str | None): user who initiated ownership transfer
+
     Example:
-    >>> record = TransferHistory(
-    >>>     item_id=file.id,
-    >>>     item_type="file",
-    >>>     owner_id=prev_owner.owner_id,
-    >>>     owner_type=prev_owner.owner_type,
-    >>> )
+        ```python
+        record = TransferHistory(
+            item_id=file.id,
+            item_type="file",
+            owner_id=prev_owner.owner_id,
+            owner_type=prev_owner.owner_type,
+        )
+        ```
     """
 
     __table__ = sa.Table(
@@ -52,6 +62,7 @@ class TransferHistory(Base):  # type: ignore
     owner_id: Mapped[str]
     owner_type: Mapped[str]
     leave_date: Mapped[datetime]
+    actor: Mapped[str | None]
 
     current: Mapped[Owner] = relationship(
         Owner,

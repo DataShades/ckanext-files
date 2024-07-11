@@ -38,7 +38,6 @@ files.add_command(maintain.group, "maintain")
 @click.option("-o", "--output", help="Stream into specified file or directory")
 def stream(file_id: str, output: str | None, start: int, end: int | None):
     """Stream content of the file."""
-
     file = model.Session.get(shared.File, file_id)
     if not file:
         tk.error_shout("File not found")

@@ -38,7 +38,6 @@ T = TypeVar("T")
 RE_FILESIZE = re.compile(r"^(?P<size>\d+(?:\.\d+)?)\s*(?P<unit>\w*)$")
 CHUNK_SIZE = 16 * 1024
 SAMPLE_SIZE = 1024 * 2
-CHECKSUM_ALGORITHM = "md5"
 
 UNITS = cast(
     "dict[str, int]",
@@ -89,17 +88,14 @@ class Registry(Generic[T]):
 
     def reset(self):
         """Remove all members from registry."""
-
         self.members.clear()
 
     def register(self, name: str, member: T):
         """Add a member to registry."""
-
         self.members[name] = member
 
     def get(self, name: str) -> T | None:
         """Get an optional member from registry."""
-
         return self.members.get(name)
 
 
@@ -107,20 +103,62 @@ class Registry(Generic[T]):
 class Upload:
     """Standard upload details.
 
-    Example:
-    >>> Upload(
-    >>>     BytesIO(b"hello world"),
-    >>>     "file.txt",
-    >>>     11,
-    >>>     "text/plain",
-    >>> )
+    Args:
+        stream: iterable of bytes or file-like object
+        filename: name of the file
+        size: size of the file in bytes
+        content_type: MIMEtype of the file
 
+    Example:
+        ```
+        Upload(
+            BytesIO(b"hello world"),
+            "file.txt",
+            11,
+            "text/plain",
+        )
+        ```
     """
 
     stream: types.PUploadStream
     filename: str
     size: int
     content_type: str
+
+    @property
+    def seekable_stream(self) -> types.PSeekableStream | None:
+        """Return stream that can be rewinded after reading.
+
+        If internal stream does not support file-like `seek`, nothing is
+        returned from this property.
+
+        Use this property if you want to read the file ahead, to get CSV column
+        names, list of files inside ZIP, EXIF metadata. If you get `None` from
+        it, stream does not support seeking and you won't be able to return
+        cursor to the beginning of the file after reading something.
+
+        Example:
+            ```python
+            upload = make_upload(...)
+            if fd := upload.seekable_stream():
+                # read fragment of the file
+                chunk = fd.read(1024)
+                # move cursor to the end of the stream
+                fd.seek(0, 2)
+                # position of the cursor is the same as number of bytes in stream
+                size = fd.tell()
+                # move cursor back, because you don't want to accidentally loose
+                # any bites from the beginning of stream when uploader reads from it
+                fd.seek(0)
+            ```
+
+        Returns:
+            file-like stream or nothing
+        """
+        if hasattr(self.stream, "tell") and hasattr(self.stream, "seek"):
+            return cast(types.PSeekableStream, self.stream)
+
+        return None
 
     def hashing_reader(self, **kwargs: Any) -> HashingReader:
         return HashingReader(self.stream, **kwargs)
@@ -129,20 +167,25 @@ class Upload:
 class HashingReader:
     """IO stream wrapper that computes content hash while stream is consumed.
 
+    Args:
+        stream: iterable of bytes or file-like object
+        chunk_size: max number of bytes read at once
+        algorithm: hashing algorithm
+
     Example:
-
-    >>> reader = HashingReader(readable_stream)
-    >>> for chunk in reader:
-    >>>     ...
-    >>> print(f"Hash: {reader.get_hash()}")
-
+        ```
+        reader = HashingReader(readable_stream)
+        for chunk in reader:
+            ...
+        print(f"Hash: {reader.get_hash()}")
+        ```
     """
 
     def __init__(
         self,
         stream: types.PUploadStream,
         chunk_size: int = CHUNK_SIZE,
-        algorithm: str = CHECKSUM_ALGORITHM,
+        algorithm: str = "md5",
     ):
         self.stream = stream
         self.chunk_size = chunk_size
@@ -165,6 +208,7 @@ class HashingReader:
     next = __next__
 
     def read(self):
+        """Return content of the file as a single bytes object."""
         return b"".join(self)
 
     def get_hash(self):
@@ -173,7 +217,6 @@ class HashingReader:
 
     def exhaust(self):
         """Exhaust internal stream to compute final version of content hash."""
-
         for _ in self:
             pass
 
@@ -211,7 +254,6 @@ def get_owner(owner_type: str, owner_id: str):
 
 def is_supported_type(content_type: str, supported: Iterable[str]) -> str | None:
     """Return content type if it matches supported types."""
-
     maintype, subtype = content_type.split("/")
     for st in supported:
         if st in [content_type, maintype, subtype]:
@@ -222,9 +264,11 @@ class Capability(enum.Flag):
     """Enumeration of operations supported by the storage.
 
     Example:
-    >>> read_and_write = Capability.STREAM | Capability.CREATE
-    >>> if storage.supports(read_and_write)
-    >>>     ...
+        ```python
+        read_and_write = Capability.STREAM | Capability.CREATE
+        if storage.supports(read_and_write)
+            ...
+        ```
     """
 
     NONE = 0
@@ -263,12 +307,16 @@ class Capability(enum.Flag):
     PUBLIC_LINK = enum.auto()
 
     def exclude(self, *capabilities: Capability):
-        """Remove capabilities from the cluster
+        """Remove capabilities from the cluster.
+
+        Other Args:
+            capabilities: removed capabilities
 
         Example:
-        >>> cluster = cluster.exclude(Capability.REMOVE)
+            ```python
+            cluster = cluster.exclude(Capability.REMOVE)
+            ```
         """
-
         result = Capability(self)
         for capability in capabilities:
             result = result & ~capability
@@ -281,9 +329,17 @@ class Capability(enum.Flag):
 def parse_filesize(value: str) -> int:
     """Transform human-readable filesize into an integer.
 
+    Args:
+        value: human-readable filesize
+
+    Raises:
+        ValueError: size cannot be parsed or uses unknown units
+
     Example:
-    >>> size = parse_filesize("10GiB")
-    >>> assert size == 10_737_418_240
+        ```python
+        size = parse_filesize("10GiB")
+        assert size == 10_737_418_240
+        ```
     """
     result = RE_FILESIZE.match(value.strip())
     if not result:
@@ -300,11 +356,16 @@ def parse_filesize(value: str) -> int:
 def humanize_filesize(value: int | float) -> str:
     """Transform an integer into human-readable filesize.
 
+    Args:
+        value: size in bytes
+
     Example:
-    >>> size = humanize_filesize(10_737_418_240)
-    >>> assert size == "10GiB"
-    >>> size = humanize_filesize(10_418_240)
-    >>> assert size == "9.9MiB"
+        ```python
+        size = humanize_filesize(10_737_418_240)
+        assert size == "10GiB"
+        size = humanize_filesize(10_418_240)
+        assert size == "9.9MiB"
+        ```
     """
     suffixes = ["B", "KiB", "MiB", "GiB", "TiB", "PiB"]
     iteration = 0
@@ -320,14 +381,26 @@ def humanize_filesize(value: int | float) -> str:
 def make_upload(
     value: types.Uploadable | Upload,
 ) -> Upload:
-    """Convert value into Upload object
+    """Convert value into Upload object.
 
     Use this function for simple and reliable initialization of Upload
     object. Avoid creating Upload manually, unless you are 100% sure you can
     provide correct MIMEtype, size and stream.
 
+    Args:
+        value: content of the file
+
+    Raises:
+        ValueError: incorrectly initialized cgi.FieldStorage passed as value
+        TypeError: content has unsupported type
+
+    Returns:
+        upload object with specified content
+
     Example:
-    >>> storage.upload("file.txt", make_upload(b"hello world"))
+        ```python
+        storage.upload("file.txt", make_upload(b"hello world"))
+        ```
 
     """
     if isinstance(value, Upload):

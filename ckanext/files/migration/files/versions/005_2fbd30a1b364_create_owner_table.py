@@ -1,4 +1,4 @@
-"""create owner table
+"""create owner table.
 
 Revision ID: 2fbd30a1b364
 Revises: 3c69eb68cecd

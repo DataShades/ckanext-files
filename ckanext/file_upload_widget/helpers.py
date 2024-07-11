@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import math
 
+
 def fuw_printable_file_size(size_bytes: int) -> str:
     if size_bytes == 0:
         return "0 bytes"
@@ -11,10 +12,10 @@ def fuw_printable_file_size(size_bytes: int) -> str:
     p = math.pow(1024, i)
     s = round(float(size_bytes) / p, 1)
 
-    return "%s %s" % (s, size_name[i])
+    return f"{s} {size_name[i]}"
 
 
-def fuw_truncate_file_name(file_name: str, max_length=35) -> str:
+def fuw_truncate_file_name(file_name: str, max_length: int = 35) -> str:
     """Truncate file name if it is longer than the maximum length.
 
     Args:

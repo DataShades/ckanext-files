@@ -22,15 +22,28 @@ foreign: Any
 class Multipart(Base):  # type: ignore
     """Model with details of incomplete upload.
 
+    Keyword Args:
+        name (str): name shown to users
+        location (str): location of the file inside storage
+        content_type (str): expected MIMEtype
+        size (int): expected size in bytes
+        hash (str): expected checksum
+        storage (str): storage that contains the file
+        ctime (datetime): date of creation
+        storage_data (dict[str, Any]): additional data set by storage
+        plugin_data (dict[str, Any]): additional data set by plugins
+
     Example:
-    >>> upload = Multipart(
-    >>>     name="file.txt",
-    >>>     location="relative/path/safe-name.txt",
-    >>>     content_type="text/plain",
-    >>>     size=100,
-    >>>     hash="abc123",
-    >>>     storage="default",
-    >>> )
+        ```python
+        upload = Multipart(
+            name="file.txt",
+            location="relative/path/safe-name.txt",
+            content_type="text/plain",
+            size=100,
+            hash="abc123",
+            storage="default",
+        )
+        ```
     """
 
     __table__ = sa.Table(

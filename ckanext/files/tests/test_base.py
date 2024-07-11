@@ -15,19 +15,16 @@ from ckanext.files.storage import RedisStorage
 class TestMakeStorage:
     def test_missing_adapter(self):
         """Unknown udapter causes an exception."""
-
         with pytest.raises(exceptions.UnknownAdapterError):
             base.make_storage("", {})
 
     def test_invalid_configuration(self):
         """Wrong configuration causes an exception."""
-
         with pytest.raises(exceptions.InvalidStorageConfigurationError):
             base.make_storage("", {"type": "files:fs"}, True)
 
     def test_normal_configuration(self):
         """Valid configuration produces a storage."""
-
         storage = base.make_storage("", {"type": "files:redis"}, True)
         assert isinstance(storage, RedisStorage)
 
@@ -35,12 +32,11 @@ class TestMakeStorage:
 class TestOptionCheckeer:
     def test_missing_option(self, faker: Faker):
         """Checker raises an exception if option is missing."""
-
         with pytest.raises(exceptions.MissingStorageConfigurationError):
             base.OptionChecker.ensure_option({faker.word(): True}, faker.word())
 
     def test_existing_option(self, faker: Faker):
-        """Checker returns the value of existing option"""
+        """Checker returns the value of existing option."""
         option = faker.word()
         value = faker.word()
 
@@ -75,7 +71,6 @@ class TestUploader:
 
     def test_abstract_methods(self, uploader: base.Uploader, faker: Faker):
         """Abstract methods raise exception."""
-
         with pytest.raises(NotImplementedError):
             uploader.upload(faker.file_name(), make_upload(b""), {})
 
@@ -99,7 +94,6 @@ class TestManager:
 
     def test_abstract_methods(self, manager: base.Manager):
         """Abstract methods raise exception."""
-
         with pytest.raises(NotImplementedError):
             manager.remove(FileData(""), {})
 
@@ -111,7 +105,6 @@ class TestReader:
 
     def test_abstract_methods(self, reader: base.Reader):
         """Abstract methods raise exception."""
-
         with pytest.raises(NotImplementedError):
             reader.stream(FileData(""), {})
 
@@ -149,7 +142,6 @@ class TestStorage:
 
     def test_settings(self, faker: Faker):
         """Storage keeps all incoming arguments as settings."""
-
         settings = faker.pydict()
 
         storage = base.Storage(settings)
@@ -164,7 +156,6 @@ class TestStorage:
 
     def test_max_size(self, faker: Faker):
         """Storage has a dedicated property for `max_size` setting."""
-
         assert base.Storage(base.Storage.prepare_settings({})).max_size == 0
 
         max_size = faker.pyint()
@@ -177,7 +168,6 @@ class TestStorage:
 
     def test_supports(self):
         """Storage can tell whether it supports certain capabilities."""
-
         storage = Storage({})
 
         assert storage.supports(Capability.CREATE)

@@ -23,8 +23,7 @@ def mock():
 
 
 @pytest.fixture()
-def responses(ckan_config):
-    # type: (Any) -> Any
+def responses(ckan_config: dict[str, Any]):
     with RequestsMock() as rsps:
         rsps.add_passthru(ckan_config["solr_url"])
         yield rsps
@@ -38,9 +37,7 @@ def files_stopped_time():
 
 
 @pytest.fixture()
-def clean_db(reset_db, migrate_db_for):
-    # type: (Any, Any) -> None
-
+def clean_db(reset_db: Any, migrate_db_for: Any):
     # fix for CKAN v2.9 issue with `reset_db` attempting to remove all
     # registered models, not only core-models
     migrate_db_for("files")
@@ -49,16 +46,14 @@ def clean_db(reset_db, migrate_db_for):
 
 
 class FakeFileStorage(FileStorage):
-    def __init__(self, stream, filename):
-        # type: (Any, str) -> None
+    def __init__(self, stream: Any, filename: str):
         self.filename = filename
 
         super().__init__(stream, filename, "upload")
 
 
 @pytest.fixture()
-def create_with_upload(ckan_config, monkeypatch, tmpdir):
-    # type: (Any, Any, Any) -> Any
+def create_with_upload(ckan_config: dict[str, Any], monkeypatch: Any, tmpdir: Any):
     """Reimplementation of original CKAN fixture with better fake storage.
 
     CKAN version adds just a few attributes to FileStorage object, while
@@ -71,8 +66,7 @@ def create_with_upload(ckan_config, monkeypatch, tmpdir):
     if hasattr(uploader, "_storage_path"):
         monkeypatch.setattr(uploader, "_storage_path", storage_path)
 
-    def factory(data, filename, context=None, **kwargs):
-        # type: (Any, Any, Any, **Any) -> Any
+    def factory(data: Any, filename: str, context: Any = None, **kwargs: Any):
         if context is None:
             context = {}
 
@@ -96,9 +90,9 @@ def create_with_upload(ckan_config, monkeypatch, tmpdir):
 
 @pytest.fixture(scope="session")
 def reset_redis():
-    def cleaner(pattern="*"):
-        # type: (str) -> int
+    def cleaner(pattern: str = "*"):
         """Remove keys matching pattern.
+
         Return number of removed records.
         """
         conn = connect_to_redis()
@@ -113,17 +107,27 @@ def reset_redis():
 @pytest.fixture()
 def clean_redis(reset_redis: Any):
     """Remove all keys from Redis.
-    This fixture removes all the records from Redis::
+
+    This fixture removes all the records from Redis.
+
+    Example:
+        ```python
         @pytest.mark.usefixtures("clean_redis")
         def test_redis_is_empty():
             assert redis.keys("*") == []
+        ```
+
     If test requires presence of some initial data in redis, make sure that
-    data producer applied **after** ``clean_redis``::
+    data producer applied **after** ``clean_redis``:
+
+    Example:
+        ```python
         @pytest.mark.usefixtures(
             "clean_redis",
             "fixture_that_adds_xxx_key_to_redis"
         )
         def test_redis_has_one_record():
             assert redis.keys("*") == [b"xxx"]
+        ```
     """
     reset_redis()

@@ -36,11 +36,13 @@ class TaskQueue:
     """Thread-safe context for managing tasks.
 
     Example:
-    >>> queue = TaskQueue()
-    >>> with queue:
-    >>>     function_that_adds_tasks_to_queue()
-    >>> data_passed_into_tasks = ...
-    >>> queue.process(data_passed_into_tasks)
+        ```python
+        queue = TaskQueue()
+        with queue:
+            function_that_adds_tasks_to_queue()
+        data_passed_into_tasks = ...
+        queue.process(data_passed_into_tasks)
+        ```
     """
 
     # container for tasks
@@ -74,7 +76,6 @@ class TaskQueue:
         task. The first task receives Task.NO_PREVIOUS_TASK as third argument,
         because there are no results from previous task yet.
         """
-
         prev = Task.NO_PREVIOUS_TASK
         idx = 0
         while self.queue:
@@ -87,7 +88,6 @@ class Task(abc.ABC):
     """Base task for TaskQueue.
 
     The only requirement for subclasses is implementing Task.run.
-
     """
 
     NO_PREVIOUS_TASK = object()
@@ -96,11 +96,16 @@ class Task(abc.ABC):
     def extract(source: dict[str, Any], path: FlattenKey):
         """Extract value from dictionary using FlattenKey from validators.
 
-        Example:
-        >>> data = {"a": {"b": {"c": 42}}}
-        >>> assert Task.extract(data, ("a", "b", "c")) == 42
-        """
+        Args:
+            source: dictionary with data
+            path: path to the extracted member from source
 
+        Example:
+            ```python
+            data = {"a": {"b": {"c": 42}}}
+            assert Task.extract(data, ("a", "b", "c")) == 42
+            ```
+        """
         for step in path:
             source = source[step]
 
@@ -126,20 +131,25 @@ class OwnershipTransferTask(Task):
     """Taks for transfering ownership to not-yet-existing entity.
 
     Designed for scheduling from validators:
-    >>> def validator(key, data, errors, context):
-    >>>     file_id = data[key]
-    >>>     owner_id_path = key[:-1] + ("id",)
-    >>>     task = OwnershipTransferTask(file_id, "resource", owner_id_path)
-    >>>     add_task(task)
+
+    Example:
+        ```python
+        def validator(key, data, errors, context):
+            file_id = data[key]
+            owner_id_path = key[:-1] + ("id",)
+            task = OwnershipTransferTask(file_id, "resource", owner_id_path)
+            add_task(task)
+        ```
 
     This task requires the ID of the file to trasfer, type of the future owner
     and flattened path to ID field of the owner.
 
     Example:
-    >>> task = OwnershipTransferTask('xxx', 'resource', ("resources", 0, "id"))
-    >>> dataset = {"name": "test", "resources": [{"id": "123"}]}
-    >>> task.run(dataset, 0, Task.NO_PREVIOUS_TASK)
-
+        ```python
+        task = OwnershipTransferTask('xxx', 'resource', ("resources", 0, "id"))
+        dataset = {"name": "test", "resources": [{"id": "123"}]}
+        task.run(dataset, 0, Task.NO_PREVIOUS_TASK)
+        ```
     """
 
     # ID of the transfered file
@@ -150,10 +160,11 @@ class OwnershipTransferTask(Task):
     id_path: FlattenKey
 
     def run(self, result: dict[str, Any], idx: int, prev: Any):
-        """Transfer file ownership to an entity whose ID is stored in `result`
-        under `self.id_path` path.
-        """
+        """Transfer file ownership.
 
+        Ownerhip transfered to an entity whose ID is stored in `result` under
+        `self.id_path` path.
+        """
         return tk.get_action("files_transfer_ownership")(
             {"ignore_auth": True},
             {
@@ -221,7 +232,6 @@ class UploadAndAttachTask(Task):
 
     def run(self, result: dict[str, Any], idx: int, prev: Any):
         """Upload file, transfer ownership and, optionally, patch the owner."""
-
         info = tk.get_action("files_file_create")(
             {"ignore_auth": True},
             {"upload": self.upload, "storage": self.storage},
@@ -265,10 +275,11 @@ def with_task_queue(func: Any, name: str | None = None):
     before queuing tasks.
 
     Example:
-    >>> @with_task_queue
-    >>> def my_action(context, data_dict):
-    >>>     ...
-
+        ```python
+        @with_task_queue
+        def my_action(context, data_dict):
+            ...
+        ```
     """
 
     @functools.wraps(func)
@@ -291,22 +302,28 @@ def add_task(task: types.PTask):
     This function can be called only inside task queue context. Such context
     initialized automatically inside functions decorated with
     `with_task_queue`:
-    >>> @with_task_queue
-    >>> def taks_producer():
-    >>>     add_task(...)
-    >>>
-    >>> task_producer()
+
+    Example:
+        ```python
+        @with_task_queue
+        def taks_producer():
+            add_task(...)
+
+        task_producer()
+        ```
 
     Task queue context can be initialized manually using TaskQueue and
     `with` statement:
-    >>> queue = TaskQueue()
-    >>> with queue:
-    >>>     add_task(...)
-    >>>
-    >>> queue.process(execution_data)
 
+    Example:
+        ```python
+        queue = TaskQueue()
+        with queue:
+            add_task(...)
+
+        queue.process(execution_data)
+        ```
     """
-
     queue = _task_queue.get()
     if queue is None:
         raise exceptions.OutOfQueueError

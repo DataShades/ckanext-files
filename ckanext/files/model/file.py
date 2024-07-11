@@ -22,15 +22,30 @@ foreign: Any
 class File(Base):  # type: ignore
     """Model with file details.
 
+    Keyword Args:
+        name (str): name shown to users
+        location (str): location of the file inside storage
+        content_type (str): MIMEtype
+        size (int): size in bytes
+        hash (str): checksum
+        storage (str): storage that contains the file
+        ctime (datetime): date of creation
+        mtime (datetime | None): date of the last update
+        atime (datetime | None): date of last access(unstable)
+        storage_data (dict[str, Any]): additional data set by storage
+        plugin_data (dict[str, Any]): additional data set by plugins
+
     Example:
-    >>> file = File(
-    >>>     name="file.txt",
-    >>>     location="relative/path/safe-name.txt",
-    >>>     content_type="text/plain",
-    >>>     size=100,
-    >>>     hash="abc123",
-    >>>     storage="default",
-    >>> )
+        ```python
+        file = File(
+            name="file.txt",
+            location="relative/path/safe-name.txt",
+            content_type="text/plain",
+            size=100,
+            hash="abc123",
+            storage="default",
+        )
+        ```
     """
 
     __table__ = sa.Table(
@@ -159,8 +174,7 @@ class File(Base):  # type: ignore
         return data
 
     @classmethod
-    def by_location(cls, location, storage=None):
-        # type: (str, str | None) -> sa.sql.Select
+    def by_location(cls, location: str, storage: str | None = None):
         stmt = sa.select(cls).where(
             cls.location == location,
         )

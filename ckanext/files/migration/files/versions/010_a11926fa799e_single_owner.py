@@ -1,4 +1,4 @@
-"""single owner
+"""single owner.
 
 Revision ID: a11926fa799e
 Revises: c7081d7f02e8

@@ -21,7 +21,6 @@ class LinkDetails(TypedDict):
 
 def files_parse_tz_date(value: str, strip_timezone: bool = False):
     """Transform timezone-aware ISO 8601 value into datetime object."""
-
     result = datetime.fromisoformat(value)
     if strip_timezone:
         result = result.replace(tzinfo=None)

@@ -1,4 +1,4 @@
-"""create transfer history table
+"""create transfer history table.
 
 Revision ID: 6a6ea2472155
 Revises: a11926fa799e

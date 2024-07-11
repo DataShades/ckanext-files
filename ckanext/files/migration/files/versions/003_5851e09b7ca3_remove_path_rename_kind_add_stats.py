@@ -1,4 +1,4 @@
-"""remove_path_rename_kind_add_stats
+"""remove_path_rename_kind_add_stats.
 
 Revision ID: 5851e09b7ca3
 Revises: 2c5f1f90888c
@@ -101,7 +101,11 @@ def downgrade():
             continue
         op.execute(
             sa.update(table)
-            .values(last_access=atime or datetime.now(), extras=extras_copy, path=path)
+            .values(
+                last_access=atime or datetime.now(),  # noqa: DTZ005
+                extras=extras_copy,
+                path=path,
+            )
             .where(table.c.id == id),
         )
 

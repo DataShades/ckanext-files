@@ -1,4 +1,4 @@
-"""create upload table
+"""create upload table.
 
 Revision ID: 3c69eb68cecd
 Revises: 5851e09b7ca3

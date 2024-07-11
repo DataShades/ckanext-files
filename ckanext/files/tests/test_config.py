@@ -25,8 +25,7 @@ class TestDefault:
 
 class TestStorages:
     def test_empty(self):
-        """With no customization we have only storage defined by test.ini"""
-
+        """With no customization we have only storage defined by test.ini."""
         assert config.storages() == {
             "default": {
                 "type": "files:redis",
@@ -73,11 +72,11 @@ class TestStorages:
 
     @pytest.mark.ckan_config(config.STORAGE_PREFIX + "another", "test")
     def test_non_setting(self):
-        """Only `<PREFIX>.<NAME>.<OPTION>` settings are grouped. If `.<OPTION>`
+        """Test extra items from settings.
+
+        Only `<PREFIX>.<NAME>.<OPTION>` settings are grouped. If `.<OPTION>`
         part is missing, we ignore this line.
-
         """
-
         storages = config.storages()
 
         assert storages == {

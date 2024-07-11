@@ -1,26 +1,29 @@
-[tool.black]
-# line-length = 88
-# preview = true
-
 [tool.ruff]
 target-version = "py38"
 
 [tool.ruff.lint]
 select = [
+       "ANN0", # type annotations for function arguments
        "B",  # likely bugs and design problems
        "BLE",  # do not catch blind exception
-       "C40",  # better list/set/dict comprehensions
+       "C4",  # better list/set/dict comprehensions
        "C90",  # check McCabe complexity
-       "COM",  # trailing commas
+       "DTZ", # enforce timezone in date objects
        "E",  # pycodestyle error
        "W",  # pycodestyle warning
        "F",  # pyflakes
+       "FA", # verify annotations from future
        "G",  # format strings for logging statements
        "N",  # naming conventions
+       "I",  # isort
+       "ICN", # import conventions
+       # "D1",  # require doc
+       "D2",  # doc formatting
+       "D4",  # doc convention
        "PL",  # pylint
+       "PERF", # performance anti-patterns
        "PT",  # pytest style
        "PIE",  # misc lints
-       "Q",  # preferred quoting style
        "RET",  # improvements for return statements
        "RSE",  # improvements for rise statements
        "S",  # security testing
@@ -40,19 +43,40 @@ ignore = [
 ]
 
 [tool.ruff.lint.per-file-ignores]
-"ckanext/files/tests*" = ["S", "PL"]
+"ckanext/files/tests*" = ["S", "PL", "ANN"]
 "ckanext/files_uploader/tests*" = ["S", "PL"]
+"ckanext/files/logic/*" = [
+            "D417", # actions don't describe context and data_dict
+]
 
+[tool.ruff.lint.flake8-import-conventions.aliases]
+"ckan.plugins" = "p"
+"ckan.plugins.toolkit" = "tk"
+sqlalchemy = "sa"
 
-[tool.isort]
-known_ckan = "ckan"
-known_ckanext = "ckanext"
-known_self = "ckanext.files"
-sections = "FUTURE,STDLIB,FIRSTPARTY,THIRDPARTY,CKAN,CKANEXT,SELF,LOCALFOLDER"
-profile = "black"
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.ruff.lint.isort]
+section-order = [
+              "future",
+              "standard-library",
+              "first-party",
+              "third-party",
+              "ckan",
+              "ckanext",
+              "self",
+              "local-folder",
+]
+
+[tool.ruff.lint.isort.sections]
+# Group all Django imports into a separate section.
+ckan = ["ckan"]
+ckanext = ["ckanext"]
+self = ["ckanext.{{ project_shortname }}"]
 
 [tool.pytest.ini_options]
-addopts = "--ckan-ini test.ini"
+addopts = "--ckan-ini test.ini -m 'not benchmark'"
 filterwarnings = [
                "ignore::sqlalchemy.exc.SADeprecationWarning",
                "ignore::sqlalchemy.exc.SAWarning",

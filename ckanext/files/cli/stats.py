@@ -32,7 +32,6 @@ storage_option = click.option(
 @storage_option
 def overview(storage_name: str | None):
     """General information about storage usage."""
-
     storage_name = storage_name or shared.config.default_storage()
     stmt = sa.select(
         sa.func.sum(shared.File.size),
@@ -67,7 +66,6 @@ def overview(storage_name: str | None):
 @storage_option
 def types(storage_name: str | None):
     """Files distribution by MIMEtype."""
-
     storage_name = storage_name or shared.config.default_storage()
     stmt = (
         sa.select(
@@ -98,7 +96,6 @@ def types(storage_name: str | None):
 )
 def owner(storage_name: str | None, verbose: bool):
     """Files distribution by owner."""
-
     storage_name = storage_name or shared.config.default_storage()
     owner_col = (
         sa.func.concat(shared.Owner.owner_type, " ", shared.Owner.owner_id)

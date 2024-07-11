@@ -222,7 +222,6 @@ class FsManager(Manager):
         extras: dict[str, Any],
     ) -> FileData:
         """Combine multipe file inside the storage into a new one."""
-
         location = self.storage.compute_location(location, **extras)
         dest = os.path.join(self.storage.settings["path"], location)
         if os.path.exists(dest) and not self.storage.settings["override_existing"]:

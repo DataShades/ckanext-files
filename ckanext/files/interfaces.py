@@ -18,22 +18,26 @@ class IFiles(Interface):
     This interface is not stabilized. Implement it with `inherit=True`.
 
     Example:
-    >>> class MyPlugin(p.SingletonPlugin):
-    >>>     p.implements(interfaces.IFiles, inherit=True)
-
+        ```python
+        class MyPlugin(p.SingletonPlugin):
+            p.implements(interfaces.IFiles, inherit=True)
+        ```
     """
 
     def files_get_storage_adapters(self) -> dict[str, Any]:
         """Return mapping of storage type to adapter class.
 
+        Returns:
+            adapters provided by the implementation
+
         Example:
-        >>> def files_get_storage_adapters(self):
-        >>>     return {
-        >>>         "my_ext:dropbox": DropboxStorage,
-        >>>     }
-
+            ```python
+            def files_get_storage_adapters(self):
+                return {
+                    "my_ext:dropbox": DropboxStorage,
+                }
+            ```
         """
-
         return {}
 
     def files_register_owner_getters(self) -> dict[str, Callable[[str], Any]]:
@@ -43,9 +47,14 @@ class IFiles(Interface):
         itself is a function that accepts owner ID and returns optional owner
         entity.
 
+        Returns:
+            getters for specific owner types
+
         Example:
-        >>> def files_register_owner_getters(self):
-        >>>     return {"resource": model.Resource.get}
+            ```python
+            def files_register_owner_getters(self):
+                return {"resource": model.Resource.get}
+            ```
         """
         return {}
 
@@ -67,21 +76,30 @@ class IFiles(Interface):
         If current owner is not affected by cascade access, user can perform
         operation on file only if user owns the file.
 
-        Example:
-        >>> def files_file_allows(
-        >>>         self, context,
-        >>>         file: shared.File | shared.Multipart,
-        >>>         operation: shared.types.FileOperation
-        >>> ) -> bool | None:
-        >>>     if file.owner_info and file.owner_info.owner_type == "resource":
-        >>>         return is_authorized_boolean(
-        >>>             f"resource_{operation}",
-        >>>             context,
-        >>>             {"id": file.owner_info.id}
-        >>>         )
-        >>>
-        >>>     return None
+        Args:
+            context: API context
+            file: accessed file object
+            operation: performed operation
 
+        Returns:
+            decision whether operation is allowed for the file
+
+        Example:
+            ```python
+            def files_file_allows(
+                    self, context,
+                    file: shared.File | shared.Multipart,
+                    operation: shared.types.FileOperation
+            ) -> bool | None:
+                if file.owner_info and file.owner_info.owner_type == "resource":
+                    return is_authorized_boolean(
+                        f"resource_{operation}",
+                        context,
+                        {"id": file.owner_info.id}
+                    )
+
+                return None
+            ```
         """
         return None
 
@@ -97,21 +115,31 @@ class IFiles(Interface):
         Return True/False if user allowed/not allowed. Return `None` to rely on
         other plugins.
 
-        Example:
-        >>> def files_owner_allows(
-        >>>         self, context,
-        >>>         owner_type: str, owner_id: str,
-        >>>         operation: shared.types.OwnerOperation
-        >>> ) -> bool | None:
-        >>>     if owner_type == "resource" and operation == "file_transfer":
-        >>>         return is_authorized_boolean(
-        >>>             f"resource_update",
-        >>>             context,
-        >>>             {"id": owner_id}
-        >>>         )
-        >>>
-        >>>     return None
+        Args:
+            context: API context
+            owner_type: type of the tested owner
+            owner_id: type of the tested owner
+            operation: performed operation
 
+        Returns:
+            decision whether operation is allowed for the owner
+
+        Example:
+            ```python
+            def files_owner_allows(
+                    self, context,
+                    owner_type: str, owner_id: str,
+                    operation: shared.types.OwnerOperation
+            ) -> bool | None:
+                if owner_type == "resource" and operation == "file_transfer":
+                    return is_authorized_boolean(
+                        f"resource_update",
+                        context,
+                        {"id": owner_id}
+                    )
+
+                return None
+            ```
         """
         return None
 

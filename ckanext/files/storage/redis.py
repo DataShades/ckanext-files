@@ -86,7 +86,6 @@ class RedisUploader(Uploader):
         extras: dict[str, Any],
     ) -> MultipartData:
         """Add data to the incomplete upload."""
-
         data = copy.deepcopy(data)
         schema = {
             "upload": [

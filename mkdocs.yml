@@ -20,13 +20,48 @@ markdown_extensions:
 plugins:
     - search:
         separator: '[\s\-\.\_]+'
+    - mkdocstrings:
+        handlers:
+          python:
+            paths: ["ckanext"]
+            options:
+              show_root_full_path: false
+              show_root_heading: true
+              # show_root_toc_entry: true
+              show_symbol_type_heading: true
+              show_source: false
+              docstring_section_style: spacy
+
+watch:
+  - README.md
+  - ckanext/files
 
 theme:
     name: material
     logo: img/logo.png
     favicon: img/favicon.ico
     palette:
+      # Palette toggle for light mode
+      # Palette toggle for automatic mode
+      - media: "(prefers-color-scheme)"
+        toggle:
+          icon: material/brightness-auto
+          name: Switch to light mode
+
+      # Palette toggle for light mode
+      - media: "(prefers-color-scheme: light)"
+        scheme: default
         primary: blue
+        toggle:
+          icon: material/brightness-7
+          name: Switch to dark mode
+
+      # Palette toggle for dark mode
+      - media: "(prefers-color-scheme: dark)"
+        scheme: slate
+        toggle:
+          icon: material/brightness-4
+          name: Switch to system preference
     features:
         - navigation.instant
         - navigation.instant.prefetch
@@ -57,7 +92,11 @@ nav:
 
     - upload-strategies.md
     - implementation-example.md
-    - Shared: shared.md
+    - Shared:
+            - shared/index.md
+            - shared/types.md
+            - shared/config.md
+            - shared/exceptions.md
     - cli.md
     - API: api.md
     - validators.md

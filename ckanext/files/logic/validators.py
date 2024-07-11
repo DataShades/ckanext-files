@@ -15,7 +15,7 @@ log = logging.getLogger(__name__)
 
 # unstable
 def files_skip_absolute_url(value: Any):
-    """Stop validation and accept value if it's an absolute URL"""
+    """Stop validation and accept value if it's an absolute URL."""
     if isinstance(value, str) and value.startswith(("https://", "http://")):
         raise tk.StopOnError
 
@@ -31,7 +31,6 @@ def files_verify_url_type_and_value(
 
     Remove everything before last `/` for file resources.
     """
-
     if data.get(key[:-1] + ("url_type",)) != "file":
         raise tk.StopOnError
 
@@ -48,7 +47,6 @@ def files_id_into_resource_download_url(
     context: Context,
 ):
     """Transform file ID into resource's download URL."""
-
     package_id = data.get(key[:-1] + ("package_id",))
     resource_id = data.get(key[:-1] + ("id",))
 
@@ -68,8 +66,7 @@ def files_file_into_public_url(
     errors: FlattenErrorDict,
     context: Context,
 ):
-    """Transform file ID into public URL or raise error if public URL is not
-    supported."""
+    """Transform ID into public URL or raise error if not supported."""
     value: str | list[str] = data[key]
     use_list = isinstance(value, list)
     ids = value if use_list else [value]
@@ -99,7 +96,7 @@ def files_into_upload(
     errors: FlattenErrorDict,
     context: Context,
 ):
-    """Convert value into Upload object"""
+    """Convert value into Upload object."""
     try:
         data[key] = utils.make_upload(data[key])
 

@@ -1,4 +1,4 @@
-"""use timestamp with timezone
+"""use timestamp with timezone.
 
 Revision ID: c7081d7f02e8
 Revises: d94bacc491e4

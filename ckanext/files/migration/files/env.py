@@ -1,4 +1,5 @@
 import os
+from typing import Any
 
 from alembic import context
 from sqlalchemy import engine_from_config, pool
@@ -27,7 +28,13 @@ target_metadata = metadata
 name = os.path.basename(os.path.dirname(__file__))
 
 
-def include_object(object, object_name, type_, reflected, compare_to):
+def include_object(
+    object: Any,
+    object_name: Any,
+    type_: str,
+    reflected: Any,
+    compare_to: Any,
+):
     if type_ == "table":
         return object_name.startswith(name)
     return True
@@ -45,7 +52,6 @@ def run_migrations_offline():
     script output.
 
     """
-
     url = config.get_main_option("sqlalchemy.url")
     context.configure(
         url=url,

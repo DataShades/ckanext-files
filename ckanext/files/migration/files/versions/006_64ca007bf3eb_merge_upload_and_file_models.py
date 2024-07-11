@@ -1,4 +1,4 @@
-"""merge upload and file models
+"""merge upload and file models.
 
 Revision ID: 64ca007bf3eb
 Revises: 2fbd30a1b364

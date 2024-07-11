@@ -8,13 +8,13 @@
       
       
       
-        <link rel="canonical" href="https://datashades.github.io/ckanext-files/configuration/storage/">
+        <link rel="canonical" href="https://datashades.github.io/ckanext-files/shared/config/">
       
       
-        <link rel="prev" href="../global/">
+        <link rel="prev" href="../types/">
       
       
-        <link rel="next" href="../redis/">
+        <link rel="next" href="../exceptions/">
       
       
       <link rel="icon" href="../../img/favicon.ico">
@@ -22,7 +22,7 @@
     
     
       
-        <title>Storage configuration - ckanext-files</title>
+        <title>Config - ckanext-files</title>
       
     
     
@@ -76,7 +76,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#storage-configuration" class="md-skip">
+        <a href="#config" class="md-skip">
           Skip to content
         </a>
       
@@ -111,7 +111,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Storage configuration
+              Config
             
           </span>
         </div>
@@ -660,6 +660,8 @@
       
   
   
+    
+  
   
   
     
@@ -678,16 +680,16 @@
     
     
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" checked>
         
           
           
           <div class="md-nav__link md-nav__container">
-            <a href="../../shared/" class="md-nav__link ">
+            <a href="../" class="md-nav__link ">
               
   
   <span class="md-ellipsis">
@@ -704,7 +706,7 @@
             
           </div>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_6">
             <span class="md-nav__icon md-icon"></span>
             Shared
@@ -720,7 +722,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../shared/types/" class="md-nav__link">
+      <a href="../types/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -738,10 +740,30 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../../shared/config/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    Config
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   <span class="md-ellipsis">
@@ -750,6 +772,131 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#files.shared.config" class="md-nav__link">
+    <span class="md-ellipsis">
+      config
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="config">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#files.shared.config.authenticated_storages" class="md-nav__link">
+    <span class="md-ellipsis">
+      authenticated_storages
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#files.shared.config.authenticated_uploads" class="md-nav__link">
+    <span class="md-ellipsis">
+      authenticated_uploads
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#files.shared.config.cascade_access" class="md-nav__link">
+    <span class="md-ellipsis">
+      cascade_access
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#files.shared.config.default_storage" class="md-nav__link">
+    <span class="md-ellipsis">
+      default_storage
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#files.shared.config.group_images_storage" class="md-nav__link">
+    <span class="md-ellipsis">
+      group_images_storage
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#files.shared.config.resources_storage" class="md-nav__link">
+    <span class="md-ellipsis">
+      resources_storage
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#files.shared.config.scan_as_update" class="md-nav__link">
+    <span class="md-ellipsis">
+      scan_as_update
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#files.shared.config.storages" class="md-nav__link">
+    <span class="md-ellipsis">
+      storages
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#files.shared.config.transfer_as_update" class="md-nav__link">
+    <span class="md-ellipsis">
+      transfer_as_update
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#files.shared.config.user_images_storage" class="md-nav__link">
+    <span class="md-ellipsis">
+      user_images_storage
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -762,7 +909,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../shared/exceptions/" class="md-nav__link">
+      <a href="../exceptions/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -867,8 +1014,6 @@
       
   
   
-    
-  
   
   
     
@@ -885,16 +1030,16 @@
     
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_11" checked>
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_11" >
         
           
           
           <div class="md-nav__link md-nav__container">
-            <a href="../" class="md-nav__link ">
+            <a href="../../configuration/" class="md-nav__link ">
               
   
   <span class="md-ellipsis">
@@ -911,7 +1056,7 @@
             
           </div>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_11_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_11_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_11">
             <span class="md-nav__icon md-icon"></span>
             Configuration
@@ -927,7 +1072,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../global/" class="md-nav__link">
+      <a href="../../configuration/global/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -945,8 +1090,6 @@
                 
   
   
-    
-  
   
   
     
@@ -967,16 +1110,16 @@
     
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_11_3" checked>
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_11_3" >
         
           
           
           <div class="md-nav__link md-nav__container">
-            <a href="./" class="md-nav__link md-nav__link--active">
+            <a href="../../configuration/storage/" class="md-nav__link ">
               
   
   <span class="md-ellipsis">
@@ -987,13 +1130,13 @@
             </a>
             
               
-              <label class="md-nav__link md-nav__link--active" for="__nav_11_3" id="__nav_11_3_label" tabindex="0">
+              <label class="md-nav__link " for="__nav_11_3" id="__nav_11_3_label" tabindex="0">
                 <span class="md-nav__icon md-icon"></span>
               </label>
             
           </div>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_11_3_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_11_3_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_11_3">
             <span class="md-nav__icon md-icon"></span>
             Storage configuration
@@ -1009,7 +1152,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../redis/" class="md-nav__link">
+      <a href="../../configuration/redis/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1030,7 +1173,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../fs/" class="md-nav__link">
+      <a href="../../configuration/fs/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1051,7 +1194,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../opendal/" class="md-nav__link">
+      <a href="../../configuration/opendal/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1072,7 +1215,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../libcloud/" class="md-nav__link">
+      <a href="../../configuration/libcloud/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1268,6 +1411,119 @@
     
   
   
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#files.shared.config" class="md-nav__link">
+    <span class="md-ellipsis">
+      config
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="config">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#files.shared.config.authenticated_storages" class="md-nav__link">
+    <span class="md-ellipsis">
+      authenticated_storages
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#files.shared.config.authenticated_uploads" class="md-nav__link">
+    <span class="md-ellipsis">
+      authenticated_uploads
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#files.shared.config.cascade_access" class="md-nav__link">
+    <span class="md-ellipsis">
+      cascade_access
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#files.shared.config.default_storage" class="md-nav__link">
+    <span class="md-ellipsis">
+      default_storage
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#files.shared.config.group_images_storage" class="md-nav__link">
+    <span class="md-ellipsis">
+      group_images_storage
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#files.shared.config.resources_storage" class="md-nav__link">
+    <span class="md-ellipsis">
+      resources_storage
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#files.shared.config.scan_as_update" class="md-nav__link">
+    <span class="md-ellipsis">
+      scan_as_update
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#files.shared.config.storages" class="md-nav__link">
+    <span class="md-ellipsis">
+      storages
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#files.shared.config.transfer_as_update" class="md-nav__link">
+    <span class="md-ellipsis">
+      transfer_as_update
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#files.shared.config.user_images_storage" class="md-nav__link">
+    <span class="md-ellipsis">
+      user_images_storage
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
 </nav>
                   </div>
                 </div>
@@ -1284,66 +1540,217 @@
   
 
 
-<h1 id="storage-configuration">Storage configuration</h1>
-<p>All available options for the storage type can be checked via config
-declarations CLI. First, add the storage type to the config file:</p>
-<div class="highlight"><pre><span></span><code><span class="na">ckanext.files.storage.xxx.type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">files:redis</span>
-</code></pre></div>
-<p>Now run the command that shows all available config option of the
-plugin.</p>
-<div class="highlight"><pre><span></span><code>ckan<span class="w"> </span>config<span class="w"> </span>declaration<span class="w"> </span>files<span class="w"> </span>-d
-</code></pre></div>
-<p>Because Redis storage adapter is enabled, you'll see all the options
-regsitered by Redis adapter alongside with the global options:</p>
-<div class="highlight"><pre><span></span><code><span class="c1">## ckanext-files ###############################################################</span>
-<span class="c1">## ...</span>
-<span class="c1">## Storage adapter used by the storage</span>
-<span class="na">ckanext.files.storage.xxx.type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">files:redis</span>
-<span class="c1">## Static prefix of the Redis key generated for every upload.</span>
-<span class="na">ckanext.files.storage.xxx.prefix</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">ckanext:files:default:file_content:</span>
-</code></pre></div>
-<p>Sometimes you will see a validation error if storage has required config
-options. Let's try using <code>files:fs</code> storage instead of the redis:</p>
-<div class="highlight"><pre><span></span><code><span class="na">ckanext.files.storage.xxx.type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">files:fs</span>
-</code></pre></div>
-<p>Now any attempt to run <code>ckan config declaration files -d</code> will show an error,
-because required <code>path</code> option is missing:</p>
-<div class="highlight"><pre><span></span><code>Invalid<span class="w"> </span>configuration<span class="w"> </span>values<span class="w"> </span>provided:
-ckanext.files.storage.xxx.path:<span class="w"> </span>Missing<span class="w"> </span>value
-Aborted!
-</code></pre></div>
-<p>Add the required option to satisfy the application</p>
-<div class="highlight"><pre><span></span><code><span class="na">ckanext.files.storage.xxx.type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">files:fs</span>
-<span class="na">ckanext.files.storage.xxx.path</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">/tmp</span>
-</code></pre></div>
-<p>And run CLI command once again. This time you'll see the list of allowed
-options:</p>
-<div class="highlight"><pre><span></span><code><span class="c1">## ckanext-files ###############################################################</span>
-<span class="c1">## ...</span>
-<span class="c1">## Storage adapter used by the storage</span>
-<span class="na">ckanext.files.storage.xxx.type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">files:fs</span>
-<span class="c1">## Path to the folder where uploaded data will be stored.</span>
-<span class="na">ckanext.files.storage.xxx.path</span><span class="w"> </span><span class="o">=</span>
-<span class="c1">## Create storage folder if it does not exist.</span>
-<span class="na">ckanext.files.storage.xxx.create_path</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">false</span>
-</code></pre></div>
-<p>There is a number of options that are supported by every storage. You can set
-them and expect that every storage, regardless of type, will use these options
-in the same way:</p>
-<div class="highlight"><pre><span></span><code><span class="c1">## Storage adapter used by the storage</span>
-<span class="na">ckanext.files.storage.NAME.type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">ADAPTER</span>
-<span class="c1">## The maximum size of a single upload.</span>
-<span class="c1">## Supports size suffixes: 42B, 2M, 24KiB, 1GB. `0` means no restrictions.</span>
-<span class="na">ckanext.files.storage.NAME.max_size</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">0</span>
-<span class="c1">## Space-separated list of MIME types or just type or subtype part.</span>
-<span class="c1">## Example: text/csv pdf application video jpeg</span>
-<span class="na">ckanext.files.storage.NAME.supported_types</span><span class="w"> </span><span class="o">=</span>
-<span class="c1">## If file already exists, replace it with new content.</span>
-<span class="na">ckanext.files.storage.NAME.override_existing</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">false</span>
-<span class="c1">## Descriptive name of the storage used for debugging. When empty, name from</span>
-<span class="c1">## the config option is used, i.e: `ckanext.files.storage.DEFAULT_NAME...`</span>
-<span class="na">ckanext.files.storage.NAME.name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">NAME</span>
-</code></pre></div>
+<h1 id="config">Config</h1>
+
+
+<div class="doc doc-object doc-module">
+
+
+
+<h2 id="files.shared.config" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-module"></code>            <code>config</code>
+
+
+</h2>
+
+    <div class="doc doc-contents first">
+
+      <p>Configuration readers of the extension.</p>
+<p>This module contains functions that simplify accessing configuration option
+from the CKAN config file.</p>
+<p>It's recommended to use these functions istead of accessing config options by
+name, if you want your code to be more compatible with different versions of
+the extension.</p>
+
+
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="files.shared.config.authenticated_storages" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-function"></code>            <code class="highlight language-python"><span class="n">authenticated_storages</span><span class="p">()</span></code>
+
+</h3>
+
+
+    <div class="doc doc-contents ">
+
+      <p>Names of storages that can by used by non-sysadmins.</p>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="files.shared.config.authenticated_uploads" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-function"></code>            <code class="highlight language-python"><span class="n">authenticated_uploads</span><span class="p">()</span></code>
+
+</h3>
+
+
+    <div class="doc doc-contents ">
+
+      <p>Any authenticated user can upload files.</p>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="files.shared.config.cascade_access" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-function"></code>            <code class="highlight language-python"><span class="n">cascade_access</span><span class="p">()</span></code>
+
+</h3>
+
+
+    <div class="doc doc-contents ">
+
+      <p>List of owner types that grant automatic access on owned file.</p>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="files.shared.config.default_storage" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-function"></code>            <code class="highlight language-python"><span class="n">default_storage</span><span class="p">()</span></code>
+
+</h3>
+
+
+    <div class="doc doc-contents ">
+
+      <p>Default storage used for upload when no explicit storage specified.</p>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="files.shared.config.group_images_storage" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-function"></code>            <code class="highlight language-python"><span class="n">group_images_storage</span><span class="p">()</span></code>
+
+</h3>
+
+
+    <div class="doc doc-contents ">
+
+      <p>Storage used for group image uploads.</p>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="files.shared.config.resources_storage" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-function"></code>            <code class="highlight language-python"><span class="n">resources_storage</span><span class="p">()</span></code>
+
+</h3>
+
+
+    <div class="doc doc-contents ">
+
+      <p>Storage used for resource uploads.</p>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="files.shared.config.scan_as_update" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-function"></code>            <code class="highlight language-python"><span class="n">scan_as_update</span><span class="p">()</span></code>
+
+</h3>
+
+
+    <div class="doc doc-contents ">
+
+      <p>Use <code>*_update</code> auth when listing files of the owner.</p>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="files.shared.config.storages" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-function"></code>            <code class="highlight language-python"><span class="n">storages</span><span class="p">()</span></code>
+
+</h3>
+
+
+    <div class="doc doc-contents ">
+
+      <p>Mapping of storage names to their settings.</p>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="files.shared.config.transfer_as_update" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-function"></code>            <code class="highlight language-python"><span class="n">transfer_as_update</span><span class="p">()</span></code>
+
+</h3>
+
+
+    <div class="doc doc-contents ">
+
+      <p>Use <code>*_update</code> auth when transfering ownership.</p>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="files.shared.config.user_images_storage" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-function"></code>            <code class="highlight language-python"><span class="n">user_images_storage</span><span class="p">()</span></code>
+
+</h3>
+
+
+    <div class="doc doc-contents ">
+
+      <p>Storage used for user image uploads.</p>
+
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+</div>
 
 
 
@@ -1379,7 +1786,7 @@ in the same way:</p>
       <nav class="md-footer__inner md-grid" aria-label="Footer" >
         
           
-          <a href="../global/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Global configuration">
+          <a href="../types/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Types">
             <div class="md-footer__button md-icon">
               
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
@@ -1389,20 +1796,20 @@ in the same way:</p>
                 Previous
               </span>
               <div class="md-ellipsis">
-                Global configuration
+                Types
               </div>
             </div>
           </a>
         
         
           
-          <a href="../redis/" class="md-footer__link md-footer__link--next" aria-label="Next: Redis storage configuration">
+          <a href="../exceptions/" class="md-footer__link md-footer__link--next" aria-label="Next: Exceptions">
             <div class="md-footer__title">
               <span class="md-footer__direction">
                 Next
               </span>
               <div class="md-ellipsis">
-                Redis storage configuration
+                Exceptions
               </div>
             </div>
             <div class="md-footer__button md-icon">

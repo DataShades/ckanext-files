@@ -14,7 +14,7 @@
         <link rel="prev" href="../implementation-example/">
       
       
-        <link rel="next" href="../cli/">
+        <link rel="next" href="types/">
       
       
       <link rel="icon" href="../img/favicon.ico">
@@ -48,6 +48,8 @@
       
     
     
+      <link rel="stylesheet" href="../assets/_mkdocstrings.css">
+    
     <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
@@ -60,10 +62,12 @@
   
     
     
+      
     
     
     
-    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="blue" data-md-color-accent="indigo">
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
   
     
     <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
@@ -72,7 +76,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#get_storage" class="md-skip">
+        <a href="#shared" class="md-skip">
           Skip to content
         </a>
       
@@ -115,7 +119,43 @@
     </div>
     
       
+        <form class="md-header__option" data-md-component="palette">
+  
     
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme)" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m14.3 16-.7-2h-3.2l-.7 2H7.8L11 7h2l3.2 9h-1.9M20 8.69V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12 20 8.69m-9.15 3.96h2.3L12 9l-1.15 3.65Z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="blue" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_2" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12 20 8.69Z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to system preference"  type="radio" name="__palette" id="__palette_2">
+    
+      <label class="md-header__button md-icon" title="Switch to system preference" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12c0-2.42-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12 20 8.69Z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var media,input,key,value,palette=__md_get("__palette");if(palette&&palette.color){"(prefers-color-scheme)"===palette.color.media&&(media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']"),palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent"));for([key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
     
     
     
@@ -132,7 +172,7 @@
         
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
         
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.5.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256l137.3-137.4c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
       </label>
       <nav class="md-search__options" aria-label="Search">
         
@@ -624,265 +664,122 @@
   
   
   
-    <li class="md-nav__item md-nav__item--active">
+    
+    
       
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
+        
           
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" checked>
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="./" class="md-nav__link md-nav__link--active">
+              
   
   <span class="md-ellipsis">
     Shared
   </span>
   
 
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+            </a>
+            
+              
+              <label class="md-nav__link md-nav__link--active" for="__nav_6" id="__nav_6_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            Shared
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="types/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
-    Shared
+    Types
   </span>
   
 
       </a>
-      
-        
+    </li>
+  
 
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+              
+            
+              
+                
   
   
   
   
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#get_storage" class="md-nav__link">
-    <span class="md-ellipsis">
-      get_storage
-    </span>
-  </a>
+    <li class="md-nav__item">
+      <a href="config/" class="md-nav__link">
+        
   
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#make_storage" class="md-nav__link">
-    <span class="md-ellipsis">
-      make_storage
-    </span>
-  </a>
+  <span class="md-ellipsis">
+    Config
+  </span>
   
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#make_upload" class="md-nav__link">
-    <span class="md-ellipsis">
-      make_upload
-    </span>
-  </a>
+
+      </a>
+    </li>
   
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#upload" class="md-nav__link">
-    <span class="md-ellipsis">
-      Upload
-    </span>
-  </a>
+
+              
+            
+              
+                
   
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#hashingreader" class="md-nav__link">
-    <span class="md-ellipsis">
-      HashingReader
-    </span>
-  </a>
   
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#capability" class="md-nav__link">
-    <span class="md-ellipsis">
-      Capability
-    </span>
-  </a>
   
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#file" class="md-nav__link">
-    <span class="md-ellipsis">
-      File
-    </span>
-  </a>
   
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#multipart" class="md-nav__link">
-    <span class="md-ellipsis">
-      Multipart
-    </span>
-  </a>
+    <li class="md-nav__item">
+      <a href="exceptions/" class="md-nav__link">
+        
   
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#owner" class="md-nav__link">
-    <span class="md-ellipsis">
-      Owner
-    </span>
-  </a>
+  <span class="md-ellipsis">
+    Exceptions
+  </span>
   
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#transferhistory" class="md-nav__link">
-    <span class="md-ellipsis">
-      TransferHistory
-    </span>
-  </a>
+
+      </a>
+    </li>
   
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#filedata" class="md-nav__link">
-    <span class="md-ellipsis">
-      FileData
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#multipartdata" class="md-nav__link">
-    <span class="md-ellipsis">
-      MultipartData
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#ifiles" class="md-nav__link">
-    <span class="md-ellipsis">
-      IFiles
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#storage" class="md-nav__link">
-    <span class="md-ellipsis">
-      Storage
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#uploader" class="md-nav__link">
-    <span class="md-ellipsis">
-      Uploader
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#reader" class="md-nav__link">
-    <span class="md-ellipsis">
-      Reader
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#manager" class="md-nav__link">
-    <span class="md-ellipsis">
-      Manager
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#add_task" class="md-nav__link">
-    <span class="md-ellipsis">
-      add_task
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#with_task_queue" class="md-nav__link">
-    <span class="md-ellipsis">
-      with_task_queue
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#task" class="md-nav__link">
-    <span class="md-ellipsis">
-      Task
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#taskqueue" class="md-nav__link">
-    <span class="md-ellipsis">
-      TaskQueue
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#types-ckanextfilestypes-module" class="md-nav__link">
-    <span class="md-ellipsis">
-      types (ckanext.files.types module)
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#config-ckanextfilesconfig-module" class="md-nav__link">
-    <span class="md-ellipsis">
-      config (ckanext.files.config module)
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#exc-ckanextfilesexceptions-module" class="md-nav__link">
-    <span class="md-ellipsis">
-      exc (ckanext.files.exceptions module)
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
+
+              
+            
+          </ul>
+        </nav>
       
     </li>
   
@@ -1366,6 +1263,8 @@
   
   
   
+    
+  
   
     <label class="md-nav__title" for="__toc">
       <span class="md-nav__icon md-icon"></span>
@@ -1374,7 +1273,7 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#get_storage" class="md-nav__link">
+  <a href="#files.shared.get_storage" class="md-nav__link">
     <span class="md-ellipsis">
       get_storage
     </span>
@@ -1383,7 +1282,7 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#make_storage" class="md-nav__link">
+  <a href="#files.shared.make_storage" class="md-nav__link">
     <span class="md-ellipsis">
       make_storage
     </span>
@@ -1392,7 +1291,7 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#make_upload" class="md-nav__link">
+  <a href="#files.shared.make_upload" class="md-nav__link">
     <span class="md-ellipsis">
       make_upload
     </span>
@@ -1401,34 +1300,97 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#upload" class="md-nav__link">
+  <a href="#files.shared.Upload" class="md-nav__link">
     <span class="md-ellipsis">
       Upload
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Upload">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#files.shared.Upload.seekable_stream" class="md-nav__link">
+    <span class="md-ellipsis">
+      seekable_stream
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
-  <a href="#hashingreader" class="md-nav__link">
+  <a href="#files.shared.HashingReader" class="md-nav__link">
     <span class="md-ellipsis">
       HashingReader
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="HashingReader">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#files.shared.HashingReader.exhaust" class="md-nav__link">
+    <span class="md-ellipsis">
+      exhaust
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#files.shared.HashingReader.get_hash" class="md-nav__link">
+    <span class="md-ellipsis">
+      get_hash
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#files.shared.HashingReader.read" class="md-nav__link">
+    <span class="md-ellipsis">
+      read
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
-  <a href="#capability" class="md-nav__link">
+  <a href="#files.shared.Capability" class="md-nav__link">
     <span class="md-ellipsis">
       Capability
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Capability">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#files.shared.Capability.exclude" class="md-nav__link">
+    <span class="md-ellipsis">
+      exclude
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
-  <a href="#file" class="md-nav__link">
+  <a href="#files.shared.File" class="md-nav__link">
     <span class="md-ellipsis">
       File
     </span>
@@ -1437,7 +1399,7 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#multipart" class="md-nav__link">
+  <a href="#files.shared.Multipart" class="md-nav__link">
     <span class="md-ellipsis">
       Multipart
     </span>
@@ -1446,7 +1408,7 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#owner" class="md-nav__link">
+  <a href="#files.shared.Owner" class="md-nav__link">
     <span class="md-ellipsis">
       Owner
     </span>
@@ -1455,7 +1417,7 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#transferhistory" class="md-nav__link">
+  <a href="#files.shared.TransferHistory" class="md-nav__link">
     <span class="md-ellipsis">
       TransferHistory
     </span>
@@ -1464,7 +1426,7 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#filedata" class="md-nav__link">
+  <a href="#files.shared.FileData" class="md-nav__link">
     <span class="md-ellipsis">
       FileData
     </span>
@@ -1473,7 +1435,7 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#multipartdata" class="md-nav__link">
+  <a href="#files.shared.MultipartData" class="md-nav__link">
     <span class="md-ellipsis">
       MultipartData
     </span>
@@ -1482,52 +1444,343 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#ifiles" class="md-nav__link">
+  <a href="#files.shared.IFiles" class="md-nav__link">
     <span class="md-ellipsis">
       IFiles
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="IFiles">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#files.shared.IFiles.files_file_allows" class="md-nav__link">
+    <span class="md-ellipsis">
+      files_file_allows
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#files.shared.IFiles.files_get_storage_adapters" class="md-nav__link">
+    <span class="md-ellipsis">
+      files_get_storage_adapters
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#files.shared.IFiles.files_owner_allows" class="md-nav__link">
+    <span class="md-ellipsis">
+      files_owner_allows
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#files.shared.IFiles.files_register_owner_getters" class="md-nav__link">
+    <span class="md-ellipsis">
+      files_register_owner_getters
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
-  <a href="#storage" class="md-nav__link">
+  <a href="#files.shared.Storage" class="md-nav__link">
     <span class="md-ellipsis">
       Storage
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Storage">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#files.shared.Storage.max_size" class="md-nav__link">
+    <span class="md-ellipsis">
+      max_size
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#files.shared.Storage.supported_types" class="md-nav__link">
+    <span class="md-ellipsis">
+      supported_types
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#files.shared.Storage.prepare_settings" class="md-nav__link">
+    <span class="md-ellipsis">
+      prepare_settings
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#files.shared.Storage.range" class="md-nav__link">
+    <span class="md-ellipsis">
+      range
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#files.shared.Storage.stream_as_upload" class="md-nav__link">
+    <span class="md-ellipsis">
+      stream_as_upload
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
-  <a href="#uploader" class="md-nav__link">
+  <a href="#files.shared.Uploader" class="md-nav__link">
     <span class="md-ellipsis">
       Uploader
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Uploader">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#files.shared.Uploader.multipart_complete" class="md-nav__link">
+    <span class="md-ellipsis">
+      multipart_complete
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#files.shared.Uploader.multipart_refresh" class="md-nav__link">
+    <span class="md-ellipsis">
+      multipart_refresh
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#files.shared.Uploader.multipart_start" class="md-nav__link">
+    <span class="md-ellipsis">
+      multipart_start
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#files.shared.Uploader.multipart_update" class="md-nav__link">
+    <span class="md-ellipsis">
+      multipart_update
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#files.shared.Uploader.upload" class="md-nav__link">
+    <span class="md-ellipsis">
+      upload
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
-  <a href="#reader" class="md-nav__link">
+  <a href="#files.shared.Reader" class="md-nav__link">
     <span class="md-ellipsis">
       Reader
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Reader">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#files.shared.Reader.content" class="md-nav__link">
+    <span class="md-ellipsis">
+      content
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#files.shared.Reader.one_time_link" class="md-nav__link">
+    <span class="md-ellipsis">
+      one_time_link
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#files.shared.Reader.permanent_link" class="md-nav__link">
+    <span class="md-ellipsis">
+      permanent_link
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#files.shared.Reader.public_link" class="md-nav__link">
+    <span class="md-ellipsis">
+      public_link
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#files.shared.Reader.range" class="md-nav__link">
+    <span class="md-ellipsis">
+      range
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#files.shared.Reader.stream" class="md-nav__link">
+    <span class="md-ellipsis">
+      stream
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#files.shared.Reader.temporal_link" class="md-nav__link">
+    <span class="md-ellipsis">
+      temporal_link
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
-  <a href="#manager" class="md-nav__link">
+  <a href="#files.shared.Manager" class="md-nav__link">
     <span class="md-ellipsis">
       Manager
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Manager">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#files.shared.Manager.analyze" class="md-nav__link">
+    <span class="md-ellipsis">
+      analyze
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#files.shared.Manager.append" class="md-nav__link">
+    <span class="md-ellipsis">
+      append
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#files.shared.Manager.compose" class="md-nav__link">
+    <span class="md-ellipsis">
+      compose
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#files.shared.Manager.copy" class="md-nav__link">
+    <span class="md-ellipsis">
+      copy
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#files.shared.Manager.exists" class="md-nav__link">
+    <span class="md-ellipsis">
+      exists
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#files.shared.Manager.move" class="md-nav__link">
+    <span class="md-ellipsis">
+      move
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#files.shared.Manager.remove" class="md-nav__link">
+    <span class="md-ellipsis">
+      remove
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#files.shared.Manager.scan" class="md-nav__link">
+    <span class="md-ellipsis">
+      scan
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
-  <a href="#add_task" class="md-nav__link">
+  <a href="#files.shared.add_task" class="md-nav__link">
     <span class="md-ellipsis">
       add_task
     </span>
@@ -1536,7 +1789,7 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#with_task_queue" class="md-nav__link">
+  <a href="#files.shared.with_task_queue" class="md-nav__link">
     <span class="md-ellipsis">
       with_task_queue
     </span>
@@ -1545,45 +1798,84 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#task" class="md-nav__link">
+  <a href="#files.shared.Task" class="md-nav__link">
     <span class="md-ellipsis">
       Task
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Task">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#files.shared.Task.extract" class="md-nav__link">
+    <span class="md-ellipsis">
+      extract
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#files.shared.Task.run" class="md-nav__link">
+    <span class="md-ellipsis">
+      run
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
-  <a href="#taskqueue" class="md-nav__link">
+  <a href="#files.shared.TaskQueue" class="md-nav__link">
     <span class="md-ellipsis">
       TaskQueue
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="TaskQueue">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#files.shared.TaskQueue.process" class="md-nav__link">
+    <span class="md-ellipsis">
+      process
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
-  <a href="#types-ckanextfilestypes-module" class="md-nav__link">
+  <a href="#files.shared.types" class="md-nav__link">
     <span class="md-ellipsis">
-      types (ckanext.files.types module)
+      types
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#config-ckanextfilesconfig-module" class="md-nav__link">
+  <a href="#files.shared.config" class="md-nav__link">
     <span class="md-ellipsis">
-      config (ckanext.files.config module)
+      config
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#exc-ckanextfilesexceptions-module" class="md-nav__link">
+  <a href="#files.shared.exc" class="md-nav__link">
     <span class="md-ellipsis">
-      exc (ckanext.files.exceptions module)
+      exc
     </span>
   </a>
   
@@ -1607,24 +1899,130 @@
   
 
 
-  <h1>Shared</h1>
+<h1 id="shared">Shared</h1>
+<p>All public utilites are collected inside <code>ckanext.files.shared</code> module. Avoid
+using anything that is not listed there. Do not import anything from modules
+other than <code>shared</code>.</p>
 
-<p>All public utilites are collected inside     <code>ckanext.files.shared</code> module. Avoid using anything that     is not listed there. Do not import anything from modules other than     <code>shared</code>.</p>
-<h2 id="get_storage">get_storage</h2>
-<p>Signature: <code>(name: str | None = None) -&gt; Storage</code></p>
-<p>Return existing storage instance.</p>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="files.shared.get_storage" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-function"></code>            <code class="highlight language-python"><span class="n">get_storage</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code>
+
+</h2>
+
+
+    <div class="doc doc-contents first">
+
+      <p>Return existing storage instance.</p>
 <p>Storages are initialized when plugin is loaded. As result, this function
 always returns the same storage object for the given name.</p>
 <p>If no name specified, default storage is returned.</p>
-<div class="admonition example">
-<p class="admonition-title">Example</p>
-<div class="highlight"><pre><span></span><code><span class="n">default_storage</span> <span class="o">=</span> <span class="n">get_storage</span><span class="p">()</span>
-<span class="n">storage</span> <span class="o">=</span> <span class="n">get_storage</span><span class="p">(</span><span class="s2">&quot;storage name&quot;</span><span class="p">)</span>
+
+
+<table>
+      <thead>
+        <tr>
+          <th><span class="doc-section-title">PARAMETER</span></th>
+          <th><span>DESCRIPTION</span></th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td><code>name</code></td>
+            <td class="doc-param-details">
+              <div class="doc-md-description">
+                <p>name of the configured storage</p>
+              </div>
+              <p>
+                  <span class="doc-param-annotation">
+                    <b>TYPE:</b>
+                      <code>str | None</code>
+                  </span>
+                  <span class="doc-param-default">
+                    <b>DEFAULT:</b>
+                      <code>None</code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+<table>
+      <thead>
+        <tr>
+          <th><span class="doc-section-title">RETURNS</span></th>
+          <th><span>DESCRIPTION</span></th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <span class="doc-returns-annotation">
+                    <code><a class="autorefs autorefs-internal" title="files.base.Storage" href="#files.shared.Storage">Storage</a></code>
+                </span>
+            </td>
+            <td class="doc-returns-details">
+              <div class="doc-md-description">
+                <p>storage instance</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+<table>
+      <thead>
+        <tr>
+          <th><span class="doc-section-title">RAISES</span></th>
+          <th><span>DESCRIPTION</span></th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+              <span class="doc-raises-annotation">
+                  <code><a class="autorefs autorefs-internal" title="files.exceptions.UnknownStorageError" href="exceptions/#files.shared.exc.UnknownStorageError">UnknownStorageError</a></code>
+              </span>
+            </td>
+            <td class="doc-raises-details">
+              <div class="doc-md-description">
+                <p>storage with the given name is not
+configured</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+<details class="example" open>
+  <summary>Example</summary>
+  <div class="highlight"><pre><span></span><code>default_storage = get_storage()
+storage = get_storage(&quot;storage name&quot;)
 </code></pre></div>
+</details>
+    </div>
+
 </div>
-<h2 id="make_storage">make_storage</h2>
-<p>Signature: <code>(name: str, settings: dict[str, Any], prepare_settings: bool = False) -&gt; Storage</code></p>
-<p>Initialize storage instance with specified settings.</p>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="files.shared.make_storage" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-function"></code>            <code class="highlight language-python"><span class="n">make_storage</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">settings</span><span class="p">,</span> <span class="n">prepare_settings</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span></code>
+
+</h2>
+
+
+    <div class="doc doc-contents first">
+
+      <p>Initialize storage instance with specified settings.</p>
 <p>Storage adapter is defined by <code>type</code> key of the settings. All other
 settings depend on the specific adapter.</p>
 <p>It's recommended to enable <code>prepare_settings</code> flag. When it's enabled, all
@@ -1632,61 +2030,865 @@ standard parameters(max_size, supported_types) are added to settings if
 they are missing. But default this flag is disabled, because storages
 usually initialized using CKAN configuration, which is already validated by
 config declarations.</p>
-<div class="admonition example">
-<p class="admonition-title">Example</p>
-<div class="highlight"><pre><span></span><code><span class="n">storage</span> <span class="o">=</span> <span class="n">make_storage</span><span class="p">(</span><span class="s2">&quot;memo&quot;</span><span class="p">,</span> <span class="p">{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;files:redis&quot;</span><span class="p">},</span> <span class="kc">True</span><span class="p">)</span>
+
+
+<table>
+      <thead>
+        <tr>
+          <th><span class="doc-section-title">PARAMETER</span></th>
+          <th><span>DESCRIPTION</span></th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td><code>name</code></td>
+            <td class="doc-param-details">
+              <div class="doc-md-description">
+                <p>name of the new storage</p>
+              </div>
+              <p>
+                  <span class="doc-param-annotation">
+                    <b>TYPE:</b>
+                      <code>str</code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code>settings</code></td>
+            <td class="doc-param-details">
+              <div class="doc-md-description">
+                <p>configuration for the storage</p>
+              </div>
+              <p>
+                  <span class="doc-param-annotation">
+                    <b>TYPE:</b>
+                      <code>dict[str, <span title="typing.Any">Any</span>]</code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code>prepare_settings</code></td>
+            <td class="doc-param-details">
+              <div class="doc-md-description">
+                <p>add default values for missing options</p>
+              </div>
+              <p>
+                  <span class="doc-param-annotation">
+                    <b>TYPE:</b>
+                      <code>bool</code>
+                  </span>
+                  <span class="doc-param-default">
+                    <b>DEFAULT:</b>
+                      <code>False</code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+<table>
+      <thead>
+        <tr>
+          <th><span class="doc-section-title">RETURNS</span></th>
+          <th><span>DESCRIPTION</span></th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <span class="doc-returns-annotation">
+                    <code><a class="autorefs autorefs-internal" title="files.base.Storage" href="#files.shared.Storage">Storage</a></code>
+                </span>
+            </td>
+            <td class="doc-returns-details">
+              <div class="doc-md-description">
+                <p>storage instance</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+<table>
+      <thead>
+        <tr>
+          <th><span class="doc-section-title">RAISES</span></th>
+          <th><span>DESCRIPTION</span></th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+              <span class="doc-raises-annotation">
+                  <code><a class="autorefs autorefs-internal" title="files.exceptions.UnknownAdapterError" href="exceptions/#files.shared.exc.UnknownAdapterError">UnknownAdapterError</a></code>
+              </span>
+            </td>
+            <td class="doc-raises-details">
+              <div class="doc-md-description">
+                <p>storage adapter is not registered</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+<details class="example" open>
+  <summary>Example</summary>
+  <div class="highlight"><pre><span></span><code>storage = make_storage(&quot;memo&quot;, {&quot;type&quot;: &quot;files:redis&quot;}, True)
 </code></pre></div>
+</details>
+    </div>
+
 </div>
-<h2 id="make_upload">make_upload</h2>
-<p>Signature: <code>(value: types.Uploadable | Upload) -&gt; Upload</code></p>
-<p>Convert value into Upload object</p>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="files.shared.make_upload" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-function"></code>            <code class="highlight language-python"><span class="n">make_upload</span><span class="p">(</span><span class="n">value</span><span class="p">)</span></code>
+
+</h2>
+
+
+    <div class="doc doc-contents first">
+
+      <p>Convert value into Upload object.</p>
 <p>Use this function for simple and reliable initialization of Upload
 object. Avoid creating Upload manually, unless you are 100% sure you can
 provide correct MIMEtype, size and stream.</p>
-<div class="admonition example">
-<p class="admonition-title">Example</p>
-<div class="highlight"><pre><span></span><code><span class="n">storage</span><span class="o">.</span><span class="n">upload</span><span class="p">(</span><span class="s2">&quot;file.txt&quot;</span><span class="p">,</span> <span class="n">make_upload</span><span class="p">(</span><span class="sa">b</span><span class="s2">&quot;hello world&quot;</span><span class="p">))</span>
+
+
+<table>
+      <thead>
+        <tr>
+          <th><span class="doc-section-title">PARAMETER</span></th>
+          <th><span>DESCRIPTION</span></th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td><code>value</code></td>
+            <td class="doc-param-details">
+              <div class="doc-md-description">
+                <p>content of the file</p>
+              </div>
+              <p>
+                  <span class="doc-param-annotation">
+                    <b>TYPE:</b>
+                      <code><span title="ckanext.files.types.Uploadable">Uploadable</span> | <a class="autorefs autorefs-internal" title="files.utils.Upload" href="#files.shared.Upload">Upload</a></code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+<table>
+      <thead>
+        <tr>
+          <th><span class="doc-section-title">RAISES</span></th>
+          <th><span>DESCRIPTION</span></th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+              <span class="doc-raises-annotation">
+                  <code>ValueError</code>
+              </span>
+            </td>
+            <td class="doc-raises-details">
+              <div class="doc-md-description">
+                <p>incorrectly initialized cgi.FieldStorage passed as value</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+              <span class="doc-raises-annotation">
+                  <code>TypeError</code>
+              </span>
+            </td>
+            <td class="doc-raises-details">
+              <div class="doc-md-description">
+                <p>content has unsupported type</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+<table>
+      <thead>
+        <tr>
+          <th><span class="doc-section-title">RETURNS</span></th>
+          <th><span>DESCRIPTION</span></th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <span class="doc-returns-annotation">
+                    <code><a class="autorefs autorefs-internal" title="files.utils.Upload" href="#files.shared.Upload">Upload</a></code>
+                </span>
+            </td>
+            <td class="doc-returns-details">
+              <div class="doc-md-description">
+                <p>upload object with specified content</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+<details class="example" open>
+  <summary>Example</summary>
+  <div class="highlight"><pre><span></span><code><span class="n">storage</span><span class="o">.</span><span class="n">upload</span><span class="p">(</span><span class="s2">&quot;file.txt&quot;</span><span class="p">,</span> <span class="n">make_upload</span><span class="p">(</span><span class="sa">b</span><span class="s2">&quot;hello world&quot;</span><span class="p">))</span>
 </code></pre></div>
+</details>
+    </div>
+
 </div>
-<h2 id="upload">Upload</h2>
-<p>Signature: <code>(stream: types.PUploadStream, filename: str, size: int, content_type: str) -&gt; None</code></p>
-<p>Standard upload details.</p>
-<div class="admonition example">
-<p class="admonition-title">Example</p>
-<div class="highlight"><pre><span></span><code><span class="n">Upload</span><span class="p">(</span>
-    <span class="n">BytesIO</span><span class="p">(</span><span class="sa">b</span><span class="s2">&quot;hello world&quot;</span><span class="p">),</span>
-    <span class="s2">&quot;file.txt&quot;</span><span class="p">,</span>
-    <span class="mi">11</span><span class="p">,</span>
-    <span class="s2">&quot;text/plain&quot;</span><span class="p">,</span>
-<span class="p">)</span>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="files.shared.Upload" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-class"></code>            <code>Upload</code>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-dataclass"><code>dataclass</code></small>
+  </span>
+
+</h2>
+
+
+    <div class="doc doc-contents first">
+
+
+      <p>Standard upload details.</p>
+
+
+<table>
+      <thead>
+        <tr>
+          <th><span class="doc-section-title">PARAMETER</span></th>
+          <th><span>DESCRIPTION</span></th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td><code>stream</code></td>
+            <td class="doc-param-details">
+              <div class="doc-md-description">
+                <p>iterable of bytes or file-like object</p>
+              </div>
+              <p>
+                  <span class="doc-param-annotation">
+                    <b>TYPE:</b>
+                      <code><span title="ckanext.files.types.PUploadStream">PUploadStream</span></code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code>filename</code></td>
+            <td class="doc-param-details">
+              <div class="doc-md-description">
+                <p>name of the file</p>
+              </div>
+              <p>
+                  <span class="doc-param-annotation">
+                    <b>TYPE:</b>
+                      <code>str</code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code>size</code></td>
+            <td class="doc-param-details">
+              <div class="doc-md-description">
+                <p>size of the file in bytes</p>
+              </div>
+              <p>
+                  <span class="doc-param-annotation">
+                    <b>TYPE:</b>
+                      <code>int</code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code>content_type</code></td>
+            <td class="doc-param-details">
+              <div class="doc-md-description">
+                <p>MIMEtype of the file</p>
+              </div>
+              <p>
+                  <span class="doc-param-annotation">
+                    <b>TYPE:</b>
+                      <code>str</code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+<details class="example" open>
+  <summary>Example</summary>
+  <div class="highlight"><pre><span></span><code>Upload(
+    BytesIO(b&quot;hello world&quot;),
+    &quot;file.txt&quot;,
+    11,
+    &quot;text/plain&quot;,
+)
 </code></pre></div>
-</div>
-<h2 id="hashingreader">HashingReader</h2>
-<p>Signature: <code>(stream: types.PUploadStream, chunk_size: int = 16384, algorithm: str = md5)</code></p>
-<p>IO stream wrapper that computes content hash while stream is consumed.</p>
-<div class="admonition example">
-<p class="admonition-title">Example</p>
-<div class="highlight"><pre><span></span><code><span class="n">reader</span> <span class="o">=</span> <span class="n">HashingReader</span><span class="p">(</span><span class="n">readable_stream</span><span class="p">)</span>
-<span class="k">for</span> <span class="n">chunk</span> <span class="ow">in</span> <span class="n">reader</span><span class="p">:</span>
-    <span class="o">...</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Hash: </span><span class="si">{</span><span class="n">reader</span><span class="o">.</span><span class="n">get_hash</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</details>
+
+
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="files.shared.Upload.seekable_stream" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <code class="highlight language-python"><span class="n">seekable_stream</span><span class="p">:</span> <span class="n">types</span><span class="o">.</span><span class="n">PSeekableStream</span> <span class="o">|</span> <span class="kc">None</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+</h3>
+
+
+    <div class="doc doc-contents ">
+
+      <p>Return stream that can be rewinded after reading.</p>
+<p>If internal stream does not support file-like <code>seek</code>, nothing is
+returned from this property.</p>
+<p>Use this property if you want to read the file ahead, to get CSV column
+names, list of files inside ZIP, EXIF metadata. If you get <code>None</code> from
+it, stream does not support seeking and you won't be able to return
+cursor to the beginning of the file after reading something.</p>
+
+
+<details class="example" open>
+  <summary>Example</summary>
+  <div class="highlight"><pre><span></span><code><span class="n">upload</span> <span class="o">=</span> <span class="n">make_upload</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+<span class="k">if</span> <span class="n">fd</span> <span class="o">:=</span> <span class="n">upload</span><span class="o">.</span><span class="n">seekable_stream</span><span class="p">():</span>
+    <span class="c1"># read fragment of the file</span>
+    <span class="n">chunk</span> <span class="o">=</span> <span class="n">fd</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="mi">1024</span><span class="p">)</span>
+    <span class="c1"># move cursor to the end of the stream</span>
+    <span class="n">fd</span><span class="o">.</span><span class="n">seek</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+    <span class="c1"># position of the cursor is the same as number of bytes in stream</span>
+    <span class="n">size</span> <span class="o">=</span> <span class="n">fd</span><span class="o">.</span><span class="n">tell</span><span class="p">()</span>
+    <span class="c1"># move cursor back, because you don&#39;t want to accidentally loose</span>
+    <span class="c1"># any bites from the beginning of stream when uploader reads from it</span>
+    <span class="n">fd</span><span class="o">.</span><span class="n">seek</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
 </code></pre></div>
+</details>
+
+<table>
+      <thead>
+        <tr>
+          <th><span class="doc-section-title">RETURNS</span></th>
+          <th><span>DESCRIPTION</span></th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <span class="doc-returns-annotation">
+                    <code><span title="ckanext.files.types.PSeekableStream">PSeekableStream</span> | None</code>
+                </span>
+            </td>
+            <td class="doc-returns-details">
+              <div class="doc-md-description">
+                <p>file-like stream or nothing</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+    </div>
+
 </div>
-<h2 id="capability">Capability</h2>
-<p>Enumeration of operations supported by the storage.</p>
-<div class="admonition example">
-<p class="admonition-title">Example</p>
-<div class="highlight"><pre><span></span><code><span class="n">read_and_write</span> <span class="o">=</span> <span class="n">Capability</span><span class="o">.</span><span class="n">STREAM</span> <span class="o">|</span> <span class="n">Capability</span><span class="o">.</span><span class="n">CREATE</span>
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="files.shared.HashingReader" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-class"></code>            <code>HashingReader</code>
+
+
+</h2>
+
+
+    <div class="doc doc-contents first">
+
+
+      <p>IO stream wrapper that computes content hash while stream is consumed.</p>
+
+
+<table>
+      <thead>
+        <tr>
+          <th><span class="doc-section-title">PARAMETER</span></th>
+          <th><span>DESCRIPTION</span></th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td><code>stream</code></td>
+            <td class="doc-param-details">
+              <div class="doc-md-description">
+                <p>iterable of bytes or file-like object</p>
+              </div>
+              <p>
+                  <span class="doc-param-annotation">
+                    <b>TYPE:</b>
+                      <code><span title="ckanext.files.types.PUploadStream">PUploadStream</span></code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code>chunk_size</code></td>
+            <td class="doc-param-details">
+              <div class="doc-md-description">
+                <p>max number of bytes read at once</p>
+              </div>
+              <p>
+                  <span class="doc-param-annotation">
+                    <b>TYPE:</b>
+                      <code>int</code>
+                  </span>
+                  <span class="doc-param-default">
+                    <b>DEFAULT:</b>
+                      <code><span title="files.utils.CHUNK_SIZE">CHUNK_SIZE</span></code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code>algorithm</code></td>
+            <td class="doc-param-details">
+              <div class="doc-md-description">
+                <p>hashing algorithm</p>
+              </div>
+              <p>
+                  <span class="doc-param-annotation">
+                    <b>TYPE:</b>
+                      <code>str</code>
+                  </span>
+                  <span class="doc-param-default">
+                    <b>DEFAULT:</b>
+                      <code>&#39;md5&#39;</code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+<details class="example" open>
+  <summary>Example</summary>
+  <div class="highlight"><pre><span></span><code>reader = HashingReader(readable_stream)
+for chunk in reader:
+    ...
+print(f&quot;Hash: {reader.get_hash()}&quot;)
+</code></pre></div>
+</details>
+
+
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="files.shared.HashingReader.exhaust" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <code class="highlight language-python"><span class="n">exhaust</span><span class="p">()</span></code>
+
+</h3>
+
+
+    <div class="doc doc-contents ">
+
+      <p>Exhaust internal stream to compute final version of content hash.</p>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="files.shared.HashingReader.get_hash" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <code class="highlight language-python"><span class="n">get_hash</span><span class="p">()</span></code>
+
+</h3>
+
+
+    <div class="doc doc-contents ">
+
+      <p>Get content hash as a string.</p>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="files.shared.HashingReader.read" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <code class="highlight language-python"><span class="n">read</span><span class="p">()</span></code>
+
+</h3>
+
+
+    <div class="doc doc-contents ">
+
+      <p>Return content of the file as a single bytes object.</p>
+
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="files.shared.Capability" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-class"></code>            <code>Capability</code>
+
+
+</h2>
+
+
+    <div class="doc doc-contents first">
+            <p class="doc doc-class-bases">
+              Bases: <code><span title="enum.Flag">Flag</span></code></p>
+
+
+      <p>Enumeration of operations supported by the storage.</p>
+
+
+<details class="example" open>
+  <summary>Example</summary>
+  <div class="highlight"><pre><span></span><code><span class="n">read_and_write</span> <span class="o">=</span> <span class="n">Capability</span><span class="o">.</span><span class="n">STREAM</span> <span class="o">|</span> <span class="n">Capability</span><span class="o">.</span><span class="n">CREATE</span>
 <span class="k">if</span> <span class="n">storage</span><span class="o">.</span><span class="n">supports</span><span class="p">(</span><span class="n">read_and_write</span><span class="p">)</span>
     <span class="o">...</span>
 </code></pre></div>
+</details>
+
+
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="files.shared.Capability.exclude" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <code class="highlight language-python"><span class="n">exclude</span><span class="p">(</span><span class="o">*</span><span class="n">capabilities</span><span class="p">)</span></code>
+
+</h3>
+
+
+    <div class="doc doc-contents ">
+
+      <p>Remove capabilities from the cluster.</p>
+
+
+<table>
+      <thead>
+        <tr>
+          <th><span class="doc-section-title">PARAMETER</span></th>
+          <th><span>DESCRIPTION</span></th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td><code>capabilities</code></td>
+            <td class="doc-param-details">
+              <div class="doc-md-description">
+                <p>removed capabilities</p>
+              </div>
+              <p>
+                  <span class="doc-param-annotation">
+                    <b>TYPE:</b>
+                      <code><a class="autorefs autorefs-internal" title="files.utils.Capability" href="#files.shared.Capability">Capability</a></code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+<details class="example" open>
+  <summary>Example</summary>
+  <div class="highlight"><pre><span></span><code><span class="n">cluster</span> <span class="o">=</span> <span class="n">cluster</span><span class="o">.</span><span class="n">exclude</span><span class="p">(</span><span class="n">Capability</span><span class="o">.</span><span class="n">REMOVE</span><span class="p">)</span>
+</code></pre></div>
+</details>
+    </div>
+
 </div>
-<h2 id="file">File</h2>
-<p>Signature: <code>(**kwargs)</code></p>
-<p>Model with file details.</p>
-<div class="admonition example">
-<p class="admonition-title">Example</p>
-<div class="highlight"><pre><span></span><code><span class="n">file</span> <span class="o">=</span> <span class="n">File</span><span class="p">(</span>
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="files.shared.File" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-class"></code>            <code>File</code>
+
+
+</h2>
+
+
+    <div class="doc doc-contents first">
+            <p class="doc doc-class-bases">
+              Bases: <code><span title="files.model.base.Base">Base</span></code></p>
+
+
+      <p>Model with file details.</p>
+
+
+<table>
+      <thead>
+        <tr>
+          <th><span class="doc-section-title">PARAMETER</span></th>
+          <th><span>DESCRIPTION</span></th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td><code>name</code></td>
+            <td class="doc-param-details">
+              <div class="doc-md-description">
+                <p>name shown to users</p>
+              </div>
+              <p>
+                  <span class="doc-param-annotation">
+                    <b>TYPE:</b>
+                      <code>str</code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code>location</code></td>
+            <td class="doc-param-details">
+              <div class="doc-md-description">
+                <p>location of the file inside storage</p>
+              </div>
+              <p>
+                  <span class="doc-param-annotation">
+                    <b>TYPE:</b>
+                      <code>str</code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code>content_type</code></td>
+            <td class="doc-param-details">
+              <div class="doc-md-description">
+                <p>MIMEtype</p>
+              </div>
+              <p>
+                  <span class="doc-param-annotation">
+                    <b>TYPE:</b>
+                      <code>str</code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code>size</code></td>
+            <td class="doc-param-details">
+              <div class="doc-md-description">
+                <p>size in bytes</p>
+              </div>
+              <p>
+                  <span class="doc-param-annotation">
+                    <b>TYPE:</b>
+                      <code>int</code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code>hash</code></td>
+            <td class="doc-param-details">
+              <div class="doc-md-description">
+                <p>checksum</p>
+              </div>
+              <p>
+                  <span class="doc-param-annotation">
+                    <b>TYPE:</b>
+                      <code>str</code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code>storage</code></td>
+            <td class="doc-param-details">
+              <div class="doc-md-description">
+                <p>storage that contains the file</p>
+              </div>
+              <p>
+                  <span class="doc-param-annotation">
+                    <b>TYPE:</b>
+                      <code>str</code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code>ctime</code></td>
+            <td class="doc-param-details">
+              <div class="doc-md-description">
+                <p>date of creation</p>
+              </div>
+              <p>
+                  <span class="doc-param-annotation">
+                    <b>TYPE:</b>
+                      <code><span title="datetime.datetime">datetime</span></code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code>mtime</code></td>
+            <td class="doc-param-details">
+              <div class="doc-md-description">
+                <p>date of the last update</p>
+              </div>
+              <p>
+                  <span class="doc-param-annotation">
+                    <b>TYPE:</b>
+                      <code><span title="datetime.datetime">datetime</span> | None</code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code>atime</code></td>
+            <td class="doc-param-details">
+              <div class="doc-md-description">
+                <p>date of last access(unstable)</p>
+              </div>
+              <p>
+                  <span class="doc-param-annotation">
+                    <b>TYPE:</b>
+                      <code><span title="datetime.datetime">datetime</span> | None</code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code>storage_data</code></td>
+            <td class="doc-param-details">
+              <div class="doc-md-description">
+                <p>additional data set by storage</p>
+              </div>
+              <p>
+                  <span class="doc-param-annotation">
+                    <b>TYPE:</b>
+                      <code>dict[str, <span title="typing.Any">Any</span>]</code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code>plugin_data</code></td>
+            <td class="doc-param-details">
+              <div class="doc-md-description">
+                <p>additional data set by plugins</p>
+              </div>
+              <p>
+                  <span class="doc-param-annotation">
+                    <b>TYPE:</b>
+                      <code>dict[str, <span title="typing.Any">Any</span>]</code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+<details class="example" open>
+  <summary>Example</summary>
+  <div class="highlight"><pre><span></span><code><span class="n">file</span> <span class="o">=</span> <span class="n">File</span><span class="p">(</span>
     <span class="n">name</span><span class="o">=</span><span class="s2">&quot;file.txt&quot;</span><span class="p">,</span>
     <span class="n">location</span><span class="o">=</span><span class="s2">&quot;relative/path/safe-name.txt&quot;</span><span class="p">,</span>
     <span class="n">content_type</span><span class="o">=</span><span class="s2">&quot;text/plain&quot;</span><span class="p">,</span>
@@ -1695,13 +2897,188 @@ provide correct MIMEtype, size and stream.</p>
     <span class="n">storage</span><span class="o">=</span><span class="s2">&quot;default&quot;</span><span class="p">,</span>
 <span class="p">)</span>
 </code></pre></div>
+</details>
+
+
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
 </div>
-<h2 id="multipart">Multipart</h2>
-<p>Signature: <code>(**kwargs)</code></p>
-<p>Model with details of incomplete upload.</p>
-<div class="admonition example">
-<p class="admonition-title">Example</p>
-<div class="highlight"><pre><span></span><code><span class="n">upload</span> <span class="o">=</span> <span class="n">Multipart</span><span class="p">(</span>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="files.shared.Multipart" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-class"></code>            <code>Multipart</code>
+
+
+</h2>
+
+
+    <div class="doc doc-contents first">
+            <p class="doc doc-class-bases">
+              Bases: <code><span title="files.model.base.Base">Base</span></code></p>
+
+
+      <p>Model with details of incomplete upload.</p>
+
+
+<table>
+      <thead>
+        <tr>
+          <th><span class="doc-section-title">PARAMETER</span></th>
+          <th><span>DESCRIPTION</span></th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td><code>name</code></td>
+            <td class="doc-param-details">
+              <div class="doc-md-description">
+                <p>name shown to users</p>
+              </div>
+              <p>
+                  <span class="doc-param-annotation">
+                    <b>TYPE:</b>
+                      <code>str</code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code>location</code></td>
+            <td class="doc-param-details">
+              <div class="doc-md-description">
+                <p>location of the file inside storage</p>
+              </div>
+              <p>
+                  <span class="doc-param-annotation">
+                    <b>TYPE:</b>
+                      <code>str</code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code>content_type</code></td>
+            <td class="doc-param-details">
+              <div class="doc-md-description">
+                <p>expected MIMEtype</p>
+              </div>
+              <p>
+                  <span class="doc-param-annotation">
+                    <b>TYPE:</b>
+                      <code>str</code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code>size</code></td>
+            <td class="doc-param-details">
+              <div class="doc-md-description">
+                <p>expected size in bytes</p>
+              </div>
+              <p>
+                  <span class="doc-param-annotation">
+                    <b>TYPE:</b>
+                      <code>int</code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code>hash</code></td>
+            <td class="doc-param-details">
+              <div class="doc-md-description">
+                <p>expected checksum</p>
+              </div>
+              <p>
+                  <span class="doc-param-annotation">
+                    <b>TYPE:</b>
+                      <code>str</code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code>storage</code></td>
+            <td class="doc-param-details">
+              <div class="doc-md-description">
+                <p>storage that contains the file</p>
+              </div>
+              <p>
+                  <span class="doc-param-annotation">
+                    <b>TYPE:</b>
+                      <code>str</code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code>ctime</code></td>
+            <td class="doc-param-details">
+              <div class="doc-md-description">
+                <p>date of creation</p>
+              </div>
+              <p>
+                  <span class="doc-param-annotation">
+                    <b>TYPE:</b>
+                      <code><span title="datetime.datetime">datetime</span></code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code>storage_data</code></td>
+            <td class="doc-param-details">
+              <div class="doc-md-description">
+                <p>additional data set by storage</p>
+              </div>
+              <p>
+                  <span class="doc-param-annotation">
+                    <b>TYPE:</b>
+                      <code>dict[str, <span title="typing.Any">Any</span>]</code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code>plugin_data</code></td>
+            <td class="doc-param-details">
+              <div class="doc-md-description">
+                <p>additional data set by plugins</p>
+              </div>
+              <p>
+                  <span class="doc-param-annotation">
+                    <b>TYPE:</b>
+                      <code>dict[str, <span title="typing.Any">Any</span>]</code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+<details class="example" open>
+  <summary>Example</summary>
+  <div class="highlight"><pre><span></span><code><span class="n">upload</span> <span class="o">=</span> <span class="n">Multipart</span><span class="p">(</span>
     <span class="n">name</span><span class="o">=</span><span class="s2">&quot;file.txt&quot;</span><span class="p">,</span>
     <span class="n">location</span><span class="o">=</span><span class="s2">&quot;relative/path/safe-name.txt&quot;</span><span class="p">,</span>
     <span class="n">content_type</span><span class="o">=</span><span class="s2">&quot;text/plain&quot;</span><span class="p">,</span>
@@ -1710,74 +3087,1059 @@ provide correct MIMEtype, size and stream.</p>
     <span class="n">storage</span><span class="o">=</span><span class="s2">&quot;default&quot;</span><span class="p">,</span>
 <span class="p">)</span>
 </code></pre></div>
+</details>
+
+
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
 </div>
-<h2 id="owner">Owner</h2>
-<p>Signature: <code>(**kwargs)</code></p>
-<p>Model with details about current owner of an item.</p>
-<div class="admonition example">
-<p class="admonition-title">Example</p>
-<div class="highlight"><pre><span></span><code><span class="n">owner</span> <span class="o">=</span> <span class="n">Owner</span><span class="p">(</span>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="files.shared.Owner" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-class"></code>            <code>Owner</code>
+
+
+</h2>
+
+
+    <div class="doc doc-contents first">
+            <p class="doc doc-class-bases">
+              Bases: <code><span title="files.model.base.Base">Base</span></code></p>
+
+
+      <p>Model with details about current owner of an item.</p>
+
+
+<table>
+      <thead>
+        <tr>
+          <th><span class="doc-section-title">PARAMETER</span></th>
+          <th><span>DESCRIPTION</span></th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td><code>item_id</code></td>
+            <td class="doc-param-details">
+              <div class="doc-md-description">
+                <p>ID of the owned object</p>
+              </div>
+              <p>
+                  <span class="doc-param-annotation">
+                    <b>TYPE:</b>
+                      <code>str</code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code>item_type</code></td>
+            <td class="doc-param-details">
+              <div class="doc-md-description">
+                <p>type of the owned object</p>
+              </div>
+              <p>
+                  <span class="doc-param-annotation">
+                    <b>TYPE:</b>
+                      <code>str</code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code>owner_id</code></td>
+            <td class="doc-param-details">
+              <div class="doc-md-description">
+                <p>ID of the owner</p>
+              </div>
+              <p>
+                  <span class="doc-param-annotation">
+                    <b>TYPE:</b>
+                      <code>str</code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code>owner_type</code></td>
+            <td class="doc-param-details">
+              <div class="doc-md-description">
+                <p>Type of the owner</p>
+              </div>
+              <p>
+                  <span class="doc-param-annotation">
+                    <b>TYPE:</b>
+                      <code>str</code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code>pinned</code></td>
+            <td class="doc-param-details">
+              <div class="doc-md-description">
+                <p>is ownership protected from transfer</p>
+              </div>
+              <p>
+                  <span class="doc-param-annotation">
+                    <b>TYPE:</b>
+                      <code>bool</code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+<details class="example" open>
+  <summary>Example</summary>
+  <div class="highlight"><pre><span></span><code><span class="n">owner</span> <span class="o">=</span> <span class="n">Owner</span><span class="p">(</span>
     <span class="n">item_id</span><span class="o">=</span><span class="n">file</span><span class="o">.</span><span class="n">id</span><span class="p">,</span>
     <span class="n">item_type</span><span class="o">=</span><span class="s2">&quot;file&quot;</span><span class="p">,</span>
     <span class="n">owner_id</span><span class="o">=</span><span class="n">user</span><span class="o">.</span><span class="n">id</span><span class="p">,</span>
     <span class="n">owner_type</span><span class="o">=</span><span class="s2">&quot;user,</span>
 <span class="p">)</span>
 </code></pre></div>
+</details>
+
+
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
 </div>
-<h2 id="transferhistory">TransferHistory</h2>
-<p>Signature: <code>(**kwargs)</code></p>
-<p>Model for tracking ownership history of the file.</p>
-<div class="admonition example">
-<p class="admonition-title">Example</p>
-<div class="highlight"><pre><span></span><code><span class="n">record</span> <span class="o">=</span> <span class="n">TransferHistory</span><span class="p">(</span>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="files.shared.TransferHistory" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-class"></code>            <code>TransferHistory</code>
+
+
+</h2>
+
+
+    <div class="doc doc-contents first">
+            <p class="doc doc-class-bases">
+              Bases: <code><span title="files.model.base.Base">Base</span></code></p>
+
+
+      <p>Model for tracking ownership history of the file.</p>
+
+
+<table>
+      <thead>
+        <tr>
+          <th><span class="doc-section-title">PARAMETER</span></th>
+          <th><span>DESCRIPTION</span></th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td><code>item_id</code></td>
+            <td class="doc-param-details">
+              <div class="doc-md-description">
+                <p>ID of the owned object</p>
+              </div>
+              <p>
+                  <span class="doc-param-annotation">
+                    <b>TYPE:</b>
+                      <code>str</code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code>item_type</code></td>
+            <td class="doc-param-details">
+              <div class="doc-md-description">
+                <p>type of the owned object</p>
+              </div>
+              <p>
+                  <span class="doc-param-annotation">
+                    <b>TYPE:</b>
+                      <code>str</code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code>owner_id</code></td>
+            <td class="doc-param-details">
+              <div class="doc-md-description">
+                <p>ID of the owner</p>
+              </div>
+              <p>
+                  <span class="doc-param-annotation">
+                    <b>TYPE:</b>
+                      <code>str</code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code>owner_type</code></td>
+            <td class="doc-param-details">
+              <div class="doc-md-description">
+                <p>Type of the owner</p>
+              </div>
+              <p>
+                  <span class="doc-param-annotation">
+                    <b>TYPE:</b>
+                      <code>str</code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code>leave_date</code></td>
+            <td class="doc-param-details">
+              <div class="doc-md-description">
+                <p>date of ownership transfer to a different owner</p>
+              </div>
+              <p>
+                  <span class="doc-param-annotation">
+                    <b>TYPE:</b>
+                      <code><span title="datetime.datetime">datetime</span></code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code>actor</code></td>
+            <td class="doc-param-details">
+              <div class="doc-md-description">
+                <p>user who initiated ownership transfer</p>
+              </div>
+              <p>
+                  <span class="doc-param-annotation">
+                    <b>TYPE:</b>
+                      <code>str | None</code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+<details class="example" open>
+  <summary>Example</summary>
+  <div class="highlight"><pre><span></span><code><span class="n">record</span> <span class="o">=</span> <span class="n">TransferHistory</span><span class="p">(</span>
     <span class="n">item_id</span><span class="o">=</span><span class="n">file</span><span class="o">.</span><span class="n">id</span><span class="p">,</span>
     <span class="n">item_type</span><span class="o">=</span><span class="s2">&quot;file&quot;</span><span class="p">,</span>
     <span class="n">owner_id</span><span class="o">=</span><span class="n">prev_owner</span><span class="o">.</span><span class="n">owner_id</span><span class="p">,</span>
     <span class="n">owner_type</span><span class="o">=</span><span class="n">prev_owner</span><span class="o">.</span><span class="n">owner_type</span><span class="p">,</span>
 <span class="p">)</span>
 </code></pre></div>
+</details>
+
+
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
 </div>
-<h2 id="filedata">FileData</h2>
-<p>Signature: <code>(location: str, size: int = 0, content_type: str = application/octet-stream, hash: str = "", storage_data: dict[str, Any] = &lt;factory&gt;) -&gt; None</code></p>
-<p>Information required by storage to operate the file.</p>
-<div class="admonition example">
-<p class="admonition-title">Example</p>
-<div class="highlight"><pre><span></span><code><span class="n">FileData</span><span class="p">(</span>
-    <span class="s2">&quot;local/path.txt&quot;</span><span class="p">,</span>
-    <span class="mi">123</span><span class="p">,</span>
-    <span class="s2">&quot;text/plain&quot;</span><span class="p">,</span>
-    <span class="n">md5_of_content</span><span class="p">,</span>
-<span class="p">)</span>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="files.shared.FileData" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-class"></code>            <code>FileData</code>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-dataclass"><code>dataclass</code></small>
+  </span>
+
+</h2>
+
+
+    <div class="doc doc-contents first">
+            <p class="doc doc-class-bases">
+              Bases: <code><span title="files.base.BaseData">BaseData</span>[<a class="autorefs autorefs-internal" title="files.model.File" href="#files.shared.File">File</a>]</code></p>
+
+
+      <p>Information required by storage to operate the file.</p>
+
+
+<table>
+      <thead>
+        <tr>
+          <th><span class="doc-section-title">PARAMETER</span></th>
+          <th><span>DESCRIPTION</span></th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td><code>location</code></td>
+            <td class="doc-param-details">
+              <div class="doc-md-description">
+                <p>filepath, filename or any other type of unique identifier</p>
+              </div>
+              <p>
+                  <span class="doc-param-annotation">
+                    <b>TYPE:</b>
+                      <code>str</code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code>size</code></td>
+            <td class="doc-param-details">
+              <div class="doc-md-description">
+                <p>size of the file in bytes</p>
+              </div>
+              <p>
+                  <span class="doc-param-annotation">
+                    <b>TYPE:</b>
+                      <code>int</code>
+                  </span>
+                  <span class="doc-param-default">
+                    <b>DEFAULT:</b>
+                      <code>0</code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code>content_type</code></td>
+            <td class="doc-param-details">
+              <div class="doc-md-description">
+                <p>MIMEtype of the file</p>
+              </div>
+              <p>
+                  <span class="doc-param-annotation">
+                    <b>TYPE:</b>
+                      <code>str</code>
+                  </span>
+                  <span class="doc-param-default">
+                    <b>DEFAULT:</b>
+                      <code>&#39;application/octet-stream&#39;</code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code>hash</code></td>
+            <td class="doc-param-details">
+              <div class="doc-md-description">
+                <p>checksum of the file</p>
+              </div>
+              <p>
+                  <span class="doc-param-annotation">
+                    <b>TYPE:</b>
+                      <code>str</code>
+                  </span>
+                  <span class="doc-param-default">
+                    <b>DEFAULT:</b>
+                      <code>&#39;&#39;</code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code>storage_data</code></td>
+            <td class="doc-param-details">
+              <div class="doc-md-description">
+                <p>additional details set by storage adapter</p>
+              </div>
+              <p>
+                  <span class="doc-param-annotation">
+                    <b>TYPE:</b>
+                      <code>dict[str, <span title="typing.Any">Any</span>]</code>
+                  </span>
+                  <span class="doc-param-default">
+                    <b>DEFAULT:</b>
+                      <code>dict()</code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+<details class="example" open>
+  <summary>Example</summary>
+  <div class="highlight"><pre><span></span><code>FileData(
+    &quot;local/path.txt&quot;,
+    123,
+    &quot;text/plain&quot;,
+    md5_of_content,
+)
 </code></pre></div>
+</details>
+
+
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
 </div>
-<h2 id="multipartdata">MultipartData</h2>
-<p>Signature: <code>(location: str = "", size: int = 0, content_type: str = "", hash: str = "", storage_data: dict[str, Any] = &lt;factory&gt;) -&gt; None</code></p>
-<p>Information required by storage to operate the incomplete upload.</p>
-<div class="admonition example">
-<p class="admonition-title">Example</p>
-<div class="highlight"><pre><span></span><code><span class="n">FileData</span><span class="p">(</span>
-    <span class="s2">&quot;local/path.txt&quot;</span><span class="p">,</span>
-    <span class="n">expected_size</span><span class="p">,</span>
-    <span class="n">expected_content_type</span><span class="p">,</span>
-    <span class="n">expected_hash</span><span class="p">,</span>
-<span class="p">)</span>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="files.shared.MultipartData" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-class"></code>            <code>MultipartData</code>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-dataclass"><code>dataclass</code></small>
+  </span>
+
+</h2>
+
+
+    <div class="doc doc-contents first">
+            <p class="doc doc-class-bases">
+              Bases: <code><span title="files.base.BaseData">BaseData</span>[<a class="autorefs autorefs-internal" title="files.model.Multipart" href="#files.shared.Multipart">Multipart</a>]</code></p>
+
+
+      <p>Information required by storage to operate the incomplete upload.</p>
+
+
+<table>
+      <thead>
+        <tr>
+          <th><span class="doc-section-title">PARAMETER</span></th>
+          <th><span>DESCRIPTION</span></th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td><code>location</code></td>
+            <td class="doc-param-details">
+              <div class="doc-md-description">
+                <p>filepath, filename or any other type of unique identifier</p>
+              </div>
+              <p>
+                  <span class="doc-param-annotation">
+                    <b>TYPE:</b>
+                      <code>str</code>
+                  </span>
+                  <span class="doc-param-default">
+                    <b>DEFAULT:</b>
+                      <code>&#39;&#39;</code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code>size</code></td>
+            <td class="doc-param-details">
+              <div class="doc-md-description">
+                <p>expected size of the file in bytes</p>
+              </div>
+              <p>
+                  <span class="doc-param-annotation">
+                    <b>TYPE:</b>
+                      <code>int</code>
+                  </span>
+                  <span class="doc-param-default">
+                    <b>DEFAULT:</b>
+                      <code>0</code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code>content_type</code></td>
+            <td class="doc-param-details">
+              <div class="doc-md-description">
+                <p>expected MIMEtype of the file</p>
+              </div>
+              <p>
+                  <span class="doc-param-annotation">
+                    <b>TYPE:</b>
+                      <code>str</code>
+                  </span>
+                  <span class="doc-param-default">
+                    <b>DEFAULT:</b>
+                      <code>&#39;&#39;</code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code>hash</code></td>
+            <td class="doc-param-details">
+              <div class="doc-md-description">
+                <p>expected checksum of the file</p>
+              </div>
+              <p>
+                  <span class="doc-param-annotation">
+                    <b>TYPE:</b>
+                      <code>str</code>
+                  </span>
+                  <span class="doc-param-default">
+                    <b>DEFAULT:</b>
+                      <code>&#39;&#39;</code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code>storage_data</code></td>
+            <td class="doc-param-details">
+              <div class="doc-md-description">
+                <p>additional details set by storage adapter</p>
+              </div>
+              <p>
+                  <span class="doc-param-annotation">
+                    <b>TYPE:</b>
+                      <code>dict[str, <span title="typing.Any">Any</span>]</code>
+                  </span>
+                  <span class="doc-param-default">
+                    <b>DEFAULT:</b>
+                      <code>dict()</code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+<details class="example" open>
+  <summary>Example</summary>
+  <div class="highlight"><pre><span></span><code>MultipartData(
+    &quot;local/path.txt&quot;,
+    expected_size,
+    expected_content_type,
+    expected_hash,
+)
 </code></pre></div>
+</details>
+
+
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
 </div>
-<h2 id="ifiles">IFiles</h2>
-<p>Extension point for ckanext-files.</p>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="files.shared.IFiles" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-class"></code>            <code>IFiles</code>
+
+
+</h2>
+
+
+    <div class="doc doc-contents first">
+            <p class="doc doc-class-bases">
+              Bases: <code><span title="ckan.plugins.Interface">Interface</span></code></p>
+
+
+      <p>Extension point for ckanext-files.</p>
 <p>This interface is not stabilized. Implement it with <code>inherit=True</code>.</p>
-<div class="admonition example">
-<p class="admonition-title">Example</p>
-<div class="highlight"><pre><span></span><code><span class="k">class</span> <span class="nc">MyPlugin</span><span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">SingletonPlugin</span><span class="p">):</span>
+
+
+<details class="example" open>
+  <summary>Example</summary>
+  <div class="highlight"><pre><span></span><code><span class="k">class</span> <span class="nc">MyPlugin</span><span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">SingletonPlugin</span><span class="p">):</span>
     <span class="n">p</span><span class="o">.</span><span class="n">implements</span><span class="p">(</span><span class="n">interfaces</span><span class="o">.</span><span class="n">IFiles</span><span class="p">,</span> <span class="n">inherit</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </code></pre></div>
+</details>
+
+
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="files.shared.IFiles.files_file_allows" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <code class="highlight language-python"><span class="n">files_file_allows</span><span class="p">(</span><span class="n">context</span><span class="p">,</span> <span class="n">file</span><span class="p">,</span> <span class="n">operation</span><span class="p">)</span></code>
+
+</h3>
+
+
+    <div class="doc doc-contents ">
+
+      <p>Decide if user is allowed to perform specified operation on the file.</p>
+<p>Return True/False if user allowed/not allowed. Return <code>None</code> to rely on
+other plugins.</p>
+<p>Default implementation relies on cascade_access config option. If owner
+of file is included into cascade access, user can perform operation on
+file if he can perform the same operation with file's owner.</p>
+<p>If current owner is not affected by cascade access, user can perform
+operation on file only if user owns the file.</p>
+
+
+<table>
+      <thead>
+        <tr>
+          <th><span class="doc-section-title">PARAMETER</span></th>
+          <th><span>DESCRIPTION</span></th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td><code>context</code></td>
+            <td class="doc-param-details">
+              <div class="doc-md-description">
+                <p>API context</p>
+              </div>
+              <p>
+                  <span class="doc-param-annotation">
+                    <b>TYPE:</b>
+                      <code><span title="ckanext.files.types.Context">Context</span></code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code>file</code></td>
+            <td class="doc-param-details">
+              <div class="doc-md-description">
+                <p>accessed file object</p>
+              </div>
+              <p>
+                  <span class="doc-param-annotation">
+                    <b>TYPE:</b>
+                      <code><span title="files.interfaces.File">File</span> | <span title="files.interfaces.Multipart">Multipart</span></code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code>operation</code></td>
+            <td class="doc-param-details">
+              <div class="doc-md-description">
+                <p>performed operation</p>
+              </div>
+              <p>
+                  <span class="doc-param-annotation">
+                    <b>TYPE:</b>
+                      <code><span title="ckanext.files.types.FileOperation">FileOperation</span></code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+<table>
+      <thead>
+        <tr>
+          <th><span class="doc-section-title">RETURNS</span></th>
+          <th><span>DESCRIPTION</span></th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <span class="doc-returns-annotation">
+                    <code>bool | None</code>
+                </span>
+            </td>
+            <td class="doc-returns-details">
+              <div class="doc-md-description">
+                <p>decision whether operation is allowed for the file</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+<details class="example" open>
+  <summary>Example</summary>
+  <div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">files_file_allows</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">context</span><span class="p">,</span>
+        <span class="n">file</span><span class="p">:</span> <span class="n">shared</span><span class="o">.</span><span class="n">File</span> <span class="o">|</span> <span class="n">shared</span><span class="o">.</span><span class="n">Multipart</span><span class="p">,</span>
+        <span class="n">operation</span><span class="p">:</span> <span class="n">shared</span><span class="o">.</span><span class="n">types</span><span class="o">.</span><span class="n">FileOperation</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">file</span><span class="o">.</span><span class="n">owner_info</span> <span class="ow">and</span> <span class="n">file</span><span class="o">.</span><span class="n">owner_info</span><span class="o">.</span><span class="n">owner_type</span> <span class="o">==</span> <span class="s2">&quot;resource&quot;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">is_authorized_boolean</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;resource_</span><span class="si">{</span><span class="n">operation</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+            <span class="n">context</span><span class="p">,</span>
+            <span class="p">{</span><span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="n">file</span><span class="o">.</span><span class="n">owner_info</span><span class="o">.</span><span class="n">id</span><span class="p">}</span>
+        <span class="p">)</span>
+
+    <span class="k">return</span> <span class="kc">None</span>
+</code></pre></div>
+</details>
+    </div>
+
 </div>
-<h2 id="storage">Storage</h2>
-<p>Signature: <code>(settings: dict[str, Any], /)</code></p>
-<p>Base class for storage implementation.</p>
-<div class="admonition example">
-<p class="admonition-title">Example</p>
-<div class="highlight"><pre><span></span><code><span class="k">class</span> <span class="nc">MyStorage</span><span class="p">(</span><span class="n">Storage</span><span class="p">):</span>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="files.shared.IFiles.files_get_storage_adapters" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <code class="highlight language-python"><span class="n">files_get_storage_adapters</span><span class="p">()</span></code>
+
+</h3>
+
+
+    <div class="doc doc-contents ">
+
+      <p>Return mapping of storage type to adapter class.</p>
+
+
+<table>
+      <thead>
+        <tr>
+          <th><span class="doc-section-title">RETURNS</span></th>
+          <th><span>DESCRIPTION</span></th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <span class="doc-returns-annotation">
+                    <code>dict[str, <span title="typing.Any">Any</span>]</code>
+                </span>
+            </td>
+            <td class="doc-returns-details">
+              <div class="doc-md-description">
+                <p>adapters provided by the implementation</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+<details class="example" open>
+  <summary>Example</summary>
+  <div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">files_get_storage_adapters</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">return</span> <span class="p">{</span>
+        <span class="s2">&quot;my_ext:dropbox&quot;</span><span class="p">:</span> <span class="n">DropboxStorage</span><span class="p">,</span>
+    <span class="p">}</span>
+</code></pre></div>
+</details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="files.shared.IFiles.files_owner_allows" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <code class="highlight language-python"><span class="n">files_owner_allows</span><span class="p">(</span><span class="n">context</span><span class="p">,</span> <span class="n">owner_type</span><span class="p">,</span> <span class="n">owner_id</span><span class="p">,</span> <span class="n">operation</span><span class="p">)</span></code>
+
+</h3>
+
+
+    <div class="doc doc-contents ">
+
+      <p>Decide if user is allowed to perform specified operation on the owner.</p>
+<p>Return True/False if user allowed/not allowed. Return <code>None</code> to rely on
+other plugins.</p>
+
+
+<table>
+      <thead>
+        <tr>
+          <th><span class="doc-section-title">PARAMETER</span></th>
+          <th><span>DESCRIPTION</span></th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td><code>context</code></td>
+            <td class="doc-param-details">
+              <div class="doc-md-description">
+                <p>API context</p>
+              </div>
+              <p>
+                  <span class="doc-param-annotation">
+                    <b>TYPE:</b>
+                      <code><span title="ckanext.files.types.Context">Context</span></code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code>owner_type</code></td>
+            <td class="doc-param-details">
+              <div class="doc-md-description">
+                <p>type of the tested owner</p>
+              </div>
+              <p>
+                  <span class="doc-param-annotation">
+                    <b>TYPE:</b>
+                      <code>str</code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code>owner_id</code></td>
+            <td class="doc-param-details">
+              <div class="doc-md-description">
+                <p>type of the tested owner</p>
+              </div>
+              <p>
+                  <span class="doc-param-annotation">
+                    <b>TYPE:</b>
+                      <code>str</code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code>operation</code></td>
+            <td class="doc-param-details">
+              <div class="doc-md-description">
+                <p>performed operation</p>
+              </div>
+              <p>
+                  <span class="doc-param-annotation">
+                    <b>TYPE:</b>
+                      <code><span title="ckanext.files.types.OwnerOperation">OwnerOperation</span></code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+<table>
+      <thead>
+        <tr>
+          <th><span class="doc-section-title">RETURNS</span></th>
+          <th><span>DESCRIPTION</span></th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <span class="doc-returns-annotation">
+                    <code>bool | None</code>
+                </span>
+            </td>
+            <td class="doc-returns-details">
+              <div class="doc-md-description">
+                <p>decision whether operation is allowed for the owner</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+<details class="example" open>
+  <summary>Example</summary>
+  <div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">files_owner_allows</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">context</span><span class="p">,</span>
+        <span class="n">owner_type</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">owner_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">operation</span><span class="p">:</span> <span class="n">shared</span><span class="o">.</span><span class="n">types</span><span class="o">.</span><span class="n">OwnerOperation</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">owner_type</span> <span class="o">==</span> <span class="s2">&quot;resource&quot;</span> <span class="ow">and</span> <span class="n">operation</span> <span class="o">==</span> <span class="s2">&quot;file_transfer&quot;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">is_authorized_boolean</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;resource_update&quot;</span><span class="p">,</span>
+            <span class="n">context</span><span class="p">,</span>
+            <span class="p">{</span><span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="n">owner_id</span><span class="p">}</span>
+        <span class="p">)</span>
+
+    <span class="k">return</span> <span class="kc">None</span>
+</code></pre></div>
+</details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="files.shared.IFiles.files_register_owner_getters" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <code class="highlight language-python"><span class="n">files_register_owner_getters</span><span class="p">()</span></code>
+
+</h3>
+
+
+    <div class="doc doc-contents ">
+
+      <p>Return mapping with lookup functions for owner types.</p>
+<p>Name of the getter is the name used as <code>Owner.owner_type</code>. The getter
+itself is a function that accepts owner ID and returns optional owner
+entity.</p>
+
+
+<table>
+      <thead>
+        <tr>
+          <th><span class="doc-section-title">RETURNS</span></th>
+          <th><span>DESCRIPTION</span></th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <span class="doc-returns-annotation">
+                    <code>dict[str, <span title="typing.Callable">Callable</span>[[str], <span title="typing.Any">Any</span>]]</code>
+                </span>
+            </td>
+            <td class="doc-returns-details">
+              <div class="doc-md-description">
+                <p>getters for specific owner types</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+<details class="example" open>
+  <summary>Example</summary>
+  <div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">files_register_owner_getters</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;resource&quot;</span><span class="p">:</span> <span class="n">model</span><span class="o">.</span><span class="n">Resource</span><span class="o">.</span><span class="n">get</span><span class="p">}</span>
+</code></pre></div>
+</details>
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="files.shared.Storage" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-class"></code>            <code>Storage</code>
+
+
+</h2>
+
+
+    <div class="doc doc-contents first">
+            <p class="doc doc-class-bases">
+              Bases: <code><span title="files.base.OptionChecker">OptionChecker</span></code>, <code><span title="abc.ABC">ABC</span></code></p>
+
+
+      <p>Base class for storage implementation.</p>
+
+
+<table>
+      <thead>
+        <tr>
+          <th><span class="doc-section-title">PARAMETER</span></th>
+          <th><span>DESCRIPTION</span></th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td><code>settings</code></td>
+            <td class="doc-param-details">
+              <div class="doc-md-description">
+                <p>storage configuration</p>
+              </div>
+              <p>
+                  <span class="doc-param-annotation">
+                    <b>TYPE:</b>
+                      <code>dict[str, <span title="typing.Any">Any</span>]</code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+<details class="example" open>
+  <summary>Example</summary>
+  <div class="highlight"><pre><span></span><code><span class="k">class</span> <span class="nc">MyStorage</span><span class="p">(</span><span class="n">Storage</span><span class="p">):</span>
     <span class="k">def</span> <span class="nf">make_uploader</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">MyUploader</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
 
@@ -1787,16 +4149,191 @@ provide correct MIMEtype, size and stream.</p>
     <span class="k">def</span> <span class="nf">make_manager</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">MyManager</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
 </code></pre></div>
+</details>
+
+
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="files.shared.Storage.max_size" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <code class="highlight language-python"><span class="n">max_size</span><span class="p">:</span> <span class="nb">int</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+</h3>
+
+
+    <div class="doc doc-contents ">
+
+      <p>Max allowed upload size.</p>
+<p>Max size set to 0 removes all limitations.</p>
+    </div>
+
 </div>
-<h2 id="uploader">Uploader</h2>
-<p>Signature: <code>(storage: Storage)</code></p>
-<p>Service responsible for writing data into a storage.</p>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="files.shared.Storage.supported_types" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <code class="highlight language-python"><span class="n">supported_types</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+</h3>
+
+
+    <div class="doc doc-contents ">
+
+      <p>List of supported MIMEtypes or their parts.</p>
+    </div>
+
+</div>
+
+
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="files.shared.Storage.prepare_settings" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <code class="highlight language-python"><span class="n">prepare_settings</span><span class="p">(</span><span class="n">settings</span><span class="p">)</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-classmethod"><code>classmethod</code></small>
+  </span>
+
+</h3>
+
+
+    <div class="doc doc-contents ">
+
+      <p>Add all required items to settings.</p>
+<p>This is usually done by config declarations. But when storage is
+initialized manually, via <code>make_storage</code>, settings are not validated.</p>
+<p>Use this method to transform arbitrary dictionary into expected form of
+settings. Don't do too much work, just adding missing parameters should
+be enough.</p>
+<p>Passing sane values with valid types is still responsibility of the
+developer.</p>
+
+
+<table>
+      <thead>
+        <tr>
+          <th><span class="doc-section-title">PARAMETER</span></th>
+          <th><span>DESCRIPTION</span></th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td><code>settings</code></td>
+            <td class="doc-param-details">
+              <div class="doc-md-description">
+                <p>configuration that required preparation</p>
+              </div>
+              <p>
+                  <span class="doc-param-annotation">
+                    <b>TYPE:</b>
+                      <code>dict[str, <span title="typing.Any">Any</span>]</code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+<details class="example" open>
+  <summary>Example</summary>
+  <div class="highlight"><pre><span></span><code><span class="n">settings</span> <span class="o">=</span> <span class="n">Storage</span><span class="o">.</span><span class="n">prepare_settings</span><span class="p">({})</span>
+<span class="n">storage</span> <span class="o">=</span> <span class="n">Storage</span><span class="p">(</span><span class="n">settings</span><span class="p">)</span>
+</code></pre></div>
+</details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="files.shared.Storage.range" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <code class="highlight language-python"><span class="nb">range</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">/</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></code>
+
+</h3>
+
+
+    <div class="doc doc-contents ">
+
+      <p>Return byte-stream of the file content.</p>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="files.shared.Storage.stream_as_upload" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <code class="highlight language-python"><span class="n">stream_as_upload</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></code>
+
+</h3>
+
+
+    <div class="doc doc-contents ">
+
+      <p>Make an Upload with file content.</p>
+
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="files.shared.Uploader" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-class"></code>            <code>Uploader</code>
+
+
+</h2>
+
+
+    <div class="doc doc-contents first">
+            <p class="doc doc-class-bases">
+              Bases: <code><span title="files.base.StorageService">StorageService</span></code></p>
+
+
+      <p>Service responsible for writing data into a storage.</p>
 <p><code>Storage</code> internally calls methods of this service. For example,
 <code>Storage.upload(location, upload, **kwargs)</code> results in
 <code>Uploader.upload(location, upload, kwargs)</code>.</p>
-<div class="admonition example">
-<p class="admonition-title">Example</p>
-<div class="highlight"><pre><span></span><code><span class="k">class</span> <span class="nc">MyUploader</span><span class="p">(</span><span class="n">Uploader</span><span class="p">):</span>
+
+
+<details class="example" open>
+  <summary>Example</summary>
+  <div class="highlight"><pre><span></span><code><span class="k">class</span> <span class="nc">MyUploader</span><span class="p">(</span><span class="n">Uploader</span><span class="p">):</span>
     <span class="k">def</span> <span class="nf">upload</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">location</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">upload</span><span class="p">:</span> <span class="n">Upload</span><span class="p">,</span> <span class="n">extras</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FileData</span><span class="p">:</span>
@@ -1811,96 +4348,833 @@ provide correct MIMEtype, size and stream.</p>
             <span class="n">reader</span><span class="o">.</span><span class="n">get_hash</span><span class="p">()</span>
         <span class="p">)</span>
 </code></pre></div>
+</details>
+
+
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="files.shared.Uploader.multipart_complete" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <code class="highlight language-python"><span class="n">multipart_complete</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">extras</span><span class="p">)</span></code>
+
+</h3>
+
+
+    <div class="doc doc-contents ">
+
+      <p>Verify file integrity and finalize incomplete upload.</p>
+
+    </div>
+
 </div>
-<h2 id="reader">Reader</h2>
-<p>Signature: <code>(storage: Storage)</code></p>
-<p>Service responsible for reading data from the storage.</p>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="files.shared.Uploader.multipart_refresh" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <code class="highlight language-python"><span class="n">multipart_refresh</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">extras</span><span class="p">)</span></code>
+
+</h3>
+
+
+    <div class="doc doc-contents ">
+
+      <p>Show details of the incomplete upload.</p>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="files.shared.Uploader.multipart_start" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <code class="highlight language-python"><span class="n">multipart_start</span><span class="p">(</span><span class="n">location</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">extras</span><span class="p">)</span></code>
+
+</h3>
+
+
+    <div class="doc doc-contents ">
+
+      <p>Prepare everything for multipart(resumable) upload.</p>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="files.shared.Uploader.multipart_update" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <code class="highlight language-python"><span class="n">multipart_update</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">extras</span><span class="p">)</span></code>
+
+</h3>
+
+
+    <div class="doc doc-contents ">
+
+      <p>Add data to the incomplete upload.</p>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="files.shared.Uploader.upload" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <code class="highlight language-python"><span class="n">upload</span><span class="p">(</span><span class="n">location</span><span class="p">,</span> <span class="n">upload</span><span class="p">,</span> <span class="n">extras</span><span class="p">)</span></code>
+
+</h3>
+
+
+    <div class="doc doc-contents ">
+
+      <p>Upload file using single stream.</p>
+
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="files.shared.Reader" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-class"></code>            <code>Reader</code>
+
+
+</h2>
+
+
+    <div class="doc doc-contents first">
+            <p class="doc doc-class-bases">
+              Bases: <code><span title="files.base.StorageService">StorageService</span></code></p>
+
+
+      <p>Service responsible for reading data from the storage.</p>
 <p><code>Storage</code> internally calls methods of this service. For example,
 <code>Storage.stream(data, **kwargs)</code> results in <code>Reader.stream(data, kwargs)</code>.</p>
-<div class="admonition example">
-<p class="admonition-title">Example</p>
-<div class="highlight"><pre><span></span><code><span class="k">class</span> <span class="nc">MyReader</span><span class="p">(</span><span class="n">Reader</span><span class="p">):</span>
+
+
+<details class="example" open>
+  <summary>Example</summary>
+  <div class="highlight"><pre><span></span><code><span class="k">class</span> <span class="nc">MyReader</span><span class="p">(</span><span class="n">Reader</span><span class="p">):</span>
     <span class="k">def</span> <span class="nf">stream</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">FileData</span><span class="p">,</span> <span class="n">extras</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">bytes</span><span class="p">]:</span>
         <span class="k">return</span> <span class="nb">open</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">location</span><span class="p">,</span> <span class="s2">&quot;rb&quot;</span><span class="p">)</span>
 </code></pre></div>
+</details>
+
+
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="files.shared.Reader.content" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <code class="highlight language-python"><span class="n">content</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">extras</span><span class="p">)</span></code>
+
+</h3>
+
+
+    <div class="doc doc-contents ">
+
+      <p>Return file content as a single byte object.</p>
+
+    </div>
+
 </div>
-<h2 id="manager">Manager</h2>
-<p>Signature: <code>(storage: Storage)</code></p>
-<p>Service responsible for maintenance file operations.</p>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="files.shared.Reader.one_time_link" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <code class="highlight language-python"><span class="n">one_time_link</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">extras</span><span class="p">)</span></code>
+
+</h3>
+
+
+    <div class="doc doc-contents ">
+
+      <p>Return one-time download link.</p>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="files.shared.Reader.permanent_link" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <code class="highlight language-python"><span class="n">permanent_link</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">extras</span><span class="p">)</span></code>
+
+</h3>
+
+
+    <div class="doc doc-contents ">
+
+      <p>Return permanent download link.</p>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="files.shared.Reader.public_link" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <code class="highlight language-python"><span class="n">public_link</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">extras</span><span class="p">)</span></code>
+
+</h3>
+
+
+    <div class="doc doc-contents ">
+
+      <p>Return public link.</p>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="files.shared.Reader.range" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <code class="highlight language-python"><span class="nb">range</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">,</span> <span class="n">extras</span><span class="p">)</span></code>
+
+</h3>
+
+
+    <div class="doc doc-contents ">
+
+      <p>Return byte-stream of the file content.</p>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="files.shared.Reader.stream" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <code class="highlight language-python"><span class="n">stream</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">extras</span><span class="p">)</span></code>
+
+</h3>
+
+
+    <div class="doc doc-contents ">
+
+      <p>Return byte-stream of the file content.</p>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="files.shared.Reader.temporal_link" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <code class="highlight language-python"><span class="n">temporal_link</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">extras</span><span class="p">)</span></code>
+
+</h3>
+
+
+    <div class="doc doc-contents ">
+
+      <p>Return temporal download link.</p>
+<p>extras["ttl"] controls lifetime of the link(30 seconds by default).</p>
+
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="files.shared.Manager" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-class"></code>            <code>Manager</code>
+
+
+</h2>
+
+
+    <div class="doc doc-contents first">
+            <p class="doc doc-class-bases">
+              Bases: <code><span title="files.base.StorageService">StorageService</span></code></p>
+
+
+      <p>Service responsible for maintenance file operations.</p>
 <p><code>Storage</code> internally calls methods of this service. For example,
 <code>Storage.remove(data, **kwargs)</code> results in <code>Manager.remove(data, kwargs)</code>.</p>
-<div class="admonition example">
-<p class="admonition-title">Example</p>
-<div class="highlight"><pre><span></span><code><span class="k">class</span> <span class="nc">MyManager</span><span class="p">(</span><span class="n">Manager</span><span class="p">):</span>
+
+
+<details class="example" open>
+  <summary>Example</summary>
+  <div class="highlight"><pre><span></span><code><span class="k">class</span> <span class="nc">MyManager</span><span class="p">(</span><span class="n">Manager</span><span class="p">):</span>
     <span class="k">def</span> <span class="nf">remove</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">FileData</span><span class="o">|</span><span class="n">MultipartData</span><span class="p">,</span> <span class="n">extras</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
         <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">location</span><span class="p">)</span>
         <span class="k">return</span> <span class="kc">True</span>
 </code></pre></div>
+</details>
+
+
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="files.shared.Manager.analyze" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <code class="highlight language-python"><span class="n">analyze</span><span class="p">(</span><span class="n">location</span><span class="p">,</span> <span class="n">extras</span><span class="p">)</span></code>
+
+</h3>
+
+
+    <div class="doc doc-contents ">
+
+      <p>Return all details about filename.</p>
+
+    </div>
+
 </div>
-<h2 id="add_task">add_task</h2>
-<p>Signature: <code>(task: types.PTask)</code></p>
-<p>Add task to the current task queue.</p>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="files.shared.Manager.append" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <code class="highlight language-python"><span class="n">append</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">upload</span><span class="p">,</span> <span class="n">extras</span><span class="p">)</span></code>
+
+</h3>
+
+
+    <div class="doc doc-contents ">
+
+      <p>Append content to existing file.</p>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="files.shared.Manager.compose" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <code class="highlight language-python"><span class="n">compose</span><span class="p">(</span><span class="n">datas</span><span class="p">,</span> <span class="n">location</span><span class="p">,</span> <span class="n">extras</span><span class="p">)</span></code>
+
+</h3>
+
+
+    <div class="doc doc-contents ">
+
+      <p>Combine multipe file inside the storage into a new one.</p>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="files.shared.Manager.copy" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <code class="highlight language-python"><span class="n">copy</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">location</span><span class="p">,</span> <span class="n">extras</span><span class="p">)</span></code>
+
+</h3>
+
+
+    <div class="doc doc-contents ">
+
+      <p>Copy file inside the storage.</p>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="files.shared.Manager.exists" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <code class="highlight language-python"><span class="n">exists</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">extras</span><span class="p">)</span></code>
+
+</h3>
+
+
+    <div class="doc doc-contents ">
+
+      <p>Check if file exists in the storage.</p>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="files.shared.Manager.move" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <code class="highlight language-python"><span class="n">move</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">location</span><span class="p">,</span> <span class="n">extras</span><span class="p">)</span></code>
+
+</h3>
+
+
+    <div class="doc doc-contents ">
+
+      <p>Move file to a different location inside the storage.</p>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="files.shared.Manager.remove" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <code class="highlight language-python"><span class="n">remove</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">extras</span><span class="p">)</span></code>
+
+</h3>
+
+
+    <div class="doc doc-contents ">
+
+      <p>Remove file from the storage.</p>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="files.shared.Manager.scan" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <code class="highlight language-python"><span class="n">scan</span><span class="p">(</span><span class="n">extras</span><span class="p">)</span></code>
+
+</h3>
+
+
+    <div class="doc doc-contents ">
+
+      <p>List all locations(filenames) in storage.</p>
+
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="files.shared.add_task" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-function"></code>            <code class="highlight language-python"><span class="n">add_task</span><span class="p">(</span><span class="n">task</span><span class="p">)</span></code>
+
+</h2>
+
+
+    <div class="doc doc-contents first">
+
+      <p>Add task to the current task queue.</p>
 <p>This function can be called only inside task queue context. Such context
 initialized automatically inside functions decorated with
-<code>with_task_queue</code>:
-<div class="highlight"><pre><span></span><code><span class="nd">@with_task_queue</span>
+<code>with_task_queue</code>:</p>
+
+
+<details class="example" open>
+  <summary>Example</summary>
+  <div class="highlight"><pre><span></span><code><span class="nd">@with_task_queue</span>
 <span class="k">def</span> <span class="nf">taks_producer</span><span class="p">():</span>
     <span class="n">add_task</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
 
 <span class="n">task_producer</span><span class="p">()</span>
-</code></pre></div></p>
-<p>Task queue context can be initialized manually using TaskQueue and
-<code>with</code> statement:
-<div class="highlight"><pre><span></span><code><span class="n">queue</span> <span class="o">=</span> <span class="n">TaskQueue</span><span class="p">()</span>
+</code></pre></div>
+</details>      <p>Task queue context can be initialized manually using TaskQueue and
+<code>with</code> statement:</p>
+
+
+<details class="example" open>
+  <summary>Example</summary>
+  <div class="highlight"><pre><span></span><code><span class="n">queue</span> <span class="o">=</span> <span class="n">TaskQueue</span><span class="p">()</span>
 <span class="k">with</span> <span class="n">queue</span><span class="p">:</span>
     <span class="n">add_task</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
 
 <span class="n">queue</span><span class="o">.</span><span class="n">process</span><span class="p">(</span><span class="n">execution_data</span><span class="p">)</span>
-</code></pre></div></p>
-<h2 id="with_task_queue">with_task_queue</h2>
-<p>Signature: <code>(func: Any, name: str | None = None)</code></p>
-<p>Decorator for functions that schedule tasks.</p>
+</code></pre></div>
+</details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="files.shared.with_task_queue" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-function"></code>            <code class="highlight language-python"><span class="n">with_task_queue</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code>
+
+</h2>
+
+
+    <div class="doc doc-contents first">
+
+      <p>Decorator for functions that schedule tasks.</p>
 <p>Decorated function automatically initializes separate task queue which is
 processed when function is finished. All tasks receive function's result as
 execution data(first argument of <code>Task.run</code>).</p>
 <p>Without this decorator, you have to manually create task queue context
 before queuing tasks.</p>
-<div class="admonition example">
-<p class="admonition-title">Example</p>
-<div class="highlight"><pre><span></span><code><span class="nd">@with_task_queue</span>
+
+
+<details class="example" open>
+  <summary>Example</summary>
+  <div class="highlight"><pre><span></span><code><span class="nd">@with_task_queue</span>
 <span class="k">def</span> <span class="nf">my_action</span><span class="p">(</span><span class="n">context</span><span class="p">,</span> <span class="n">data_dict</span><span class="p">):</span>
     <span class="o">...</span>
 </code></pre></div>
+</details>
+    </div>
+
 </div>
-<h2 id="task">Task</h2>
-<p>Base task for TaskQueue.</p>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="files.shared.Task" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-class"></code>            <code>Task</code>
+
+
+</h2>
+
+
+    <div class="doc doc-contents first">
+            <p class="doc doc-class-bases">
+              Bases: <code><span title="abc.ABC">ABC</span></code></p>
+
+
+      <p>Base task for TaskQueue.</p>
 <p>The only requirement for subclasses is implementing Task.run.</p>
-<h2 id="taskqueue">TaskQueue</h2>
-<p>Thread-safe context for managing tasks.</p>
-<div class="admonition example">
-<p class="admonition-title">Example</p>
-<div class="highlight"><pre><span></span><code><span class="n">queue</span> <span class="o">=</span> <span class="n">TaskQueue</span><span class="p">()</span>
+
+
+
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="files.shared.Task.extract" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <code class="highlight language-python"><span class="n">extract</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="n">path</span><span class="p">)</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-staticmethod"><code>staticmethod</code></small>
+  </span>
+
+</h3>
+
+
+    <div class="doc doc-contents ">
+
+      <p>Extract value from dictionary using FlattenKey from validators.</p>
+
+
+<table>
+      <thead>
+        <tr>
+          <th><span class="doc-section-title">PARAMETER</span></th>
+          <th><span>DESCRIPTION</span></th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td><code>source</code></td>
+            <td class="doc-param-details">
+              <div class="doc-md-description">
+                <p>dictionary with data</p>
+              </div>
+              <p>
+                  <span class="doc-param-annotation">
+                    <b>TYPE:</b>
+                      <code>dict[str, <span title="typing.Any">Any</span>]</code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code>path</code></td>
+            <td class="doc-param-details">
+              <div class="doc-md-description">
+                <p>path to the extracted member from source</p>
+              </div>
+              <p>
+                  <span class="doc-param-annotation">
+                    <b>TYPE:</b>
+                      <code><span title="ckan.types.FlattenKey">FlattenKey</span></code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+<details class="example" open>
+  <summary>Example</summary>
+  <div class="highlight"><pre><span></span><code><span class="n">data</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;a&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;b&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;c&quot;</span><span class="p">:</span> <span class="mi">42</span><span class="p">}}}</span>
+<span class="k">assert</span> <span class="n">Task</span><span class="o">.</span><span class="n">extract</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">,</span> <span class="s2">&quot;c&quot;</span><span class="p">))</span> <span class="o">==</span> <span class="mi">42</span>
+</code></pre></div>
+</details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="files.shared.Task.run" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <code class="highlight language-python"><span class="n">run</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="n">idx</span><span class="p">,</span> <span class="n">prev</span><span class="p">)</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-abstractmethod"><code>abstractmethod</code></small>
+  </span>
+
+</h3>
+
+
+    <div class="doc doc-contents ">
+
+      <p>Execute task.</p>
+<p><code>result</code> is an arbitrary data passed into every task in the
+queue. <code>idx</code> reflects current task's position in queue. <code>prev</code> contains
+result of previous task or Task.NO_PREVIOUS_TASK if current task is the
+first in the queue.</p>
+
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="files.shared.TaskQueue" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-class"></code>            <code>TaskQueue</code>
+
+
+</h2>
+
+
+    <div class="doc doc-contents first">
+
+
+      <p>Thread-safe context for managing tasks.</p>
+
+
+<details class="example" open>
+  <summary>Example</summary>
+  <div class="highlight"><pre><span></span><code><span class="n">queue</span> <span class="o">=</span> <span class="n">TaskQueue</span><span class="p">()</span>
 <span class="k">with</span> <span class="n">queue</span><span class="p">:</span>
     <span class="n">function_that_adds_tasks_to_queue</span><span class="p">()</span>
 <span class="n">data_passed_into_tasks</span> <span class="o">=</span> <span class="o">...</span>
 <span class="n">queue</span><span class="o">.</span><span class="n">process</span><span class="p">(</span><span class="n">data_passed_into_tasks</span><span class="p">)</span>
 </code></pre></div>
+</details>
+
+
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="files.shared.TaskQueue.process" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <code class="highlight language-python"><span class="n">process</span><span class="p">(</span><span class="n">data</span><span class="p">)</span></code>
+
+</h3>
+
+
+    <div class="doc doc-contents ">
+
+      <p>Execute queued tasks in FIFO order.</p>
+<p><code>data</code> is passed to every task as a first argument. In addition, task
+receives its position in execution queue and results of the previous
+task. The first task receives Task.NO_PREVIOUS_TASK as third argument,
+because there are no results from previous task yet.</p>
+
+    </div>
+
 </div>
-<h2 id="types-ckanextfilestypes-module">types (ckanext.files.types module)</h2>
-<p>Types for the extension.</p>
-<h2 id="config-ckanextfilesconfig-module">config (ckanext.files.config module)</h2>
-<p>Configuration readers of the extension.</p>
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-module">
+
+
+
+<h2 id="files.shared.types" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-module"></code>            <code>types</code>
+
+
+</h2>
+
+    <div class="doc doc-contents first">
+
+      <p>Types for the extension.</p>
+
+
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div><p><a href="types/">Details</a></p>
+
+
+<div class="doc doc-object doc-module">
+
+
+
+<h2 id="files.shared.config" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-module"></code>            <code>config</code>
+
+
+</h2>
+
+    <div class="doc doc-contents first">
+
+      <p>Configuration readers of the extension.</p>
 <p>This module contains functions that simplify accessing configuration option
 from the CKAN config file.</p>
 <p>It's recommended to use these functions istead of accessing config options by
 name, if you want your code to be more compatible with different versions of
 the extension.</p>
-<h2 id="exc-ckanextfilesexceptions-module">exc (ckanext.files.exceptions module)</h2>
-<p>Exception definitions for the extension.</p>
+
+
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div><p><a href="config/">Details</a></p>
+
+
+<div class="doc doc-object doc-module">
+
+
+
+<h2 id="files.shared.exc" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-module"></code>            <code>exc</code>
+
+
+</h2>
+
+    <div class="doc doc-contents first">
+
+      <p>Exception definitions for the extension.</p>
 <p>Hierarchy:</p>
 <ul>
 <li>Exception<ul>
@@ -1950,6 +5224,26 @@ the extension.</p>
 
 
 
+  <div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div><p><a href="exceptions/">Details</a></p>
+
+
+
 
 
 
@@ -1985,7 +5279,7 @@ the extension.</p>
           <a href="../implementation-example/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Example implementation of custom storage adapter">
             <div class="md-footer__button md-icon">
               
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.5.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256l137.3-137.4c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg>
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
             </div>
             <div class="md-footer__title">
               <span class="md-footer__direction">
@@ -1999,18 +5293,18 @@ the extension.</p>
         
         
           
-          <a href="../cli/" class="md-footer__link md-footer__link--next" aria-label="Next: CLI">
+          <a href="types/" class="md-footer__link md-footer__link--next" aria-label="Next: Types">
             <div class="md-footer__title">
               <span class="md-footer__direction">
                 Next
               </span>
               <div class="md-ellipsis">
-                CLI
+                Types
               </div>
             </div>
             <div class="md-footer__button md-icon">
               
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.5.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg>
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11H4Z"/></svg>
             </div>
           </a>
         
@@ -2041,7 +5335,7 @@ the extension.</p>
       <div class="md-progress" data-md-component="progress" role="progressbar"></div>
     
     
-    <script id="__config" type="application/json">{"base": "..", "features": ["navigation.instant", "navigation.instant.prefetch", "navigation.instant.progress", "navigation.top", "content.code.copy", "content.code.select", "content.code.annotate", "navigation.footer", "navigation.indexes"], "search": "../assets/javascripts/workers/search.b8dbb3d2.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    <script id="__config" type="application/json">{"base": "..", "features": ["navigation.instant", "navigation.instant.prefetch", "navigation.instant.progress", "navigation.top", "navigation.footer", "navigation.indexes", "content.code.copy", "content.code.select", "content.code.annotate"], "search": "../assets/javascripts/workers/search.b8dbb3d2.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
     
     
       <script src="../assets/javascripts/bundle.ad660dcc.min.js"></script>

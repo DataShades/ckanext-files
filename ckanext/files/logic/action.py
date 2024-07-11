@@ -10,7 +10,7 @@ from ckan import model
 from ckan.logic import validate
 from ckan.types import Action, Context
 
-from ckanext.files import shared
+from ckanext.files import shared, utils
 from ckanext.files.shared import File, Multipart, Owner, TransferHistory
 
 from . import schema
@@ -63,7 +63,7 @@ def _flat_mask(data: dict[str, Any]) -> dict[tuple[Any, ...], Any]:
 
 @tk.side_effect_free
 @validate(schema.file_search)
-def files_file_search(  # noqa: C901, PLR0912
+def files_file_search(  # noqa: C901, PLR0912, PLR0915
     context: Context,
     data_dict: dict[str, Any],
 ) -> dict[str, Any]:
@@ -213,7 +213,9 @@ def files_file_search(  # noqa: C901, PLR0912
 
     stmt = stmt.limit(data_dict["rows"]).offset(data_dict["start"])
 
-    return {"count": total, "results": [f.dictize(context) for f in sess.scalars(stmt)]}
+    cache = utils.ContextCache(context)
+    results: list[File] = [cache.set("file", f.id, f) for f in sess.scalars(stmt)]
+    return {"count": total, "results": [f.dictize(context) for f in results]}
 
 
 @validate(schema.file_create)
@@ -289,6 +291,8 @@ def files_file_create(context: Context, data_dict: dict[str, Any]) -> dict[str, 
     _set_user_owner(context, "file", fileobj.id)
     context["session"].commit()
 
+    utils.ContextCache(context).set("file", fileobj.id, fileobj)
+
     return fileobj.dictize(context)
 
 
@@ -319,7 +323,9 @@ def files_file_replace(context: Context, data_dict: dict[str, Any]) -> dict[str,
     """
     tk.check_access("files_file_replace", context, data_dict)
 
-    fileobj = context["session"].get(File, data_dict["id"])
+    cache = utils.ContextCache(context)
+
+    fileobj = cache.get_model("file", data_dict["id"], File)
     if not fileobj:
         raise tk.ObjectNotFound("file")
 
@@ -352,6 +358,8 @@ def files_file_replace(context: Context, data_dict: dict[str, Any]) -> dict[str,
 
     storage_data.into_model(fileobj)
     context["session"].commit()
+
+    utils.ContextCache(context).set("file", fileobj.id, fileobj)
 
     return fileobj.dictize(context)
 
@@ -395,9 +403,10 @@ def files_file_delete(context: Context, data_dict: dict[str, Any]) -> dict[str, 
     """
     tk.check_access("files_file_delete", context, data_dict)
 
-    fileobj = context["session"].get(
-        File if data_dict["completed"] else Multipart,
-        data_dict["id"],
+    cache = utils.ContextCache(context)
+
+    fileobj = cache.get_model(
+        "file", data_dict["id"], File if data_dict["completed"] else Multipart
     )
 
     if not fileobj:
@@ -440,13 +449,14 @@ def files_file_show(context: Context, data_dict: dict[str, Any]) -> dict[str, An
     """
     tk.check_access("files_file_show", context, data_dict)
 
-    fileobj = context["session"].get(
-        File if data_dict["completed"] else Multipart,
-        data_dict["id"],
+    cache = utils.ContextCache(context)
+    fileobj = cache.get_model(
+        "file", data_dict["id"], File if data_dict["completed"] else Multipart
     )
     if not fileobj:
         raise tk.ObjectNotFound("file")
 
+    utils.ContextCache(context).set("file", fileobj.id, fileobj)
     return fileobj.dictize(context)
 
 
@@ -473,9 +483,11 @@ def files_file_rename(context: Context, data_dict: dict[str, Any]) -> dict[str, 
     """
     tk.check_access("files_file_rename", context, data_dict)
 
-    fileobj = context["session"].get(
-        File if data_dict["completed"] else Multipart,
+    cache = utils.ContextCache(context)
+    fileobj = cache.get_model(
+        "file",
         data_dict["id"],
+        File if data_dict["completed"] else Multipart,
     )
     if not fileobj:
         raise tk.ObjectNotFound("file")
@@ -551,6 +563,7 @@ def files_multipart_start(
     _set_user_owner(context, "multipart", fileobj.id)
     context["session"].commit()
 
+    utils.ContextCache(context).set("file", fileobj.id, fileobj)
     return fileobj.dictize(context)
 
 
@@ -574,7 +587,12 @@ def files_multipart_refresh(
     """
     tk.check_access("files_multipart_refresh", context, data_dict)
 
-    fileobj = context["session"].get(Multipart, data_dict["id"])
+    cache = utils.ContextCache(context)
+    fileobj = cache.get_model(
+        "file",
+        data_dict["id"],
+        Multipart,
+    )
     if not fileobj:
         raise tk.ObjectNotFound("file")
 
@@ -610,7 +628,12 @@ def files_multipart_update(
 
     extras = data_dict.get("__extras", {})
 
-    fileobj = context["session"].get(Multipart, data_dict["id"])
+    cache = utils.ContextCache(context)
+    fileobj = cache.get_model(
+        "file",
+        data_dict["id"],
+        Multipart,
+    )
     if not fileobj:
         raise tk.ObjectNotFound("upload")
 
@@ -656,8 +679,8 @@ def files_multipart_complete(
     sess = context["session"]
     extras = data_dict.get("__extras", {})
 
-    data_dict["id"]
-    multipart = context["session"].get(Multipart, data_dict["id"])
+    cache = utils.ContextCache(context)
+    multipart = cache.get("file", data_dict["id"], Multipart)
     if not multipart:
         raise tk.ObjectNotFound("upload")
 
@@ -684,6 +707,7 @@ def files_multipart_complete(
     sess.delete(multipart)
     sess.commit()
 
+    cache.set("file", fileobj.id, fileobj)
     return fileobj.dictize(context)
 
 
@@ -718,6 +742,8 @@ def files_file_scan(
 
     params = data_dict.pop("__extras", {})
     params.update(data_dict)
+
+    # TODO: pull cache from search context
     return tk.get_action("files_file_search")({"ignore_auth": True}, params)
 
 
@@ -741,9 +767,13 @@ def files_transfer_ownership(
     """
     tk.check_access("files_transfer_ownership", context, data_dict)
     sess = context["session"]
-    fileobj = context["session"].get(
-        File if data_dict["completed"] else Multipart,
+
+    cache = utils.ContextCache(context)
+
+    fileobj = cache.get_model(
+        "file",
         data_dict["id"],
+        File if data_dict["completed"] else Multipart,
     )
     if not fileobj:
         raise tk.ObjectNotFound("file")
@@ -796,9 +826,12 @@ def files_file_pin(context: Context, data_dict: dict[str, Any]) -> dict[str, Any
     """
     tk.check_access("files_file_pin", context, data_dict)
     sess = context["session"]
-    fileobj = context["session"].get(
-        File if data_dict["completed"] else Multipart,
+
+    cache = utils.ContextCache(context)
+    fileobj = cache.get_model(
+        "file",
         data_dict["id"],
+        File if data_dict["completed"] else Multipart,
     )
     if not fileobj:
         raise tk.ObjectNotFound("file")
@@ -830,9 +863,12 @@ def files_file_unpin(context: Context, data_dict: dict[str, Any]) -> dict[str, A
     """
     tk.check_access("files_file_unpin", context, data_dict)
     sess = context["session"]
-    fileobj = context["session"].get(
-        File if data_dict["completed"] else Multipart,
+
+    cache = utils.ContextCache(context)
+    fileobj = cache.get_model(
+        "file",
         data_dict["id"],
+        File if data_dict["completed"] else Multipart,
     )
     if not fileobj:
         raise tk.ObjectNotFound("file")
@@ -875,6 +911,7 @@ def files_resource_upload(
             {"upload": ["Resource uploads are not supported"]},
         )
 
+    # TODO: pull cache from the context
     return tk.get_action("files_file_create")(
         Context(context, ignore_auth=True),
         dict(data_dict, storage=storage_name),

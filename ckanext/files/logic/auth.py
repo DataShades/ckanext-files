@@ -7,7 +7,7 @@ import ckan.plugins.toolkit as tk
 from ckan import authz, model
 from ckan.types import AuthResult, Context
 
-from ckanext.files import interfaces, shared, types
+from ckanext.files import interfaces, shared, types, utils
 
 
 def _owner_allows(
@@ -83,7 +83,8 @@ def _get_user(context: Context) -> model.User | None:
     if user and context["user"] == user.name:
         return cast(model.User, user)
 
-    return model.User.get(context["user"])
+    cache = utils.ContextCache(context)
+    return cache.get("user", context["user"], lambda: model.User.get(context["user"]))
 
 
 def _get_file(
@@ -91,13 +92,12 @@ def _get_file(
     file_id: str,
     completed: bool,
 ) -> shared.File | shared.Multipart | None:
-    if "files_file" not in context:
-        context["files_file"] = model.Session.get(  # type: ignore
-            shared.File if completed else shared.Multipart,
-            file_id,
-        )
-
-    return context["files_file"]  # type: ignore
+    cache = utils.ContextCache(context)
+    return cache.get_model(
+        "file",
+        file_id,
+        shared.File if completed else shared.Multipart,
+    )
 
 
 @tk.auth_disallow_anonymous_access

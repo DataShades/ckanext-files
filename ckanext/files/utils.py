@@ -498,8 +498,11 @@ class IterableBytesReader:
 
 
 class ContextCache:
+    key = "files_cache"
+
     def __init__(self, context: types.Context):
-        self.cache = cast("dict[str, Any]", context).setdefault("files_cache", {})
+        self.session = context.get("session", model.Session)
+        self.cache = cast("dict[str, Any]", context).setdefault(self.key, {})
 
     def invalidate(self, type: str, id: str):
         self.cache.setdefault(type, {}).pop(id, None)
@@ -520,4 +523,4 @@ class ContextCache:
         return bucket[id]
 
     def get_model(self, type: str, id: str, model_class: type[T]) -> T | None:
-        return self.get(type, id, lambda: model.Session.get(model_class, id))
+        return self.get(type, id, lambda: self.session.get(model_class, id))

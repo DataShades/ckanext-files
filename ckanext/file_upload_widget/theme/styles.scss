@@ -230,8 +230,9 @@
             align-items: center;
 
             .btn-close {
-                padding: 0.5rem 0.5rem;
-                margin: -0.5rem -0.5rem -0.5rem auto;
+                padding: 0;
+                margin: 0;
+                margin-left: auto;
 
                 box-sizing: content-box;
                 width: 1em;

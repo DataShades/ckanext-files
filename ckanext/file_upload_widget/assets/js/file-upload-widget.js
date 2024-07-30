@@ -96,8 +96,6 @@ ckan.module("file-upload-widget", function ($, _) {
                 this.options.maxFiles = 9999;
             }
 
-            console.log(this.options);
-
             window.fuwProgressBars = window.fuwProgressBars || {};
             window.fuwProgressBars[this.options.instanceId] = {};
 
@@ -440,9 +438,7 @@ ckan.module("file-upload-widget", function ($, _) {
             if (
                 this._isFileNumLimitReached(
                     e,
-                    selectedFiles.length -
-                        (this.options.maxFiles -
-                            this._calculateSelectedFilesNum()),
+                    selectedFiles.length - (this.options.maxFiles - this._calculateSelectedFilesNum()),
                     `You can't select more files than the limit: ${this.options.maxFiles}.`
                 )
             ) {
@@ -577,7 +573,6 @@ ckan.module("file-upload-widget", function ($, _) {
         },
 
         _handleFile: function (file) {
-            console.log(file.type);
             this._addFileItem(
                 file.id,
                 file.name,
@@ -1409,6 +1404,10 @@ ckan.module("file-upload-widget", function ($, _) {
             selectedNum = null,
             message = null
         ) {
+            if (selectedNum < 0) {
+                return false;
+            }
+
             if (
                 selectedNum ||
                 this._calculateSelectedFilesNum() >= this.options.maxFiles

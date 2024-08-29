@@ -131,6 +131,12 @@ class FsUploader(Uploader):
         data: MultipartData,
         extras: dict[str, Any],
     ) -> MultipartData:
+        filepath = os.path.join(
+            str(self.storage.settings["path"]),
+            data.location,
+        )
+        data.storage_data["uploaded"] = os.path.getsize(filepath)
+
         return data
 
     def multipart_update(

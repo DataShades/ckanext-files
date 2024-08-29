@@ -680,7 +680,7 @@ def files_multipart_complete(
     extras = data_dict.get("__extras", {})
 
     cache = utils.ContextCache(context)
-    multipart = cache.get("file", data_dict["id"], Multipart)
+    multipart = cache.get_model("file", data_dict["id"], Multipart)
     if not multipart:
         raise tk.ObjectNotFound("upload")
 

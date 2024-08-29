@@ -434,6 +434,7 @@ def make_upload(
     if isinstance(value, tempfile.SpooledTemporaryFile):
         return _tempfile_as_upload(value)
 
+    # TODO: check compativility with memoryview
     if isinstance(value, (bytes, bytearray)):
         value = BytesIO(value)
 

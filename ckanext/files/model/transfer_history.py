@@ -56,7 +56,7 @@ class TransferHistory(Base):  # type: ignore
             ["files_owner.item_id", "files_owner.item_type"],
         ),
     )
-    id: str
+    id: Mapped[str]
     item_id: Mapped[str]
     item_type: Mapped[str]
     owner_id: Mapped[str]

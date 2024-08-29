@@ -70,10 +70,9 @@ section-order = [
 ]
 
 [tool.ruff.lint.isort.sections]
-# Group all Django imports into a separate section.
 ckan = ["ckan"]
 ckanext = ["ckanext"]
-self = ["ckanext.{{ project_shortname }}"]
+self = ["ckanext.files"]
 
 [tool.pytest.ini_options]
 addopts = "--ckan-ini test.ini -m 'not benchmark'"

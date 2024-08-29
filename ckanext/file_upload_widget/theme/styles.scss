@@ -36,6 +36,10 @@
 
     .fuw-url-input {
         width: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: end;
+        gap: 1rem;
     }
 
     .fuw-media-input {
@@ -78,6 +82,7 @@
                     align-items: center;
                     gap: 0.5rem;
                     width: 100%;
+                    margin-bottom: 0;
 
                     &:after {
                         display: none;
@@ -92,6 +97,9 @@
                         width: 30px;
                         height: 30px;
                         object-fit: contain;
+                        background: #e8d8d8;
+                        opacity: .5;
+                        border-radius: 5px;
                     }
 
                     // file icon
@@ -115,6 +123,8 @@
 
     .fuw-selected-files {
         position: absolute;
+        top: 0;
+        width: 100%;
 
         ul.fuw-selected-files--list {
             width: 100%;
@@ -129,6 +139,7 @@
                 border-bottom: 1px solid #eaeaea;
                 padding: 0.5rem 0;
                 position: relative;
+                font-size: 14px;
 
                 .fuw-selected-files--file-preview {
                     height: 50px;
@@ -159,14 +170,14 @@
                     .fuw-selected-files--file-name {
                         -webkit-font-smoothing: antialiased;
                         word-wrap: anywhere;
-                        font-size: 1rem;
+                        font-size: 1em;
                         font-weight: bold;
                         line-height: 1.3;
                         word-break: break-all;
                     }
 
                     .fuw-selected-files--file-size {
-                        font-size: 0.8rem;
+                        font-size: 0.8em;
                         color: #757575;
                         font-weight: 400;
                         line-height: 1;
@@ -176,12 +187,12 @@
                 .fuw-selected-files--file-control {
                     display: flex;
                     align-items: center;
+                    gap: 1rem;
+                    margin-left: auto;
 
                     .file-tile--file-remove,
                     .file-tile--file-upload {
                         cursor: pointer;
-                        position: absolute;
-                        right: 0;
                         background: black;
                         color: white;
                         border: 1px solid black;
@@ -192,11 +203,6 @@
                         align-items: center;
                         justify-content: center;
                     }
-                }
-
-
-                .file-tile--file-upload {
-                    right: 30px;
                 }
             }
 
@@ -220,6 +226,24 @@
     .modal {
         .modal-header {
             gap: 0.5rem;
+            display: flex;
+            align-items: center;
+
+            .btn-close {
+                padding: 0;
+                margin: 0;
+                margin-left: auto;
+
+                box-sizing: content-box;
+                width: 1em;
+                height: 1em;
+                padding: 0.25em 0.25em;
+                color: #000;
+                background: transparent url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23000'%3e%3cpath d='M.293.293a1 1 0 011.414 0L8 6.586 14.293.293a1 1 0 111.414 1.414L9.414 8l6.293 6.293a1 1 0 01-1.414 1.414L8 9.414l-6.293 6.293a1 1 0 01-1.414-1.414L6.586 8 .293 1.707a1 1 0 010-1.414z'/%3e%3c/svg%3e") center / 1em auto no-repeat;
+                border: 0;
+                border-radius: 0.25rem;
+                opacity: 0.5;
+            }
         }
 
         .modal-body {
@@ -249,7 +273,20 @@
             font-weight: bold;
             width: 22px;
             height: 22px;
-            display: inline-block;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+    }
+
+    @media (min-width: 576px) {
+        .modal-dialog {
+          max-width: 500px;
+          margin: 1.75rem auto;
+        }
+
+        .modal-dialog-centered {
+          min-height: calc(100% - 3.5rem);
         }
     }
 }

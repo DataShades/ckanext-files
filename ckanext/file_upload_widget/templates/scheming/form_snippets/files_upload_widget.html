@@ -1,5 +1,4 @@
 {% import 'macros/form.html' as form %}
-{% from "macros/form/attributes.html" import attributes %}
 
 {% asset "file_upload_widget/css" %}
 {% asset "file_upload_widget/js" %}
@@ -7,20 +6,25 @@
 
 {% set attrs = field.get('form_attrs', {}) %}
 
-<div class="form-group control-medium file-upload-widget" data-module="file-upload-widget" data-module-instance-id="{{ field.field_name }}" "{{ attributes(attrs) }}">
+<div class="form-group control-medium file-upload-widget" data-module="file-upload-widget" data-module-instance-id="{{ field.field_name }}" "{{ form.attributes(attrs) }}">
     <label class="form-label" for="{{ field.field_name }}">
         {% if field.required %}<span title="{{ _("This field is required") }}" class="control-required">*</span> {% endif %}
         {{ h.scheming_language_text(field.label) }}
     </label>
 
     <div class="controls">
-        <button type="button" class="btn btn-primary fuw-upload-btn" data-bs-toggle="modal" data-bs-target="#uploadWidget-{{ field.field_name }}">
+        <button
+            type="button"
+            class="btn btn-primary fuw-upload-btn"
+            data-bs-toggle="modal" data-bs-target="#uploadWidget-{{ field.field_name }}"
+            data-toggle="modal" data-target="#uploadWidget-{{ field.field_name }}"
+            >
             {{ _("Upload") }}
 
             <span class="fuw-uploaded-files-counter hidden">0</span>
         </button>
 
-        <input id="{{ 'field-' + field.field_name }}-file" type="file" name="{{ field.field_name }}-file" value="" placeholder="" style="display: none">
+        <input id="{{ 'field-' + field.field_name }}-file" type="file" placeholder="" style="display: none">
         <input id="{{ 'field-' + field.field_name }}" type="hidden" name="{{ field.field_name }}" value="{{ data[field.field_name] }}" placeholder="" style="display: none">
 
         {%- if field.help_text -%}
@@ -38,7 +42,7 @@
                 <div class="modal-header">
                     <i class="fa-solid fa-angles-left fuw-cancel-btn hidden"></i>
                     <button type="button" class="btn btn-default fuw-open-selected-btn hidden">{{ _("Selected files:") }} <span>0</span></button>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" data-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
                     <!-- MAIN WINDOW -->
@@ -105,7 +109,7 @@
             <div class="modal-content fuw-selected-files hidden">
                 <div class="modal-header">
                     <i class="fa-solid fa-angles-left fuw-close-selected-btn"></i>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" data-dismiss="modal" aria-label="Close"></button>
                 </div>
 
                 <div class="modal-body">

@@ -285,7 +285,6 @@ def files_file_create(context: Context, data_dict: dict[str, Any]) -> dict[str, 
     fileobj = File(
         name=filename,
         storage=data_dict["storage"],
-        storage_data=storage_data,
     )
     storage_data.into_model(fileobj)
     context["session"].add(fileobj)

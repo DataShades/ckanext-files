@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import copy
+
 from typing import Any, cast
 
 import sqlalchemy as sa
@@ -671,6 +673,8 @@ def files_multipart_complete(
 
     Args:
         id (str): ID of the incomplete upload
+        keep_storage_data (bool): copy storage data from multipart upload
+        keep_plugin_data (bool): copy plugin data from multipart upload
 
     Returns:
         dictionary with details of the created file
@@ -690,6 +694,12 @@ def files_multipart_complete(
         name=multipart.name,
         storage=multipart.storage,
     )
+
+    if data_dict["keep_storage_data"]:
+        fileobj.storage_data = copy.deepcopy(multipart.storage_data)
+
+    if data_dict["keep_plugin_data"]:
+        fileobj.plugin_data = copy.deepcopy(multipart.plugin_data)
 
     try:
         storage.multipart_complete(

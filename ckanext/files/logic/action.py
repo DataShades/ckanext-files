@@ -695,12 +695,6 @@ def files_multipart_complete(
         storage=multipart.storage,
     )
 
-    if data_dict["keep_storage_data"]:
-        fileobj.storage_data = copy.deepcopy(multipart.storage_data)
-
-    if data_dict["keep_plugin_data"]:
-        fileobj.plugin_data = copy.deepcopy(multipart.plugin_data)
-
     try:
         storage.multipart_complete(
             shared.MultipartData.from_model(multipart),
@@ -708,6 +702,16 @@ def files_multipart_complete(
         ).into_model(fileobj)
     except shared.exc.UploadError as err:
         raise tk.ValidationError({"upload": [str(err)]}) from err
+
+    if data_dict["keep_storage_data"]:
+        data: Any = copy.deepcopy(multipart.storage_data)
+        data.update(fileobj.storage_data)
+        fileobj.storage_data = data
+
+    if data_dict["keep_plugin_data"]:
+        data: Any = copy.deepcopy(multipart.plugin_data)
+        data.update(fileobj.plugin_data)
+        fileobj.plugin_data = data
 
     sess.query(Owner).where(
         Owner.item_type == "multipart",

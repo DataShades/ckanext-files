@@ -12,6 +12,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Features
 
+- multipart complete has flags to keep data ([810ee4b](https://github.com/DataShades/ckanext-files/commit/810ee4b0596b4771662b037ecf4d4f73c803fc8b) by Sergey Motornyuk).
+- fs storage update `uploaded` property of multipart via refresh action ([51427c6](https://github.com/DataShades/ckanext-files/commit/51427c69659784afda5c62b6e0781df6aaf35f43) by Sergey Motornyuk).
+- user files list replaced by generic file list ([3d70bdd](https://github.com/DataShades/ckanext-files/commit/3d70bdd06036ac798441b4757b0df2174d8cad4b) by Sergey Motornyuk).
+- add MULTIPART to redis storage ([e7aed27](https://github.com/DataShades/ckanext-files/commit/e7aed2756fe3fc6b46de1238ec3484ba03eb3849) by Sergey Motornyuk).
+- files_file_replace action ([dcdd177](https://github.com/DataShades/ckanext-files/commit/dcdd177e6d5470b9a033711173cf0ae96ccad3c0) by Sergey Motornyuk).
 - transfer_history table ([434abda](https://github.com/DataShades/ckanext-files/commit/434abda216b229c7cb69d171f24c0924ed22d1de) by Sergey Motornyuk).
 - libcloud adapter ([6594bb9](https://github.com/DataShades/ckanext-files/commit/6594bb9ae60c3d0914d09116433069dc01352dc6) by Sergey Motornyuk).
 - add SCAN and ANALYZE to redis storage ([96c2706](https://github.com/DataShades/ckanext-files/commit/96c2706a54bc462f1f1b6b933a5577ebc80c926a) by Sergey Motornyuk).
@@ -30,8 +35,19 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - get_storage without arguments returns default storage ([571e021](https://github.com/DataShades/ckanext-files/commit/571e021c44c4d719431c05a837bd6336b1896249) by Sergey Motornyuk).
 - use timezone-aware date columns in model ([ae91cc7](https://github.com/DataShades/ckanext-files/commit/ae91cc79ae3b5e52098232fa9dc294c72942ea0d) by Sergey Motornyuk).
 
+### Bug Fixes
+
+- connot complete upload because of cache ([95c41e7](https://github.com/DataShades/ckanext-files/commit/95c41e77ba0afc22140e4c086ed59e544882b48e) by Sergey Motornyuk).
+- fix file item css style ([46bef83](https://github.com/DataShades/ckanext-files/commit/46bef831d5cf6e62c0390b455309e0b999b69d3f) by mutantsan).
+- fix max file num bug ([bc46268](https://github.com/DataShades/ckanext-files/commit/bc46268b729e04b4d1b77d619b1b58ce190135be) by mutantsan).
+- fixing multiple widget instance support, write doc strings ([a017b42](https://github.com/DataShades/ckanext-files/commit/a017b42be9e1fb0b2c9ef2de53dfe87983d28f29) by mutantsan).
+- fix destroying the progress bar on fail ([61d15aa](https://github.com/DataShades/ckanext-files/commit/61d15aa20526b2b2257ef143de64e34d4905ee56) by mutantsan).
+- fix display snippet word wrapping ([8b645f2](https://github.com/DataShades/ckanext-files/commit/8b645f2b2cbe09430641cee74a346d466d3624c6) by mutantsan).
+- media file event hang if item doesn't exist yet ([d8c7a2a](https://github.com/DataShades/ckanext-files/commit/d8c7a2a8b2ccc0f6d216cd0b0149837b951d7d1f) by mutantsan).
+
 ### Code Refactoring
 
+- Storage constructor accepts a single dictionary with settings ([285ddc7](https://github.com/DataShades/ckanext-files/commit/285ddc7d484b638e3e1bacca8f9c1b71a2e9c369) by Sergey Motornyuk).
 - remove HashingReader.reset ([7e67d5f](https://github.com/DataShades/ckanext-files/commit/7e67d5f5df2c897debbd5b1cc7177d21cdca2673) by Sergey Motornyuk).
 - do not allow str as upload source ([cae738d](https://github.com/DataShades/ckanext-files/commit/cae738d7203b9991425661c1c2d00ddb68fc2bd9) by Sergey Motornyuk).
 - Capability.combine removed ([332c1a4](https://github.com/DataShades/ckanext-files/commit/332c1a422ae5bdd810e922f718ddf583e42601b8) by Sergey Motornyuk).
@@ -169,3 +185,4 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## [v0.0.1](https://github.com/DataShades/ckanext-files/releases/tag/v0.0.1) - 2021-09-21
 
 <small>[Compare with first commit](https://github.com/DataShades/ckanext-files/compare/d57d17e412821d56a9f5262636be89311e8050fc...v0.0.1)</small>
+

@@ -454,7 +454,6 @@ def make_upload(
 
 def _file_storage_as_upload(value: FileStorage):
     name: str = value.filename or value.name or ""
-
     if value.content_length:
         size = value.content_length
     else:

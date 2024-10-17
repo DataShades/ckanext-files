@@ -1,3 +1,53 @@
+[build-system]
+requires = [ "setuptools",]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ckanext-files"
+version = "1.0.0a4"
+description = ""
+classifiers = [ "Development Status :: 4 - Beta", "License :: OSI Approved :: GNU Affero General Public License v3 or later (AGPLv3+)", "Programming Language :: Python :: 3.8", "Programming Language :: Python :: 3.9", "Programming Language :: Python :: 3.10", "Programming Language :: Python :: 3.11", "Programming Language :: Python :: 3.12",]
+keywords = [ "CKAN", "file-management", "cloud", "filesystem"]
+requires-python = ">= 3.8"
+dependencies = [ "typing_extensions", "pyyaml",]
+authors = [
+    {name = "DataShades", email = "datashades@linkdigital.com.au"},
+    {name = "Sergey Motornyuk", email = "sergey.motornyuk@linkdigital.com.au"},
+]
+maintainers = [
+    {name = "DataShades", email = "datashades@linkdigital.com.au"},
+]
+
+
+[project.readme]
+file = "README.md"
+content-type = "text/markdown"
+
+[project.license]
+text = "AGPL"
+
+[project.urls]
+Homepage = "https://github.com/DataShades/ckanext-files"
+
+[project.optional-dependencies]
+test = [ "pytest-ckan", "pytest-cov", "pytest-faker", "freezegun", "responses",]
+docs = [ "mkdocs", "mkdocs-material", "pymdown-extensions", "mkdocstrings[python]",]
+dev = [ "pytest-ckan", "pytest-cov", "pytest-faker", "freezegun", "responses", "mkdocs", "mkdocs-material", "pymdown-extensions", "mkdocstrings[python]",]
+gcs = [ "google-cloud-storage",]
+opendal = [ "opendal",]
+libcloud = [ "apache-libcloud", "cryptography",]
+
+[project.entry-points."ckan.plugins"]
+files = "ckanext.files.plugin:FilesPlugin"
+file_upload_widget = "ckanext.file_upload_widget.plugin:FileUploadWidgetPlugin"
+files_manager = "ckanext.files_manager.plugin:FilesManagerPlugin"
+
+[project.entry-points."babel.extractors"]
+ckan = "ckan.lib.extract:extract_ckan"
+
+[tool.setuptools.packages]
+find = {}
+
 [tool.ruff]
 target-version = "py38"
 
@@ -77,9 +127,6 @@ self = ["ckanext.files"]
 [tool.pytest.ini_options]
 addopts = "--ckan-ini test.ini -m 'not benchmark'"
 filterwarnings = [
-               "ignore::sqlalchemy.exc.SADeprecationWarning",
-               "ignore::sqlalchemy.exc.SAWarning",
-               "ignore::DeprecationWarning",
 ]
 
 [tool.git-changelog]

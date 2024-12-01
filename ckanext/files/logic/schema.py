@@ -131,11 +131,13 @@ def multipart_update(not_empty: Validator, unicode_safe: Validator) -> Schema:
 
 
 @validator_args
-def multipart_complete(not_empty: Validator, unicode_safe: Validator, boolean_validator: Validator) -> Schema:
+def multipart_complete(
+    not_empty: Validator, unicode_safe: Validator, boolean_validator: Validator
+) -> Schema:
     return {
         "id": [not_empty, unicode_safe],
         "keep_storage_data": [boolean_validator],
-        "keep_plugin_data": [boolean_validator]
+        "keep_plugin_data": [boolean_validator],
     }
 
 
@@ -194,11 +196,18 @@ def file_unpin(
 
 
 @validator_args
-def resource_upload(ignore: Validator) -> Schema:
-    schema = file_create()
-    schema["storage"] = [ignore]
-    schema["__extras"] = [ignore]
-    return schema
+def resource_upload(
+    keep_extras: Validator,
+    unicode_safe: Validator,
+    boolean_validator: Validator,
+    ignore_missing: Validator,
+) -> Schema:
+    return {
+        "multipart": [boolean_validator],
+        "resource_id": [ignore_missing, unicode_safe],
+        "package_id": [ignore_missing, unicode_safe],
+        "__extras": [keep_extras],
+    }
 
 
 @validator_args

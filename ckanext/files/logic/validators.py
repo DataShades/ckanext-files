@@ -265,7 +265,7 @@ def files_accept_file_with_storage(*supported_storages: str):
     return validator
 
 
-def files_transfer_ownership(owner_type: str, id_field: str = "id"):
+def files_transfer_ownership(owner_type: str, id_field: str = "id"):  # noqa: C901
     """Tranfer file ownership to validated object."""
 
     def validator(
@@ -277,8 +277,30 @@ def files_transfer_ownership(owner_type: str, id_field: str = "id"):
         msg = "Is not an owner of the file"
 
         value = data[key]
-        ids: list[str] = value if isinstance(value, list) else [value]
+        id_field_path = key[:-1] + (id_field,)
 
+        if data.get(id_field_path):
+            strategy = "value"
+            task_destination = data[id_field_path]
+
+        elif len(key) == 1:
+            strategy = "path"
+            task_destination = id_field_path
+
+        else:
+            max_idx = 0
+            idx_position = len(key) - 2
+            for flat_field in data:
+                if flat_field[:idx_position] != key[:idx_position]:
+                    continue
+                max_idx = max(key[idx_position], flat_field[idx_position])
+            strategy = "path"
+            task_destination = key[:-2] + (
+                key[-2] - max_idx + 1,
+                id_field,
+            )
+
+        ids: list[str] = value if isinstance(value, list) else [value]
         user = authz._get_user(context.get("user"))  # type: ignore
         for file_id in ids:
             file = context["session"].get(File, file_id)
@@ -286,7 +308,6 @@ def files_transfer_ownership(owner_type: str, id_field: str = "id"):
                 errors[key].append(msg)
                 raise tk.StopOnError
 
-            id_field_path = key[:-1] + (id_field,)
             owner_id = data.get(id_field_path)
             actual = file.owner_info.owner_type, file.owner_info.owner_id
 
@@ -302,8 +323,60 @@ def files_transfer_ownership(owner_type: str, id_field: str = "id"):
                 continue
 
             shared.add_task(
-                task.OwnershipTransferTask(file_id, owner_type, id_field_path),
+                task.OwnershipTransferTask(
+                    file_id, owner_type, task_destination, strategy
+                ),
             )
+
+    return validator
+
+
+# unstable
+def files_update_resource_url(
+    key: FlattenKey,
+    data: FlattenDataDict,
+    errors: FlattenErrorDict,
+    context: Context,
+):
+    """Transform file ID into resource's download URL."""
+    data[key[:-1] + ("url",)] = tk.url_for(
+        "files.dispatch_download",
+        file_id=data[key],
+        _external=True,
+    )
+
+
+# unstable
+def files_set_field(field: str, value: Any):
+    """Change value of the field to specified value."""
+
+    def validator(
+        key: FlattenKey,
+        data: FlattenDataDict,
+        errors: FlattenErrorDict,
+        context: Context,
+    ):
+        data[key[:-1] + (field,)] = value
+
+    return validator
+
+
+# unstable
+def files_copy_attribute(attribute: str, destination: str):
+    """Copy file's attribute into a different field."""
+
+    def validator(
+        key: FlattenKey,
+        data: FlattenDataDict,
+        errors: FlattenErrorDict,
+        context: Context,
+    ):
+        value = data[key]
+        file = context["session"].get(File, value)
+        if not file or not hasattr(file, attribute):
+            return
+
+        data[key[:-1] + (destination,)] = getattr(file, attribute)
 
     return validator
 

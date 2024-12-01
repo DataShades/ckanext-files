@@ -86,6 +86,9 @@ class FilesPlugin(p.SingletonPlugin):
             "files:link": storage.LinkStorage,
         }
 
+        if hasattr(storage, "S3Storage"):
+            adapters.update({"files:s3": storage.S3Storage})
+
         if hasattr(storage, "GoogleCloudStorage"):
             adapters.update({"files:google_cloud_storage": storage.GoogleCloudStorage})
 

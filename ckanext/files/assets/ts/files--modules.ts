@@ -61,12 +61,14 @@ ckan.module("files--resource-select", function ($) {
 ckan.module("files--auto-upload", function ($) {
     return {
         options: {
+            adapter: "Standard",
             spinner: null,
             action: null,
             successEvent: "files-file-created",
             errorEvent: "files-file-failed",
             eventTarget: null,
             copyIdInto: null,
+            requestParams: null,
         },
         queue: null,
 
@@ -90,6 +92,15 @@ ckan.module("files--auto-upload", function ($) {
                 .closest("form")
                 .find("input[type=submit],button[type=submit]");
             this.idTarget = $(this.options.copyIdInto);
+
+            this.uploader = this.sandbox.files.makeUploader(
+                this.options.adapter,
+                {
+                    uploadAction: this.options.action,
+                },
+            );
+
+            this.uploader.addEventListener("progress", console.log);
         },
 
         upload(...files: File[]) {
@@ -97,7 +108,8 @@ ckan.module("files--auto-upload", function ($) {
                 this.queue.add(file);
                 this.refreshFormState();
                 const options: ckan.CKANEXT_FILES.UploadOptions = {
-                    uploaderArgs: [{ uploadAction: this.options.action }],
+                    uploader: this.uploader,
+                    requestParams: {...this.options.requestParams, multipart: this.uploader instanceof ckan.CKANEXT_FILES.adapters.Multipart},
                 };
 
                 this.sandbox.files

@@ -5,6 +5,7 @@ files-js:
     - scripts/files--shared.js
     - scripts/files--modules.js
     - scripts/files--google-cloud-storage-uploader.js
+    - scripts/files--s3.js
 
   extra:
     preload:

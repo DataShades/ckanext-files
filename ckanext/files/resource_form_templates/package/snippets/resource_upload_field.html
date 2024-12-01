@@ -2,29 +2,29 @@
 {% import "macros/form.html" as form %}
 
 {# This is a rough and quick PoC of file upload field. It can be used for
-example migration, but the logic is pretty unstable. Think twice before
-changing anything.
+    example migration, but the logic is pretty unstable. Think twice before
+    changing anything.
 
-Switching state of url field is the trickiest part. I'm using the same field
-name for file upload, to simplify backend logic(let's keep at least one part of
-application safe).
+    Switching state of url field is the trickiest part. I'm using the same field
+    name for file upload, to simplify backend logic(let's keep at least one part of
+    application safe).
 
-If page loads with non-file url_type, we wan't file's url disabled, to avoid
-conflicts. That's why we have this default attribute. When user switches to
-file upload, or opens file-resource, we need to enable file's url and disable
-the native one. For this reason you can see JS in the end of template.
+    If page loads with non-file url_type, we wan't file's url disabled, to avoid
+    conflicts. That's why we have this default attribute. When user switches to
+    file upload, or opens file-resource, we need to enable file's url and disable
+    the native one. For this reason you can see JS in the end of template.
 
-Finally, when user "removes" upload, we disable file's url and enable native
-url once again.
+    Finally, when user "removes" upload, we disable file's url and enable native
+    url once again.
 
-Why? Because on initial stage, while I don't have enough use-cases, I want to
-keep files aside of the main logic and prefer to add new elements instead of
-overriding existing widgets.
+    Why? Because on initial stage, while I don't have enough use-cases, I want to
+    keep files aside of the main logic and prefer to add new elements instead of
+    overriding existing widgets.
 
 
-#}
+    #}
 
-{% set is_allowed = h.files_resources_storage_is_configured() and h.check_access("files_resource_upload", {}) %}
+{% set is_allowed = h.files_resources_storage_is_configured() and h.check_access("files_resource_upload", {'package_id': data.package_id, 'resource_id': data.id}) %}
 
 {% block url_type_select %}
     {{ super() }}
@@ -73,9 +73,11 @@ overriding existing widgets.
                             data-module-action="files_resource_upload"
                             data-module-spinner="#resource-url-file--upload-spinner"
                             data-module-select="#field-resource-file"
+                            data-module-request-params="{{ {'package_id': data.package_id, 'resource_id': data.id}|tojson|forceescape }}"
                             {% if fileinfo %}
                             data-module-initial-value="{{{'id': fileinfo.id, 'text': fileinfo.name}|tojson|forceescape }}"
                             {% endif %}
+
                         />
                         <i id="resource-url-file--upload-spinner" class="spinner-border spinner-border-sm" hidden></i>
                     </label>

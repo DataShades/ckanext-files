@@ -290,7 +290,12 @@ def files_resource_upload(context: Context, data_dict: dict[str, Any]) -> AuthRe
     except shared.exc.UnknownStorageError:
         return {"success": False}
 
-    return {"success": True}
+    if data_dict.get("resource_id"):
+        return authz.is_authorized(
+            "resource_update", context, {"id": data_dict["resource_id"]}
+        )
+
+    return authz.is_authorized("resource_create", context, data_dict)
 
 
 @tk.auth_disallow_anonymous_access

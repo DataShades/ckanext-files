@@ -60,7 +60,9 @@ def files_content_type_icon(
     return None
 
 
-def files_get_file(file_id: str) -> shared.File | None:
+def files_get_file(file_id: str | None) -> shared.File | None:
+    if not file_id:
+        return None
     return model.Session.get(shared.File, file_id)
 
 

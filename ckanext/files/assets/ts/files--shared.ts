@@ -99,7 +99,9 @@ namespace ckan {
                 }
                 dispatchMultipartId(file: File, id: string) {
                     this.dispatchEvent(
-                        new CustomEvent("multipartid", { detail: { file, id } }),
+                        new CustomEvent("multipartid", {
+                            detail: { file, id },
+                        }),
                     );
                 }
                 dispatchProgress(file: File, loaded: number, total: number) {
@@ -205,8 +207,10 @@ namespace ckan {
             }
 
             export class Multipart extends Base {
-                static defaultSettings = { chunkSize: 1024 * 1024 * 5 };
-                protected initializeAction = "files_multipart_start";
+                static defaultSettings = {
+                    chunkSize: 1024 * 1024 * 5,
+                    uploadAction: "files_multipart_start",
+                };
 
                 private _active = new Set<File>();
 
@@ -271,6 +275,13 @@ namespace ckan {
                             info,
                             file.slice(start, start + this.settings.chunkSize),
                             start,
+                            {
+                                progressData: {
+                                    file,
+                                    uploaded: info.storage_data.uploaded,
+                                    size: file.size,
+                                },
+                            },
                         );
 
                         const uploaded = info.storage_data.uploaded;
@@ -295,21 +306,25 @@ namespace ckan {
                         return;
                     }
                     this.dispatchFinish(file, info);
-                    return info
+                    return info;
                 }
 
-                _initializeUpload(file: File, params: {[key: string]: any}): Promise<UploadInfo> {
+                _initializeUpload(
+                    file: File,
+                    params: { [key: string]: any },
+                ): Promise<UploadInfo> {
                     return new Promise((done, fail) =>
                         this.sandbox.client.call(
                             "POST",
-                            this.initializeAction,
+                            this.settings.uploadAction,
                             Object.assign(
                                 {},
                                 {
                                     storage: this.settings.storage,
                                     name: file.name,
                                     size: file.size,
-                                    content_type: file.type,
+                                    content_type:
+                                        file.type || "application/octet-stream",
                                 },
                                 params,
                             ),
@@ -351,6 +366,7 @@ namespace ckan {
                     info: UploadInfo,
                     part: Blob,
                     start: number,
+                    extras: any = {},
                 ): Promise<UploadInfo> {
                     if (!part.size) {
                         throw new Error("0-length chunks are not allowed");
@@ -358,6 +374,21 @@ namespace ckan {
                     const request = new XMLHttpRequest();
 
                     const result = new Promise<UploadInfo>((done, fail) => {
+                        if (extras["progressData"]) {
+                            const { file, uploaded, size } =
+                                extras["progressData"];
+                            request.upload.addEventListener(
+                                "progress",
+                                (event) => {
+                                    this.dispatchProgress(
+                                        file,
+                                        uploaded + event.loaded,
+                                        size,
+                                    );
+                                },
+                            );
+                        }
+
                         request.addEventListener("load", (event) => {
                             const result = JSON.parse(request.responseText);
                             if (result.success) {

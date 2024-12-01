@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import copy
-
 from typing import Any, cast
 
 import sqlalchemy as sa
@@ -712,10 +711,16 @@ def files_multipart_complete(
         data.update(fileobj.plugin_data)
         fileobj.plugin_data = data
 
-    sess.query(Owner).where(
-        Owner.item_type == "multipart",
-        Owner.item_id == multipart.id,
-    ).update({"item_id": fileobj.id, "item_type": "file"})
+    if owner_info := multipart.owner_info:
+        sess.add(
+            Owner(
+                item_id=fileobj.id,
+                item_type="file",
+                owner_id=owner_info.owner_id,
+                owner_type=owner_info.owner_type,
+            )
+        )
+
     sess.add(fileobj)
     sess.delete(multipart)
     sess.commit()
@@ -906,7 +911,9 @@ def files_resource_upload(
     and always uses resources storage.
 
     New file is not attached to resource. You need to call
-    `files_transfer_ownership` manually, when resource created.
+    `files_transfer_ownership` manually, when resource created. Or you can use
+    `files_transfer_ownership("resource","id")` validator to do it
+    automatically.
 
     Args:
         name (str): human-readable name of the file.
@@ -916,6 +923,7 @@ def files_resource_upload(
 
     Returns:
         dictionary with file details
+
     """
     tk.check_access("files_resource_upload", context, data_dict)
     storage_name = shared.config.resources_storage()
@@ -925,7 +933,9 @@ def files_resource_upload(
         )
 
     # TODO: pull cache from the context
-    return tk.get_action("files_file_create")(
+    return tk.get_action(
+        "files_multipart_start" if data_dict["multipart"] else "files_file_create"
+    )(
         Context(context, ignore_auth=True),
         dict(data_dict, storage=storage_name),
     )

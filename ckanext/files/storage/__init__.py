@@ -7,6 +7,9 @@ from .link import LinkStorage
 from .redis import RedisStorage
 
 with contextlib.suppress(ImportError):
+    from .s3 import S3Storage
+
+with contextlib.suppress(ImportError):
     from .google_cloud import GoogleCloudStorage
 
 with contextlib.suppress(ImportError):
@@ -21,6 +24,7 @@ __all__ = [
     "PublicFsStorage",
     "CkanResourceFsStorage",
     "RedisStorage",
+    "S3Storage",
     "GoogleCloudStorage",
     "FilebinStorage",
     "OpenDalStorage",

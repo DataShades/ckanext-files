@@ -33,6 +33,7 @@ Homepage = "https://github.com/DataShades/ckanext-files"
 test = [ "pytest-ckan", "pytest-cov", "pytest-faker", "freezegun", "responses",]
 docs = [ "mkdocs", "mkdocs-material", "pymdown-extensions", "mkdocstrings[python]",]
 dev = [ "pytest-ckan", "pytest-cov", "pytest-faker", "freezegun", "responses", "mkdocs", "mkdocs-material", "pymdown-extensions", "mkdocstrings[python]",]
+s3 = [ "boto3", "boto3-stubs[essential]"]
 gcs = [ "google-cloud-storage",]
 opendal = [ "opendal",]
 libcloud = [ "apache-libcloud", "cryptography",]

@@ -16,6 +16,7 @@ from ckanext.ap_main.collection.base import (
 from ckanext.collection.types import ButtonFilter, InputFilter
 from ckanext.collection.utils import Filters
 from ckanext.collection.utils.data.model import ModelData
+
 from ckanext.files.model import File
 
 

@@ -157,7 +157,9 @@ class OwnershipTransferTask(Task):
     # type of the future owner
     owner_type: str
     # flattened path to ID of future owner in execution data
-    id_path: FlattenKey
+    destination: FlattenKey | str
+
+    strategy: str = "path"
 
     def run(self, result: dict[str, Any], idx: int, prev: Any):
         """Transfer file ownership.
@@ -165,12 +167,21 @@ class OwnershipTransferTask(Task):
         Ownerhip transfered to an entity whose ID is stored in `result` under
         `self.id_path` path.
         """
+        if self.strategy == "path" and isinstance(self.destination, tuple):
+            owner_id = self.extract(result, self.destination)
+
+        elif self.strategy == "value":
+            owner_id = self.destination
+
+        else:
+            raise ValueError((self.strategy, self.destination))
+
         return tk.get_action("files_transfer_ownership")(
             {"ignore_auth": True},
             {
                 "id": self.file_id,
                 "owner_type": self.owner_type,
-                "owner_id": self.extract(result, self.id_path),
+                "owner_id": owner_id,
                 # "force": True,
                 "pin": True,
             },
@@ -220,7 +231,7 @@ class UploadAndAttachTask(Task):
     # type of future owner
     owner_type: str
     # flattened path to owner's ID field
-    id_path: FlattenKey
+    destination: FlattenKey | str
 
     # property of the file that will be added to owner data. Currently
     # supported only id and public_url.
@@ -230,6 +241,8 @@ class UploadAndAttachTask(Task):
     # field in owner's data that will hold property of the current file
     destination_field: str | None = None
 
+    strategy: str = "path"
+
     def run(self, result: dict[str, Any], idx: int, prev: Any):
         """Upload file, transfer ownership and, optionally, patch the owner."""
         info = tk.get_action("files_file_create")(
@@ -237,19 +250,28 @@ class UploadAndAttachTask(Task):
             {"upload": self.upload, "storage": self.storage},
         )
 
+        if self.strategy == "path" and isinstance(self.destination, tuple):
+            owner_id = self.extract(result, self.destination)
+
+        elif self.strategy == "value":
+            owner_id = self.destination
+
+        else:
+            raise ValueError((self.strategy, self.destination))
+
         info = tk.get_action("files_transfer_ownership")(
             {"ignore_auth": True},
             {
                 "id": info["id"],
                 "owner_type": self.owner_type,
-                "owner_id": self.extract(result, self.id_path),
+                "owner_id": owner_id,
                 # "force": True,
                 "pin": True,
             },
         )
 
         if self.attach_as and self.action and self.destination_field:
-            if self.attach_as:
+            if self.attach_as == "public_url":
                 storage = base.get_storage(self.storage)
                 value = storage.public_link(base.FileData.from_dict(info))
             else:

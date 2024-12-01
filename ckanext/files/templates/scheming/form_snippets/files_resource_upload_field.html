@@ -1,0 +1,46 @@
+{% import 'macros/form.html' as form %}
+
+{% set resource_id = data.id | default('') %}
+{% set package_id = data.package_id or request.view_args.id or '' %}
+
+{% set is_allowed = h.files_resources_storage_is_configured() and h.check_access("files_resource_upload", {'package_id': package_id, 'resource_id': resource_id}) %}
+
+{% if is_allowed %}
+
+    {% set fileinfo = h.files_get_file(data[field.field_name]) %}
+    {% set field_id = 'field-' + field.field_name %}
+
+    {% call form.input(
+        field.field_name,
+        id=field_id,
+        label=h.scheming_language_text(field.label),
+        placeholder=h.scheming_language_text(field.form_placeholder),
+        value=data[field.field_name],
+        error=errors[field.field_name],
+        classes=field.classes if 'classes' in field else ['control-medium'],
+        attrs=dict({"class": "form-control"}, **(field.get('form_attrs', {}))),
+        is_required=h.scheming_field_required(field)
+        )
+    %}
+        <label class="btn btn-default files--no-after-content">
+            {{ _("Upload") }}
+            <input hidden type="file"
+                data-module="files--auto-upload"
+                data-module-adapter="{{ (field.files or {}).adapter|default('Standard') }}"
+                data-module-action="files_resource_upload"
+                data-module-spinner="#resource-url-file--upload-spinner"
+                data-module-request-params="{{ {'package_id': package_id, 'resource_id': resource_id}|tojson|forceescape }}"
+                data-module-copy-id-into="#{{ field_id }}"
+            />
+            <i id="resource-url-file--upload-spinner" class="spinner-border spinner-border-sm" hidden></i>
+        </label>
+
+        {%- snippet 'scheming/form_snippets/help_text.html', field=field -%}
+    {% endcall %}
+
+
+{% else %}
+    <div class="alert alert-warning">
+        {{ _("File uploads are not supported.") }}
+    </div>
+{% endif %}

@@ -296,7 +296,7 @@ def files_transfer_ownership(owner_type: str, id_field: str = "id"):  # noqa: C9
                 max_idx = max(key[idx_position], flat_field[idx_position])
             strategy = "path"
             task_destination = key[:-2] + (
-                key[-2] - max_idx + 1,
+                key[-2] - max_idx - 1,
                 id_field,
             )
 

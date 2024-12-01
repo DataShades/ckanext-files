@@ -227,7 +227,7 @@ class S3Uploader(Uploader):
 class S3Manager(Manager):
     storage: S3Storage
     required_options = ["bucket"]
-    capabilities = Capability.REMOVE
+    capabilities = Capability.REMOVE | Capability.ANALYZE
 
     def remove(self, data: FileData | MultipartData, extras: dict[str, Any]) -> bool:
         if isinstance(data, MultipartData):
@@ -240,6 +240,25 @@ class S3Manager(Manager):
         client.delete_object(Bucket=self.storage.settings["bucket"], Key=filepath)
 
         return True
+
+    def analyze(self, location: str, extras: dict[str, Any]) -> FileData:
+        """Return all details about location."""
+        filepath = os.path.join(str(self.storage.settings["path"]), location)
+        client = self.storage.client
+
+        try:
+            obj = client.get_object(
+                Bucket=self.storage.settings["bucket"], Key=filepath
+            )
+        except client.exceptions.NoSuchKey as err:
+            raise exceptions.MissingFileError(self.storage, filepath) from err
+
+        return FileData(
+            location,
+            size=obj["ContentLength"],
+            content_type=obj["ContentType"],
+            hash=obj["ETag"].strip('"'),
+        )
 
 
 class S3Storage(Storage):

@@ -2090,7 +2090,10 @@ are chances that file is not completely removed with this operation.</p>
     <div class="doc doc-contents first">
 
       <p>Search files.</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
 <p>This action is not stabilized yet and will change in future.</p>
+</div>
 <p>Provides an ability to search files using exact filter by name,
 content_type, size, owner, etc. Results are paginated and returned in
 package_search manner, as dict with <code>count</code> and <code>results</code> items.</p>
@@ -2917,8 +2920,8 @@ likely, <code>upload</code> with the fragment of uploaded file.</p>
     <div class="doc doc-contents first">
 
       <p>Refresh details of incomplete upload.</p>
-<p>Can be used if upload process was interrupted and client does not how many
-bytes were already uploaded.</p>
+<p>Can be used if upload process was interrupted and client does not know how
+many bytes were already uploaded.</p>
 <p>Requires storage with <code>MULTIPART</code> capability.</p>
 
 
@@ -2988,8 +2991,8 @@ bytes were already uploaded.</p>
 
       <p>Finalize multipart upload and transform it into completed file.</p>
 <p>Depending on storage this action may require additional parameters. But
-usually it just takes ID and verify that content type, size and hash
-provided when upload was initialized, much the actual value.</p>
+usually it just takes ID and verifies that content type, size and hash
+provided when upload was initialized, match the actual value.</p>
 <p>If data is valid and file is completed inside the storage, new File entry
 with file details created in DB and file can be used just as any normal
 file.</p>

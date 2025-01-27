@@ -1814,14 +1814,64 @@ get the content of the file using this action(or any other API action).</p>
       <p>Rename the file.</p>
 <p>This action changes human-readable name of the file, which is stored in
 DB. Real location of the file in the storage is not modified.</p>
-<p><div class="highlight"><pre><span></span><code>ckanapi<span class="w"> </span>action<span class="w"> </span>files_file_show<span class="w"> </span><span class="se">\</span>
+<div class="highlight"><pre><span></span><code>ckanapi<span class="w"> </span>action<span class="w"> </span>files_file_show<span class="w"> </span><span class="se">\</span>
 <span class="w">    </span><span class="nv">id</span><span class="o">=</span>226056e2-6f83-47c5-8bd2-102e2b82ab9a<span class="w"> </span><span class="se">\</span>
 <span class="w">    </span><span class="nv">name</span><span class="o">=</span>new-name.txt
 </code></pre></div>
-Args:
-    id (str): ID of the file
-    name (str): new name of the file
-    completed (bool): use <code>False</code> to rename incomplete uploads. Default: <code>True</code></p>
+
+
+<table>
+      <thead>
+        <tr>
+          <th><span class="doc-section-title">PARAMETER</span></th>
+          <th><span>DESCRIPTION</span></th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td><code>id</code></td>
+            <td class="doc-param-details">
+              <div class="doc-md-description">
+                <p>ID of the file</p>
+              </div>
+              <p>
+                  <span class="doc-param-annotation">
+                    <b>TYPE:</b>
+                      <code>str</code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code>name</code></td>
+            <td class="doc-param-details">
+              <div class="doc-md-description">
+                <p>new name of the file</p>
+              </div>
+              <p>
+                  <span class="doc-param-annotation">
+                    <b>TYPE:</b>
+                      <code>str</code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code>completed</code></td>
+            <td class="doc-param-details">
+              <div class="doc-md-description">
+                <p>use <code>False</code> to rename incomplete uploads. Default: <code>True</code></p>
+              </div>
+              <p>
+                  <span class="doc-param-annotation">
+                    <b>TYPE:</b>
+                      <code>bool</code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+      </tbody>
+    </table>
 
 
 <table>
@@ -2968,6 +3018,34 @@ file.</p>
               </p>
             </td>
           </tr>
+          <tr class="doc-section-item">
+            <td><code>keep_storage_data</code></td>
+            <td class="doc-param-details">
+              <div class="doc-md-description">
+                <p>copy storage data from multipart upload</p>
+              </div>
+              <p>
+                  <span class="doc-param-annotation">
+                    <b>TYPE:</b>
+                      <code>bool</code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code>keep_plugin_data</code></td>
+            <td class="doc-param-details">
+              <div class="doc-md-description">
+                <p>copy plugin data from multipart upload</p>
+              </div>
+              <p>
+                  <span class="doc-param-annotation">
+                    <b>TYPE:</b>
+                      <code>bool</code>
+                  </span>
+              </p>
+            </td>
+          </tr>
       </tbody>
     </table>
 
@@ -3014,7 +3092,9 @@ file.</p>
 <p>This action internally calls <code>files_file_create</code> with <code>ignore_auth=True</code>
 and always uses resources storage.</p>
 <p>New file is not attached to resource. You need to call
-<code>files_transfer_ownership</code> manually, when resource created.</p>
+<code>files_transfer_ownership</code> manually, when resource created. Or you can use
+<code>files_transfer_ownership("resource","id")</code> validator to do it
+automatically.</p>
 
 
 <table>

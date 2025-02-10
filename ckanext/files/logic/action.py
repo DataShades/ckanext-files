@@ -70,7 +70,9 @@ def files_file_search(  # noqa: C901, PLR0912, PLR0915
 ) -> dict[str, Any]:
     """Search files.
 
+    /// warning
     This action is not stabilized yet and will change in future.
+    ///
 
     Provides an ability to search files using exact filter by name,
     content_type, size, owner, etc. Results are paginated and returned in
@@ -472,6 +474,7 @@ def files_file_rename(context: Context, data_dict: dict[str, Any]) -> dict[str, 
         id=226056e2-6f83-47c5-8bd2-102e2b82ab9a \\
         name=new-name.txt
     ```
+
     Args:
         id (str): ID of the file
         name (str): new name of the file
@@ -574,8 +577,8 @@ def files_multipart_refresh(
 ) -> dict[str, Any]:
     """Refresh details of incomplete upload.
 
-    Can be used if upload process was interrupted and client does not how many
-    bytes were already uploaded.
+    Can be used if upload process was interrupted and client does not know how
+    many bytes were already uploaded.
 
     Requires storage with `MULTIPART` capability.
 
@@ -584,6 +587,7 @@ def files_multipart_refresh(
 
     Returns:
         dictionary with details of the updated upload
+
     """
     tk.check_access("files_multipart_refresh", context, data_dict)
 
@@ -660,8 +664,8 @@ def files_multipart_complete(
     """Finalize multipart upload and transform it into completed file.
 
     Depending on storage this action may require additional parameters. But
-    usually it just takes ID and verify that content type, size and hash
-    provided when upload was initialized, much the actual value.
+    usually it just takes ID and verifies that content type, size and hash
+    provided when upload was initialized, match the actual value.
 
     If data is valid and file is completed inside the storage, new File entry
     with file details created in DB and file can be used just as any normal
@@ -676,6 +680,7 @@ def files_multipart_complete(
 
     Returns:
         dictionary with details of the created file
+
     """
     tk.check_access("files_multipart_complete", context, data_dict)
     sess = context["session"]

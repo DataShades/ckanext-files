@@ -5,6 +5,7 @@ repo_url:  https://github.com/DataShades/ckanext-files
 markdown_extensions:
     - pymdownx.snippets
     - admonition
+    - pymdownx.blocks.admonition
     - pymdownx.details
     - pymdownx.emoji:
         emoji_index: !!python/name:material.extensions.emoji.twemoji

@@ -100,12 +100,10 @@ def _get_file(
     )
 
 
-@tk.auth_disallow_anonymous_access
 def files_manage_files(context: Context, data_dict: dict[str, Any]) -> AuthResult:
     return {"success": False}
 
 
-@tk.auth_disallow_anonymous_access
 def files_owns_file(context: Context, data_dict: dict[str, Any]) -> AuthResult:
     if authz.is_authorized_boolean("files_manage_files", context, data_dict):
         return {"success": True}
@@ -131,7 +129,6 @@ def files_owns_file(context: Context, data_dict: dict[str, Any]) -> AuthResult:
     }
 
 
-@tk.auth_disallow_anonymous_access
 def files_edit_file(context: Context, data_dict: dict[str, Any]) -> AuthResult:
     result = authz.is_authorized_boolean("files_owns_file", context, data_dict)
     if not result:
@@ -141,7 +138,6 @@ def files_edit_file(context: Context, data_dict: dict[str, Any]) -> AuthResult:
     return {"success": result, "msg": "Not allowed to edit file"}
 
 
-@tk.auth_disallow_anonymous_access
 def files_read_file(context: Context, data_dict: dict[str, Any]) -> AuthResult:
     result = authz.is_authorized_boolean("files_owns_file", context, data_dict)
     if not result:

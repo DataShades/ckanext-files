@@ -100,10 +100,12 @@ def _get_file(
     )
 
 
+@tk.auth_allow_anonymous_access
 def files_manage_files(context: Context, data_dict: dict[str, Any]) -> AuthResult:
     return {"success": False}
 
 
+@tk.auth_allow_anonymous_access
 def files_owns_file(context: Context, data_dict: dict[str, Any]) -> AuthResult:
     if authz.is_authorized_boolean("files_manage_files", context, data_dict):
         return {"success": True}
@@ -129,6 +131,7 @@ def files_owns_file(context: Context, data_dict: dict[str, Any]) -> AuthResult:
     }
 
 
+@tk.auth_allow_anonymous_access
 def files_edit_file(context: Context, data_dict: dict[str, Any]) -> AuthResult:
     result = authz.is_authorized_boolean("files_owns_file", context, data_dict)
     if not result:
@@ -138,6 +141,7 @@ def files_edit_file(context: Context, data_dict: dict[str, Any]) -> AuthResult:
     return {"success": result, "msg": "Not allowed to edit file"}
 
 
+@tk.auth_allow_anonymous_access
 def files_read_file(context: Context, data_dict: dict[str, Any]) -> AuthResult:
     result = authz.is_authorized_boolean("files_owns_file", context, data_dict)
     if not result:
@@ -147,13 +151,15 @@ def files_read_file(context: Context, data_dict: dict[str, Any]) -> AuthResult:
     return {"success": result, "msg": "Not allowed to read file"}
 
 
+@tk.auth_allow_anonymous_access
 def files_file_search(context: Context, data_dict: dict[str, Any]) -> AuthResult:
     """Only file manager can search files."""
     return authz.is_authorized("files_manage_files", context, data_dict)
 
 
+@tk.auth_allow_anonymous_access
 def files_file_create(context: Context, data_dict: dict[str, Any]) -> AuthResult:
-    if (
+    if context["user"] and (
         shared.config.authenticated_uploads()
         and data_dict["storage"] in shared.config.authenticated_storages()
     ):
@@ -162,6 +168,7 @@ def files_file_create(context: Context, data_dict: dict[str, Any]) -> AuthResult
     return authz.is_authorized("files_manage_files", context, data_dict)
 
 
+@tk.auth_allow_anonymous_access
 def files_file_delete(context: Context, data_dict: dict[str, Any]) -> AuthResult:
     """Only owner can remove files."""
     result = authz.is_authorized_boolean("files_owns_file", context, data_dict)
@@ -172,26 +179,31 @@ def files_file_delete(context: Context, data_dict: dict[str, Any]) -> AuthResult
     return {"success": result, "msg": "Not allowed to delete file"}
 
 
+@tk.auth_allow_anonymous_access
 def files_file_replace(context: Context, data_dict: dict[str, Any]) -> AuthResult:
     """Only owner can replace files."""
     return authz.is_authorized("files_edit_file", context, data_dict)
 
 
+@tk.auth_allow_anonymous_access
 def files_file_show(context: Context, data_dict: dict[str, Any]) -> AuthResult:
     """Only owner can view files."""
     return authz.is_authorized("files_read_file", context, data_dict)
 
 
+@tk.auth_allow_anonymous_access
 def files_file_download(context: Context, data_dict: dict[str, Any]) -> AuthResult:
     """Only owner can download files."""
     return authz.is_authorized("files_read_file", context, data_dict)
 
 
+@tk.auth_allow_anonymous_access
 def files_file_rename(context: Context, data_dict: dict[str, Any]) -> AuthResult:
     """Only owner can rename files."""
     return authz.is_authorized("files_edit_file", context, data_dict)
 
 
+@tk.auth_allow_anonymous_access
 def files_multipart_refresh(context: Context, data_dict: dict[str, Any]) -> AuthResult:
     return authz.is_authorized(
         "files_edit_file",
@@ -200,6 +212,7 @@ def files_multipart_refresh(context: Context, data_dict: dict[str, Any]) -> Auth
     )
 
 
+@tk.auth_allow_anonymous_access
 def files_multipart_start(context: Context, data_dict: dict[str, Any]) -> AuthResult:
     return authz.is_authorized(
         "files_file_create",
@@ -208,6 +221,7 @@ def files_multipart_start(context: Context, data_dict: dict[str, Any]) -> AuthRe
     )
 
 
+@tk.auth_allow_anonymous_access
 def files_multipart_update(context: Context, data_dict: dict[str, Any]) -> AuthResult:
     return authz.is_authorized(
         "files_edit_file",
@@ -216,6 +230,7 @@ def files_multipart_update(context: Context, data_dict: dict[str, Any]) -> AuthR
     )
 
 
+@tk.auth_allow_anonymous_access
 def files_multipart_complete(context: Context, data_dict: dict[str, Any]) -> AuthResult:
     return authz.is_authorized(
         "files_edit_file",
@@ -224,6 +239,7 @@ def files_multipart_complete(context: Context, data_dict: dict[str, Any]) -> Aut
     )
 
 
+@tk.auth_allow_anonymous_access
 def files_file_pin(context: Context, data_dict: dict[str, Any]) -> AuthResult:
     return authz.is_authorized(
         "files_edit_file",
@@ -232,6 +248,7 @@ def files_file_pin(context: Context, data_dict: dict[str, Any]) -> AuthResult:
     )
 
 
+@tk.auth_allow_anonymous_access
 def files_file_unpin(context: Context, data_dict: dict[str, Any]) -> AuthResult:
     return authz.is_authorized(
         "files_edit_file",
@@ -240,6 +257,7 @@ def files_file_unpin(context: Context, data_dict: dict[str, Any]) -> AuthResult:
     )
 
 
+@tk.auth_allow_anonymous_access
 def files_transfer_ownership(context: Context, data_dict: dict[str, Any]) -> AuthResult:
     """Only file manager can transfer ownership."""
     file = _get_file(context, data_dict["id"], data_dict.get("completed", True))
@@ -262,6 +280,7 @@ def files_transfer_ownership(context: Context, data_dict: dict[str, Any]) -> Aut
     return {"success": result, "msg": "Not allowed to edit file"}
 
 
+@tk.auth_allow_anonymous_access
 def files_file_scan(context: Context, data_dict: dict[str, Any]) -> AuthResult:
     """Only file owner can list files."""
     result = authz.is_authorized_boolean("files_manage_files", context, data_dict)
@@ -276,7 +295,7 @@ def files_file_scan(context: Context, data_dict: dict[str, Any]) -> AuthResult:
     return {"success": result, "msg": "Not allowed to list files"}
 
 
-@tk.auth_disallow_anonymous_access
+@tk.auth_allow_anonymous_access
 def files_resource_upload(context: Context, data_dict: dict[str, Any]) -> AuthResult:
     """Users can upload resources files."""
     # TODO: add restriction on number of free-files or their total size inside
@@ -294,34 +313,7 @@ def files_resource_upload(context: Context, data_dict: dict[str, Any]) -> AuthRe
     return authz.is_authorized("resource_create", context, data_dict)
 
 
-@tk.auth_disallow_anonymous_access
-def files_group_image_upload(context: Context, data_dict: dict[str, Any]) -> AuthResult:
-    """Users can upload group images."""
-    # TODO: add restriction on number of free-files or their total size inside
-    # resource storage.
-
-    try:
-        shared.get_storage(shared.config.group_images_storage())
-    except shared.exc.UnknownStorageError:
-        return {"success": False}
-
-    return {"success": True}
-
-
-@tk.auth_disallow_anonymous_access
-def files_user_image_upload(context: Context, data_dict: dict[str, Any]) -> AuthResult:
-    """Users can upload avatars."""
-    # TODO: add restriction on number of free-files or their total size inside
-    # resource storage.
-    try:
-        shared.get_storage(shared.config.user_images_storage())
-    except shared.exc.UnknownStorageError:
-        return {"success": False}
-
-    return {"success": True}
-
-
-@tk.auth_disallow_anonymous_access
+@tk.auth_allow_anonymous_access
 def files_autocomplete_available_resource_files(
     context: Context,
     data_dict: dict[str, Any],

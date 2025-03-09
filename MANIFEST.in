@@ -1,6 +1,8 @@
 include README.rst
 include LICENSE
 include requirements.txt
+recursive-exclude node_modules *.pyi
+recursive-exclude build *.pyi
 recursive-include ckanext/files *.html *.json *.js *.less *.css *.mo *.yml *.config *.yaml
 recursive-include ckanext/files_manager *.html *.json *.js *.less *.css *.mo *.yml *.config *.yaml
 recursive-include ckanext/files/migration *.ini *.py *.mako

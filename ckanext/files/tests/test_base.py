@@ -21,7 +21,7 @@ class TestMakeStorage:
     def test_invalid_configuration(self):
         """Wrong configuration causes an exception."""
         with pytest.raises(exceptions.InvalidStorageConfigurationError):
-            base.make_storage("", {"type": "files:fs"}, True)
+            base.make_storage("", {"type": "files:fs"})
 
     def test_normal_configuration(self):
         """Valid configuration produces a storage."""

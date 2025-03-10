@@ -21,10 +21,12 @@ import functools
 from collections import deque
 from typing import Any, Literal
 
+import file_keeper as fk
+
 import ckan.plugins.toolkit as tk
 from ckan.types import FlattenKey
 
-from ckanext.files import base, exceptions, types, utils
+from ckanext.files import base, exceptions, types
 
 _task_queue: contextvars.ContextVar[deque[types.PTask] | None] = contextvars.ContextVar(
     "transfer_queue",
@@ -227,7 +229,7 @@ class UploadAndAttachTask(Task):
     # storage for file upload
     storage: str
     # upload object with file's content
-    upload: utils.Upload
+    upload: fk.Upload
     # type of future owner
     owner_type: str
     # flattened path to owner's ID field

@@ -1,13 +1,13 @@
-"""convert size to bigint
+"""convert size to bigint.
 
 Revision ID: 565ef5eca492
 Revises: d19094d45a0f
 Create Date: 2024-12-02 02:40:53.449550
 
 """
-from alembic import op
-import sqlalchemy as sa
 
+import sqlalchemy as sa
+from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = "565ef5eca492"

@@ -1,12 +1,13 @@
 from __future__ import annotations
 
 import click
+import file_keeper as fk
 import sqlalchemy as sa
 
 import ckan.plugins.toolkit as tk
 from ckan import model
 
-from ckanext.files import shared, utils
+from ckanext.files import shared
 
 
 @click.group()
@@ -50,7 +51,7 @@ def empty_owner(storage_name: str | None, remove: bool):
     click.echo("Following files do not have owner reference")
 
     for file in model.Session.scalars(stmt):
-        size = utils.humanize_filesize(file.size)
+        size = fk.humanize_filesize(file.size)
         click.echo(f"\t{file.id}: {file.name} [{file.content_type}, {size}]")
 
     if remove and click.confirm("Do you want to delete these files?"):
@@ -93,7 +94,7 @@ def invalid_owner(storage_name: str | None, remove: bool):
 
     click.echo("Following files have dangling owner reference")
     for file in files:
-        size = utils.humanize_filesize(file.size)
+        size = fk.humanize_filesize(file.size)
         click.echo(
             f"\t{file.id}: {file.name} [{file.content_type}, {size}]. "
             + f"Owner: {file.owner_info.owner_type} {file.owner_info.owner_id}",
@@ -146,7 +147,7 @@ def missing_files(storage_name: str | None, remove: bool):
 
     click.echo("Following files are not found in storage")
     for file in missing:
-        size = utils.humanize_filesize(file.size)
+        size = fk.humanize_filesize(file.size)
         click.echo(
             f"\t{file.id}: {file.name} [{file.content_type}, {size}]",
         )

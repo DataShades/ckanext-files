@@ -1,3 +1,5 @@
+from file_keeper import Capability, HashingReader, Upload, make_upload
+
 from . import config, types
 from . import exceptions as exc
 from .base import (
@@ -13,7 +15,6 @@ from .base import (
 from .interfaces import IFiles
 from .model import File, Multipart, Owner, TransferHistory
 from .task import Task, TaskQueue, add_task, with_task_queue
-from .utils import Capability, HashingReader, Upload, make_upload
 
 __all__ = [
     "get_storage",

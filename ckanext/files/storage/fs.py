@@ -8,12 +8,13 @@ import shutil
 from io import BytesIO
 from typing import IO, Any, Iterable
 
+import file_keeper as fk
 import magic
 
 import ckan.plugins.toolkit as tk
 from ckan.config.declaration import Declaration, Key
 
-from ckanext.files import exceptions, shared, utils
+from ckanext.files import exceptions, shared
 from ckanext.files.base import (
     FileData,
     Manager,
@@ -367,7 +368,7 @@ class FsReader(Reader):
 class PublicFsReader(FsReader):
     required_options = FsReader.required_options + ["public_root"]
 
-    capabilities = FsReader.capabilities | utils.Capability.PUBLIC_LINK
+    capabilities = FsReader.capabilities | fk.Capability.PUBLIC_LINK
 
     def public_link(self, data: FileData, extras: dict[str, Any]) -> str:
         """Return public download link."""

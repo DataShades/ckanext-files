@@ -103,7 +103,7 @@ class File(Base):  # type: ignore
         uselist=False,
         cascade="delete, delete-orphan",
         lazy="joined",
-    )  # type: ignore
+    )
 
     @property
     def owner(self) -> Any | None:

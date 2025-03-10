@@ -2,11 +2,7 @@
 
 from __future__ import annotations
 
-import tempfile
-from io import TextIOWrapper
-from typing import Any, BinaryIO, Iterator, Literal, Protocol, Union
-
-from werkzeug.datastructures import FileStorage
+from typing import Any, Iterator, Literal, Protocol
 
 from ckan.config.declaration import Declaration, Key
 from ckan.types import (
@@ -25,27 +21,11 @@ FileOperation = Literal["show", "update", "delete"]
 OwnerOperation = Literal["show", "update", "delete", "file_transfer", "file_scan"]
 """Operation that performed on owner."""
 
-Uploadable = Union[
-    FileStorage,
-    "tempfile.SpooledTemporaryFile[Any]",
-    TextIOWrapper,
-    bytes,
-    bytearray,
-    BinaryIO,
-]
-"""Content that can be converted into Upload."""
-
 
 class PUploadStream(Protocol):
     def read(self, size: Any = ..., /) -> bytes: ...
 
     def __iter__(self) -> Iterator[bytes]: ...
-
-
-class PSeekableStream(PUploadStream):
-    def tell(self) -> int: ...
-
-    def seek(self, offset: int, whence: int = 0) -> int: ...
 
 
 class PTask(Protocol):

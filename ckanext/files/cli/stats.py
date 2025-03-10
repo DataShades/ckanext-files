@@ -3,13 +3,14 @@ from __future__ import annotations
 from datetime import datetime, timezone
 
 import click
+import file_keeper as fk
 import sqlalchemy as sa
 from babel.dates import format_datetime, format_timedelta
 
 import ckan.plugins.toolkit as tk
 from ckan import model
 
-from ckanext.files import shared, utils
+from ckanext.files import shared
 
 
 def _now():
@@ -48,7 +49,7 @@ def overview(storage_name: str | None):
 
     click.secho(f"Number of files: {click.style(count, bold=True)}")
     click.secho(
-        f"Used space: {click.style(utils.humanize_filesize(size), bold=True)}",
+        f"Used space: {click.style(fk.humanize_filesize(size), bold=True)}",
     )
     click.secho(
         "Newest file created at: "

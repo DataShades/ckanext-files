@@ -4,6 +4,7 @@ import logging
 from functools import partial
 from typing import Any
 
+import file_keeper as fk
 import jwt
 from flask import Blueprint, jsonify
 
@@ -95,7 +96,7 @@ def _streaming_file(
 ) -> Response | None:
     if storage.supports(shared.Capability.STREAM):
         resp = streaming_response(storage.stream(data), data.content_type)
-        if utils.is_supported_type(item.content_type, shared.config.inline_types()):
+        if fk.is_supported_type(item.content_type, shared.config.inline_types()):
             resp.headers["content-disposition"] = f"inline; filename={item.name}"
         else:
             resp.headers["content-disposition"] = f"attachment; filename={item.name}"
@@ -268,7 +269,7 @@ def autocomplete_own_files() -> Any:
                             content_type=tk.h.unified_resource_format(
                                 item["content_type"],
                             ),
-                            size=utils.humanize_filesize(item["size"]),
+                            size=fk.humanize_filesize(item["size"]),
                         ),
                     )
                     for item in result["results"]
@@ -287,7 +288,7 @@ def autocomplete_available_resource_files() -> Any:
         {"ignore_auth": True},
         {
             "owner_type": "user",
-            "owner_id": tk.current_user.is_authenticated and tk.current_user.id,  # type: ignore
+            "owner_id": tk.current_user.is_authenticated and tk.current_user.id,
             "pinned": False,
             "storage": shared.config.resources_storage(),
             "name": ["like", f"%{q}%"],
@@ -306,7 +307,7 @@ def autocomplete_available_resource_files() -> Any:
                             content_type=tk.h.unified_resource_format(
                                 item["content_type"],
                             ),
-                            size=utils.humanize_filesize(item["size"]),
+                            size=fk.humanize_filesize(item["size"]),
                         ),
                     }
                     for item in result["results"]

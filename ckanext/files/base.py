@@ -22,6 +22,7 @@ from io import BytesIO
 from time import time
 from typing import Any, Generic, Iterable, Protocol, TypeVar, cast
 
+import file_keeper as fk
 import pytz
 
 import ckan.plugins.toolkit as tk
@@ -40,8 +41,8 @@ class PFileModel(Protocol):
 
 TFileModel = TypeVar("TFileModel", bound=PFileModel)
 
-adapters = utils.Registry["type[Storage]"]({})
-storages = utils.Registry["Storage"]({})
+adapters = fk.Registry["type[Storage]"]({})
+storages = fk.Registry["Storage"]({})
 
 
 @dataclasses.dataclass
@@ -243,7 +244,7 @@ class StorageService(OptionChecker):
     """
 
     required_options: list[str] = []
-    capabilities = utils.Capability.NONE
+    capabilities = fk.Capability.NONE
 
     # @property
     # def storage(self):
@@ -287,7 +288,7 @@ class Uploader(StorageService):
     def upload(
         self,
         location: str,
-        upload: utils.Upload,
+        upload: fk.Upload,
         extras: dict[str, Any],
     ) -> FileData:
         """Upload file using single stream."""
@@ -364,7 +365,7 @@ class Manager(StorageService):
     def append(
         self,
         data: FileData,
-        upload: utils.Upload,
+        upload: fk.Upload,
         extras: dict[str, Any],
     ) -> FileData:
         """Append content to existing file."""
@@ -494,7 +495,7 @@ class Storage(OptionChecker, abc.ABC):
 
     # operations that storage performs. Will be overriden by capabilities of
     # services inside constructor.
-    capabilities = utils.Capability.NONE
+    capabilities = fk.Capability.NONE
 
     def __str__(self):
         return self.settings.get("name", "unknown")
@@ -576,7 +577,7 @@ class Storage(OptionChecker, abc.ABC):
             + " i.e: `ckanext.files.storage.DEFAULT_NAME...`",
         )
 
-    def compute_capabilities(self) -> utils.Capability:
+    def compute_capabilities(self) -> fk.Capability:
         return (
             self.uploader.capabilities
             | self.manager.capabilities
@@ -592,13 +593,13 @@ class Storage(OptionChecker, abc.ABC):
     def make_reader(self):
         return Reader(self)
 
-    def supports(self, operation: utils.Capability) -> bool:
+    def supports(self, operation: fk.Capability) -> bool:
         return self.capabilities.can(operation)
 
     def compute_location(
         self,
         location: str,
-        upload: utils.Upload | None = None,
+        upload: fk.Upload | None = None,
         /,
         **kwargs: Any,
     ) -> str:
@@ -626,19 +627,19 @@ class Storage(OptionChecker, abc.ABC):
 
         raise exceptions.NameStrategyError(strategy)
 
-    def upload(self, location: str, upload: utils.Upload, /, **kwargs: Any) -> FileData:
-        if not self.supports(utils.Capability.CREATE):
+    def upload(self, location: str, upload: fk.Upload, /, **kwargs: Any) -> FileData:
+        if not self.supports(fk.Capability.CREATE):
             raise exceptions.UnsupportedOperationError("upload", self)
 
         self.validate(upload, **kwargs)
 
         return self.uploader.upload(location, upload, kwargs)
 
-    def validate(self, upload: utils.Upload, /, **kwargs: Any):
+    def validate(self, upload: fk.Upload, /, **kwargs: Any):
         if self.max_size and upload.size > self.max_size:
             raise exceptions.LargeUploadError(upload.size, self.max_size)
 
-        if self.supported_types and not utils.is_supported_type(
+        if self.supported_types and not fk.is_supported_type(
             upload.content_type,
             self.supported_types,
         ):
@@ -663,31 +664,31 @@ class Storage(OptionChecker, abc.ABC):
         return self.uploader.multipart_complete(data, kwargs)
 
     def exists(self, data: FileData, /, **kwargs: Any) -> bool:
-        if not self.supports(utils.Capability.EXISTS):
+        if not self.supports(fk.Capability.EXISTS):
             raise exceptions.UnsupportedOperationError("exists", self)
 
         return self.manager.exists(data, kwargs)
 
     def remove(self, data: FileData | MultipartData, /, **kwargs: Any) -> bool:
-        if not self.supports(utils.Capability.REMOVE):
+        if not self.supports(fk.Capability.REMOVE):
             raise exceptions.UnsupportedOperationError("remove", self)
 
         return self.manager.remove(data, kwargs)
 
     def scan(self, **kwargs: Any) -> Iterable[str]:
-        if not self.supports(utils.Capability.SCAN):
+        if not self.supports(fk.Capability.SCAN):
             raise exceptions.UnsupportedOperationError("scan", self)
 
         return self.manager.scan(kwargs)
 
     def analyze(self, location: str, /, **kwargs: Any) -> FileData:
-        if not self.supports(utils.Capability.ANALYZE):
+        if not self.supports(fk.Capability.ANALYZE):
             raise exceptions.UnsupportedOperationError("analyze", self)
 
         return self.manager.analyze(location, kwargs)
 
     def stream(self, data: FileData, /, **kwargs: Any) -> Iterable[bytes]:
-        if not self.supports(utils.Capability.STREAM):
+        if not self.supports(fk.Capability.STREAM):
             raise exceptions.UnsupportedOperationError("stream", self)
 
         return self.reader.stream(data, kwargs)
@@ -701,13 +702,13 @@ class Storage(OptionChecker, abc.ABC):
         **kwargs: Any,
     ) -> Iterable[bytes]:
         """Return byte-stream of the file content."""
-        if self.supports(utils.Capability.RANGE):
+        if self.supports(fk.Capability.RANGE):
             return self.reader.range(data, start, end, kwargs)
 
         raise exceptions.UnsupportedOperationError("range", self)
 
     def content(self, data: FileData, /, **kwargs: Any) -> bytes:
-        if not self.supports(utils.Capability.STREAM):
+        if not self.supports(fk.Capability.STREAM):
             raise exceptions.UnsupportedOperationError("content", self)
 
         return self.reader.content(data, kwargs)
@@ -720,11 +721,11 @@ class Storage(OptionChecker, abc.ABC):
         /,
         **kwargs: Any,
     ) -> FileData:
-        if storage is self and self.supports(utils.Capability.COPY):
+        if storage is self and self.supports(fk.Capability.COPY):
             return self.manager.copy(data, location, kwargs)
 
-        if self.supports(utils.Capability.STREAM) and storage.supports(
-            utils.Capability.CREATE,
+        if self.supports(fk.Capability.STREAM) and storage.supports(
+            fk.Capability.CREATE,
         ):
             return storage.upload(
                 location,
@@ -742,13 +743,13 @@ class Storage(OptionChecker, abc.ABC):
         *datas: FileData,
         **kwargs: Any,
     ) -> FileData:
-        if storage is self and self.supports(utils.Capability.COMPOSE):
+        if storage is self and self.supports(fk.Capability.COMPOSE):
             return self.manager.compose(datas, location, kwargs)
 
-        if self.supports(utils.Capability.STREAM) and storage.supports(
-            utils.Capability.CREATE | utils.Capability.APPEND,
+        if self.supports(fk.Capability.STREAM) and storage.supports(
+            fk.Capability.CREATE | fk.Capability.APPEND,
         ):
-            dest_data = storage.upload(location, utils.make_upload(b""), **kwargs)
+            dest_data = storage.upload(location, fk.make_upload(b""), **kwargs)
             for data in datas:
                 dest_data = storage.append(
                     dest_data,
@@ -759,15 +760,15 @@ class Storage(OptionChecker, abc.ABC):
 
         raise exceptions.UnsupportedOperationError("compose", self)
 
-    def stream_as_upload(self, data: FileData, **kwargs: Any) -> utils.Upload:
+    def stream_as_upload(self, data: FileData, **kwargs: Any) -> fk.Upload:
         """Make an Upload with file content."""
         stream = self.stream(data, **kwargs)
         if hasattr(stream, "read"):
             stream = cast(types.PUploadStream, stream)
         else:
-            stream = utils.IterableBytesReader(stream)
+            stream = fk.IterableBytesReader(stream)
 
-        return utils.Upload(
+        return fk.Upload(
             stream,
             data.location,
             data.size,
@@ -777,11 +778,11 @@ class Storage(OptionChecker, abc.ABC):
     def append(
         self,
         data: FileData,
-        upload: utils.Upload,
+        upload: fk.Upload,
         /,
         **kwargs: Any,
     ) -> FileData:
-        if self.supports(utils.Capability.APPEND):
+        if self.supports(fk.Capability.APPEND):
             return self.manager.append(data, upload, kwargs)
 
         raise exceptions.UnsupportedOperationError("append", self)
@@ -794,12 +795,12 @@ class Storage(OptionChecker, abc.ABC):
         /,
         **kwargs: Any,
     ) -> FileData:
-        if storage is self and self.supports(utils.Capability.MOVE):
+        if storage is self and self.supports(fk.Capability.MOVE):
             return self.manager.move(data, location, kwargs)
 
         if self.supports(
-            utils.Capability.STREAM | utils.Capability.REMOVE,
-        ) and storage.supports(utils.Capability.CREATE):
+            fk.Capability.STREAM | fk.Capability.REMOVE,
+        ) and storage.supports(fk.Capability.CREATE):
             result = storage.upload(
                 location,
                 self.stream_as_upload(data, **kwargs),
@@ -811,17 +812,17 @@ class Storage(OptionChecker, abc.ABC):
         raise exceptions.UnsupportedOperationError("copy", self)
 
     def public_link(self, data: FileData, /, **kwargs: Any) -> str | None:
-        if self.supports(utils.Capability.PUBLIC_LINK):
+        if self.supports(fk.Capability.PUBLIC_LINK):
             return self.reader.public_link(data, kwargs)
 
     def one_time_link(self, data: FileData, /, **kwargs: Any) -> str | None:
-        if self.supports(utils.Capability.ONE_TIME_LINK):
+        if self.supports(fk.Capability.ONE_TIME_LINK):
             return self.reader.one_time_link(data, kwargs)
 
     def temporal_link(self, data: FileData, /, **kwargs: Any) -> str | None:
-        if self.supports(utils.Capability.TEMPORAL_LINK):
+        if self.supports(fk.Capability.TEMPORAL_LINK):
             return self.reader.temporal_link(data, kwargs)
 
     def permanent_link(self, data: FileData, /, **kwargs: Any) -> str | None:
-        if self.supports(utils.Capability.PERMANENT_LINK):
+        if self.supports(fk.Capability.PERMANENT_LINK):
             return self.reader.permanent_link(data, kwargs)

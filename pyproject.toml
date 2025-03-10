@@ -9,7 +9,11 @@ description = ""
 classifiers = [ "Development Status :: 4 - Beta", "License :: OSI Approved :: GNU Affero General Public License v3 or later (AGPLv3+)", "Programming Language :: Python :: 3.8", "Programming Language :: Python :: 3.9", "Programming Language :: Python :: 3.10", "Programming Language :: Python :: 3.11", "Programming Language :: Python :: 3.12",]
 keywords = [ "CKAN", "file-management", "cloud", "filesystem"]
 requires-python = ">= 3.8"
-dependencies = [ "typing_extensions", "pyyaml",]
+dependencies = [
+             "file-keeper~=0.0",
+             "typing_extensions",
+             "pyyaml",
+]
 authors = [
     {name = "DataShades", email = "datashades@linkdigital.com.au"},
     {name = "Sergey Motornyuk", email = "sergey.motornyuk@linkdigital.com.au"},
@@ -104,6 +108,7 @@ ignore = [
 "ckan.plugins" = "p"
 "ckan.plugins.toolkit" = "tk"
 sqlalchemy = "sa"
+file_keeper = "fk"
 
 [tool.ruff.lint.pydocstyle]
 convention = "google"

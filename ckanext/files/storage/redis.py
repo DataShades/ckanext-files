@@ -4,6 +4,7 @@ import copy
 from io import BytesIO
 from typing import IO, Any, Iterable, cast
 
+import file_keeper as fk
 import magic
 import redis
 from redis import ResponseError
@@ -24,7 +25,6 @@ from ckanext.files.shared import (
     Upload,
     Uploader,
 )
-from ckanext.files.utils import IterableBytesReader
 
 connect_to_redis: Any
 
@@ -124,7 +124,7 @@ class RedisUploader(Uploader):
             raise exceptions.UploadSizeMismatchError(size, data.size)
 
         reader = HashingReader(
-            IterableBytesReader(self.storage.stream(FileData(data.location))),
+            fk.IterableBytesReader(self.storage.stream(FileData(data.location))),
         )
 
         content_type = magic.from_buffer(next(reader, b""), True)

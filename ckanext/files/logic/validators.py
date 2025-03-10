@@ -3,11 +3,13 @@ from __future__ import annotations
 import logging
 from typing import Any, Literal
 
+import file_keeper as fk
+
 import ckan.plugins.toolkit as tk
 from ckan import authz
 from ckan.types import Context, FlattenDataDict, FlattenErrorDict, FlattenKey
 
-from ckanext.files import exceptions, shared, task, utils
+from ckanext.files import exceptions, shared, task
 from ckanext.files.shared import File, FileData, get_storage
 
 log = logging.getLogger(__name__)
@@ -98,7 +100,7 @@ def files_into_upload(
 ):
     """Convert value into Upload object."""
     try:
-        data[key] = utils.make_upload(data[key])
+        data[key] = fk.make_upload(data[key])
 
     except TypeError as err:
         msg = f"Unsupported source type: {err}"
@@ -123,7 +125,7 @@ def files_parse_filesize(
         return
 
     try:
-        data[key] = utils.parse_filesize(value)
+        data[key] = fk.parse_filesize(value)
     except ValueError as err:
         msg = f"Wrong filesize string: {value}"
         errors[key].append(msg)
@@ -221,7 +223,7 @@ def files_accept_file_with_type(*supported_types: str):
 
             actual = file.content_type
 
-            if not utils.is_supported_type(actual, supported_types):
+            if not fk.is_supported_type(actual, supported_types):
                 expected = ", ".join(supported_types)
                 msg = (
                     f"Type {actual} is not supported."
@@ -418,7 +420,7 @@ def files_upload_as(  # noqa: PLR0913
         errors: FlattenErrorDict,
         context: Context,
     ):
-        value: utils.Upload = data.pop(key)
+        value: fk.Upload = data.pop(key)
         id_field_path = key[:-1] + (id_field,)
         shared.add_task(
             task.UploadAndAttachTask(

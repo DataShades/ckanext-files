@@ -106,25 +106,21 @@ class DbStorage(shared.Storage):
     ...
 
     def __init__(self, settings: Any):
-        db_url = self.ensure_option(settings, "db_url")
+        db_url = settings["db_url"]
 
         self.engine = sa.create_engine(db_url)
         self.location_column = sa.column(
-            self.ensure_option(settings, "location_column")
+            settings["location_column"]
         )
-        self.content_column = sa.column(self.ensure_option(settings, "content_column"))
+        self.content_column = sa.column(settings["content_column"])
         self.table = sa.table(
-            self.ensure_option(settings, "table"),
+            settings["table"],
             self.location_column,
             self.content_column,
         )
         super().__init__(settings)
 
 ```
-
-You can notice that we are using `Storage.ensure_option` quite often. This
-method returns the value of specified option from settings or raises an
-exception.
 
 The table definition and columns are saved as storage attributes, to simplify
 building SQL queries in future.

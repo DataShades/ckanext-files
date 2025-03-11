@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import copy
+import dataclasses
 import glob
 import logging
 import os
@@ -40,18 +41,26 @@ class FsStorage(Storage):
     def make_manager(self):
         return FsManager(self)
 
-    @classmethod
-    def prepare_settings(cls, settings: dict[str, Any]):
-        settings.setdefault("create_path", False)
-        settings.setdefault("recursive", False)
+    settings: SettingsFactory
 
-        return super().prepare_settings(settings)
+    @dataclasses.dataclass()
+    class SettingsFactory(shared.Settings):
+        create_path: bool = False
+        recursive: bool = False
+
+        path: str | None = None
+
+        def __post_init__(self):
+            for attr in ["path"]:
+                if not getattr(self, attr):
+                    raise shared.exc.MissingStorageConfigurationError(FsStorage, attr)
 
     def __init__(self, settings: Any):
-        path = self.ensure_option(settings, "path")
+        settings = self.make_settings(settings)
+        path = settings.path
 
         if not os.path.exists(path):
-            if tk.asbool(self.ensure_option(settings, "create_path")):
+            if settings.create_path:
                 os.makedirs(path)
             else:
                 raise exceptions.InvalidStorageConfigurationError(
@@ -79,7 +88,6 @@ class FsStorage(Storage):
 
 
 class FsUploader(Uploader):
-    required_options = ["path"]
     capabilities = shared.Capability.CREATE | shared.Capability.MULTIPART
 
     def upload(
@@ -89,9 +97,9 @@ class FsUploader(Uploader):
         extras: dict[str, Any],
     ) -> FileData:
         location = self.storage.compute_location(location, upload, **extras)
-        dest = os.path.join(self.storage.settings["path"], location)
+        dest = os.path.join(self.storage.settings.path, location)
 
-        if os.path.exists(dest) and not self.storage.settings["override_existing"]:
+        if os.path.exists(dest) and not self.storage.settings.override_existing:
             raise exceptions.ExistingFileError(self.storage, dest)
 
         os.makedirs(os.path.dirname(dest), exist_ok=True)
@@ -133,7 +141,7 @@ class FsUploader(Uploader):
         extras: dict[str, Any],
     ) -> MultipartData:
         filepath = os.path.join(
-            str(self.storage.settings["path"]),
+            str(self.storage.settings.path),
             data.location,
         )
         data.storage_data["uploaded"] = os.path.getsize(filepath)
@@ -170,7 +178,7 @@ class FsUploader(Uploader):
             raise exceptions.UploadOutOfBoundError(expected_size, data.size)
 
         filepath = os.path.join(
-            str(self.storage.settings["path"]),
+            str(self.storage.settings.path),
             data.location,
         )
         with open(filepath, "rb+") as dest:
@@ -186,7 +194,7 @@ class FsUploader(Uploader):
         extras: dict[str, Any],
     ) -> FileData:
         filepath = os.path.join(
-            str(self.storage.settings["path"]),
+            str(self.storage.settings.path),
             data.location,
         )
         size = os.path.getsize(filepath)
@@ -210,7 +218,6 @@ class FsUploader(Uploader):
 
 
 class FsManager(Manager):
-    required_options = ["path"]
     capabilities = (
         shared.Capability.REMOVE
         | shared.Capability.SCAN
@@ -230,13 +237,13 @@ class FsManager(Manager):
     ) -> FileData:
         """Combine multipe file inside the storage into a new one."""
         location = self.storage.compute_location(location, **extras)
-        dest = os.path.join(self.storage.settings["path"], location)
-        if os.path.exists(dest) and not self.storage.settings["override_existing"]:
+        dest = os.path.join(self.storage.settings.path, location)
+        if os.path.exists(dest) and not self.storage.settings.override_existing:
             raise exceptions.ExistingFileError(self.storage, dest)
 
         sources: list[str] = []
         for data in datas:
-            src = os.path.join(str(self.storage.settings["path"]), data.location)
+            src = os.path.join(str(self.storage.settings.path), data.location)
 
             if not os.path.exists(src):
                 raise exceptions.MissingFileError(self.storage, src)
@@ -256,7 +263,7 @@ class FsManager(Manager):
         extras: dict[str, Any],
     ) -> FileData:
         """Append content to existing file."""
-        dest = os.path.join(str(self.storage.settings["path"]), data.location)
+        dest = os.path.join(str(self.storage.settings.path), data.location)
         with open(dest, "ab") as fd:
             fd.write(upload.stream.read())
 
@@ -270,13 +277,13 @@ class FsManager(Manager):
     ) -> FileData:
         """Copy file inside the storage."""
         location = self.storage.compute_location(location, **extras)
-        src = os.path.join(str(self.storage.settings["path"]), data.location)
-        dest = os.path.join(str(self.storage.settings["path"]), location)
+        src = os.path.join(str(self.storage.settings.path), data.location)
+        dest = os.path.join(str(self.storage.settings.path), location)
 
         if not os.path.exists(src):
             raise exceptions.MissingFileError(self.storage, src)
 
-        if os.path.exists(dest) and not self.storage.settings["override_existing"]:
+        if os.path.exists(dest) and not self.storage.settings.override_existing:
             raise exceptions.ExistingFileError(self.storage, dest)
 
         shutil.copy(src, dest)
@@ -292,14 +299,14 @@ class FsManager(Manager):
     ) -> FileData:
         """Move file to a different location inside the storage."""
         location = self.storage.compute_location(location, **extras)
-        src = os.path.join(str(self.storage.settings["path"]), data.location)
-        dest = os.path.join(str(self.storage.settings["path"]), location)
+        src = os.path.join(str(self.storage.settings.path), data.location)
+        dest = os.path.join(str(self.storage.settings.path), location)
 
         if not os.path.exists(src):
             raise exceptions.MissingFileError(self.storage, src)
 
         if os.path.exists(dest):
-            if self.storage.settings["override_existing"]:
+            if self.storage.settings.override_existing:
                 os.remove(dest)
             else:
                 raise exceptions.ExistingFileError(self.storage, dest)
@@ -310,11 +317,11 @@ class FsManager(Manager):
         return new_data
 
     def exists(self, data: FileData, extras: dict[str, Any]) -> bool:
-        filepath = os.path.join(str(self.storage.settings["path"]), data.location)
+        filepath = os.path.join(str(self.storage.settings.path), data.location)
         return os.path.exists(filepath)
 
     def remove(self, data: FileData | MultipartData, extras: dict[str, Any]) -> bool:
-        filepath = os.path.join(str(self.storage.settings["path"]), data.location)
+        filepath = os.path.join(str(self.storage.settings.path), data.location)
         if not os.path.exists(filepath):
             return False
 
@@ -322,12 +329,12 @@ class FsManager(Manager):
         return True
 
     def scan(self, extras: dict[str, Any]) -> Iterable[str]:
-        path = self.storage.settings["path"]
+        path = self.storage.settings.path
         search_path = os.path.join(path, "**")
 
         for entry in glob.glob(
             search_path,
-            recursive=self.storage.settings["recursive"],
+            recursive=self.storage.settings.recursive,
         ):
             if not os.path.isfile(entry):
                 continue
@@ -335,7 +342,7 @@ class FsManager(Manager):
 
     def analyze(self, location: str, extras: dict[str, Any]) -> FileData:
         """Return all details about location."""
-        filepath = os.path.join(str(self.storage.settings["path"]), location)
+        filepath = os.path.join(str(self.storage.settings.path), location)
         if not os.path.exists(filepath):
             raise exceptions.MissingFileError(self.storage, filepath)
 
@@ -353,12 +360,10 @@ class FsManager(Manager):
 
 
 class FsReader(Reader):
-    required_options = ["path"]
-
     capabilities = shared.Capability.STREAM | shared.Capability.TEMPORAL_LINK
 
     def stream(self, data: FileData, extras: dict[str, Any]) -> IO[bytes]:
-        filepath = os.path.join(str(self.storage.settings["path"]), data.location)
+        filepath = os.path.join(str(self.storage.settings.path), data.location)
         if not os.path.exists(filepath):
             raise exceptions.MissingFileError(self.storage, filepath)
 
@@ -366,21 +371,34 @@ class FsReader(Reader):
 
 
 class PublicFsReader(FsReader):
-    required_options = FsReader.required_options + ["public_root"]
-
     capabilities = FsReader.capabilities | fk.Capability.PUBLIC_LINK
 
     def public_link(self, data: FileData, extras: dict[str, Any]) -> str:
         """Return public download link."""
         return "/".join(
             [
-                self.storage.settings["public_root"].rstrip("/"),
+                self.storage.settings.public_root.rstrip("/"),
                 data.location.lstrip("/"),
             ],
         )
 
 
 class PublicFsStorage(FsStorage):
+    settings: SettingsFactory
+
+    @dataclasses.dataclass()
+    class SettingsFactory(FsStorage.SettingsFactory):
+        public_root: str = ""
+
+        def __post_init__(self):
+            super().__post_init__()
+
+            for attr in ["public_root"]:
+                if not getattr(self, attr):
+                    raise shared.exc.MissingStorageConfigurationError(
+                        PublicFsStorage, attr
+                    )
+
     @classmethod
     def declare_config_options(cls, declaration: Declaration, key: Key):
         super().declare_config_options(declaration, key)

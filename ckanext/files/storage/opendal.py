@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from typing import IO, Any, Iterable, cast
+import dataclasses
+from typing import IO, Any, ClassVar, Iterable, cast
 
 import opendal
 
@@ -19,17 +20,18 @@ class OpenDalStorage(shared.Storage):
     def make_manager(self):
         return OpenDalManager(self)
 
-    @classmethod
-    def prepare_settings(cls, settings: dict[str, Any]):
-        settings.setdefault("params", {})
-        return super().prepare_settings(settings)
+    @dataclasses.dataclass()
+    class SettingsFactory(shared.Settings):
+        params: dict[str, Any] = dataclasses.field(default_factory=dict)
+        scheme: str = ""
+
+        _required_options: ClassVar[list[str]] = ["scheme"]
 
     def __init__(self, settings: Any):
-        scheme = self.ensure_option(settings, "scheme")
-        params = self.ensure_option(settings, "params")
+        settings = self.make_settings(settings)
 
         try:
-            self.operator = opendal.Operator(scheme, **params)
+            self.operator = opendal.Operator(settings.scheme, **settings.params)
         except opendal.exceptions.ConfigInvalid as err:  # type: ignore
             raise shared.exc.InvalidStorageConfigurationError(
                 type(self),

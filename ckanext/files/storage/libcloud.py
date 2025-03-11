@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import dataclasses
 from typing import Any, Iterable
 
 from libcloud.base import DriverType, get_driver
@@ -23,33 +24,39 @@ class LibCloudStorage(shared.Storage):
     driver: StorageDriver
     container: Container
 
-    @classmethod
-    def prepare_settings(cls, settings: dict[str, Any]):
-        settings.setdefault("secret", None)
-        settings.setdefault("params", {})
-        return super().prepare_settings(settings)
+    @dataclasses.dataclass()
+    class SettingsFactory(shared.Settings):
+        provider: str = ""
+        key: str = ""
+        container: str = ""
+
+        secret: str | None = None
+        params: dict[str, Any] = dataclasses.field(default_factory=dict)
+
+        def __post_init__(self):
+            for attr in ["provider", "key", "container"]:
+                if not getattr(self, attr):
+                    raise shared.exc.MissingStorageConfigurationError(
+                        LibCloudStorage, attr
+                    )
 
     def __init__(self, settings: Any):
-        provider = self.ensure_option(settings, "provider")
-        key = self.ensure_option(settings, "key")
-        container = self.ensure_option(settings, "container")
-        secret = self.ensure_option(settings, "secret")
-        params = self.ensure_option(settings, "params")
+        settings = self.make_settings(settings)
 
         try:
-            factory = get_driver(DriverType.STORAGE, provider)
+            factory = get_driver(DriverType.STORAGE, settings.provider)
         except AttributeError as err:
             raise shared.exc.InvalidStorageConfigurationError(
                 type(self),
                 str(err),
             ) from err
 
-        self.driver = factory(key, secret, **params)
+        self.driver = factory(settings.key, settings.secret, **settings.params)
 
         try:
-            self.container = self.driver.get_container(container)
+            self.container = self.driver.get_container(settings.container)
         except ContainerDoesNotExistError as err:
-            msg = f"Container {container} does not exist"
+            msg = f"Container {settings.container} does not exist"
             raise shared.exc.InvalidStorageConfigurationError(type(self), msg) from err
         except LibcloudError as err:
             raise shared.exc.InvalidStorageConfigurationError(

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from typing import Any, Iterable
+import dataclasses
+from typing import Any, ClassVar, Iterable
 
 import sqlalchemy as sa
 
@@ -11,6 +12,20 @@ from ckanext.files import shared, types
 
 class DbStorage(shared.Storage):
     hidden = True
+
+    @dataclasses.dataclass()
+    class SettingsFactory(shared.Settings):
+        db_url: str | None = None
+        table: str | None = None
+        location_column: str | None = None
+        content_column: str | None = None
+
+        _required_options: ClassVar[list[str]] = [
+            "db_url",
+            "table",
+            "location_column",
+            "content_column",
+        ]
 
     @classmethod
     def declare_config_options(
@@ -24,15 +39,14 @@ class DbStorage(shared.Storage):
         declaration.declare(key.content_column).required()
 
     def __init__(self, settings: Any):
-        db_url = self.ensure_option(settings, "db_url")
+        settings = self.make_settings(settings)
+        db_url = settings.db_url
 
         self.engine = sa.create_engine(db_url)
-        self.location_column = sa.column(
-            self.ensure_option(settings, "location_column"),
-        )
-        self.content_column = sa.column(self.ensure_option(settings, "content_column"))
+        self.location_column = sa.column(settings.location_column)
+        self.content_column = sa.column(settings.content_column)
         self.table = sa.table(
-            self.ensure_option(settings, "table"),
+            settings.table,
             self.location_column,
             self.content_column,
         )

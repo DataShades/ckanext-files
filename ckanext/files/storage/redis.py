@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import copy
+import dataclasses
 from io import BytesIO
 from typing import IO, Any, Iterable, cast
 
@@ -21,6 +22,7 @@ from ckanext.files.shared import (
     Manager,
     MultipartData,
     Reader,
+    Settings,
     Storage,
     Upload,
     Uploader,
@@ -32,7 +34,6 @@ connect_to_redis: Any
 class RedisUploader(Uploader):
     storage: RedisStorage
 
-    required_options = ["prefix"]
     capabilities = Capability.CREATE | Capability.MULTIPART
 
     def upload(
@@ -42,7 +43,7 @@ class RedisUploader(Uploader):
         extras: dict[str, Any],
     ) -> FileData:
         safe_location = self.storage.compute_location(location, upload, **extras)
-        key = self.storage.settings["prefix"] + safe_location
+        key = self.storage.settings.prefix + safe_location
 
         self.storage.redis.delete(key)
 
@@ -66,7 +67,7 @@ class RedisUploader(Uploader):
     ) -> MultipartData:
         """Prepare everything for multipart(resumable) upload."""
         safe_location = self.storage.compute_location(location)
-        key = self.storage.settings["prefix"] + safe_location
+        key = self.storage.settings.prefix + safe_location
         self.storage.redis.set(key, b"")
         data.location = safe_location
         data.storage_data["uploaded"] = 0
@@ -99,7 +100,7 @@ class RedisUploader(Uploader):
         if errors:
             raise tk.ValidationError(errors)
 
-        key = self.storage.settings["prefix"] + data.location
+        key = self.storage.settings.prefix + data.location
         size = cast(int, self.storage.redis.strlen(key))
 
         upload: Upload = valid_extras["upload"]
@@ -117,7 +118,7 @@ class RedisUploader(Uploader):
         extras: dict[str, Any],
     ) -> FileData:
         """Verify file integrity and finalize incomplete upload."""
-        key = self.storage.settings["prefix"] + data.location
+        key = self.storage.settings.prefix + data.location
         size = cast(int, self.storage.redis.strlen(key))
 
         if size != data.size:
@@ -144,14 +145,13 @@ class RedisUploader(Uploader):
 class RedisReader(Reader):
     storage: RedisStorage
 
-    required_options = ["prefix"]
     capabilities = Capability.STREAM
 
     def stream(self, data: FileData, extras: dict[str, Any]) -> IO[bytes]:
         return BytesIO(self.content(data, extras))
 
     def content(self, data: FileData, extras: dict[str, Any]) -> bytes:
-        key = self.storage.settings["prefix"] + data.location
+        key = self.storage.settings.prefix + data.location
         value = cast("bytes | None", self.storage.redis.get(key))
         if value is None:
             raise exceptions.MissingFileError(self.storage, key)
@@ -162,7 +162,6 @@ class RedisReader(Reader):
 class RedisManager(Manager):
     storage: RedisStorage
 
-    required_options = ["prefix"]
     capabilities = (
         Capability.COPY
         | Capability.MOVE
@@ -173,14 +172,14 @@ class RedisManager(Manager):
     )
 
     def scan(self, extras: dict[str, Any]) -> Iterable[str]:
-        prefix = self.storage.settings["prefix"]
+        prefix = self.storage.settings.prefix
         keys: Iterable[bytes] = self.storage.redis.scan_iter(f"{prefix}*")
         for key in keys:
             yield key.decode()[len(prefix) :]
 
     def analyze(self, location: str, extras: dict[str, Any]) -> FileData:
         """Return all details about location."""
-        key = self.storage.settings["prefix"] + location
+        key = self.storage.settings.prefix + location
         value: Any = self.storage.redis.get(key)
         if value is None:
             raise exceptions.MissingFileError(self.storage, key)
@@ -197,12 +196,12 @@ class RedisManager(Manager):
         )
 
     def remove(self, data: FileData | MultipartData, extras: dict[str, Any]) -> bool:
-        key = self.storage.settings["prefix"] + data.location
+        key = self.storage.settings.prefix + data.location
         self.storage.redis.delete(key)
         return True
 
     def exists(self, data: FileData, extras: dict[str, Any]) -> bool:
-        key = self.storage.settings["prefix"] + data.location
+        key = self.storage.settings.prefix + data.location
         return bool(self.storage.redis.exists(key))
 
     def copy(
@@ -212,15 +211,15 @@ class RedisManager(Manager):
         extras: dict[str, Any],
     ) -> FileData:
         safe_location = self.storage.compute_location(location, **extras)
-        src: str = self.storage.settings["prefix"] + data.location
-        dest: str = self.storage.settings["prefix"] + safe_location
+        src: str = self.storage.settings.prefix + data.location
+        dest: str = self.storage.settings.prefix + safe_location
 
         if not self.storage.redis.exists(src):
             raise exceptions.MissingFileError(self.storage, src)
 
         if (
             self.storage.redis.exists(dest)
-            and not self.storage.settings["override_existing"]
+            and not self.storage.settings.override_existing
         ):
             raise exceptions.ExistingFileError(self.storage, dest)
 
@@ -245,15 +244,15 @@ class RedisManager(Manager):
     ) -> FileData:
         safe_location = self.storage.compute_location(location, **extras)
 
-        src = self.storage.settings["prefix"] + data.location
-        dest = self.storage.settings["prefix"] + safe_location
+        src = self.storage.settings.prefix + data.location
+        dest = self.storage.settings.prefix + safe_location
 
         if not self.storage.redis.exists(src):
             raise exceptions.MissingFileError(self.storage, src)
 
         if (
             self.storage.redis.exists(dest)
-            and not self.storage.settings["override_existing"]
+            and not self.storage.settings.override_existing
         ):
             raise exceptions.ExistingFileError(self.storage, dest)
 
@@ -263,7 +262,17 @@ class RedisManager(Manager):
         return new_data
 
 
+def _default_prefix():
+    return "ckanext:files:{}:file_content:".format(tk.config["ckan.site_id"])
+
+
 class RedisStorage(Storage):
+    settings: SettingsFactory
+
+    @dataclasses.dataclass()
+    class SettingsFactory(Settings):
+        prefix: str = dataclasses.field(default_factory=_default_prefix)
+
     def make_uploader(self):
         return RedisUploader(self)
 
@@ -272,11 +281,6 @@ class RedisStorage(Storage):
 
     def make_reader(self):
         return RedisReader(self)
-
-    @classmethod
-    def prepare_settings(cls, settings: dict[str, Any]):
-        settings.setdefault("prefix", _default_prefix())
-        return super().prepare_settings(settings)
 
     def __init__(self, settings: Any):
         self.redis: redis.Redis = connect_to_redis()
@@ -288,7 +292,3 @@ class RedisStorage(Storage):
         declaration.declare(key.prefix, _default_prefix()).set_description(
             "Static prefix of the Redis key generated for every upload.",
         )
-
-
-def _default_prefix():
-    return "ckanext:files:{}:file_content:".format(tk.config["ckan.site_id"])

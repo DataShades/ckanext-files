@@ -70,7 +70,7 @@ def dispatch_download(file_id: str) -> Response:
         raise tk.ObjectNotFound("file")
 
     storage = shared.get_storage(item.storage)
-    data = shared.FileData.from_model(item)
+    data = shared.FileData.from_object(item)
 
     # do not use permanent link here as it nerver expires and user who got it
     # once will be able to download file as long as it exists.
@@ -136,7 +136,7 @@ def temporal_download(token: str) -> Response:
         raise tk.ObjectNotFound("file")
 
     storage = shared.get_storage(item.storage)
-    data = shared.FileData.from_model(item)
+    data = shared.FileData.from_object(item)
 
     if resp := _streaming_file(item, storage, data):
         return resp

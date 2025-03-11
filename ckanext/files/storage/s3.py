@@ -1,9 +1,10 @@
 from __future__ import annotations
 
 import base64
+import dataclasses
 import os
 import re
-from typing import Any, Iterable
+from typing import Any, ClassVar, Iterable
 
 import boto3
 
@@ -12,7 +13,7 @@ from ckan.config.declaration import Declaration, Key
 
 from ckanext.files import exceptions
 from ckanext.files.base import Manager, Reader, Storage, Uploader
-from ckanext.files.shared import Capability, FileData, MultipartData, Upload
+from ckanext.files.shared import Capability, FileData, MultipartData, Settings, Upload
 
 RE_RANGE = re.compile(r"bytes=(?P<first_byte>\d+)-(?P<last_byte>\d+)")
 HTTP_RESUME = 308
@@ -28,15 +29,13 @@ class S3Reader(Reader):
 
     def stream(self, data: FileData, extras: dict[str, Any]) -> Iterable[bytes]:
         client = self.storage.client
-        filepath = os.path.join(self.storage.settings["path"], data.location)
+        filepath = os.path.join(self.storage.settings.path, data.location)
 
         try:
-            obj = client.get_object(
-                Bucket=self.storage.settings["bucket"], Key=filepath
-            )
+            obj = client.get_object(Bucket=self.storage.settings.bucket, Key=filepath)
         except client.exceptions.NoSuchKey as err:
             raise exceptions.MissingFileError(
-                self.storage.settings["name"],
+                self.storage.settings.name,
                 data.location,
             ) from err
 
@@ -46,7 +45,6 @@ class S3Reader(Reader):
 class S3Uploader(Uploader):
     storage: S3Storage
 
-    required_options = ["bucket"]
     capabilities = Capability.CREATE | Capability.MULTIPART
 
     def upload(
@@ -56,11 +54,11 @@ class S3Uploader(Uploader):
         extras: dict[str, Any],
     ) -> FileData:
         filename = self.storage.compute_location(location, upload, **extras)
-        filepath = os.path.join(self.storage.settings["path"], filename)
+        filepath = os.path.join(self.storage.settings.path, filename)
 
         client = self.storage.client
         obj = client.put_object(
-            Bucket=self.storage.settings["bucket"], Key=filepath, Body=upload.stream
+            Bucket=self.storage.settings.bucket, Key=filepath, Body=upload.stream
         )
 
         filehash = obj["ETag"].strip('"')
@@ -84,10 +82,10 @@ class S3Uploader(Uploader):
         if max_size and data.size > max_size:
             raise exceptions.LargeUploadError(data.size, max_size)
 
-        filepath = os.path.join(self.storage.settings["path"], filename)
+        filepath = os.path.join(self.storage.settings.path, filename)
         client = self.storage.client
         obj = client.create_multipart_upload(
-            Bucket=self.storage.settings["bucket"],
+            Bucket=self.storage.settings.bucket,
             Key=filepath,
             ContentType=data.content_type,
         )
@@ -107,7 +105,7 @@ class S3Uploader(Uploader):
         return self.storage.client.generate_presigned_url(
             "upload_part",
             Params={
-                "Bucket": self.storage.settings["bucket"],
+                "Bucket": self.storage.settings.bucket,
                 "Key": key,
                 "UploadId": upload_id,
                 "PartNumber": part_number,
@@ -143,7 +141,7 @@ class S3Uploader(Uploader):
         if errors:
             raise tk.ValidationError(errors)
 
-        filepath = os.path.join(self.storage.settings["path"], data.location)
+        filepath = os.path.join(self.storage.settings.path, data.location)
         if "upload" in valid_data:
             upload: Upload = valid_data["upload"]
 
@@ -160,7 +158,7 @@ class S3Uploader(Uploader):
                 )
 
             resp = self.storage.client.upload_part(
-                Bucket=self.storage.settings["bucket"],
+                Bucket=self.storage.settings.bucket,
                 Key=filepath,
                 UploadId=data.storage_data["upload_id"],
                 PartNumber=data.storage_data["part_number"],
@@ -195,10 +193,10 @@ class S3Uploader(Uploader):
         data: MultipartData,
         extras: dict[str, Any],
     ) -> FileData:
-        filepath = os.path.join(self.storage.settings["path"], data.location)
+        filepath = os.path.join(self.storage.settings.path, data.location)
 
         result = self.storage.client.complete_multipart_upload(
-            Bucket=self.storage.settings["bucket"],
+            Bucket=self.storage.settings.bucket,
             Key=filepath,
             UploadId=data.storage_data["upload_id"],
             MultipartUpload={
@@ -210,13 +208,13 @@ class S3Uploader(Uploader):
         )
 
         obj = self.storage.client.get_object(
-            Bucket=self.storage.settings["bucket"], Key=result["Key"]
+            Bucket=self.storage.settings.bucket, Key=result["Key"]
         )
 
         return FileData(
             os.path.relpath(
                 result["Key"],
-                self.storage.settings["path"],
+                self.storage.settings.path,
             ),
             obj["ContentLength"],
             obj["ContentType"],
@@ -226,30 +224,28 @@ class S3Uploader(Uploader):
 
 class S3Manager(Manager):
     storage: S3Storage
-    required_options = ["bucket"]
+
     capabilities = Capability.REMOVE | Capability.ANALYZE
 
     def remove(self, data: FileData | MultipartData, extras: dict[str, Any]) -> bool:
         if isinstance(data, MultipartData):
             return False
 
-        filepath = os.path.join(str(self.storage.settings["path"]), data.location)
+        filepath = os.path.join(str(self.storage.settings.path), data.location)
         client = self.storage.client
 
         # TODO: check if file exists before removing to return correct status
-        client.delete_object(Bucket=self.storage.settings["bucket"], Key=filepath)
+        client.delete_object(Bucket=self.storage.settings.bucket, Key=filepath)
 
         return True
 
     def analyze(self, location: str, extras: dict[str, Any]) -> FileData:
         """Return all details about location."""
-        filepath = os.path.join(str(self.storage.settings["path"]), location)
+        filepath = os.path.join(str(self.storage.settings.path), location)
         client = self.storage.client
 
         try:
-            obj = client.get_object(
-                Bucket=self.storage.settings["bucket"], Key=filepath
-            )
+            obj = client.get_object(Bucket=self.storage.settings.bucket, Key=filepath)
         except client.exceptions.NoSuchKey as err:
             raise exceptions.MissingFileError(self.storage, filepath) from err
 
@@ -264,24 +260,26 @@ class S3Manager(Manager):
 class S3Storage(Storage):
     hidden = True
 
-    @classmethod
-    def prepare_settings(cls, settings: dict[str, Any]):
-        settings.setdefault("path", "")
-        settings.setdefault("key", None)
-        settings.setdefault("secret", None)
-        settings.setdefault("region", None)
-        settings.setdefault("endpoint", None)
-        return super().prepare_settings(settings)
+    @dataclasses.dataclass()
+    class SettingsFactory(Settings):
+        path: str = ""
+        key: str | None = None
+        secret: str | None = None
+        region: str | None = None
+        endpoint: str | None = None
+
+        _required_options: ClassVar[list[str]] = ["bucket"]
 
     def __init__(self, settings: Any):
-        settings["path"] = settings["path"].lstrip("/")
+        settings = self.make_settings(settings)
+        settings.path = settings.path.lstrip("/")
 
         self.client = boto3.client(
             "s3",
-            aws_access_key_id=settings["key"],
-            aws_secret_access_key=settings["secret"],
-            region_name=settings["region"],
-            endpoint_url=settings["endpoint"],
+            aws_access_key_id=settings.key,
+            aws_secret_access_key=settings.secret,
+            region_name=settings.region,
+            endpoint_url=settings.endpoint,
         )
 
         super().__init__(settings)

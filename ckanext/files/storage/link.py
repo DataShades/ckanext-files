@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import dataclasses
 import logging
 from typing import Any
 from urllib.parse import urlparse, urlunparse
@@ -14,6 +15,10 @@ log = logging.getLogger(__name__)
 class LinkStorage(shared.Storage):
     hidden = True
 
+    @dataclasses.dataclass()
+    class SettingsFactory(shared.Settings):
+        timeout: int = 5
+
     def make_reader(self):
         return LinkReader(self)
 
@@ -22,11 +27,6 @@ class LinkStorage(shared.Storage):
 
     def make_manager(self):
         return LinkManager(self)
-
-    @classmethod
-    def prepare_settings(cls, settings: dict[str, Any]):
-        settings.setdefault("timeout", 5)
-        return super().prepare_settings(settings)
 
     @classmethod
     def declare_config_options(

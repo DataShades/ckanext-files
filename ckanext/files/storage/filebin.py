@@ -1,7 +1,8 @@
 from __future__ import annotations
 
 import base64
-from typing import IO, Any, Iterable
+import dataclasses
+from typing import IO, Any, ClassVar, Iterable
 
 import requests
 
@@ -15,14 +16,16 @@ API_URL = "https://filebin.net"
 class FilebinStorage(shared.Storage):
     hidden = True
 
-    @classmethod
-    def prepare_settings(cls, settings: dict[str, Any]):
-        settings.setdefault("timeout", 10)
-        return super().prepare_settings(settings)
+    @dataclasses.dataclass()
+    class SettingsFactory(shared.Settings):
+        timeout: int = 10
+        bin: str = ""
+
+        _required_options: ClassVar[list[str]] = ["bin"]
 
     @property
     def bin(self):
-        return self.settings["bin"]
+        return self.settings.bin
 
     def make_uploader(self):
         return FilebinUploader(self)
@@ -58,7 +61,7 @@ class FilebinUploader(shared.Uploader):
         resp = requests.post(
             f"{API_URL}/{self.storage.bin}/{filename}",
             data=upload.stream,
-            timeout=self.storage.settings["timeout"],
+            timeout=self.storage.settings.timeout,
         )
         if not resp.ok:
             raise exceptions.UploadError(resp.content)
@@ -84,7 +87,7 @@ class FilebinReader(shared.Reader):
     def stream(self, data: shared.FileData, extras: dict[str, Any]) -> IO[bytes]:
         resp = requests.get(
             f"{API_URL}/{self.storage.bin}/{data.location}",
-            timeout=self.storage.settings["timeout"],
+            timeout=self.storage.settings.timeout,
             stream=True,
             headers={"accept": "*/*"},
         )
@@ -92,7 +95,7 @@ class FilebinReader(shared.Reader):
             resp = requests.get(
                 f"{API_URL}/{self.storage.bin}/{data.location}",
                 cookies={"verified": verified},
-                timeout=self.storage.settings["timeout"],
+                timeout=self.storage.settings.timeout,
                 stream=True,
                 headers={"accept": "*/*"},
             )
@@ -117,7 +120,7 @@ class FilebinManager(shared.Manager):
     ) -> bool:
         requests.delete(
             f"{API_URL}/{self.storage.bin}/{data.location}",
-            timeout=self.storage.settings["timeout"],
+            timeout=self.storage.settings.timeout,
         )
         return True
 
@@ -125,7 +128,7 @@ class FilebinManager(shared.Manager):
         resp = requests.get(
             f"{API_URL}/{self.storage.bin}",
             headers={"accept": "application/json"},
-            timeout=self.storage.settings["timeout"],
+            timeout=self.storage.settings.timeout,
         )
 
         for record in resp.json()["files"]:
@@ -135,7 +138,7 @@ class FilebinManager(shared.Manager):
         resp = requests.get(
             f"{API_URL}/{self.storage.bin}",
             headers={"accept": "application/json"},
-            timeout=self.storage.settings["timeout"],
+            timeout=self.storage.settings.timeout,
         )
         for record in resp.json()["files"]:
             if record["filename"] == location:

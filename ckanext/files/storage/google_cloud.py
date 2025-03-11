@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import base64
+import dataclasses
 import os
 import re
 from typing import Any, cast
@@ -15,7 +16,7 @@ from ckan.config.declaration import Declaration, Key
 
 from ckanext.files import exceptions
 from ckanext.files.base import Manager, Storage, Uploader
-from ckanext.files.shared import Capability, FileData, MultipartData, Upload
+from ckanext.files.shared import Capability, FileData, MultipartData, Settings, Upload
 
 RE_RANGE = re.compile(r"bytes=(?P<first_byte>\d+)-(?P<last_byte>\d+)")
 HTTP_RESUME = 308
@@ -28,7 +29,6 @@ def decode(value: str) -> str:
 class GoogleCloudUploader(Uploader):
     storage: GoogleCloudStorage
 
-    required_options = ["bucket"]
     capabilities = Capability.CREATE | Capability.MULTIPART
 
     def upload(
@@ -38,10 +38,10 @@ class GoogleCloudUploader(Uploader):
         extras: dict[str, Any],
     ) -> FileData:
         filename = self.storage.compute_location(location, upload, **extras)
-        filepath = os.path.join(self.storage.settings["path"], filename)
+        filepath = os.path.join(self.storage.settings.path, filename)
 
         client = self.storage.client
-        blob = client.bucket(self.storage.settings["bucket"]).blob(filepath)
+        blob = client.bucket(self.storage.settings.bucket).blob(filepath)
 
         blob.upload_from_file(upload.stream)
         filehash = decode(blob.md5_hash)
@@ -59,10 +59,10 @@ class GoogleCloudUploader(Uploader):
         extras: dict[str, Any],
     ) -> MultipartData:
         filename = self.storage.compute_location(location, **extras)
-        filepath = os.path.join(self.storage.settings["path"], filename)
+        filepath = os.path.join(self.storage.settings.path, filename)
 
         client = self.storage.client
-        blob = client.bucket(self.storage.settings["bucket"]).blob(filepath)
+        blob = client.bucket(self.storage.settings.bucket).blob(filepath)
 
         max_size = self.storage.max_size
         if max_size and data.size > max_size:
@@ -72,7 +72,7 @@ class GoogleCloudUploader(Uploader):
             str,
             blob.create_resumable_upload_session(
                 size=data.size,
-                origin=self.storage.settings["resumable_origin"],
+                origin=self.storage.settings.resumable_origin,
             ),
         )
 
@@ -234,7 +234,7 @@ class GoogleCloudUploader(Uploader):
         return FileData(
             os.path.relpath(
                 data.storage_data["result"]["name"],
-                self.storage.settings["path"],
+                self.storage.settings.path,
             ),
             data.size,
             content_type,
@@ -244,16 +244,15 @@ class GoogleCloudUploader(Uploader):
 
 class GoogleCloudManager(Manager):
     storage: GoogleCloudStorage
-    required_options = ["bucket"]
     capabilities = Capability.REMOVE
 
     def remove(self, data: FileData | MultipartData, extras: dict[str, Any]) -> bool:
         if isinstance(data, MultipartData):
             return False
 
-        filepath = os.path.join(str(self.storage.settings["path"]), data.location)
+        filepath = os.path.join(str(self.storage.settings.path), data.location)
         client: Client = self.storage.client
-        blob = client.bucket(self.storage.settings["bucket"]).blob(filepath)
+        blob = client.bucket(self.storage.settings.bucket).blob(filepath)
 
         try:
             exists = blob.exists()
@@ -280,18 +279,33 @@ class GoogleCloudManager(Manager):
 class GoogleCloudStorage(Storage):
     hidden = True
 
-    @classmethod
-    def prepare_settings(cls, settings: dict[str, Any]):
-        settings.setdefault("path", "")
-        settings.setdefault("resumable_origin", tk.config["ckan.site_url"])
-        settings.get("credentials_file")
-        return super().prepare_settings(settings)
+    settings: SettingsFactory
+
+    @dataclasses.dataclass()
+    class SettingsFactory(Settings):
+        path: str = ""
+        bucket: str = ""
+        credentials_file: str = ""
+        resumable_origin: str = dataclasses.field(
+            default_factory=lambda: tk.config["ckan.site_url"]
+        )
+
+        container: str = ""
+
+        def __post_init__(self):
+            for attr in ["bucket", "path", "credentials_file"]:
+                if not getattr(self, attr):
+                    raise exceptions.MissingStorageConfigurationError(
+                        GoogleCloudStorage, attr
+                    )
+
+            self.path = self.path.lstrip("/")
 
     def __init__(self, settings: Any):
-        settings["path"] = self.ensure_option(settings, "path").lstrip("/")
-        credentials = None
+        settings = self.make_settings(settings)
 
-        if cf := self.ensure_option(settings, "credentials_file"):
+        credentials = None
+        if cf := settings.credentials_file:
             try:
                 credentials = Credentials.from_service_account_file(cf)
             except OSError as err:

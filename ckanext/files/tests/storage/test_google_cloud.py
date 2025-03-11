@@ -33,7 +33,7 @@ def storage() -> gc.GoogleCloudStorage:
     )
 
     return gc.GoogleCloudStorage(
-        gc.GoogleCloudStorage.prepare_settings(
+        gc.GoogleCloudStorage(
             {
                 "name": "test",
                 "path": "test",

@@ -287,7 +287,7 @@ def files_file_create(context: Context, data_dict: dict[str, Any]) -> dict[str, 
         name=filename,
         storage=data_dict["storage"],
     )
-    storage_data.into_model(fileobj)
+    storage_data.into_object(fileobj)
     context["session"].add(fileobj)
 
     _set_user_owner(context, "file", fileobj.id)
@@ -355,10 +355,10 @@ def files_file_replace(context: Context, data_dict: dict[str, Any]) -> dict[str,
     # with transparent location strategy file will be writted into the same
     # location, so removal may be not required
     if storage_data.location != fileobj.location:
-        old_data = shared.FileData.from_model(fileobj)
+        old_data = shared.FileData.from_object(fileobj)
         shared.add_task(lambda result, idx, prev: storage.remove(old_data))
 
-    storage_data.into_model(fileobj)
+    storage_data.into_object(fileobj)
     context["session"].commit()
 
     utils.ContextCache(context).set("file", fileobj.id, fileobj)
@@ -420,7 +420,7 @@ def files_file_delete(context: Context, data_dict: dict[str, Any]) -> dict[str, 
 
     dc = shared.FileData if data_dict["completed"] else shared.MultipartData
     try:
-        storage.remove(dc.from_model(fileobj))
+        storage.remove(dc.from_object(fileobj))
     except shared.exc.PermissionError as err:
         raise tk.NotAuthorized(str(err)) from err
 
@@ -560,7 +560,7 @@ def files_multipart_start(
         name=filename,
         storage=data_dict["storage"],
     )
-    data.into_model(fileobj)
+    data.into_object(fileobj)
 
     context["session"].add(fileobj)
     _set_user_owner(context, "multipart", fileobj.id)
@@ -601,7 +601,7 @@ def files_multipart_refresh(
         raise tk.ObjectNotFound("file")
 
     storage = shared.get_storage(fileobj.storage)
-    storage.multipart_refresh(shared.MultipartData.from_model(fileobj)).into_model(
+    storage.multipart_refresh(shared.MultipartData.from_object(fileobj)).into_object(
         fileobj,
     )
     context["session"].commit()
@@ -645,9 +645,9 @@ def files_multipart_update(
 
     try:
         storage.multipart_update(
-            shared.MultipartData.from_model(fileobj),
+            shared.MultipartData.from_object(fileobj),
             **extras,
-        ).into_model(fileobj)
+        ).into_object(fileobj)
     except shared.exc.UploadError as err:
         raise tk.ValidationError({"upload": [str(err)]}) from err
 
@@ -700,9 +700,9 @@ def files_multipart_complete(
 
     try:
         storage.multipart_complete(
-            shared.MultipartData.from_model(multipart),
+            shared.MultipartData.from_object(multipart),
             **extras,
-        ).into_model(fileobj)
+        ).into_object(fileobj)
     except shared.exc.UploadError as err:
         raise tk.ValidationError({"upload": [str(err)]}) from err
 

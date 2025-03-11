@@ -80,7 +80,7 @@ def files_file_into_public_url(
             errors[key].append(msg)
             raise tk.StopOnError
 
-        info = FileData.from_model(file)
+        info = FileData.from_object(file)
         storage = get_storage(file.storage)
         url = storage.public_link(info)
         if not url:

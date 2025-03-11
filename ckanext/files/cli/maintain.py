@@ -135,7 +135,7 @@ def missing_files(storage_name: str | None, remove: bool):
     missing: list[shared.File] = []
     with click.progressbar(model.Session.scalars(stmt), length=total) as bar:
         for file in bar:
-            data = shared.FileData.from_model(file)
+            data = shared.FileData.from_object(file)
             if not storage.exists(data):
                 missing.append(file)
 

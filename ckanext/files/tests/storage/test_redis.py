@@ -12,7 +12,7 @@ from ckanext.files.storage import redis
 
 @pytest.fixture()
 def storage(clean_redis: Any):
-    return redis.RedisStorage(redis.RedisStorage.prepare_settings({"name": "test"}))
+    return redis.RedisStorage({"name": "test"})
 
 
 class TestUploader:
@@ -22,7 +22,7 @@ class TestUploader:
         assert UUID(result.location)
         assert result.size == 0
 
-        key = storage.settings["prefix"] + result.location
+        key = storage.settings.prefix + result.location
         assert storage.redis.get(key) == b""
 
     def test_content(self, storage: redis.RedisStorage, faker: Faker):
@@ -31,7 +31,7 @@ class TestUploader:
 
         assert result.size == 100
 
-        key = storage.settings["prefix"] + result.location
+        key = storage.settings.prefix + result.location
         assert storage.redis.get(key) == content
 
     def test_hash(self, storage: redis.RedisStorage, faker: Faker):
@@ -64,7 +64,7 @@ class TestUploader:
 class TestManager:
     def test_removal(self, storage: redis.RedisStorage):
         result = storage.upload("", shared.make_upload(b""))
-        key = storage.settings["prefix"] + result.location
+        key = storage.settings.prefix + result.location
 
         assert storage.redis.exists(key)
 

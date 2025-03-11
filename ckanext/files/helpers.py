@@ -82,7 +82,7 @@ def files_link_details(
         func = getattr(storage, f"{lt}_link", None)
         if not func:
             continue
-        if link := func(shared.FileData.from_model(file), **kwargs):
+        if link := func(shared.FileData.from_object(file), **kwargs):
             return {
                 "label": file.name,
                 "content_type": file.content_type,

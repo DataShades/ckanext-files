@@ -50,11 +50,11 @@ def stream(file_id: str, output: str | None, start: int, end: int | None):
         raise click.Abort from err
 
     if (start or end) and storage.supports(shared.Capability.RANGE):
-        content_stream = storage.range(shared.FileData.from_model(file), start, end)
+        content_stream = storage.range(shared.FileData.from_object(file), start, end)
 
     elif storage.supports(shared.Capability.STREAM):
         content_stream = storage.reader.range(
-            shared.FileData.from_model(file),
+            shared.FileData.from_object(file),
             start,
             end,
             {},
@@ -166,7 +166,7 @@ def scan(
                 name=os.path.basename(name),
                 storage=storage_name,
             )
-            data.into_model(fileobj)
+            data.into_object(fileobj)
 
             model.Session.add(fileobj)
 

@@ -19,11 +19,13 @@ import file_keeper as fk
 import ckan.plugins.toolkit as tk
 from ckan.config.declaration import Declaration, Key
 
-from . import config, exceptions, model, utils
+from . import config, model, utils
 
 adapters = fk.adapters
 storages = fk.Registry["Storage"]({})
 Settings = fk.Settings
+Uploader = fk.Uploader
+Manager = fk.Manager
 
 FileData: type[fk.FileData[model.File]] = fk.FileData
 MultipartData: type[fk.MultipartData[model.Multipart]] = fk.MultipartData
@@ -62,54 +64,9 @@ def get_storage(name: str | None = None) -> Storage:
     storage = storages.get(name)
 
     if not storage:
-        raise exceptions.UnknownStorageError(name)
+        raise fk.exc.UnknownStorageError(name)
 
     return storage
-
-
-class Uploader(fk.Uploader):
-    """Service responsible for writing data into a storage.
-
-    `Storage` internally calls methods of this service. For example,
-    `Storage.upload(location, upload, **kwargs)` results in
-    `Uploader.upload(location, upload, kwargs)`.
-
-    Example:
-        ```python
-        class MyUploader(Uploader):
-            def upload(
-                self, location: str, upload: Upload, extras: dict[str, Any]
-            ) -> FileData:
-                reader = upload.hashing_reader()
-
-                with open(location, "wb") as dest:
-                    dest.write(reader.read())
-
-                return FileData(
-                    location, upload.size,
-                    upload.content_type,
-                    reader.get_hash()
-                )
-        ```
-    """
-
-
-class Manager(fk.Manager):
-    """Service responsible for maintenance file operations.
-
-    `Storage` internally calls methods of this service. For example,
-    `Storage.remove(data, **kwargs)` results in `Manager.remove(data, kwargs)`.
-
-    Example:
-        ```python
-        class MyManager(Manager):
-            def remove(
-                self, data: FileData|MultipartData, extras: dict[str, Any]
-            ) -> bool:
-                os.remove(data.location)
-                return True
-        ```
-    """
 
 
 class Reader(fk.Reader):
@@ -128,7 +85,7 @@ class Reader(fk.Reader):
         ```
     """
 
-    def temporal_link(self, data: FileData, extras: dict[str, Any]) -> str:
+    def temporal_link(self, data: fk.FileData, extras: dict[str, Any]) -> str:
         """Return temporal download link.
 
         extras["ttl"] controls lifetime of the link(30 seconds by default).
@@ -138,7 +95,7 @@ class Reader(fk.Reader):
             {
                 "topic": "download_file",
                 "exp": str(int(time()) + extras.get("ttl", 30)),
-                "storage": self.storage.settings["name"],
+                "storage": self.storage.settings.name,
                 "location": data.location,
             },
         )
@@ -146,24 +103,7 @@ class Reader(fk.Reader):
 
 
 class Storage(fk.Storage):
-    """Base class for storage implementation.
-
-    Args:
-        settings: storage configuration
-
-    Example:
-        ```python
-        class MyStorage(Storage):
-            def make_uploader(self):
-                return MyUploader(self)
-
-            def make_reader(self):
-                return MyReader(self)
-
-            def make_manager(self):
-                return MyManager(self)
-        ```
-    """
+    """Base class for storage implementation."""
 
     @classmethod
     def declare_config_options(cls, declaration: Declaration, key: Key):

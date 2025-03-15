@@ -1,12 +1,8 @@
 from __future__ import annotations
 
-import dataclasses
-from typing import Any, Iterable
+from typing import Any
 
-from libcloud.base import DriverType, get_driver
-from libcloud.common.types import LibcloudError
-from libcloud.storage.base import Container, StorageDriver
-from libcloud.storage.types import ContainerDoesNotExistError, ObjectDoesNotExistError
+from file_keeper.default.adapters import libcloud as lc
 
 from ckan.config.declaration import Declaration, Key
 
@@ -20,61 +16,7 @@ PROVIDERS_URL = (
 get_driver: Any
 
 
-class LibCloudStorage(shared.Storage):
-    driver: StorageDriver
-    container: Container
-
-    @dataclasses.dataclass()
-    class SettingsFactory(shared.Settings):
-        provider: str = ""
-        key: str = ""
-        container: str = ""
-
-        secret: str | None = None
-        params: dict[str, Any] = dataclasses.field(default_factory=dict)
-
-        def __post_init__(self):
-            for attr in ["provider", "key", "container"]:
-                if not getattr(self, attr):
-                    raise shared.exc.MissingStorageConfigurationError(
-                        LibCloudStorage, attr
-                    )
-
-    def __init__(self, settings: Any):
-        settings = self.make_settings(settings)
-
-        try:
-            factory = get_driver(DriverType.STORAGE, settings.provider)
-        except AttributeError as err:
-            raise shared.exc.InvalidStorageConfigurationError(
-                type(self),
-                str(err),
-            ) from err
-
-        self.driver = factory(settings.key, settings.secret, **settings.params)
-
-        try:
-            self.container = self.driver.get_container(settings.container)
-        except ContainerDoesNotExistError as err:
-            msg = f"Container {settings.container} does not exist"
-            raise shared.exc.InvalidStorageConfigurationError(type(self), msg) from err
-        except LibcloudError as err:
-            raise shared.exc.InvalidStorageConfigurationError(
-                type(self),
-                str(err),
-            ) from err
-
-        super().__init__(settings)
-
-    def make_uploader(self):
-        return LibCloudUploader(self)
-
-    def make_reader(self):
-        return LibCloudReader(self)
-
-    def make_manager(self):
-        return LibCloudManager(self)
-
+class LibCloudStorage(shared.Storage, lc.LibCloudStorage):
     @classmethod
     def declare_config_options(cls, declaration: Declaration, key: Key):
         super().declare_config_options(declaration, key)
@@ -88,68 +30,6 @@ class LibCloudStorage(shared.Storage):
             "JSON object with additional parameters"
             + " passed directly to storage constructor.",
         ).set_validators("default({}) convert_to_json_if_string dict_only")
-        declaration.declare(key.container).required().set_description(
+        declaration.declare(key.container_name).required().set_description(
             "Name of the container(bucket)",
         )
-
-
-class LibCloudUploader(shared.Uploader):
-    storage: LibCloudStorage
-    capabilities = shared.Capability.CREATE
-
-    def upload(
-        self,
-        location: str,
-        upload: shared.Upload,
-        extras: dict[str, Any],
-    ) -> shared.FileData:
-        safe_location = self.storage.compute_location(location)
-
-        result = self.storage.container.upload_object_via_stream(
-            iter(upload.stream),
-            safe_location,
-            extra={"content_type": upload.content_type},
-        )
-
-        return shared.FileData(
-            result.name,
-            result.size,
-            upload.content_type,
-            result.hash.strip('"'),
-        )
-
-
-class LibCloudReader(shared.Reader):
-    storage: LibCloudStorage
-    capabilities = shared.Capability.STREAM | shared.Capability.TEMPORAL_LINK
-
-    def stream(self, data: shared.FileData, extras: dict[str, Any]) -> Iterable[bytes]:
-        try:
-            obj = self.storage.container.get_object(data.location)
-        except ObjectDoesNotExistError as err:
-            raise shared.exc.MissingFileError(
-                self.storage.settings["name"],
-                data.location,
-            ) from err
-
-        return obj.as_stream()
-
-
-class LibCloudManager(shared.Manager):
-    storage: LibCloudStorage
-    capabilities = shared.Capability.SCAN | shared.Capability.REMOVE
-
-    def scan(self, extras: dict[str, Any]) -> Iterable[str]:
-        for item in self.storage.container.iterate_objects():
-            yield item.name
-
-    def remove(
-        self,
-        data: shared.FileData | shared.MultipartData,
-        extras: dict[str, Any],
-    ) -> bool:
-        try:
-            obj = self.storage.container.get_object(data.location)
-        except ObjectDoesNotExistError:
-            return False
-        return self.storage.container.delete_object(obj)

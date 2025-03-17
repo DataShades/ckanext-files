@@ -1,4 +1,4 @@
-from file_keeper import Capability, HashingReader, Upload, make_upload
+from file_keeper import Capability, HashingReader, Location, Upload, make_upload
 
 from . import config, types
 from . import exceptions as exc
@@ -25,6 +25,7 @@ __all__ = [
     "HashingReader",
     "Capability",
     "File",
+    "Location",
     "Multipart",
     "Owner",
     "TransferHistory",

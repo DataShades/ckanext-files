@@ -7,6 +7,12 @@ and attach them to datasets, resources, etc.
 
 Read the [documentation](https://datashades.github.io/ckanext-files/) for a full user guide.
 
+Also, check [documentation](https://datashades.github.io/file-keeper/) of the
+[file-keeper](https://pypi.org/project/file-keeper/) library. It's used by this
+extension and contains logic that does not depend on CKAN and may be useful if
+you are going to implement custom storage adapter or just want to use familiar
+file abstractions in the arbitrary program.
+
 
 ## Quickstart
 
@@ -15,8 +21,7 @@ Read the [documentation](https://datashades.github.io/ckanext-files/) for a full
    pip install ckanext-files
    ```
 
-1. Add `files` to the `ckan.plugins` setting in your CKAN
-   config file.
+1. Add `files` to the `ckan.plugins` setting of the CKAN config file.
 
 1. Run DB migrations
    ```sh

@@ -276,11 +276,11 @@ def files_file_create(context: Context, data_dict: dict[str, Any]) -> dict[str, 
 
     try:
         storage_data = storage.upload(
-            filename,
+            storage.prepare_location(filename),
             data_dict["upload"],
             **extras,
         )
-    except shared.exc.UploadError as err:
+    except (shared.exc.UploadError, shared.exc.ExistingFileError) as err:
         raise tk.ValidationError({"upload": [str(err)]}) from err
 
     fileobj = File(

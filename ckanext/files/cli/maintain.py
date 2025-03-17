@@ -131,7 +131,7 @@ def missing_files(storage_name: str | None, remove: bool):
         raise click.Abort
 
     stmt = sa.select(shared.File).where(shared.File.storage == storage_name)
-    total = model.Session.scalar(sa.select(sa.func.count()).select_from(stmt))
+    total = model.Session.scalar(stmt.with_only_columns(sa.func.count()))
     missing: list[shared.File] = []
     with click.progressbar(model.Session.scalars(stmt), length=total) as bar:
         for file in bar:
@@ -145,14 +145,14 @@ def missing_files(storage_name: str | None, remove: bool):
         )
         return
 
-    click.echo("Following files are not found in storage")
+    click.echo(f"Following files are not found in the storage {storage_name}")
     for file in missing:
         size = fk.humanize_filesize(file.size)
         click.echo(
             f"\t{file.id}: {file.name} [{file.content_type}, {size}]",
         )
 
-    if remove and click.confirm("Do you want to delete these files?"):
+    if remove and click.confirm("Do you want to delete these files from registry?"):
         action = tk.get_action("files_file_delete")
 
         with click.progressbar(missing) as bar:

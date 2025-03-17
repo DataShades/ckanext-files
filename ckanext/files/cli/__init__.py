@@ -49,16 +49,10 @@ def stream(file_id: str, output: str | None, start: int, end: int | None):
         tk.error_shout(err)
         raise click.Abort from err
 
-    if (start or end) and storage.supports(shared.Capability.RANGE):
+    if (
+        (start or end) and storage.supports(shared.Capability.RANGE)
+    ) or storage.supports(shared.Capability.STREAM):
         content_stream = storage.range(shared.FileData.from_object(file), start, end)
-
-    elif storage.supports(shared.Capability.STREAM):
-        content_stream = storage.reader.range(
-            shared.FileData.from_object(file),
-            start,
-            end,
-            {},
-        )
 
     else:
         tk.error_shout("File streaming is not supported")

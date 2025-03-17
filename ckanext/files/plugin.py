@@ -134,7 +134,10 @@ def _initialize_storages():
     for name, settings in config.storages().items():
         try:
             storage = base.make_storage(name, settings)
-        except exceptions.UnknownAdapterError as err:
+        except (
+            exceptions.UnknownAdapterError,
+            exceptions.InvalidStorageConfigurationError,
+        ) as err:
             raise CkanConfigurationException(str(err)) from err
 
         base.storages.register(name, storage)

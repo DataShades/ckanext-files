@@ -29,7 +29,7 @@ class TestStorages:
         assert config.storages() == {
             "default": {
                 "type": "files:redis",
-                "prefix": "ckanext:files:test.ckan.net:file_content:",
+                "path": "ckanext:files:test.ckan.net:file_content:",
                 "override_existing": False,
                 "name": "default",
                 "supported_types": [],
@@ -54,7 +54,7 @@ class TestStorages:
         assert storages == {
             "default": {
                 "type": "files:redis",
-                "prefix": "ckanext:files:test.ckan.net:file_content:",
+                "path": "ckanext:files:test.ckan.net:file_content:",
                 "override_existing": False,
                 "name": "default",
                 "supported_types": [],
@@ -82,7 +82,7 @@ class TestStorages:
         assert storages == {
             "default": {
                 "type": "files:redis",
-                "prefix": "ckanext:files:test.ckan.net:file_content:",
+                "path": "ckanext:files:test.ckan.net:file_content:",
                 "override_existing": False,
                 "name": "default",
                 "supported_types": [],

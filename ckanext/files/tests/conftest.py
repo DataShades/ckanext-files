@@ -38,9 +38,6 @@ def files_stopped_time():
 
 @pytest.fixture()
 def clean_db(reset_db: Any, migrate_db_for: Any):
-    # fix for CKAN v2.9 issue with `reset_db` attempting to remove all
-    # registered models, not only core-models
-    migrate_db_for("files")
     reset_db()
     migrate_db_for("files")
 

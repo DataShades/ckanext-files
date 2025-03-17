@@ -15,20 +15,21 @@ from time import time
 from typing import Any
 
 import file_keeper as fk
+from typing_extensions import TypeAlias
 
 import ckan.plugins.toolkit as tk
 from ckan.config.declaration import Declaration, Key
 
-from . import config, model, utils
+from . import config, utils
 
 adapters = fk.adapters
 storages = fk.Registry["Storage"]({})
-Settings = fk.Settings
-Uploader = fk.Uploader
-Manager = fk.Manager
+Settings: TypeAlias = fk.Settings
+Uploader: TypeAlias = fk.Uploader
+Manager: TypeAlias = fk.Manager
 
-FileData: type[fk.FileData[model.File]] = fk.FileData
-MultipartData: type[fk.MultipartData[model.Multipart]] = fk.MultipartData
+FileData: TypeAlias = fk.FileData
+MultipartData: TypeAlias = fk.MultipartData
 
 make_storage = fk.make_storage
 

@@ -21,4 +21,4 @@ class RedisStorage(shared.Storage, rd.RedisStorage):
         )
         declaration.declare(key.redis_url).set_description(
             "Static prefix of the Redis key generated for every upload.",
-        ).append_validators("configured_default('ckan.redis.url')")
+        ).append_validators("configured_default('ckan.redis.url',None)")

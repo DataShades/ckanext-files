@@ -5,6 +5,20 @@ services that do the actual job: Reader, Uploader and Manager. To define a
 custom storage, you need to extend the main storage class, describe storage
 logic and register storage via `IFiles.files_get_storage_adapters`.
 
+/// admonition | Info
+    type: info
+
+ckanext-files uses [file-keeper](https://pypi.org/project/file-keeper/) that
+has approximately the same workflow of registering new adapters. Main
+difference is that ckanext-files creates wrappers around file-keeper's base
+classes to provide better CKAN integration. For example
+`declare_config_options` method exists only in ckanext-files and helps in
+understanding how storage can be configured, while file-keeper requires
+checking the source code or documentation to find out the list of possible
+configuration options.
+
+///
+
 Let's implement DB storage. It will store files in SQL table using
 SQLAlchemy. There will be just one requirement for the table: it must have
 column for storing unique identifier of the file and another column for storing
@@ -46,7 +60,7 @@ After installing and enabling your custom plugin, you can configure storage
 with this adapter by adding a single new line to config file:
 
 ```ini
-ckanext.files.storage.db.type = files:db
+ckanext.files.storage.db.type = example:db
 ```
 
 But if you check storage via `ckan files storages -v`, you'll see that it can't
@@ -69,7 +83,7 @@ configuration. As files will be stored in the DB table, we need the *name of
 the table* and *DB connection string*. Let's assume that table already exists,
 but we don't know which columns to use for files. So we need name of column for
 content and for file's unique identifier. ckanext-files uses term `location`
-instead of identifier, so we'll do the same in our implementation.
+instead of identifier, and we'll do the same in our implementation.
 
 There are 4 required options in total:
 
@@ -78,52 +92,88 @@ There are 4 required options in total:
 * `location_column`: name of column for file's unique identifier
 * `content_column`: name of column for file's content
 
-!!! tip
+/// admonition
+    type: tip
 
-    It's not mandatory, but is highly recommended that you declare config options
-    for the adapter. It can be done via `Storage.declare_config_options` class
-    method, which accepts `declaration` object and `key` namespace for storage
-    options.
+It's not mandatory, but is highly recommended that you declare config options
+for the adapter. It can be done via `Storage.declare_config_options` class
+method, which accepts `declaration` object and `key` namespace for storage
+options.
 
-    ```python
-    class DbStorage(shared.Storage):
-
-        @classmethod
-        def declare_config_options(cls, declaration, key):
-            declaration.declare(key.db_url).required()
-            declaration.declare(key.table).required()
-            declaration.declare(key.location_column).required()
-            declaration.declare(key.content_column).required()
-
-    ```
-
-And we probably want to initialize DB connection when storage is
-initialized. For this we'll extend constructor, which must be defined as method
-accepting keyword-only arguments:
+Declarations can be used to config introspection and validation.
 
 ```python
 class DbStorage(shared.Storage):
-    ...
 
-    def __init__(self, settings: Any):
-        db_url = settings["db_url"]
-
-        self.engine = sa.create_engine(db_url)
-        self.location_column = sa.column(
-            settings["location_column"]
-        )
-        self.content_column = sa.column(settings["content_column"])
-        self.table = sa.table(
-            settings["table"],
-            self.location_column,
-            self.content_column,
-        )
-        super().__init__(settings)
+    @classmethod
+    def declare_config_options(cls, declaration, key):
+        declaration.declare(key.db_url).required()
+        declaration.declare(key.table).required()
+        declaration.declare(key.location_column).required()
+        declaration.declare(key.content_column).required()
 
 ```
 
-The table definition and columns are saved as storage attributes, to simplify
+///
+
+And we probably want to initialize DB connection when storage is
+initialized.
+
+The first step here is to extend `shared.Settings` dataclass and define:
+
+* custom options
+* initialization of custom properties(DB connection)
+
+Options are defined as dataclass' fields, while initialization happens inside
+its `__post_init__` method.
+
+```python
+import dataclasses
+
+@dataclasses.dataclass()
+class Settings(fk.Settings):
+    db_url: str = ""
+    table_name: str = ""
+    location_column: str = ""
+    content_column: str = ""
+
+    engine: sa.Engine = None  # type: ignore
+    table: Any = None
+    location: Any = None
+    content: Any = None
+
+
+    def __post_init__(self, **kwargs: Any):
+        super().__post_init__(**kwargs)
+
+        self.engine = sa.create_engine(self.db_url)
+        self.location = sa.column(self.location_column)
+        self.content = sa.column(self.content_column)
+        self.table = sa.table(self.table_name, self.location, self.content)
+```
+
+The table definition and columns are saved as settings attributes as well, to simplify
 building SQL queries in future.
+
+Now we need to specify this new dataclass as a `SettingsFactory` for the custom storage:
+
+```py
+class DbStorage(shared.Storage):
+    ...
+
+    SettingsFactory = Settings
+```
+
+In this way, whenever `DbStorage` is initialized, it creates `Settings`
+instance with configuration options from the config file and saves this
+`Settings` instance as `self.settings`. In the end, if you have
+`ckanext.files.storage.db.db_url = hello://world`, it can be accessed as:
+
+```py
+
+storage = get_storage("db")
+print(storage.settings.db_url)
+```
 
 ## Services
 
@@ -159,6 +209,24 @@ class DbManager(shared.Manager):
     ...
 ```
 
+/// admonition
+    type: tip
+
+It's also possible to specify service factories using settings-like style:
+
+```py
+class DbStorage(shared.Storage):
+    ...
+    UploaderFactory = DbUploader
+    ManagerFactory = DbManager
+    ReaderFactory = DbReader
+```
+
+Using `*Factory` attributes may be simpler, but `make_*` methods have higher
+flexibility.
+
+///
+
 ### Uploader
 
 Our first target is Uploader service. It's responsible for file creation. For
@@ -166,12 +234,13 @@ the minimal implementation it needs `upload` method and `capabilities`
 attribute which tells the storage, what exactly the Uploader can do.
 
 ```python
+
 class DbUploader(shared.Uploader):
     capabilities = shared.Capability.CREATE
 
     def upload(
         self,
-        location: str,
+        location: shared.Location,
         upload: shared.Upload,
         extras: dict[str, Any]
     ) -> shared.FileData:
@@ -180,9 +249,14 @@ class DbUploader(shared.Uploader):
 
 `upload` receives the `location`(name) of the uploaded file; `upload` object
 with file's content; and `extras` dictionary that contains any additional
-arguments that can be passed to uploader. We are going to ignore `location` and
-generate a unique UUID for every uploaded file instead of using user-defined
-filename.
+arguments that can be passed to uploader.
+
+`Location` type is an alias for `str` that helps identify potentially unsecure
+invocations of the `Uploader.upload` method.  We are going to ignore `location`
+and generate a unique UUID for every uploaded file instead of using
+user-defined filename. Because of it, it doesn't matter whether you pass
+`str(uuid_location)` or `shared.Location(uuid_location)` to the `upload` method
+in the end.
 
 The goal is to write the file into DB and return `shared.FileData` that
 contains location of the file in DB(value of `location_column`), size of the
@@ -212,17 +286,24 @@ Here's the final implementation of DbUploader:
 class DbUploader(shared.Uploader):
     capabilities = shared.Capability.CREATE
 
-    def upload(self, location: str, upload: shared.Upload, extras: dict[str, Any]) -> shared.FileData:
+    def upload(
+        self,
+        location: shared.Location,
+        upload: shared.Upload,
+        extras: dict[str, Any]
+    ) -> shared.FileData:
         uuid = make_uuid()
         reader = upload.hashing_reader()
 
-        values = {
-            self.storage.location_column: uuid,
-            self.storage.content_column: reader.read(),
-        }
-        stmt = sa.insert(self.storage.table, values)
+        cfg = self.storage.settings
 
-        result = self.storage.engine.execute(stmt)
+        values = {
+            cfg.location: uuid,
+            cfg.content: reader.read(),
+        }
+        stmt = sa.insert(cfg.table, values)
+
+        result = cfg.engine.execute(stmt)
 
         return shared.FileData(
             uuid,
@@ -287,23 +368,28 @@ class DbReader(shared.Reader):
     capabilities = shared.Capability.STREAM
 
     def stream(self, data: shared.FileData, extras: dict[str, Any]) -> Iterable[bytes]:
+        cfg = self.storage.settings
+
         stmt = (
-            sa.select(self.storage.content_column)
-            .select_from(self.storage.table)
-            .where(self.storage.location_column == data.location)
+            sa.select(cfg.content)
+            .select_from(cfg.table)
+            .where(cfg.location == data.location)
         )
-        row = self.storage.engine.execute(stmt).fetchone()
+        row = cfg.engine.execute(stmt).fetchone()
 
         return row
 
 ```
 
-!!! info
+/// admonition
+    type: info
 
-    The result may be confusing: we returning Row object from the stream
-    method. But our goal is to return *any* iterable that produces bytes. Row is
-    iterable(tuple-like). And it contains only one item - value of column with file
-    content, i.e, bytes. So it satisfies the requirements.
+The result may be confusing: we returning Row object from the stream
+method. But our goal is to return *any* iterable that produces bytes. Row is
+iterable(tuple-like). And it contains only one item - value of column with file
+content, i.e, bytes. So it satisfies the requirements.
+
+///
 
 Now you can check content via CLI once again.
 
@@ -332,8 +418,10 @@ class DbManager(shared.Manager):
     capabilities = shared.Capability.SCAN | shared.Capability.REMOVE
 
     def scan(self, extras: dict[str, Any]) -> Iterable[str]:
-        stmt = sa.select(self.storage.location_column).select_from(self.storage.table)
-        for row in self.storage.engine.execute(stmt):
+        cfg = self.storage.settings
+
+        stmt = sa.select(cfg.location).select_from(cfg.table)
+        for row in cfg.engine.execute(stmt):
             yield row[0]
 
     def remove(
@@ -341,10 +429,12 @@ class DbManager(shared.Manager):
         data: shared.FileData | shared.MultipartData,
         extras: dict[str, Any],
     ) -> bool:
-        stmt = sa.delete(self.storage.table).where(
-            self.storage.location_column == data.location,
+        cfg = self.storage.settings
+
+        stmt = sa.delete(cfg.table).where(
+            cfg.location == data.location,
         )
-        self.storage.engine.execute(stmt)
+        cfg.engine.execute(stmt)
         return True
 ```
 
@@ -362,3 +452,40 @@ ckanapi action files_file_delete id=bdfc0268-d36d-4f1b-8a03-2f2aaa21de24
 That's all you need for the basic storage. But check definition of base storage
 and services to find details about other methods. And also check implementation
 of other storages for additional ideas.
+
+/// admonition | Registering file-keeper's adapters
+    type: tip
+
+Adapters registered in file-keeper using its entry-points are not available in
+CKAN. But it can be easily changed, by creating wrapper class and registering
+it using `IFiles`:
+
+
+```py
+
+from file_keeper_extension.adapters import CustomStorage
+from ckanext.files import shared
+
+# make sure you used `shared.Storage` as a leftmost ancestor
+class WrappedCustomStorage(shared.Storage, CustomStorage)
+
+    # describe settings, mainly to validate them in advance
+    @classmethod
+    def declare_config_options(cls, declaration: Declaration, key: Key):
+        super().declare_config_options(declaration, key)
+
+        # declare CustomStorage's configuration here
+        ...
+
+# in plugin.py
+class MyPlugin(p.SingletonPlugin):
+    p.implements(interfaces.IFiles, inherit=True)
+
+    def files_get_storage_adapters(self):
+        return {
+            "my:custom": WrappedCustomStorage,
+        }
+
+```
+
+///

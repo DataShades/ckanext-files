@@ -10,9 +10,9 @@
 ckanext-files registers few utilities inside CKAN JS namespace to help with
 building UI components.
 
-First group of utilities registered inside CKAN Sandbox. Inside CKAN JS modules
-it's accessible as `this.sandbox`. If you are writing code outside of JS
-modules, Sandbox can be initialized via call to `ckan.sandbox()`
+First group of utilities is registered inside CKAN Sandbox. Inside CKAN JS
+modules it's accessible as `this.sandbox`. If you are writing code outside of
+JS modules, Sandbox can be initialized via call to `ckan.sandbox()`
 
 ```js
 const sandbox = ckan.sandbox()

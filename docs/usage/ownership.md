@@ -2,8 +2,7 @@
 
 Every file *can* have an owner and there can be only one owner of the
 file. It's possible to create file without an owner, but usually application
-will only benefit from keeping every file with its owner. Owner is described
-with two fields: ID and type.
+will get essential benefits from keeping every file with its owner.
 
 When file is created, by default the current user from API action's context is
 assigned as an owner of the file. From now on, the owner can perform other
@@ -37,8 +36,8 @@ the name of operation(`show`, `update`, `delete`,
 `file_transfer`). `files_file_allows` checks permission for accessed file. It's
 usually called when user interacts with file directly. `files_owner_allows`
 works with owner described by type and ID. It's usually called when user
-transfer file ownership, perform bulk file operation for owner files, or just
-trying to get the list of files that belongs to owner.
+transfer file ownership, perform bulk file operation with owner's files, or
+just trying to get the list of files that belongs to the owner.
 
 If method returns true/false, operation is allowed/denied. If method returns
 `None`, default logic used to check access.
@@ -54,10 +53,10 @@ options that modify this restriction.
 file owned by entity if user already has access to entity itself. Use words
 like `package`, `resource`, `group` instead of `ENTITY_TYPE`.
 
-For example: file is owned by *resource*. If cascade access is enabled, whoever
-has access to `resource_show` of the *resource*, can also see the file owned by
-this resource. If user passes `resource_update` for *resource*, he can also
-modify the file owned by this resource, etc.
+For example: file is owned by *resource*. If cascade access for `resource` is
+enabled, whoever has access to `resource_show` of the *resource*, can also see
+the file owned by this resource. If user passes `resource_update` for
+*resource*, he can also modify the file owned by this resource, etc.
 
 !!! danger
     Be careful and do not add `user` to
@@ -67,10 +66,28 @@ modify the file owned by this resource, etc.
 
 The second option is `ckanext.files.owner.transfer_as_update`.  When
 transfer-as-update enabled, any user who has `<OWNER_TYPE>_update` permission,
-can transfer own files to this `OWNER_TYPE`. Intead of using this option, you
-can define `<OWNER_TYPE>_file_transfer`.
+can transfer own files to this `OWNER_TYPE`. I.e, if you can `resource_update`,
+you can transfer files owned by you to this resource. Afther that, if
+`cascade_access` for `resource` is enabled, anyone who can read the resource,
+can read the file owned by it as well.
+
+/// admonition | Alternative
+    type: tip
+
+Intead of using this option, you can create `<OWNER_TYPE>_file_transfer` auth
+function.
+
+///
 
 And the third option is `ckanext.files.owner.scan_as_update`.  Just as with
 ownership transfer, it gives user permission to list all files of the owner if
-user can `<OWNER_TYPE>_update` it. Intead of using this option, you
-can define `<OWNER_TYPE>_file_scan`.
+user can `<OWNER_TYPE>_update` it.  If you can `resource_update` the resource,
+you can also `files_file_scan` this resource and see the list of all files
+owned by it.
+
+/// admonition | Alternative
+    type: tip
+
+Instead of using this option, you can define `<OWNER_TYPE>_file_scan`.
+
+///

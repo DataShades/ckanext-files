@@ -36,7 +36,7 @@ ckanext.files.storage.default.path = /tmp/example
 ckanext.files.storage.default.create_path = true
 ```
 
-The `default` storage is special. ckanext-files use it by default, as name
+The `default` storage is special. ckanext-files uses it _by default_, as name
 suggests. If you remove configuration for the `default` storage and try to
 create a file, you'll see the following error:
 
@@ -47,10 +47,10 @@ ckanapi action files_file_create name=hello.txt upload@/tmp/myfile.txt
 ... ckan.logic.ValidationError: None - {'storage': ['Storage default is not configured']}
 ```
 
-Storage **default** is not configured. That's why we need `default`
+"Storage **default** is not configured" - that's why we need `default`
 configuration. But if you want to upload a file into a different storage or you
-don't want to add the `default` storage at all, you can always specify
-explicitly the name of the storage you are going to use.
+don't want to add the `default` storage at all, you can specify explicitly the
+name of the storage you are going to use.
 
 === "API"
 
@@ -59,7 +59,8 @@ explicitly the name of the storage you are going to use.
     ```sh
     echo 'hello world' > /tmp/myfile.txt
     ckanapi action files_file_create name=hello.txt \
-        upload@/tmp/myfile.txt storage=memory
+        upload@/tmp/myfile.txt \
+        storage=memory
     ```
 
 === "Python"

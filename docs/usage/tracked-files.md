@@ -5,7 +5,7 @@ There is a difference between creating files via action:
 ```python
 tk.get_action("files_file_create")(
     {"ignore_auth": True},
-    {"upload": "hello", "name": "hello.txt"}
+    {"upload": b"hello", "name": "hello.txt"}
 )
 ```
 
@@ -15,11 +15,11 @@ and via direct call to `Storage.upload`:
 from ckanext.files.shared import get_storage, make_upload
 
 storage = get_storage()
-storage.upload("hello.txt", make_upload(b"hello"), {})
+storage.upload("hello.txt", make_upload(b"hello"))
 ```
 
 The former snippet creates a *tracked* file: file uploaded to the storage and
-its details are saved to database.
+its details are saved to the database.
 
 The latter snippet creates an *untracked* file: file uploaded to the storage,
 but its details are not saved anywhere.
@@ -51,7 +51,7 @@ etc:
     ...       "ctime": "2024-06-02T14:53:12.345358+00:00",
     ...       "hash": "5eb63bbbe01eeed093cb22bb8f5acdc3",
     ...       "id": "67a0dc8f-be91-48cd-bc8a-9934e12a48d0",
-    ...       "location": "25c01077-c2cf-484b-a417-f231bb6b448b",
+    ...       "location": "hello.txt",
     ...       "mtime": null,
     ...       "name": "hello.txt",
     ...       "size": 11,
@@ -76,7 +76,7 @@ etc:
     ...       "ctime": "2024-06-02T14:53:12.345358+00:00",
     ...       "hash": "5eb63bbbe01eeed093cb22bb8f5acdc3",
     ...       "id": "67a0dc8f-be91-48cd-bc8a-9934e12a48d0",
-    ...       "location": "25c01077-c2cf-484b-a417-f231bb6b448b",
+    ...       "location": "hello.txt",
     ...       "mtime": null,
     ...       "name": "hello.txt",
     ...       "size": 5,

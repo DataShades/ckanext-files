@@ -24,8 +24,8 @@ operations that can be supported by storage:
 | PUBLIC_LINK    | make permanent public link                                             |
 
 These capabilities are defined when storage is created and are automatically
-checked by actions that work with storage. If you want to check if storage
-supports certain capability, it can be done manually. If you want to check
+checked by actions that work with storage. For manual checks use
+`Storage.supports` method with the specific capability. If you want to check
 presence of multiple capabilities at once, you can combine them via bitwise-or
 operator.
 

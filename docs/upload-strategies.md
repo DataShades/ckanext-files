@@ -29,9 +29,9 @@ Cons:
 
 ## Automatically transfer ownership using validator
 
-Add `files_transfer_ownership(owner_type)` to the validation schema of
-entity. When it validated, ownership transfer task is queued and file
-automatically transfered to the entity after the update.
+Add `files_transfer_ownership(owner_type)` to the validation schema of entity
+and put the ID of the file into it. When it validated, ownership transfer task
+is queued and file automatically transfered to the entity after the update.
 
 Pros:
 
@@ -54,6 +54,10 @@ anything with the file, as it never left server's temporal directory. If action
 finished without an error, the task is executed and file uploaded/attached to
 action result.
 
+Basically, it's an extension of the previous option, that allows you to use
+`input[type=file]` for upload instead of `input[type=text]` for existing file
+ID.
+
 Pros:
 
 * can be used together with native group/user/resource form after small
@@ -71,10 +75,16 @@ Cons:
 
 ## Add a new action that combines uploads, modifications and ownership transfer
 
-If you want to add attachmen to dataset, create a separate action that accepts
+If you want to add attachment to dataset, create a separate action that accepts
 dataset ID and uploaded file. Internally it will upload the file by calling
 `files_file_create`, then update dataset via `packaage_patch` and finally
 transfer ownership via `files_transfer_ownership`.
+
+Even better, you can just create a file and transfer ownership to dataset. No
+need to put file's ID into dataset field, as they are already connected via
+ownership entity. As long as you don't need to expose file details inside
+dataset's API representation, you can use `files_file_scan` or
+`files_file_search` to list all the dataset's files.
 
 Pros:
 

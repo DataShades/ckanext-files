@@ -62,7 +62,7 @@ And that's what you see as result:
   "ctime": "2024-06-02T15:02:14.819117+00:00",
   "hash": "5eb63bbbe01eeed093cb22bb8f5acdc3",
   "id": "e21162ab-abfb-476c-b8c5-5fe7cb89eca0",
-  "location": "24d27fb9-a5f0-42f6-aaa3-7dcb599a0d46",
+  "location": "hello.txt",
   "mtime": null,
   "name": "hello.txt",
   "size": 11,
@@ -78,32 +78,37 @@ call's output in the command `ckan files stream ID`:
 ckan files stream e21162ab-abfb-476c-b8c5-5fe7cb89eca0
 ```
 
-Alternatively, we can use Redis CLI to get the content of the file. Note, you
-cannot get the content via CKAN API, because it's JSON-based and streaming
+Alternatively, we can use Redis CLI to get the content of the file.
+
+/// admonition | Note
+File cannot be streamed via CKAN API, because it's JSON-based and streaming
 files doesn't suit its principles.
+///
 
-By default, Redis adapter puts the content under the key
-`<PREFIX><LOCATION>`. Pay attention to `LOCATION`. It's the value available as
-`location` in the API response(i.e, `24d27fb9-a5f0-42f6-aaa3-7dcb599a0d46` in
-our case). It's different from the `id`(ID used by DB to uniquely identify file
-record) and `name`(human readable name of the file). In our scenario,
-`location` looks like UUID because of the internal details of Redis adapter
-implementation. But different adapters may use more path-like value,
-i.e. something similar to `path/to/folder/hello.txt`.
+By default, Redis adapter puts the content into hash
+`ckanext:files:default:file_content`. Inside it, file stored under the key that
+matches `location` in the API response(i.e, `hello.txt` in our case). It's
+different from the `id`(used to connect a file from the storage to its metadata
+stored in CKAN DB) and `name`(human readable name of the file). In our
+scenario, `location` matches filename because of the internal details of Redis
+adapter implementation. But different adapters can use more path-like
+value(`path/to/folder/hello.txt`), or even
+UUID(`24d27fb9-a5f0-42f6-aaa3-7dcb599a0d46`)
 
-`PREFIX` can be configured, but we skipped this step and got the default value:
-`ckanext:files:default:file_content:`. So the final Redis key of our file is
-`ckanext:files:default:file_content:24d27fb9-a5f0-42f6-aaa3-7dcb599a0d46`
+The name of the Redis hash(`ckanext:files:default:file_content`) is
+configurable, but we skipped this step and got the default value:
+`ckanext:files:default:file_content`.
 
-```redis
-redis-cli
+```sh
+$ redis-cli
 
-127.0.0.1:6379> GET ckanext:files:default:file_content:24d27fb9-a5f0-42f6-aaa3-7dcb599a0d46
+127.0.0.1:6379> HGET ckanext:files:default:file_content hello.txt
 "hello world"
 ```
 
-!!! tip "Don't forget to remove the file:"
-
-    ```sh
-    ckanapi action files_file_delete id=e21162ab-abfb-476c-b8c5-5fe7cb89eca0
-    ```
+/// admonition | Don't forget to remove the file
+    type: tip
+```sh
+ckanapi action files_file_delete id=e21162ab-abfb-476c-b8c5-5fe7cb89eca0
+```
+///

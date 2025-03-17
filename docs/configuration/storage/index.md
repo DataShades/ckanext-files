@@ -22,8 +22,8 @@ regsitered by Redis adapter alongside with the global options:
 ## ...
 ## Storage adapter used by the storage
 ckanext.files.storage.xxx.type = files:redis
-## Static prefix of the Redis key generated for every upload.
-ckanext.files.storage.xxx.prefix = ckanext:files:default:file_content:
+## Name of the Redis hash that contains all uploads
+ckanext.files.storage.xxx.path = ckanext:files:default:file_content
 ```
 
 Sometimes you will see a validation error if storage has required config

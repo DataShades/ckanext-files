@@ -6,27 +6,33 @@ multiple stages. It can be used in following situations:
 * a really big file must be uploaded to cloud. It cannot fit into server's
   temporal storage, so you split the file into smaller part and upload them
   separately. Every part is uploaded to server and next part must wait till the
-  previous moved from server to cloud. This is a multipart upload.
+  previous moved from server to cloud. This is a _multipart_ upload.
 * client has unstable or slow connection. Any upload takes ages and quite often
-  connection is interrupted so user has to spend extra time for re-uploading
+  connection is interrupted so user has to spend extra time re-uploading
   files. To improve user experience, you want to track the upload progress and
   keep incomplete file on server. If connection is interrupted, user can
   continue upload from the point he stopped the last time, appending content to
-  existing incomplete file. This is a resumable upload.
+  existing incomplete file. This is a _resumable_ upload.
 * files are kept on cloud and uploads are quite intense on the portal. You
   don't want to spend server resources on transferring content from client to
   cloud. Instead you generate a URL that allows user to upload a single file
   directly into specific location on cloud. User sends data to this URL and
   only notifies the application, when upload is finished, so that the
-  application can make file visible. This is a signed upload.
+  application can make file visible. This is a _signed_ upload.
 
-All these situations are handled by 4 API actions, which are available if
-storage has `MULTIPART` capability:
+All these situations are united inside 4 API actions, which are available if
+storage has `MULTIPART` capability. Whether only one strategy is used all the
+time, or you can choose which flavor of multipart upload you'll use, it all
+depends on the storage adapter. Adapters available out of the box in
+ckanext-files usually implement only one strategy.
+
+The following API actions are used in multipart workflow:
 
 * `files_multipart_start`: initialize multipart upload and set expected final
-  size and MIMEtype. Real multipart upload usually just return upload ID from
-  this action. Resumable upload creates empty file in the storage to accumulate
-  content inside it. Signed upload produces a URL for direct upload.
+  size and MIMEtype. Basic _multipart_ upload usually just returns upload ID
+  from this action. _Resumable_ upload creates empty file in the storage to
+  accumulate content inside it. _Signed_ upload produces a URL for direct
+  upload.
 * `files_multipart_update`: upload the fragment of the file of modify the
   upload in some other way. Most often this action accepts ID of the upload and
   `upload` field with fragment of the uploaded file.
@@ -35,10 +41,10 @@ storage has `MULTIPART` capability:
   how many bytes were uploaded and from which byte the next upload fragment
   starts.
 * `files_multipart_complete`: finalize the upload and convert it into normal
-  file, available to other parts of the application. Multipart upload usually
-  combines all uploaded parts into single file here. Resumable upload verifies
-  that the result has expected MIMEtype and size. Signed upload just registers
-  completed file in the system.
+  file, available to other parts of the application. _Multipart_ upload usually
+  combines all uploaded parts into single file here. _Resumable_ upload
+  verifies that the result has expected MIMEtype and size. _Signed_ upload just
+  registers completed file in the system.
 
 Implementation of multipart upload depends on the used adapter, so make sure
 you checked its documentation before using any multipart actions. There are
@@ -99,7 +105,7 @@ ckanapi action files_multipart_start name=file.txt size=13 content_type=text/pla
 ...   "ctime": "2024-06-22T14:47:01.313016+00:00",
 ...   "hash": "",
 ...   "id": "90ebd047-96a0-4f32-a810-ffc962cbc380",
-...   "location": "77e629f2-8938-4442-b825-8e344660e119",
+...   "location": "file.txt",
 ...   "name": "file.txt",
 ...   "owner_id": "59ea0f6c-5c2f-438d-9d2e-e045be9a2beb",
 ...   "owner_type": "user",
@@ -113,7 +119,7 @@ ckanapi action files_multipart_start name=file.txt size=13 content_type=text/pla
 ```
 
 Here `storage_data` contains `{"uploaded": 0}`. It may be different for other
-adaptes, especially if they implement non-consecutive uploads, but generally
+adapters, especially if they implement non-consecutive uploads, but generally
 it's the recommended way to keep upload progress.
 
 Now we'll upload first 5 bytes of file.
@@ -127,7 +133,7 @@ ckanapi action files_multipart_update id=90ebd047-96a0-4f32-a810-ffc962cbc380 \
 ...   "ctime": "2024-06-22T14:47:01.313016+00:00",
 ...   "hash": "",
 ...   "id": "90ebd047-96a0-4f32-a810-ffc962cbc380",
-...   "location": "77e629f2-8938-4442-b825-8e344660e119",
+...   "location": "file.txt",
 ...   "name": "file.txt",
 ...   "owner_id": "59ea0f6c-5c2f-438d-9d2e-e045be9a2beb",
 ...   "owner_type": "user",
@@ -164,7 +170,7 @@ ckanapi action files_multipart_complete id=90ebd047-96a0-4f32-a810-ffc962cbc380
 ...   "ctime": "2024-06-22T14:57:18.483716+00:00",
 ...   "hash": "c897d1410af8f2c74fba11b1db511e9e",
 ...   "id": "a740692f-e3d5-492f-82eb-f04e47c13848",
-...   "location": "77e629f2-8938-4442-b825-8e344660e119",
+...   "location": "file.txt",
 ...   "mtime": null,
 ...   "name": "file.txt",
 ...   "owner_id": null,
@@ -178,4 +184,4 @@ ckanapi action files_multipart_complete id=90ebd047-96a0-4f32-a810-ffc962cbc380
 
 Now file can be used normally. You can transfer file ownership to someone,
 stream or modify it. Pay attention to ID: completed file has its own unique ID,
-which is different from ID of the incomplete upload.
+which is different from the ID of the incomplete upload.

@@ -11,13 +11,13 @@ accepts `File` object for upload(the same object you can get from the
 ```js
 sandbox = ckan.sandbox()
 await sandbox.files.upload(
-    new File(["content"], "file.txt")
+    new File(["content"], "browser.txt")
 )
 
 ... {
 ...     "id": "18cdaa65-5eed-4078-89a8-469b137627ce",
-...     "name": "file.txt",
-...     "location": "b53907c3-8434-4dee-9a9e-6c4d3055d200",
+...     "name": "browser.txt",
+...     "location": "browser.txt",
 ...     "content_type": "text/plain",
 ...     "size": 7,
 ...     "hash": "9a0364b9e99bb480dd25e1f0284c8555",
@@ -33,11 +33,11 @@ If you are still using FS storage configured in previous section, switch to
 `/tmp/example` folder and check it's content:
 
 ```sh
-ls /tmp/example
-... b53907c3-8434-4dee-9a9e-6c4d3055d200
+$ ls /tmp/example
+browser.txt
 
-cat b53907c3-8434-4dee-9a9e-6c4d3055d200
-... content
+$ cat browser.txt
+content
 ```
 
 And, as usually, let's remove file using the ID from the `upload` promise:

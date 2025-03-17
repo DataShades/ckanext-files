@@ -1,14 +1,15 @@
 # Usage in code
 
-If you are writing the code and you want to interact with the storage directly,
-without the API layer, you can do it via a number of public functions of the
-extension available in `ckanext.files.shared`.
+When writing the code, instead of API calls, you can use direct storage
+interactions. It has certain disadvantages that are mentioned on the [tracked
+files page](../tracked-files), but depending on your goal, this form may be more
+convenient.
 
 Let's configure filesystem storage first. Filesystem adapter has a mandatory
-option `path` that controls filesystem location, where files are stored. If
-path does not exist, storage will raise an exception by default. But it can
-also create missing path if you enable `create_path` option. Here's our final
-version of settings:
+option `path` that controls location, where files are stored. If path does not
+exist, storage will raise an exception by default. But it can also create
+missing path if you enable `create_path` option. Here's the example of
+settings:
 
 ```ini
 ckanext.files.storage.default.type = files:fs
@@ -24,18 +25,18 @@ from ckanext.files.shared import get_storage
 storage = get_storage()
 ```
 
-Because you have all configuration in place, the rest is fairly
-straightforward. We will upload the file, read it's content and remove it from
-the CKAN shell.
+As soon as storage is initialized, the rest is fairly straightforward. We will
+upload the file, read it's content and remove it from the CKAN shell.
 
-To create the file, `storage.upload` method must be called with 2 parameters:
+To create the file, `storage.upload` method must be called with 2 mandatory
+parameters:
 
 * the human readable name of the file
-* special steam-like object with content of the file
+* special stream-like object with content of the file
 
-You can use any string as the first parameter. As for the "special stream-like
-object", ckanext-files has `ckanext.files.shared.make_upload` function, that
-accepts a number of different types(`bytes`,
+You can use any string as the first parameter for now. As for the "special
+stream-like object", ckanext-files has `ckanext.files.shared.make_upload`
+function, that accepts a number of different types(`bytes`,
 `werkzeug.datastructures.FileStorage`, `BytesIO`, file descriptor) and converts
 them into expected format.
 
@@ -45,12 +46,12 @@ them into expected format.
     from ckanext.files.shared import make_upload
 
     upload = make_upload(b"hello world")
-    result = storage.upload('file.txt', upload)
+    result = storage.upload("bytes.txt", upload)
 
     print(result)
 
     ... FileData(
-    ...     location='60b385e7-8137-496c-bb1d-6ae4d7963ab3',
+    ...     location='bytes.txt',
     ...     size=11,
     ...     content_type='text/plain',
     ...     hash='5eb63bbbe01eeed093cb22bb8f5acdc3',
@@ -65,12 +66,12 @@ them into expected format.
     from ckanext.files.shared import make_upload
 
     upload = make_upload(BytesIO(b"hello world"))
-    result = storage.upload('file.txt', upload)
+    result = storage.upload("io.txt", upload)
 
     print(result)
 
     ... FileData(
-    ...     location='60b385e7-8137-496c-bb1d-6ae4d7963ab3',
+    ...     location='io.txt',
     ...     size=11,
     ...     content_type='text/plain',
     ...     hash='5eb63bbbe01eeed093cb22bb8f5acdc3',
@@ -88,12 +89,12 @@ them into expected format.
     file.write(b"hello world")
     file.seek(0)
     upload = make_upload(file)
-    result = storage.upload('file.txt', upload)
+    result = storage.upload('tmp-file.txt', upload)
 
     print(result)
 
     ... FileData(
-    ...     location='60b385e7-8137-496c-bb1d-6ae4d7963ab3',
+    ...     location='tmp-file.txt',
     ...     size=11,
     ...     content_type='text/plain',
     ...     hash='5eb63bbbe01eeed093cb22bb8f5acdc3',
@@ -103,7 +104,7 @@ them into expected format.
 
 
 `result` is an instance of `ckanext.files.shared.FileData` dataclass. It
-contains all the information required by storage to manage the file.
+contains information required by the storage to manage the file.
 
 `result` object has `location` attribute that contains the name of the file
 *relative* to the `path` option specified in the storage configuration. If you
@@ -112,7 +113,7 @@ you'll see there a file with the name matching `location` from result. And its
 content matches the content of our upload, which is quite an expected outcome.
 
 ```sh
-cat /tmp/example/60b385e7-8137-496c-bb1d-6ae4d7963ab3
+cat /tmp/example/bytes.txt
 
 ... hello world
 ```
@@ -124,6 +125,7 @@ iterable of bytes based on our result:
 ```python
 buffer = storage.stream(result)
 content = b"".join(buffer)
+print(content)
 
 ... b'hello world'
 ```
@@ -137,7 +139,7 @@ depending on the adapter:
 ```python
 from ckanext.files.shared import FileData
 
-location = "60b385e7-8137-496c-bb1d-6ae4d7963ab3"
+location = "bytes.txt"
 data = FileData(location)
 
 buffer = storage.stream(data)

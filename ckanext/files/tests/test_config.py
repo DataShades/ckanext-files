@@ -24,12 +24,13 @@ class TestDefault:
 
 
 class TestStorages:
-    def test_empty(self):
+    def test_empty(self, ckan_config: dict[str, Any]):
         """With no customization we have only storage defined by test.ini."""
         assert config.storages() == {
             "default": {
                 "type": "files:redis",
-                "path": "ckanext:files:test.ckan.net:file_content:",
+                "path": "ckanext:files:test.ckan.net:file_content",
+                "redis_url": ckan_config["ckan.redis.url"],
                 "override_existing": False,
                 "name": "default",
                 "supported_types": [],
@@ -39,12 +40,12 @@ class TestStorages:
 
     def test_customized(self, monkeypatch: MonkeyPatch, ckan_config: dict[str, Any]):
         """Storage configuration grouped by the storage name."""
-        patches: list[tuple[str, str]] = [
+        patches: list[tuple[str, Any]] = [
             ("default.type", "files:redis"),
             ("test.type", "test"),
             ("test.path", "somepath"),
             ("another.type", "fancy"),
-            ("another.location_strategy", "hello"),
+            ("another.location_transformers", ["hello"]),
         ]
         for key, value in patches:
             monkeypatch.setitem(ckan_config, config.STORAGE_PREFIX + key, value)
@@ -54,7 +55,8 @@ class TestStorages:
         assert storages == {
             "default": {
                 "type": "files:redis",
-                "path": "ckanext:files:test.ckan.net:file_content:",
+                "path": "ckanext:files:test.ckan.net:file_content",
+                "redis_url": ckan_config["ckan.redis.url"],
                 "override_existing": False,
                 "name": "default",
                 "supported_types": [],
@@ -66,12 +68,12 @@ class TestStorages:
             },
             "another": {
                 "type": "fancy",
-                "location_strategy": "hello",
+                "location_transformers": ["hello"],
             },
         }
 
     @pytest.mark.ckan_config(config.STORAGE_PREFIX + "another", "test")
-    def test_non_setting(self):
+    def test_non_setting(self, ckan_config: dict[str, Any]):
         """Test extra items from settings.
 
         Only `<PREFIX>.<NAME>.<OPTION>` settings are grouped. If `.<OPTION>`
@@ -82,7 +84,8 @@ class TestStorages:
         assert storages == {
             "default": {
                 "type": "files:redis",
-                "path": "ckanext:files:test.ckan.net:file_content:",
+                "path": "ckanext:files:test.ckan.net:file_content",
+                "redis_url": ckan_config["ckan.redis.url"],
                 "override_existing": False,
                 "name": "default",
                 "supported_types": [],

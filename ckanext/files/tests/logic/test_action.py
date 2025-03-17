@@ -22,7 +22,7 @@ def random_file(create_with_upload: Any, faker: Any):
     )
 
 
-@pytest.mark.usefixtures("with_plugins", "clean_db")
+@pytest.mark.usefixtures("with_plugins", "clean_db", "clean_redis")
 class TestFileCreate:
     def test_basic_file(self, create_with_upload: Any):
         filename = "file.txt"
@@ -36,7 +36,7 @@ class TestFileCreate:
         assert result["name"] == "Test_file.txt"
 
 
-@pytest.mark.usefixtures("with_plugins", "clean_db")
+@pytest.mark.usefixtures("with_plugins", "clean_db", "clean_redis")
 class TestFileDelete:
     def test_basic_delete(self, random_file: dict[str, Any]):
         q = model.Session.query(File)
@@ -55,7 +55,7 @@ class TestFileShow:
         assert result["id"] == random_file["id"]
 
 
-@pytest.mark.usefixtures("with_plugins", "clean_db")
+@pytest.mark.usefixtures("with_plugins", "clean_db", "clean_redis")
 class TestTransferOwnership:
     def test_transfer_to_different_entity(
         self,

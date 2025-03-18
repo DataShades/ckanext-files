@@ -12,6 +12,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Features
 
+- redis storage uses `path` option instead of `prefix` ([d2173f2](https://github.com/DataShades/ckanext-files/commit/d2173f20b587dc40359dde9d0fdaaf42a2994fcc) by Sergey Motornyuk).
+- `location_strategy: str` replaced with `location_transformers: [str]` ([d5671ec](https://github.com/DataShades/ckanext-files/commit/d5671eca432a2201586e05992134fe67234e90f3) by Sergey Motornyuk).
+- transparent location strategy is enabled by default(use uuid for old behaviour) ([5bb414b](https://github.com/DataShades/ckanext-files/commit/5bb414b162bdcad7530557605f2fa5fd7535357a) by Sergey Motornyuk).
+- add s3 backend ([d07abf9](https://github.com/DataShades/ckanext-files/commit/d07abf9248fcd623282fd887250342e085844b70) by Sergey Motornyuk).
 - multipart complete has flags to keep data ([810ee4b](https://github.com/DataShades/ckanext-files/commit/810ee4b0596b4771662b037ecf4d4f73c803fc8b) by Sergey Motornyuk).
 - fs storage update `uploaded` property of multipart via refresh action ([51427c6](https://github.com/DataShades/ckanext-files/commit/51427c69659784afda5c62b6e0781df6aaf35f43) by Sergey Motornyuk).
 - user files list replaced by generic file list ([3d70bdd](https://github.com/DataShades/ckanext-files/commit/3d70bdd06036ac798441b4757b0df2174d8cad4b) by Sergey Motornyuk).
@@ -37,6 +41,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Bug Fixes
 
+- namespaced package cannot be discovered ([8d98ca6](https://github.com/DataShades/ckanext-files/commit/8d98ca6688a73a9586b606c17aeaef6d41d5f0ed) by Sergey Motornyuk).
+- all auth functions work with anonymous user ([5c58a8b](https://github.com/DataShades/ckanext-files/commit/5c58a8b6c5b44cb3967dc6994bcee1b067a3a54b) by Sergey Motornyuk).
+- auth function fail on anonymous request ([5cb0ca1](https://github.com/DataShades/ckanext-files/commit/5cb0ca1f8b1efd56f993ef5955d85655a5995b66) by Sergey Motornyuk).
+- fix file upload manager styles ([b8225dc](https://github.com/DataShades/ckanext-files/commit/b8225dcde806e5f1db489d8ab20f7005edc329af) by mutantsan).
 - connot complete upload because of cache ([95c41e7](https://github.com/DataShades/ckanext-files/commit/95c41e77ba0afc22140e4c086ed59e544882b48e) by Sergey Motornyuk).
 - fix file item css style ([46bef83](https://github.com/DataShades/ckanext-files/commit/46bef831d5cf6e62c0390b455309e0b999b69d3f) by mutantsan).
 - fix max file num bug ([bc46268](https://github.com/DataShades/ckanext-files/commit/bc46268b729e04b4d1b77d619b1b58ce190135be) by mutantsan).
@@ -47,6 +55,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Code Refactoring
 
+- extract implementations of adapters into file-keeper ([6bf7c6a](https://github.com/DataShades/ckanext-files/commit/6bf7c6aa8a8da8b4aff068f236327d6cc17f5582) by Sergey Motornyuk).
+- redis storage: prefix renamed to path and now files kept inside hash ([8ec6996](https://github.com/DataShades/ckanext-files/commit/8ec6996948b52d39800a0581fe0f754697e270f1) by Sergey Motornyuk).
 - Storage constructor accepts a single dictionary with settings ([285ddc7](https://github.com/DataShades/ckanext-files/commit/285ddc7d484b638e3e1bacca8f9c1b71a2e9c369) by Sergey Motornyuk).
 - remove HashingReader.reset ([7e67d5f](https://github.com/DataShades/ckanext-files/commit/7e67d5f5df2c897debbd5b1cc7177d21cdca2673) by Sergey Motornyuk).
 - do not allow str as upload source ([cae738d](https://github.com/DataShades/ckanext-files/commit/cae738d7203b9991425661c1c2d00ddb68fc2bd9) by Sergey Motornyuk).
@@ -185,4 +195,3 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## [v0.0.1](https://github.com/DataShades/ckanext-files/releases/tag/v0.0.1) - 2021-09-21
 
 <small>[Compare with first commit](https://github.com/DataShades/ckanext-files/compare/d57d17e412821d56a9f5262636be89311e8050fc...v0.0.1)</small>
-

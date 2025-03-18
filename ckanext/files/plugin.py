@@ -69,10 +69,8 @@ class FilesPlugin(p.SingletonPlugin):
             if not adapter:
                 continue
 
-            adapter.declare_config_options(
-                declaration,
-                storage_key,
-            )
+            if func := getattr(adapter, "declare_config_options", None):
+                func(declaration, storage_key)
 
     # IFiles
     def files_get_storage_adapters(self) -> dict[str, type[base.Storage]]:

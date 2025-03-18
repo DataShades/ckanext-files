@@ -19,7 +19,7 @@ from .owner import Owner
 foreign: Any
 
 
-class Multipart(Base):  # type: ignore
+class Multipart(Base):
     """Model with details of incomplete upload.
 
     Keyword Args:
@@ -90,7 +90,7 @@ class Multipart(Base):  # type: ignore
         uselist=False,
         cascade="delete, delete-orphan",
         lazy="joined",
-    )  # type: ignore
+    )
 
     @property
     def owner(self) -> Any | None:

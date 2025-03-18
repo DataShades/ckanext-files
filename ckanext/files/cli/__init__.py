@@ -151,7 +151,7 @@ def scan(
 
         if track and is_untracked:
             try:
-                data = storage.analyze(name)
+                data = storage.analyze(shared.Location(name))
             except exceptions.UnsupportedOperationError as err:
                 tk.error_shout(err)
                 raise click.Abort from err

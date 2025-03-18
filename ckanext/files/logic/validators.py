@@ -390,7 +390,7 @@ def files_validate_with_storage(storage_name: str):
 
     def validator(value: shared.Upload):
         try:
-            storage.validate(value)
+            storage.validator.upload(value)
         except exceptions.UploadError as err:
             raise tk.Invalid(str(err)) from err
         return value

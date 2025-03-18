@@ -19,7 +19,7 @@ from .owner import Owner
 foreign: Any
 
 
-class File(Base):  # type: ignore
+class File(Base):
     """Model with file details.
 
     Keyword Args:

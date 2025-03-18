@@ -44,7 +44,7 @@ def empty_owner(storage_name: str | None, remove: bool):
         .where(shared.File.storage == storage_name, shared.Owner.owner_id.is_(None))
     )
 
-    total = model.Session.scalar(sa.select(sa.func.count()).select_from(stmt))
+    total = model.Session.scalar(stmt.with_only_columns(sa.func.count()))
     if not total:
         click.echo(f"Every file in storage {storage_name} has owner reference")
         return
@@ -95,10 +95,11 @@ def invalid_owner(storage_name: str | None, remove: bool):
     click.echo("Following files have dangling owner reference")
     for file in files:
         size = fk.humanize_filesize(file.size)
-        click.echo(
-            f"\t{file.id}: {file.name} [{file.content_type}, {size}]. "
-            + f"Owner: {file.owner_info.owner_type} {file.owner_info.owner_id}",
-        )
+        if owner := file.owner_info:
+            click.echo(
+                f"\t{file.id}: {file.name} [{file.content_type}, {size}]. "
+                + f"Owner: {owner.owner_type} {owner.owner_id}",
+            )
 
     if remove and click.confirm("Do you want to delete these files?"):
         action = tk.get_action("files_file_delete")

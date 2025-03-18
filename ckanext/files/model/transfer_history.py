@@ -13,7 +13,7 @@ from .base import Base, now
 from .owner import Owner
 
 
-class TransferHistory(Base):  # type: ignore
+class TransferHistory(Base):
     """Model for tracking ownership history of the file.
 
     Keyword Args:
@@ -67,7 +67,7 @@ class TransferHistory(Base):  # type: ignore
     current: Mapped[Owner] = relationship(
         Owner,
         backref=backref("history", cascade="delete, delete-orphan"),
-    )  # type: ignore
+    )
 
     def dictize(self, context: Context):
         return table_dictize(self, context)

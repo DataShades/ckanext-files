@@ -194,7 +194,7 @@ def files_file_search(  # noqa: C901, PLR0912, PLR0915
 
         stmt = stmt.where(col.bool_op(op)(v))
 
-    total = sess.scalar(sa.select(sa.func.count()).select_from(stmt))
+    total = sess.scalar(stmt.with_only_columns(sa.func.count()))
 
     parts = data_dict["sort"].split(".")
     sort = parts[0]
@@ -348,7 +348,10 @@ def files_file_replace(context: Context, data_dict: dict[str, Any]) -> dict[str,
         raise tk.ValidationError({"storage": ["Operation is not supported"]})
 
     try:
-        storage_data = storage.upload(fileobj.name, data_dict["upload"])
+        storage_data = storage.upload(
+            storage.prepare_location(fileobj.name),
+            data_dict["upload"],
+        )
     except shared.exc.UploadError as err:
         raise tk.ValidationError({"upload": [str(err)]}) from err
 
@@ -542,11 +545,12 @@ def files_multipart_start(
         raise tk.ValidationError({"storage": ["Operation is not supported"]})
 
     filename = secure_filename(data_dict["name"])
+    location = storage.prepare_location(filename)
     try:
         data = storage.multipart_start(
-            filename,
+            location,
             shared.MultipartData(
-                filename,
+                location,
                 data_dict["size"],
                 data_dict["content_type"],
                 data_dict["hash"],

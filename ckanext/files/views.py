@@ -91,7 +91,7 @@ def dispatch_download(file_id: str) -> Response:
 
 def _streaming_file(
     item: shared.File,
-    storage: shared.Storage,
+    storage: fk.Storage,
     data: shared.FileData,
 ) -> Response | None:
     if storage.supports(shared.Capability.STREAM):

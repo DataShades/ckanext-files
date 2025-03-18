@@ -23,7 +23,7 @@ from ckan.config.declaration import Declaration, Key
 from . import config, utils
 
 adapters = fk.adapters
-storages = fk.Registry["Storage"]({})
+storages = fk.Registry["fk.Storage"]()
 Settings: TypeAlias = fk.Settings
 Uploader: TypeAlias = fk.Uploader
 Manager: TypeAlias = fk.Manager
@@ -34,7 +34,7 @@ MultipartData: TypeAlias = fk.MultipartData
 make_storage = fk.make_storage
 
 
-def get_storage(name: str | None = None) -> Storage:
+def get_storage(name: str | None = None) -> fk.Storage:
     """Return existing storage instance.
 
     Storages are initialized when plugin is loaded. As result, this function

@@ -1,7 +1,7 @@
 from file_keeper import Capability, HashingReader, Location, Upload, make_upload
+from file_keeper.core import exceptions as exc
 
 from . import config, types
-from . import exceptions as exc
 from .base import (
     FileData,
     Manager,

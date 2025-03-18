@@ -10,7 +10,7 @@ import click
 import ckan.plugins.toolkit as tk
 from ckan import model, sys
 
-from ckanext.files import base, config, exceptions, shared
+from ckanext.files import base, config, shared
 from ckanext.files.model import File, Owner
 
 from . import dev, maintain, migrate, stats
@@ -45,7 +45,7 @@ def stream(file_id: str, output: str | None, start: int, end: int | None):
 
     try:
         storage = shared.get_storage(file.storage)
-    except exceptions.UnknownStorageError as err:
+    except shared.exc.UnknownStorageError as err:
         tk.error_shout(err)
         raise click.Abort from err
 
@@ -133,7 +133,7 @@ def scan(
 
     try:
         files = storage.scan()
-    except exceptions.UnsupportedOperationError as err:
+    except shared.exc.UnsupportedOperationError as err:
         tk.error_shout(err)
         raise click.Abort from err
 
@@ -152,7 +152,7 @@ def scan(
         if track and is_untracked:
             try:
                 data = storage.analyze(shared.Location(name))
-            except exceptions.UnsupportedOperationError as err:
+            except shared.exc.UnsupportedOperationError as err:
                 tk.error_shout(err)
                 raise click.Abort from err
 

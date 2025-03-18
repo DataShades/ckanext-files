@@ -26,7 +26,7 @@ import file_keeper as fk
 import ckan.plugins.toolkit as tk
 from ckan.types import FlattenKey
 
-from ckanext.files import base, exceptions, types
+from ckanext.files import base, types
 
 _task_queue: contextvars.ContextVar[deque[types.PTask] | None] = contextvars.ContextVar(
     "transfer_queue",
@@ -320,6 +320,13 @@ def with_task_queue(func: Any, name: str | None = None):
     return wrapper
 
 
+class OutOfQueueError(RuntimeError):
+    """Attempt to add task without initializing task queue context."""
+
+    def __str__(self):
+        return "Task queue accessed outside of queue context"
+
+
 def add_task(task: types.PTask):
     """Add task to the current task queue.
 
@@ -350,5 +357,5 @@ def add_task(task: types.PTask):
     """
     queue = _task_queue.get()
     if queue is None:
-        raise exceptions.OutOfQueueError
+        raise OutOfQueueError
     queue.append(task)

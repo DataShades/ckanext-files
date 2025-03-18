@@ -49,8 +49,7 @@ def get_storage(name: str | None = None) -> fk.Storage:
         storage instance
 
     Raises:
-        exceptions.UnknownStorageError: storage with the given name is not
-            configured
+        UnknownStorageError: storage with the given name is not configured
 
     Example:
         ```

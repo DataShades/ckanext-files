@@ -12,7 +12,7 @@ from ckan import model
 from ckan.exceptions import CkanConfigurationException
 from ckan.logic import clear_validators_cache
 
-from . import base, config, exceptions, interfaces, storage, types, utils
+from . import base, config, interfaces, shared, storage, types, utils
 
 
 @tk.blanket.helpers
@@ -133,8 +133,8 @@ def _initialize_storages():
         try:
             storage = base.make_storage(name, settings)
         except (
-            exceptions.UnknownAdapterError,
-            exceptions.InvalidStorageConfigurationError,
+            shared.exc.UnknownAdapterError,
+            shared.exc.InvalidStorageConfigurationError,
         ) as err:
             raise CkanConfigurationException(str(err)) from err
 

@@ -9,7 +9,7 @@ import ckan.plugins.toolkit as tk
 from ckan import authz
 from ckan.types import Context, FlattenDataDict, FlattenErrorDict, FlattenKey
 
-from ckanext.files import exceptions, shared, task
+from ckanext.files import shared, task
 from ckanext.files.shared import File, FileData, get_storage
 
 log = logging.getLogger(__name__)
@@ -391,7 +391,7 @@ def files_validate_with_storage(storage_name: str):
     def validator(value: shared.Upload):
         try:
             storage.validator.upload(value)
-        except exceptions.UploadError as err:
+        except shared.exc.UploadError as err:
             raise tk.Invalid(str(err)) from err
         return value
 

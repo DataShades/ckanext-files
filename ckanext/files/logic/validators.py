@@ -267,10 +267,12 @@ def files_accept_file_with_storage(*supported_storages: str):
     return validator
 
 
-def files_transfer_ownership(owner_type: str, id_field: str = "id"):  # noqa: C901
+def files_transfer_ownership(owner_type: str, id_field: str | list[str] = "id"):  # noqa: C901
     """Tranfer file ownership to validated object."""
+    if isinstance(id_field, str):
+        id_field = [id_field]
 
-    def validator(
+    def validator(  # noqa: C901
         key: FlattenKey,
         data: FlattenDataDict,
         errors: FlattenErrorDict,
@@ -279,7 +281,11 @@ def files_transfer_ownership(owner_type: str, id_field: str = "id"):  # noqa: C9
         msg = "Is not an owner of the file"
 
         value = data[key]
-        id_field_path = key[:-1] + (id_field,)
+        id_field_path = key[:-1]
+        for step in id_field:
+            id_field_path = (
+                id_field_path[:-1] if step == ".." else id_field_path + (step,)
+            )
 
         if data.get(id_field_path):
             strategy = "value"
@@ -297,10 +303,13 @@ def files_transfer_ownership(owner_type: str, id_field: str = "id"):  # noqa: C9
                     continue
                 max_idx = max(key[idx_position], flat_field[idx_position])
             strategy = "path"
-            task_destination = key[:-2] + (
-                key[-2] - max_idx - 1,
-                id_field,
-            )
+            task_destination = key[:-2] + (key[-2] - max_idx - 1,)
+            for step in id_field:
+                task_destination = (
+                    task_destination[:-1]
+                    if step == ".."
+                    else task_destination + (step,)
+                )
 
         ids: list[str] = value if isinstance(value, list) else [value]
         user = authz._get_user(context.get("user"))  # type: ignore

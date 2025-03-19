@@ -34,6 +34,7 @@ class TestStorages:
                 "override_existing": False,
                 "name": "default",
                 "supported_types": [],
+                "location_transformers": [],
                 "max_size": 0,
             },
         }
@@ -60,6 +61,7 @@ class TestStorages:
                 "override_existing": False,
                 "name": "default",
                 "supported_types": [],
+                "location_transformers": [],
                 "max_size": 0,
             },
             "test": {
@@ -89,6 +91,7 @@ class TestStorages:
                 "override_existing": False,
                 "name": "default",
                 "supported_types": [],
+                "location_transformers": [],
                 "max_size": 0,
             },
         }

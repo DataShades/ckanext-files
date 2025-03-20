@@ -1,12 +1,22 @@
 from __future__ import annotations
 
+import dataclasses
+
 from file_keeper.default.adapters import sqlalchemy
 
 from ckanext.files import shared, types
 
 
+@dataclasses.dataclass()
+class Settings(shared.Settings, sqlalchemy.Settings):
+    pass
+
+
 class DbStorage(shared.Storage, sqlalchemy.SqlAlchemyStorage):
     hidden = True
+
+    settings: Settings  # type: ignore
+    SettingsFactory = Settings
 
     @classmethod
     def declare_config_options(

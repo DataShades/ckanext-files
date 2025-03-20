@@ -11,6 +11,7 @@ cycles.
 
 from __future__ import annotations
 
+import dataclasses
 from time import time
 from typing import Any
 
@@ -24,7 +25,6 @@ from . import config, utils
 
 adapters = fk.adapters
 storages = fk.Registry["fk.Storage"]()
-Settings: TypeAlias = fk.Settings
 Uploader: TypeAlias = fk.Uploader
 Manager: TypeAlias = fk.Manager
 
@@ -102,8 +102,46 @@ class Reader(fk.Reader):
         return tk.url_for("files.temporal_download", token=token, _external=True)
 
 
+@dataclasses.dataclass()
+class Settings(fk.Settings):
+    supported_types: list[str] = dataclasses.field(default_factory=list)
+    max_size: int = 0
+
+
 class Storage(fk.Storage):
     """Base class for storage implementation."""
+
+    settings: Settings  # type: ignore
+    SettingsFactory = Settings
+
+    def validate_size(self, size: int):
+        max_size = self.settings.max_size
+        if max_size and size > max_size:
+            raise fk.exc.LargeUploadError(size, max_size)
+
+    def validate_content_type(self, content_type: str):
+        supported_types = self.settings.supported_types
+        if supported_types and not utils.is_supported_type(
+            content_type,
+            supported_types,
+        ):
+            raise fk.exc.WrongUploadTypeError(content_type)
+
+    def upload(
+        self, location: fk.Location, upload: fk.Upload, /, **kwargs: Any
+    ) -> FileData:
+        self.validate_size(upload.size)
+        self.validate_content_type(upload.content_type)
+
+        return super().upload(location, upload, **kwargs)
+
+    def multipart_start(
+        self, location: fk.Location, data: MultipartData, /, **kwargs: Any
+    ) -> MultipartData:
+        self.validate_size(data.size)
+        self.validate_content_type(data.content_type)
+
+        return super().multipart_start(location, data, **kwargs)
 
     @classmethod
     def declare_config_options(cls, declaration: Declaration, key: Key):

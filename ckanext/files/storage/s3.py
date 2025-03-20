@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import base64
+import dataclasses
 
 from file_keeper.default.adapters import s3
 
@@ -13,8 +14,15 @@ def decode(value: str) -> str:
     return base64.decodebytes(value.encode()).hex()
 
 
+@dataclasses.dataclass()
+class Settings(shared.Settings, s3.Settings):
+    pass
+
+
 class S3Storage(shared.Storage, s3.S3Storage):
     hidden = True
+    settings: Settings  # type: ignore
+    SettingsFactory = Settings
 
     @classmethod
     def declare_config_options(cls, declaration: Declaration, key: Key):

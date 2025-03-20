@@ -31,6 +31,13 @@ SAMPLE_SIZE = 1024 * 2
 owner_getters = fk.Registry[Callable[[str], Any]]({})
 
 
+def is_supported_type(content_type: str, supported: Iterable[str]) -> bool:
+    """Check whether content_type it matches supported types."""
+    maintype, subtype = content_type.split("/")
+    desired = {content_type, maintype, subtype}
+    return any(st in desired for st in supported)
+
+
 def get_owner(owner_type: str, owner_id: str):
     if getter := owner_getters.get(owner_type):
         return getter(owner_id)

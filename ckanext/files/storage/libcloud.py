@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import dataclasses
 from typing import Any
 
 from file_keeper.default.adapters import libcloud as lc
@@ -16,7 +17,15 @@ PROVIDERS_URL = (
 get_driver: Any
 
 
+@dataclasses.dataclass()
+class Settings(shared.Settings, lc.Settings):
+    pass
+
+
 class LibCloudStorage(shared.Storage, lc.LibCloudStorage):
+    settings: Settings  # type: ignore
+    SettingsFactory = Settings
+
     @classmethod
     def declare_config_options(cls, declaration: Declaration, key: Key):
         super().declare_config_options(declaration, key)

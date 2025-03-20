@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import dataclasses
+
 from file_keeper.default.adapters import redis as rd
 
 import ckan.plugins.toolkit as tk
@@ -12,7 +14,15 @@ def _default_prefix():
     return "ckanext:files:{}:file_content".format(tk.config["ckan.site_id"])
 
 
+@dataclasses.dataclass()
+class Settings(shared.Settings, rd.Settings):
+    pass
+
+
 class RedisStorage(shared.Storage, rd.RedisStorage):
+    settings: Settings  # type: ignore
+    SettingsFactory = Settings
+
     @classmethod
     def declare_config_options(cls, declaration: Declaration, key: Key):
         super().declare_config_options(declaration, key)

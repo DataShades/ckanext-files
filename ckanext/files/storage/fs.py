@@ -9,14 +9,22 @@ from file_keeper.default.adapters import fs
 
 from ckan.config.declaration import Declaration, Key
 
-from ckanext.files.base import Storage
+from ckanext.files import shared
 
 log = logging.getLogger(__name__)
 CHUNK_SIZE = 16384
 
 
-class FsStorage(Storage, fs.FsStorage):
+@dataclasses.dataclass()
+class Settings(shared.Settings, fs.Settings):
+    pass
+
+
+class FsStorage(shared.Storage, fs.FsStorage):
     """Store files in local filesystem."""
+
+    settings: Settings  # type: ignore
+    SettingsFactory = Settings
 
     @classmethod
     def declare_config_options(cls, declaration: Declaration, key: Key):

@@ -72,12 +72,10 @@ def dispatch_download(file_id: str) -> Response:
     storage = shared.get_storage(item.storage)
     data = shared.FileData.from_object(item)
 
-    # do not use permanent link here as it nerver expires and user who got it
-    # once will be able to download file as long as it exists.
     link = (
-        storage.public_link(data)
-        or storage.one_time_link(data)
+        storage.permanent_link(data)
         or storage.temporal_link(data)
+        or storage.one_time_link(data)
     )
 
     if link:

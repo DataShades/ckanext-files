@@ -77,7 +77,7 @@
                         <td>
                             {% block file_actions %}
                                 {% block action_public_link %}
-                                    {% set public_link = h.files_link_details(file.id, "public") %}
+                                    {% set public_link = h.files_link_details(file.id, "permanent") %}
                                     {% if public_link %}
                                         <a class="btn btn-default btn-sm" aria-label="Copy file link"
                                             data-module="copy-into-buffer"

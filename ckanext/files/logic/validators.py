@@ -82,9 +82,9 @@ def files_file_into_public_url(
 
         info = FileData.from_object(file)
         storage = get_storage(file.storage)
-        url = storage.public_link(info)
+        url = storage.permanent_link(info)
         if not url:
-            msg = "File does not support public URLs"
+            msg = "File does not support permanent URLs"
             errors[key].append(msg)
             raise tk.StopOnError
         result.append(url)
@@ -412,7 +412,7 @@ def files_upload_as(  # noqa: PLR0913
     storage: str,
     owner_type: str,
     id_field: str,
-    attach_as: Literal["id", "public_url"] | None,
+    attach_as: Literal["id", "permanent_url"] | None,
     using_action: str | None = None,
     destination_field: str | None = None,
 ):

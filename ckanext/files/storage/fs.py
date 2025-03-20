@@ -36,10 +36,10 @@ class FsStorage(Storage, fs.FsStorage):
 
 
 class PublicFsReader(fs.Reader):
-    capabilities = fs.Reader.capabilities | fk.Capability.PUBLIC_LINK
+    capabilities = fs.Reader.capabilities | fk.Capability.PERMANENT_LINK
     storage: PublicFsStorage  # type: ignore
 
-    def public_link(self, data: fk.FileData, extras: dict[str, Any]) -> str:
+    def permanent_link(self, data: fk.FileData, extras: dict[str, Any]) -> str:
         """Return public download link."""
         return "/".join(
             [

@@ -78,7 +78,7 @@ def files_link_details(
 
     storage = shared.get_storage(file.storage)
 
-    for lt in types or ("public", "temporal"):
+    for lt in types or ("permanent", "temporal"):
         func = getattr(storage, f"{lt}_link", None)
         if not func:
             continue

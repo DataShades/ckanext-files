@@ -58,7 +58,7 @@ class PublicFsReader(fs.Reader):
 
 
 @dataclasses.dataclass()
-class PublicFsSettings(fs.Settings):
+class PublicFsSettings(Settings):
     public_root: str = "/"
 
 

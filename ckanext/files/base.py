@@ -27,6 +27,7 @@ adapters = fk.adapters
 storages = fk.Registry["fk.Storage"]()
 Uploader: TypeAlias = fk.Uploader
 Manager: TypeAlias = fk.Manager
+Reader: TypeAlias = fk.Reader
 
 FileData: TypeAlias = fk.FileData
 MultipartData: TypeAlias = fk.MultipartData
@@ -69,39 +70,6 @@ def get_storage(name: str | None = None) -> fk.Storage:
     return storage
 
 
-class Reader(fk.Reader):
-    """Service responsible for reading data from the storage.
-
-    `Storage` internally calls methods of this service. For example,
-    `Storage.stream(data, **kwargs)` results in `Reader.stream(data, kwargs)`.
-
-    Example:
-        ```python
-        class MyReader(Reader):
-            def stream(
-                self, data: FileData, extras: dict[str, Any]
-            ) -> Iterable[bytes]:
-                return open(data.location, "rb")
-        ```
-    """
-
-    def temporal_link(self, data: fk.FileData, extras: dict[str, Any]) -> str:
-        """Return temporal download link.
-
-        extras["ttl"] controls lifetime of the link(30 seconds by default).
-
-        """
-        token = utils.encode_token(
-            {
-                "topic": "download_file",
-                "exp": str(int(time()) + extras.get("ttl", 30)),
-                "storage": self.storage.settings.name,
-                "location": data.location,
-            },
-        )
-        return tk.url_for("files.temporal_download", token=token, _external=True)
-
-
 @dataclasses.dataclass()
 class Settings(fk.Settings):
     supported_types: list[str] = dataclasses.field(default_factory=list)
@@ -142,6 +110,24 @@ class Storage(fk.Storage):
         self.validate_content_type(data.content_type)
 
         return super().multipart_start(location, data, **kwargs)
+
+    def temporal_link(self, data: FileData, /, **kwargs: Any) -> str:
+        try:
+            link = super().temporal_link(data, **kwargs)
+        except fk.exc.UnsupportedOperationError:
+            link = None
+
+        if not link:
+            token = utils.encode_token(
+                {
+                    "topic": "download_file",
+                    "exp": str(int(time()) + kwargs.get("ttl", 30)),
+                    "storage": self.settings.name,
+                    "location": data.location,
+                },
+            )
+            link = tk.url_for("files.temporal_download", token=token, _external=True)
+        return link
 
     @classmethod
     def declare_config_options(cls, declaration: Declaration, key: Key):

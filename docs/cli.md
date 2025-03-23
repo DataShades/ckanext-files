@@ -69,6 +69,32 @@ existing location with files.
 | `-t`/`--track`          | Track every untracked file                                  |
 | `-a`/`--adopt-by`       | Transfer every file affected by `-t` flag to specified user |
 
+### transfer
+
+!!! example
+
+    ```sh
+    ckan files storage transfer local_storage cloud_storage
+    ```
+
+Move files between storages.
+
+
+`-r/--remove` flag "moves" file, removing originals from the old storage when
+operation completed. Without this flag files are copied and original verssion
+requires manual removal.
+
+`-/--id` multi-valued option sets the list of file IDs that will be moved from
+the storage. Even when `--id` specified, source storage is required and it
+works as a primary facet when searching for the file.
+
+
+| Option          | Effect                                                 |
+|-----------------|--------------------------------------------------------|
+| `-r`/`--remove` | Remove the original when operation compeleted          |
+| `-i`/`--id`     | Multi-valued ID of transfered files inside the storage |
+
+
 ## file
 
 File-level operations

@@ -3,6 +3,7 @@ from __future__ import annotations
 import os
 
 import click
+import sqlalchemy as sa
 
 import ckan.plugins.toolkit as tk
 from ckan import model
@@ -100,4 +101,50 @@ def scan(
                 )
                 model.Session.add(owner)
 
+            model.Session.commit()
+
+
+@group.command()
+@click.argument("src")
+@click.argument("dest")
+@click.option(
+    "-i",
+    "--id",
+    help="IDs of files for transfer",
+    multiple=True,
+)
+@click.option(
+    "-r",
+    "--remove",
+    help="Remove file from the source after transfer",
+    is_flag=True,
+)
+def transfer(src: str, dest: str, id: tuple[str, ...], remove: bool):
+    """Move files between storages."""
+    from_storage = shared.get_storage(src)
+    to_storage = shared.get_storage(dest)
+
+    is_supported = from_storage.supports_synthetic(
+        shared.Capability.MOVE if remove else shared.Capability.COPY, to_storage
+    )
+
+    if not is_supported:
+        tk.error_shout("Operation is not supported")
+        raise click.Abort
+
+    op = from_storage.move_synthetic if remove else from_storage.copy_synthetic
+
+    stmt = sa.select(shared.File).where(shared.File.storage == src)
+    if id:
+        stmt = stmt.where(shared.File.id.in_(id))
+
+    total = model.Session.scalar(stmt.with_only_columns(sa.func.count()))
+    files = model.Session.scalars(stmt)
+
+    with click.progressbar(files, length=total) as bar:
+        for item in bar:
+            data = shared.FileData.from_object(item)
+            new_data = op(data.location, data, to_storage)
+            new_data.into_object(item)
+            item.storage = dest
             model.Session.commit()

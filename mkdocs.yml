@@ -24,8 +24,10 @@ plugins:
     - mkdocstrings:
         handlers:
           python:
-            paths: ["ckanext"]
+            paths: ["ckanext", "file_keeper"]
             options:
+              preload_modules:
+                - file_keeper
               show_root_full_path: false
               show_root_heading: true
               # show_root_toc_entry: true

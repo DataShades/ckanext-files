@@ -19,12 +19,16 @@ List all available storage adapters.
 
 
 
-## storages
+## storage
+
+Storage-level operations
+
+### list
 
 !!! example
 
     ```sh
-    ckan files storages
+    ckan files storage list
     ```
 
 List all configured storages.
@@ -35,40 +39,12 @@ List all configured storages.
 | `-v`/`--verbose` | Include storage's capabilities |
 
 
-## stream FILE_ID
+### scan
 
 !!! example
 
     ```sh
-    ckan files stream b9483985-2681-4647-9b0f-f4acb4fd0fd3 -o /tmp
-    ```
-
-Stream content of the file to STDOUT. For non-textual files use output
-redirection `stream ID > file.ext`. Alternatively, output destination can be
-specified via `-o` option. If it contains path to directory, inside this
-directory will be created file with the same name as streamed item. Otherwise,
-`OUTPUT` is used as filename.
-
-`--start` and `--end` can be used to receive a fragment of the file. Only
-positive values are guaranteed to work with any storage that supports
-STREAM. Some storages support negative values for these options and count them
-from the end of file. I.e `--start -10` reads last 10 bytes of file. `--end -1`
-reads till the last byte, but the last byte is not included into output.
-
-| Option          | Effect                                  |
-|-----------------|-----------------------------------------|
-| `-o`/`--output` | Stream into specified file or directory |
-| `--start`       | Start streaming from specified position |
-| `--end`         | End streaming at position               |
-
-
-
-## scan
-
-!!! example
-
-    ```sh
-    ckan files scan
+    ckan files storage scan
     ```
 
 List all files that exist in storage. Works only if storage supports `SCAN`. By
@@ -92,6 +68,36 @@ existing location with files.
 | `-u`/`--untracked-only` | Show only untracked files                                   |
 | `-t`/`--track`          | Track every untracked file                                  |
 | `-a`/`--adopt-by`       | Transfer every file affected by `-t` flag to specified user |
+
+## file
+
+File-level operations
+
+### stream FILE_ID
+
+!!! example
+
+    ```sh
+    ckan files file stream b9483985-2681-4647-9b0f-f4acb4fd0fd3 -o /tmp
+    ```
+
+Stream content of the file to STDOUT. For non-textual files use output
+redirection `stream ID > file.ext`. Alternatively, output destination can be
+specified via `-o` option. If it contains path to directory, inside this
+directory will be created file with the same name as streamed item. Otherwise,
+`OUTPUT` is used as filename.
+
+`--start` and `--end` can be used to receive a fragment of the file. Only
+positive values are guaranteed to work with any storage that supports
+STREAM. Some storages support negative values for these options and count them
+from the end of file. I.e `--start -10` reads last 10 bytes of file. `--end -1`
+reads till the last byte, but the last byte is not included into output.
+
+| Option          | Effect                                  |
+|-----------------|-----------------------------------------|
+| `-o`/`--output` | Stream into specified file or directory |
+| `--start`       | Start streaming from specified position |
+| `--end`         | End streaming at position               |
 
 
 ## stats

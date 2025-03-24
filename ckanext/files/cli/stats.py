@@ -34,6 +34,12 @@ storage_option = click.option(
 def overview(storage_name: str | None):
     """General information about storage usage."""
     storage_name = storage_name or shared.config.default_storage()
+    try:
+        shared.get_storage(storage_name)
+    except shared.exc.UnknownStorageError as err:
+        tk.error_shout(f"Storage {storage_name} is not configured")
+        raise click.Abort from err
+
     stmt = sa.select(
         sa.func.sum(shared.File.size),
         sa.func.count(shared.File.id),
@@ -44,7 +50,7 @@ def overview(storage_name: str | None):
     size, count, newest, oldest = row if row else (0, 0, _now(), _now())
 
     if not count:
-        tk.error_shout("Storage is not configured or empty")
+        tk.error_shout(f"Storage {storage_name} is empty")
         raise click.Abort
 
     click.secho(f"Number of files: {click.style(count, bold=True)}")

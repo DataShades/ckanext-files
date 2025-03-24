@@ -84,7 +84,7 @@ Move files between storages.
 operation completed. Without this flag files are copied and original verssion
 requires manual removal.
 
-`-/--id` multi-valued option sets the list of file IDs that will be moved from
+`-i/--id` multi-valued option sets the list of file IDs that will be moved from
 the storage. Even when `--id` specified, source storage is required and it
 works as a primary facet when searching for the file.
 
@@ -93,6 +93,27 @@ works as a primary facet when searching for the file.
 |-----------------|--------------------------------------------------------|
 | `-r`/`--remove` | Remove the original when operation compeleted          |
 | `-i`/`--id`     | Multi-valued ID of transfered files inside the storage |
+
+### clean
+
+!!! example
+
+    ```sh
+    ckan files storage clean -s cloud --yes
+    ```
+
+Remove all tracked files from the storage. By default works with `default`
+storage. `-s/--storage-name` option changes target storage.
+
+Untracked files are not removed, so you may want to run `storage scan -t`
+first.
+
+`-y/--yes` flag skips confirmation and immediately proceeds to the removal.
+
+
+| Option       | Effect                            |
+|--------------|-----------------------------------|
+| `-y`/`--yes` | Remove files without confirmation |
 
 
 ## file

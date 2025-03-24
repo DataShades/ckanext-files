@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+from typing import Any
 
 import click
 import sqlalchemy as sa
@@ -9,6 +10,7 @@ import ckan.plugins.toolkit as tk
 from ckan import model
 
 from ckanext.files import config, shared
+from ckanext.files.base import get_storage
 from ckanext.files.model import File, Owner
 
 
@@ -148,3 +150,46 @@ def transfer(src: str, dest: str, id: tuple[str, ...], remove: bool):
             new_data.into_object(item)
             item.storage = dest
             model.Session.commit()
+
+
+@group.command()
+@click.option("-s", "--storage-name", help="Name of the configured storage")
+@click.option("-y", "--yes", help="Do not ask for confirmation", is_flag=True)
+def clean(storage_name: str | None, yes: bool):
+    """Remove all tracked files from the storage.
+
+    Untracked files are not removed, so you may want to run `storage scan -t`
+    first.
+    """
+    user = tk.get_action("get_site_user")({"ignore_auth": True}, {})
+    storage_name = storage_name or config.default_storage()
+    if not get_storage(storage_name).supports(shared.Capability.REMOVE):
+        tk.error_shout(f"Storage {storage_name} does not support file removal")
+        raise click.Abort
+
+    search = tk.get_action("files_file_search")
+    overview = search({"user": user["name"]}, {"storage": storage_name, "rows": 0})
+
+    click.echo(f"Storage {storage_name} contains {overview['count']} files.")
+
+    if not overview["count"]:
+        click.secho("Done", fg="green")
+
+    if not yes and not click.confirm("Proceed with removal?"):
+        return
+
+    bar: Any = click.progressbar(length=overview["count"])
+    with bar:
+        while True:
+            result = search({"user": user["name"]}, {"storage": storage_name})
+            if not result["count"]:
+                break
+
+            for item in result["results"]:
+                bar.label = f"Removing {item['id']}"
+                tk.get_action("files_file_delete")(
+                    {"user": user["name"]}, {"id": item["id"]}
+                )
+                bar.update(1)
+
+    click.secho("Done", fg="green")

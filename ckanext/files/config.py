@@ -52,7 +52,7 @@ def storages() -> dict[str, dict[str, Any]]:
     return storages
 
 
-def cascade_access() -> list[str]:
+def cascade_access() -> dict[str, str]:
     """List of owner types that grant automatic access on owned file."""
     return tk.config[CASCADE_ACCESS]
 

@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import logging
-from typing import Any, Literal
+from typing import Any, Literal, cast
 
 import file_keeper as fk
 
@@ -12,6 +12,24 @@ from ckan.types import Context, FlattenDataDict, FlattenErrorDict, FlattenKey
 from ckanext.files import shared, task, utils
 
 log = logging.getLogger(__name__)
+
+
+def files_cascade_options(value: Any) -> dict[str, set[str]]:
+    if isinstance(value, str):
+        value = value.split()
+
+    if isinstance(value, list):
+        cascade: dict[str, set[str]] = {}
+        for item in cast("list[str]", value):
+            type, *rest = item.split(":", 1)
+            cascade.setdefault(type, set()).update(rest)
+        value = cascade
+
+    if isinstance(value, dict):
+        return cast("dict[str, set[str]]", value)
+
+    msg = "Cascade rules are not correct"
+    raise tk.Invalid(msg)
 
 
 # unstable

@@ -54,7 +54,7 @@ groups:
             authenticated uploads enabled
 
       - key: ckanext.files.owner.cascade_access
-        type: list
+        validators: default({}) files_cascade_options
         default:
             - package
             - resource

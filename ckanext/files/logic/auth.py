@@ -56,7 +56,14 @@ def _file_allows(
 
     info = file.owner_info if file else None
 
-    if not info or info.owner_type not in shared.config.cascade_access():
+    if not info:
+        return False
+
+    cascade = shared.config.cascade_access()
+    if info.owner_type not in cascade:
+        return False
+
+    if cascade[info.owner_type] and file.storage not in cascade[info.owner_type]:
         return False
 
     func_name = f"{info.owner_type}_{operation}"

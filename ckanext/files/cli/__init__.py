@@ -7,7 +7,7 @@ import click
 
 from ckanext.files import base
 
-from . import dev, maintain, migrate, stats, storage
+from . import dev, file, maintain, migrate, stats, storage
 
 __all__ = [
     "files",
@@ -24,6 +24,7 @@ files.add_command(migrate.group, "migrate")
 files.add_command(stats.group, "stats")
 files.add_command(storage.group, "storage")
 files.add_command(maintain.group, "maintain")
+files.add_command(file.group, "file")
 
 
 @files.command()

@@ -10,7 +10,6 @@ from flask import Blueprint, jsonify
 
 import ckan.plugins.toolkit as tk
 from ckan import model
-from ckan.common import streaming_response
 from ckan.lib.helpers import Page
 from ckan.logic import parse_params
 from ckan.types import Response
@@ -89,15 +88,11 @@ def dispatch_download(file_id: str) -> Response:
 
 def _streaming_file(
     item: shared.File,
-    storage: fk.Storage,
+    storage: shared.Storage,
     data: shared.FileData,
 ) -> Response | None:
     if storage.supports(shared.Capability.STREAM):
-        resp = streaming_response(storage.stream(data), data.content_type)
-        if utils.is_supported_type(item.content_type, shared.config.inline_types()):
-            resp.headers["content-disposition"] = f"inline; filename={item.name}"
-        else:
-            resp.headers["content-disposition"] = f"attachment; filename={item.name}"
+        resp = storage.as_response(data, item.name)
 
         item.touch()
         model.Session.commit()

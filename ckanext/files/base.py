@@ -37,7 +37,7 @@ MultipartData: TypeAlias = fk.MultipartData
 make_storage = fk.make_storage
 
 
-def get_storage(name: str | None = None) -> fk.Storage:
+def get_storage(name: str | None = None) -> Storage:
     """Return existing storage instance.
 
     Storages are initialized when plugin is loaded. As result, this function
@@ -69,7 +69,7 @@ def get_storage(name: str | None = None) -> fk.Storage:
     if not storage:
         raise fk.exc.UnknownStorageError(name)
 
-    return storage
+    return storage  # type: ignore
 
 
 @dataclasses.dataclass()
@@ -172,7 +172,7 @@ class Storage(fk.Storage):
         /,
         send_inline: bool = False,
         **kwargs: Any,
-    ) -> Any:
+    ) -> types.Response:
         """Make Flask response with file attachment.
 
         By default, files are served as attachments and are downloaded as

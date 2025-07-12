@@ -130,7 +130,7 @@ def files_file_search(  # noqa: C901, PLR0912, PLR0915
         dictionary with `count` and `results`
     """
     tk.check_access("files_file_search", context, data_dict)
-    sess = context["session"]
+    sess = context["session"]  # pyright: ignore[reportTypedDictNotRequiredAccess]
 
     if data_dict["completed"]:
         stmt = sa.select(File).outerjoin(
@@ -288,10 +288,11 @@ def files_file_create(context: Context, data_dict: dict[str, Any]) -> dict[str, 
         storage=data_dict["storage"],
     )
     storage_data.into_object(fileobj)
-    context["session"].add(fileobj)
+    sess = context["session"]  # pyright: ignore[reportTypedDictNotRequiredAccess]
+    sess.add(fileobj)
 
     _set_user_owner(context, "file", fileobj.id)
-    context["session"].commit()
+    sess.commit()
 
     utils.ContextCache(context).set("file", fileobj.id, fileobj)
 
@@ -362,7 +363,7 @@ def files_file_replace(context: Context, data_dict: dict[str, Any]) -> dict[str,
         shared.add_task(lambda result, idx, prev: storage.remove(old_data))
 
     storage_data.into_object(fileobj)
-    context["session"].commit()
+    context["session"].commit()  # pyright: ignore[reportTypedDictNotRequiredAccess]
 
     utils.ContextCache(context).set("file", fileobj.id, fileobj)
 
@@ -379,7 +380,7 @@ def _set_user_owner(context: Context, item_type: str, item_id: str):
             owner_id=user.id,
             owner_type="user",
         )
-        context["session"].add(owner)
+        context["session"].add(owner)  # pyright: ignore[reportTypedDictNotRequiredAccess]
 
 
 @validate(schema.file_delete)
@@ -427,8 +428,9 @@ def files_file_delete(context: Context, data_dict: dict[str, Any]) -> dict[str, 
     except shared.exc.PermissionError as err:
         raise tk.NotAuthorized(str(err)) from err
 
-    context["session"].delete(fileobj)
-    context["session"].commit()
+    sess = context["session"]  # pyright: ignore[reportTypedDictNotRequiredAccess]
+    sess.delete(fileobj)
+    sess.commit()
 
     return fileobj.dictize(context)
 
@@ -500,7 +502,7 @@ def files_file_rename(context: Context, data_dict: dict[str, Any]) -> dict[str, 
 
     fileobj.name = secure_filename(data_dict["name"])
 
-    context["session"].commit()
+    context["session"].commit()  # pyright: ignore[reportTypedDictNotRequiredAccess]
 
     return fileobj.dictize(context)
 
@@ -566,9 +568,10 @@ def files_multipart_start(
     )
     data.into_object(fileobj)
 
-    context["session"].add(fileobj)
+    sess = context["session"]  # pyright: ignore[reportTypedDictNotRequiredAccess]
+    sess.add(fileobj)
     _set_user_owner(context, "multipart", fileobj.id)
-    context["session"].commit()
+    sess.commit()
 
     utils.ContextCache(context).set("file", fileobj.id, fileobj)
     return fileobj.dictize(context)
@@ -608,7 +611,7 @@ def files_multipart_refresh(
     storage.multipart_refresh(shared.MultipartData.from_object(fileobj)).into_object(
         fileobj,
     )
-    context["session"].commit()
+    context["session"].commit()  # pyright: ignore[reportTypedDictNotRequiredAccess]
 
     return fileobj.dictize(context)
 
@@ -655,7 +658,7 @@ def files_multipart_update(
     except shared.exc.UploadError as err:
         raise tk.ValidationError({"upload": [str(err)]}) from err
 
-    context["session"].commit()
+    context["session"].commit()  # pyright: ignore[reportTypedDictNotRequiredAccess]
 
     return fileobj.dictize(context)
 
@@ -687,7 +690,7 @@ def files_multipart_complete(
 
     """
     tk.check_access("files_multipart_complete", context, data_dict)
-    sess = context["session"]
+    sess = context["session"]  # pyright: ignore[reportTypedDictNotRequiredAccess]
     extras = data_dict.get("__extras", {})
 
     cache = utils.ContextCache(context)
@@ -762,7 +765,7 @@ def files_file_scan(
     if not data_dict["owner_id"] and data_dict["owner_type"] == "user":
         user = context.get("auth_user_obj")
 
-        if isinstance(user, model.User) or (user := model.User.get(context["user"])):
+        if isinstance(user, model.User) or (user := model.User.get(context["user"])):  # pyright: ignore[reportTypedDictNotRequiredAccess]
             data_dict["owner_id"] = user.id
 
     tk.check_access("files_file_scan", context, data_dict)
@@ -793,7 +796,7 @@ def files_transfer_ownership(
         dictionary with details of updated file
     """
     tk.check_access("files_transfer_ownership", context, data_dict)
-    sess = context["session"]
+    sess = context["session"]  # pyright: ignore[reportTypedDictNotRequiredAccess]
 
     cache = utils.ContextCache(context)
 
@@ -811,7 +814,7 @@ def files_transfer_ownership(
             item_id=fileobj.id,
             item_type="file" if data_dict["completed"] else "multipart",
         )
-        context["session"].add(owner)
+        context["session"].add(owner)  # pyright: ignore[reportTypedDictNotRequiredAccess]
 
     elif owner.pinned and not data_dict["force"]:
         raise tk.ValidationError(
@@ -824,7 +827,7 @@ def files_transfer_ownership(
         data_dict["owner_id"],
     ):
         archive = TransferHistory.from_owner(owner)
-        archive.actor = context["user"]
+        archive.actor = context["user"]  # pyright: ignore[reportTypedDictNotRequiredAccess]
         sess.add(archive)
 
     owner.owner_id = data_dict["owner_id"]
@@ -852,7 +855,7 @@ def files_file_pin(context: Context, data_dict: dict[str, Any]) -> dict[str, Any
         dictionary with details of updated file
     """
     tk.check_access("files_file_pin", context, data_dict)
-    sess = context["session"]
+    sess = context["session"]  # pyright: ignore[reportTypedDictNotRequiredAccess]
 
     cache = utils.ContextCache(context)
     fileobj = cache.get_model(
@@ -889,7 +892,7 @@ def files_file_unpin(context: Context, data_dict: dict[str, Any]) -> dict[str, A
         dictionary with details of updated file
     """
     tk.check_access("files_file_unpin", context, data_dict)
-    sess = context["session"]
+    sess = context["session"]  # pyright: ignore[reportTypedDictNotRequiredAccess]
 
     cache = utils.ContextCache(context)
     fileobj = cache.get_model(

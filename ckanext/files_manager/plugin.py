@@ -36,7 +36,7 @@ class FilesManagerPlugin(p.SingletonPlugin):
     # ICollection
 
     def get_collection_factories(self) -> dict[str, CollectionFactory]:
-        return {"files-manager": FilesManagerCollection}
+        return {"files-manager": FilesManagerCollection}  # type: ignore
 
 
 def collect_config_sections_subs(sender: None) -> dict[str, Any]:

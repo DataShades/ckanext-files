@@ -35,10 +35,13 @@ class LibCloudStorage(shared.Storage, lc.LibCloudStorage):
         )
         declaration.declare(key.key).required().set_description("API key or username")
         declaration.declare(key.secret).set_description("Secret password")
+        declaration.declare(key.container_name).required().set_description(
+            "Name of the container(bucket)",
+        )
         declaration.declare(key.params).set_description(
             "JSON object with additional parameters"
             + " passed directly to storage constructor.",
         ).set_validators("default({}) convert_to_json_if_string dict_only")
-        declaration.declare(key.container_name).required().set_description(
-            "Name of the container(bucket)",
+        declaration.declare(key.path).set_description(
+            "Path inside the container where uploaded data will be stored.",
         )

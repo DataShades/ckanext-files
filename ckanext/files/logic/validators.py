@@ -90,8 +90,9 @@ def files_file_into_public_url(
     use_list = isinstance(value, list)
     ids = value if use_list else [value]
     result = []
+    sess = context["session"]  # pyright: ignore[reportTypedDictNotRequiredAccess]
     for file_id in ids:
-        file = context["session"].get(shared.File, file_id)
+        file = sess.get(shared.File, file_id)
         if not file:
             msg = "File does not exist"
             errors[key].append(msg)
@@ -184,8 +185,9 @@ def files_file_id_exists(
     use_list = isinstance(value, list)
     ids: str | list[str] = value if use_list else [value]
 
+    sess = context["session"]  # pyright: ignore[reportTypedDictNotRequiredAccess]
     for file_id in ids:
-        file = context["session"].get(shared.File, file_id)
+        file = sess.get(shared.File, file_id)
         if not file:
             msg = "File does not exist"
             errors[key].append(msg)
@@ -210,7 +212,8 @@ def files_content_type_from_file(file_field: str, if_empty: bool = False):
         if not file_id:
             return
         file_id = file_id.rsplit("/", 1)[-1]
-        file = context["session"].get(shared.File, file_id)
+        sess = context["session"]  # pyright: ignore[reportTypedDictNotRequiredAccess]
+        file = sess.get(shared.File, file_id)
 
         if file:
             data[key] = file.content_type
@@ -230,9 +233,9 @@ def files_accept_file_with_type(*supported_types: str):
         value: str | list[str] = data[key]
 
         ids = value if isinstance(value, list) else [value]
-
+        sess = context["session"]  # pyright: ignore[reportTypedDictNotRequiredAccess]
         for file_id in ids:
-            file = context["session"].get(shared.File, file_id)
+            file = sess.get(shared.File, file_id)
             if not file:
                 msg = "File does not exist"
                 errors[key].append(msg)
@@ -264,9 +267,10 @@ def files_accept_file_with_storage(*supported_storages: str):
         value: str | list[str] = data[key]
 
         ids = value if isinstance(value, list) else [value]
+        sess = context["session"]  # pyright: ignore[reportTypedDictNotRequiredAccess]
 
         for file_id in ids:
-            file = context["session"].get(shared.File, file_id)
+            file = sess.get(shared.File, file_id)
             if not file:
                 msg = "File does not exist"
                 errors[key].append(msg)
@@ -330,8 +334,10 @@ def files_transfer_ownership(owner_type: str, id_field: str | list[str] = "id"):
 
         ids: list[str] = value if isinstance(value, list) else [value]
         user = authz._get_user(context.get("user"))  # type: ignore
+        sess = context["session"]  # pyright: ignore[reportTypedDictNotRequiredAccess]
+
         for file_id in ids:
-            file = context["session"].get(shared.File, file_id)
+            file = sess.get(shared.File, file_id)
             if not file or not file.owner_info:
                 errors[key].append(msg)
                 raise tk.StopOnError
@@ -400,7 +406,9 @@ def files_copy_attribute(attribute: str, destination: str):
         context: Context,
     ):
         value = data[key]
-        file = context["session"].get(shared.File, value)
+        sess = context["session"]  # pyright: ignore[reportTypedDictNotRequiredAccess]
+
+        file = sess.get(shared.File, value)
         if not file or not hasattr(file, attribute):
             return
 

@@ -86,12 +86,13 @@ def _get_user(context: Context) -> model.User | None:
         return cast(model.User, context["auth_user_obj"])
 
     user = tk.current_user if tk.current_user.is_authenticated else None
+    username = context["user"]  # pyright: ignore[reportTypedDictNotRequiredAccess]
 
-    if user and context["user"] == user.name:
+    if user and username == user.name:
         return cast(model.User, user)
 
     cache = utils.ContextCache(context)
-    return cache.get("user", context["user"], lambda: model.User.get(context["user"]))
+    return cache.get("user", username, lambda: model.User.get(username))
 
 
 def _get_file(
@@ -166,7 +167,7 @@ def files_file_search(context: Context, data_dict: dict[str, Any]) -> AuthResult
 
 @tk.auth_allow_anonymous_access
 def files_file_create(context: Context, data_dict: dict[str, Any]) -> AuthResult:
-    if context["user"] and (
+    if context["user"] and (  # pyright: ignore[reportTypedDictNotRequiredAccess]
         shared.config.authenticated_uploads()
         and data_dict["storage"] in shared.config.authenticated_storages()
     ):

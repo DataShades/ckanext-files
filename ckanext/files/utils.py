@@ -43,12 +43,12 @@ def get_owner(owner_type: str, owner_id: str):
         return getter(owner_id)
 
     owner_model = "group" if owner_type == "organization" else owner_type
-    mappers: Iterable[Mapper[Any]]
+    mappers: Iterable[Mapper]
     if tk.check_ckan_version("2.11"):
         mappers = model.registry.mappers
     else:
         mappers = cast(
-            "Iterable[Mapper[Any]]",
+            "Iterable[Mapper]",
             tk.BaseModel._sa_registry.mappers
             | model.User._sa_class_manager.registry.mappers,  # type: ignore
         )

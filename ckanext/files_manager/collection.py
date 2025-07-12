@@ -6,7 +6,7 @@ from dominate import tags
 
 import ckan.plugins.toolkit as tk
 
-from ckanext.ap_main.collection.base import (
+from ckanext.ap_main.collection.base import (  # type: ignore
     ApCollection,
     ApColumns,
     ApHtmxTableSerializer,

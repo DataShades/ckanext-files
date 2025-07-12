@@ -64,7 +64,7 @@ class TransferHistory(Base):
     leave_date: Mapped[datetime]
     actor: Mapped[str | None]
 
-    current: Mapped[Owner] = relationship(
+    current: Mapped[Owner] = relationship(  # type: ignore
         Owner,
         backref=backref("history", cascade="delete, delete-orphan"),
     )

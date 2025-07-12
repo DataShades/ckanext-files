@@ -93,7 +93,7 @@ class File(Base):
     storage_data: Mapped[dict[str, Any]]
     plugin_data: Mapped[dict[str, Any]]
 
-    owner_info: Mapped[Owner | None] = relationship(
+    owner_info: Mapped[Owner | None] = relationship(  # type: ignore
         Owner,
         primaryjoin=sa.and_(
             Owner.item_id == foreign(__table__.c.id),

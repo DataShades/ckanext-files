@@ -9,7 +9,7 @@ from flask.views import MethodView
 import ckan.plugins.toolkit as tk
 from ckan.logic import parse_params
 
-from ckanext.ap_main.utils import ap_before_request
+from ckanext.ap_main.utils import ap_before_request  # type: ignore
 from ckanext.collection.shared import get_collection
 
 log = logging.getLogger(__name__)

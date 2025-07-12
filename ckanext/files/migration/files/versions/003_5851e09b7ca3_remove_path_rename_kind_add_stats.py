@@ -10,7 +10,7 @@ import os
 from datetime import datetime
 
 import sqlalchemy as sa
-from alembic import op
+from alembic import context, op
 from sqlalchemy.dialects.postgresql import JSONB
 
 # revision identifiers, used by Alembic.
@@ -41,15 +41,22 @@ def upgrade():
     columns = [table.c.id, table.c.last_access, table.c.path, table.c.extras]
     stmt = sa.select(*columns)
 
-    for id, last_access, path, extras in bind.execute(stmt):
-        op.execute(
-            sa.update(table)
-            .values(
-                atime=last_access,
-                extras=dict(extras or {}, filename=os.path.basename(path)),
+    if context.is_offline_mode():
+        context.execute("""-- MANUAL MODE: start""")
+        context.execute("""-- * copy last_access into atime""")
+        context.execute("""-- * copy basename from path into extras.path""")
+        context.execute("""-- MANUAL MODE: end""")
+
+    else:
+        for id, last_access, path, extras in bind.execute(stmt):
+            op.execute(
+                sa.update(table)
+                .values(
+                    atime=last_access,
+                    extras=dict(extras or {}, filename=os.path.basename(path)),
+                )
+                .where(table.c.id == id),
             )
-            .where(table.c.id == id),
-        )
 
     op.alter_column(
         "files_file",
@@ -94,20 +101,26 @@ def downgrade():
     columns = [table.c.id, table.c.atime, table.c.extras]
     stmt = sa.select(*columns)
 
-    for id, atime, extras in bind.execute(stmt):
-        extras_copy = dict(extras)
-        path = extras_copy.pop("filename", None)
-        if not path:
-            continue
-        op.execute(
-            sa.update(table)
-            .values(
-                last_access=atime or datetime.now(),  # noqa: DTZ005
-                extras=extras_copy,
-                path=path,
+    if context.is_offline_mode():
+        context.execute("""-- MANUAL MODE: start""")
+        context.execute("""-- * copy atime into last_access""")
+        context.execute("""-- * copy extras.path into filename adding basepath""")
+        context.execute("""-- MANUAL MODE: end""")
+    else:
+        for id, atime, extras in bind.execute(stmt):
+            extras_copy = dict(extras)
+            path = extras_copy.pop("filename", None)
+            if not path:
+                continue
+            op.execute(
+                sa.update(table)
+                .values(
+                    last_access=atime or datetime.now(),  # noqa: DTZ005
+                    extras=extras_copy,
+                    path=path,
+                )
+                .where(table.c.id == id),
             )
-            .where(table.c.id == id),
-        )
 
     op.drop_column("files_file", "atime")
     op.drop_column("files_file", "mtime")

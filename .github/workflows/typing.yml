@@ -1,5 +1,8 @@
 name: Typing
 on:
+  push:
+    branches:
+      - master
   pull_request:
     branches:
       - master
@@ -12,6 +15,12 @@ permissions:
 
 jobs:
   typecheck:
+    strategy:
+      matrix:
+        ckan-version: ["2.11", "2.10"]
+      fail-fast: false
+
+
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -25,7 +34,7 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
 
       - name: Install python deps
-        run: pip install 'ckan[requirements,dev]' -e'.[gcs,libcloud,opendal]'
+        run: pip install 'ckan[requirements,dev]==${{ matrix.ckan-version }}' -e'.[gcs,libcloud,opendal]'
 
       - name: Install node deps
         run: npm ci

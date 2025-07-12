@@ -6,12 +6,18 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 <!-- insertion marker -->
-## Unreleased
+## [v1.0.0](https://github.com/DataShades/ckanext-files/releases/tag/v1.0.0) - 2025-07-12
 
-<small>[Compare with latest](https://github.com/DataShades/ckanext-files/compare/v0.3.1...HEAD)</small>
+<small>[Compare with v0.3.1](https://github.com/DataShades/ckanext-files/compare/v0.3.1...v1.0.0)</small>
 
 ### Features
 
+- public_fs.public_root renamed to public_prefix ([e82c1e1](https://github.com/DataShades/ckanext-files/commit/e82c1e19b43239fed1567df0208d4c5d5cd37557) by Sergey Motornyuk).
+- cascade access per storage ([8fe45e0](https://github.com/DataShades/ckanext-files/commit/8fe45e040f9c5bd42715acd98be0b78b516a3318) by Sergey Motornyuk).
+- `storage clean` CLI command ([0642ddc](https://github.com/DataShades/ckanext-files/commit/0642ddc81326bc58bc44cc8b43b84d060b5f6439) by Sergey Motornyuk).
+- `storage transfer` cli command ([4b8347f](https://github.com/DataShades/ckanext-files/commit/4b8347ff4761302723c3e2bc27200444920080d1) by Sergey Motornyuk).
+- add link storage ([73e29bc](https://github.com/DataShades/ckanext-files/commit/73e29bcf7709fdb998e2436269a09738c698b46a) by Sergey Motornyuk).
+- replace public link with permanent link ([dfb4a44](https://github.com/DataShades/ckanext-files/commit/dfb4a443c3f079dfe808bc4a8ad1cdbeb2f0cc24) by Sergey Motornyuk).
 - redis storage uses `path` option instead of `prefix` ([d2173f2](https://github.com/DataShades/ckanext-files/commit/d2173f20b587dc40359dde9d0fdaaf42a2994fcc) by Sergey Motornyuk).
 - `location_strategy: str` replaced with `location_transformers: [str]` ([d5671ec](https://github.com/DataShades/ckanext-files/commit/d5671eca432a2201586e05992134fe67234e90f3) by Sergey Motornyuk).
 - transparent location strategy is enabled by default(use uuid for old behaviour) ([5bb414b](https://github.com/DataShades/ckanext-files/commit/5bb414b162bdcad7530557605f2fa5fd7535357a) by Sergey Motornyuk).
@@ -41,6 +47,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Bug Fixes
 
+- typing issues ([4d27781](https://github.com/DataShades/ckanext-files/commit/4d277816641b7232846bb0dfbec3c2bd8c521b6a) by Sergey Motornyuk).
+- transfer_ownership validator now works with repeating subfields ([68fce8b](https://github.com/DataShades/ckanext-files/commit/68fce8be2079bb4559698edd01f05202b107f722) by Sergey Motornyuk).
 - namespaced package cannot be discovered ([8d98ca6](https://github.com/DataShades/ckanext-files/commit/8d98ca6688a73a9586b606c17aeaef6d41d5f0ed) by Sergey Motornyuk).
 - all auth functions work with anonymous user ([5c58a8b](https://github.com/DataShades/ckanext-files/commit/5c58a8b6c5b44cb3967dc6994bcee1b067a3a54b) by Sergey Motornyuk).
 - auth function fail on anonymous request ([5cb0ca1](https://github.com/DataShades/ckanext-files/commit/5cb0ca1f8b1efd56f993ef5955d85655a5995b66) by Sergey Motornyuk).
@@ -79,7 +87,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - remove support of CKAN pre v2.10 ([3e70bc2](https://github.com/DataShades/ckanext-files/commit/3e70bc27440a9c21560c50e3c744b247f2087e90) by Sergey Motornyuk).
 - UnsupportedOperationError constructed with adapter type instead of name ([55d038d](https://github.com/DataShades/ckanext-files/commit/55d038d52e3dcfc09fb259122456079a197f4be8) by Sergey Motornyuk).
 
-<!-- insertion marker -->
 ## [v0.3.1](https://github.com/DataShades/ckanext-files/releases/tag/v0.3.1) - 2024-05-22
 
 <small>[Compare with v0.3.0](https://github.com/DataShades/ckanext-files/compare/v0.3.0...v0.3.1)</small>

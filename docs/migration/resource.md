@@ -24,7 +24,7 @@ adapter.
     different limit set by `ckan.max_resource_size`.
 
 Unlike group and user images, this storage does not need upload type
-restriction and `public_root`.
+restriction and `public_prefix`.
 
 ```ini
 ckanext.files.storage.resources.type = files:ckan_resource_fs

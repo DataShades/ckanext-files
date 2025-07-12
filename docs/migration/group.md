@@ -41,7 +41,7 @@ group/organization images are stored inside local filesystem, you can use
 
 ??? info "Public URL"
 
-    `ckanext.files.storage.group_images.public_root` option specifies base URL from
+    `ckanext.files.storage.group_images.public_prefix` option specifies base URL from
     which every group image can be accessed. In most cases it's CKAN URL plus
     `uploads/group`. If you are serving CKAN application from the `ckan.site_url`,
     leave this option unchanged. If you are using `ckan.root_path`, like `/data/`,
@@ -55,7 +55,7 @@ ckanext.files.storage.group_images.type = files:public_fs
 ckanext.files.storage.group_images.max_size = 10MiB
 ckanext.files.storage.group_images.supported_types = image
 ckanext.files.storage.group_images.path = /var/storage/ckan/storage/uploads/group
-ckanext.files.storage.group_images.public_root = %(ckan.site_url)s/uploads/group
+ckanext.files.storage.group_images.public_prefix = %(ckan.site_url)s/uploads/group
 ```
 
 Now let's run a command that show us the list of files available under newly

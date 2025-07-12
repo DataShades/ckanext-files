@@ -16,9 +16,11 @@ from time import time
 from typing import Any
 
 import file_keeper as fk
+import flask
 from typing_extensions import TypeAlias
 
 import ckan.plugins.toolkit as tk
+from ckan import types
 from ckan.config.declaration import Declaration, Key
 
 from . import config, utils
@@ -161,4 +163,56 @@ class Storage(fk.Storage):
             " unchanged, `uuid` transforms location into UUID, `uuid_with_extension`"
             " transforms filename into UUID and appends original file's extension"
             " to it.",
+        )
+
+    def as_response(
+        self,
+        data: FileData,
+        filename: str | None = None,
+        /,
+        send_inline: bool = False,
+        **kwargs: Any,
+    ) -> Any:
+        """Make Flask response with file attachment.
+
+        By default, files are served as attachments and are downloaded as
+        result.
+
+        If rendering is safe and preferable enable ``send_inline`` flag.
+
+        Args:
+            data: file details
+            filename: expected name of the file used instead of the real name
+
+        Keyword Args:
+            send_inline: do not force download and try rendering file in browser
+            **kwargs: ...
+
+        Returns:
+            Flask response with file's content
+        """
+        resp = self._base_response(data, kwargs)
+
+        inline_types = config.inline_types()
+        disposition = (
+            "inline"
+            if send_inline or utils.is_supported_type(data.content_type, inline_types)
+            else "attachment"
+        )
+
+        resp.headers.set(
+            "content-disposition",
+            disposition,
+            filename=filename or data.location,
+        )
+
+        return resp
+
+    def _base_response(self, data: FileData, extras: dict[str, Any]) -> types.Response:
+        if not self.supports(fk.Capability.STREAM):
+            raise fk.exc.UnsupportedOperationError("stream", self)
+
+        return flask.Response(
+            self.reader.stream(data, extras),
+            mimetype=data.content_type or None,
         )

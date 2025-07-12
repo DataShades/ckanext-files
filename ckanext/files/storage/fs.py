@@ -2,11 +2,14 @@ from __future__ import annotations
 
 import dataclasses
 import logging
+import os
 from typing import Any
 
 import file_keeper as fk
+import flask
 from file_keeper.default.adapters import fs
 
+from ckan import types
 from ckan.config.declaration import Declaration, Key
 
 from ckanext.files import shared
@@ -42,6 +45,16 @@ class FsStorage(shared.Storage, fs.FsStorage):
             + " of the main storage path.",
         )
 
+    def _base_response(
+        self, data: fk.FileData, extras: dict[str, Any]
+    ) -> types.Response:
+        filepath = os.path.join(self.settings.path, data.location)
+        return flask.send_file(
+            filepath,
+            download_name=data.location,
+            mimetype=data.content_type,
+        )
+
 
 class PublicFsReader(fs.Reader):
     capabilities = fs.Reader.capabilities | fk.Capability.PERMANENT_LINK
@@ -49,17 +62,20 @@ class PublicFsReader(fs.Reader):
 
     def permanent_link(self, data: fk.FileData, extras: dict[str, Any]) -> str:
         """Return public download link."""
-        return "/".join(
-            [
-                self.storage.settings.public_root.rstrip("/"),
-                data.location.lstrip("/"),
-            ],
+        from ckan.lib.helpers import url_for_static
+
+        return url_for_static(
+            os.path.join(
+                self.storage.settings.public_prefix,
+                data.location,
+            ),
+            _external=True,
         )
 
 
 @dataclasses.dataclass()
 class PublicFsSettings(Settings):
-    public_root: str = "/"
+    public_prefix: str = "/"
 
 
 class PublicFsStorage(FsStorage):
@@ -71,9 +87,9 @@ class PublicFsStorage(FsStorage):
     def declare_config_options(cls, declaration: Declaration, key: Key):
         super().declare_config_options(declaration, key)
 
-        declaration.declare(key.public_root).set_description(
+        declaration.declare(key.public_prefix).set_description(
             "URL of the storage folder."
-            + " `public_root + location` must produce a public URL",
+            + " `public_prefix + location` must produce a public URL",
         )
 
 

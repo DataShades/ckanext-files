@@ -12,7 +12,7 @@ from ckan.logic import validate
 from ckan.types import Action, Context
 
 from ckanext.files import shared, utils
-from ckanext.files.shared import File, Multipart, Owner, TransferHistory
+from ckanext.files.shared import File, Location, Multipart, Owner, TransferHistory
 
 from . import schema
 
@@ -276,7 +276,7 @@ def files_file_create(context: Context, data_dict: dict[str, Any]) -> dict[str, 
 
     try:
         storage_data = storage.upload(
-            storage.prepare_location(filename),
+            storage.prepare_location(filename, data_dict["upload"]),
             data_dict["upload"],
             **extras,
         )
@@ -350,7 +350,7 @@ def files_file_replace(context: Context, data_dict: dict[str, Any]) -> dict[str,
 
     try:
         storage_data = storage.upload(
-            storage.prepare_location(fileobj.name),
+            storage.prepare_location(fileobj.name, data_dict["upload"]),
             data_dict["upload"],
         )
     except shared.exc.UploadError as err:
@@ -547,16 +547,18 @@ def files_multipart_start(
         raise tk.ValidationError({"storage": ["Operation is not supported"]})
 
     filename = secure_filename(data_dict["name"])
-    location = storage.prepare_location(filename)
+    data = shared.MultipartData(
+        Location(filename),
+        data_dict["size"],
+        data_dict["content_type"],
+        data_dict["hash"],
+    )
+
+    location = storage.prepare_location(filename, data)
     try:
         data = storage.multipart_start(
             location,
-            shared.MultipartData(
-                location,
-                data_dict["size"],
-                data_dict["content_type"],
-                data_dict["hash"],
-            ),
+            data,
             **extras,
         )
     except shared.exc.UploadError as err:

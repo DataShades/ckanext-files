@@ -6,6 +6,19 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 <!-- insertion marker -->
+## [v1.0.1](https://github.com/DataShades/ckanext-files/releases/tag/v1.0.1) - 2025-07-13
+
+<small>[Compare with v1.0.0](https://github.com/DataShades/ckanext-files/compare/v1.0.0...v1.0.1)</small>
+
+### Features
+
+- set minimal file-keeper version to v0.0.10 ([edbf417](https://github.com/DataShades/ckanext-files/commit/edbf4174082511d84c58be7ea2b76e3ee225a038) by Sergey Motornyuk).
+- add public_prefix(and permanent_link) to libcloud ([1c2571f](https://github.com/DataShades/ckanext-files/commit/1c2571fc78430c401ec4d53e70dae9110a63884e) by Sergey Motornyuk).
+
+### Bug Fixes
+
+- actions do not pass upload-or-data to prepare_location ([e60b428](https://github.com/DataShades/ckanext-files/commit/e60b428160673c5512b2b9304412c88605c0f77c) by Sergey Motornyuk).
+
 ## [v1.0.0](https://github.com/DataShades/ckanext-files/releases/tag/v1.0.0) - 2025-07-12
 
 <small>[Compare with v0.3.1](https://github.com/DataShades/ckanext-files/compare/v0.3.1...v1.0.0)</small>

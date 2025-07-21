@@ -11,6 +11,7 @@ from flask import Blueprint, jsonify
 import ckan.plugins.toolkit as tk
 from ckan import model
 from ckan.lib.helpers import Page
+from ckan.common import streaming_response
 from ckan.logic import parse_params
 from ckan.types import Response
 from ckan.views.resource import download
@@ -71,6 +72,9 @@ def dispatch_download(file_id: str) -> Response:
     storage = shared.get_storage(item.storage)
     data = shared.FileData.from_object(item)
 
+    if isinstance(storage, shared.Storage):
+        return storage.as_response(data)
+
     link = (
         storage.permanent_link(data)
         or storage.temporal_link(data)
@@ -88,11 +92,15 @@ def dispatch_download(file_id: str) -> Response:
 
 def _streaming_file(
     item: shared.File,
-    storage: shared.Storage,
+    storage: fk.Storage,
     data: shared.FileData,
 ) -> Response | None:
     if storage.supports(shared.Capability.STREAM):
-        resp = storage.as_response(data, item.name)
+        resp = streaming_response(storage.stream(data), data.content_type)
+        if utils.is_supported_type(item.content_type, shared.config.inline_types()):
+            resp.headers["content-disposition"] = f"inline; filename={item.name}"
+        else:
+            resp.headers["content-disposition"] = f"attachment; filename={item.name}"
 
         item.touch()
         model.Session.commit()
@@ -130,6 +138,9 @@ def temporal_download(token: str) -> Response:
 
     storage = shared.get_storage(item.storage)
     data = shared.FileData.from_object(item)
+
+    if isinstance(storage, shared.Storage):
+        return storage.as_response(data)
 
     if resp := _streaming_file(item, storage, data):
         return resp

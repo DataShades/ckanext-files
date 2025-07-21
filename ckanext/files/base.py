@@ -13,7 +13,7 @@ from __future__ import annotations
 
 import dataclasses
 from time import time
-from typing import Any
+from typing import Any, cast
 
 import file_keeper as fk
 import flask
@@ -37,7 +37,7 @@ MultipartData: TypeAlias = fk.MultipartData
 make_storage = fk.make_storage
 
 
-def get_storage(name: str | None = None) -> Storage:
+def get_storage(name: str | None = None) -> fk.Storage:
     """Return existing storage instance.
 
     Storages are initialized when plugin is loaded. As result, this function
@@ -69,12 +69,12 @@ def get_storage(name: str | None = None) -> Storage:
     if not storage:
         raise fk.exc.UnknownStorageError(name)
 
-    return storage  # type: ignore
+    return storage
 
 
 @dataclasses.dataclass()
 class Settings(fk.Settings):
-    supported_types: list[str] = dataclasses.field(default_factory=list)
+    supported_types: list[str] = cast("list[str]", dataclasses.field(default_factory=list))
     max_size: int = 0
 
 

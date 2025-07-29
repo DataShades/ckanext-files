@@ -1,0 +1,26 @@
+name: Create GitHub release
+
+# Create a GitHub release when a tag is pushed
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build:
+    name: Create GitHub release
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Set up git-cliff
+      uses: kenji-miyake/setup-git-cliff@v1
+
+    - name: Build Changelog URL and create release
+      run: |
+        TAG_NAME=${{ github.ref_name }}
+        NOTES=$(git cliff --latest)
+        gh release create "$TAG_NAME" --verify-tag --title "$TAG_NAME" --notes "$NOTES"

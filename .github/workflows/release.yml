@@ -22,10 +22,5 @@ jobs:
     - name: Build Changelog URL and create release
       run: |
         TAG_NAME=${{ github.ref_name }}
-        NOTES=$(git cliff --latest)
-        echo $TAG_NAME
-        echo $NOTES
-        git cliff --latest
-        echo -----
-        git cliff
-        # gh release create "$TAG_NAME" --verify-tag --title "$TAG_NAME" --notes "$NOTES"
+        NOTES=$(git-cliff --latest)
+        gh release create "$TAG_NAME" --verify-tag --title "$TAG_NAME" --notes "$NOTES"

@@ -10,8 +10,8 @@ from flask import Blueprint, jsonify
 
 import ckan.plugins.toolkit as tk
 from ckan import model
-from ckan.lib.helpers import Page
 from ckan.common import streaming_response
+from ckan.lib.helpers import Page
 from ckan.logic import parse_params
 from ckan.types import Response
 from ckan.views.resource import download

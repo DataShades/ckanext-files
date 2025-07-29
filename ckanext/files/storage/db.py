@@ -3,6 +3,7 @@ from __future__ import annotations
 import dataclasses
 
 from file_keeper.default.adapters import sqlalchemy
+from typing_extensions import override
 
 from ckanext.files import shared, types
 
@@ -15,12 +16,11 @@ class Settings(shared.Settings, sqlalchemy.Settings):
 class DbStorage(shared.Storage, sqlalchemy.SqlAlchemyStorage):
     hidden = True
 
-    settings: Settings  # type: ignore
+    settings: Settings  # pyright: ignore[reportIncompatibleVariableOverride]
     SettingsFactory = Settings
-    ReaderFactory: type[shared.Reader] = type(
-        "Reader", (shared.Reader, sqlalchemy.Reader), {}
-    )
+    ReaderFactory = type("Reader", (shared.Reader, sqlalchemy.Reader), {})
 
+    @override
     @classmethod
     def declare_config_options(
         cls,

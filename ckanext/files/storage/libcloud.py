@@ -4,6 +4,7 @@ import dataclasses
 from typing import Any
 
 from file_keeper.default.adapters import libcloud as lc
+from typing_extensions import override
 
 from ckan.config.declaration import Declaration, Key
 
@@ -23,10 +24,11 @@ class Settings(shared.Settings, lc.Settings):
 
 
 class LibCloudStorage(shared.Storage, lc.LibCloudStorage):
-    settings: Settings  # type: ignore
+    settings: Settings  # pyright: ignore[reportIncompatibleVariableOverride]
     SettingsFactory = Settings
-    ReaderFactory: type[shared.Reader] = type("Reader", (shared.Reader, lc.Reader), {})
+    ReaderFactory = type("Reader", (shared.Reader, lc.Reader), {})
 
+    @override
     @classmethod
     def declare_config_options(cls, declaration: Declaration, key: Key):
         super().declare_config_options(declaration, key)

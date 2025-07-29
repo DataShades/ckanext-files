@@ -27,8 +27,6 @@ from . import config, utils
 
 adapters = fk.adapters
 storages = fk.Registry["fk.Storage"]()
-Uploader: TypeAlias = fk.Uploader
-Manager: TypeAlias = fk.Manager
 
 FileData: TypeAlias = fk.FileData
 MultipartData: TypeAlias = fk.MultipartData
@@ -79,6 +77,14 @@ class Settings(fk.Settings):
     max_size: int = 0
 
 
+class Uploader(fk.Uploader):
+    pass
+
+
+class Manager(fk.Manager):
+    pass
+
+
 class Reader(fk.Reader):
     """Service responsible for reading data from the storage.
 
@@ -110,8 +116,11 @@ class Storage(fk.Storage):
 
     settings: Settings
     reader: Reader
+
     SettingsFactory: type[Settings] = Settings  # pyright: ignore[reportIncompatibleVariableOverride]
     ReaderFactory: type[Reader] = Reader  # pyright: ignore[reportIncompatibleVariableOverride]
+    UploaderFactory: type[Uploader]  # pyright: ignore[reportIncompatibleVariableOverride]
+    ManagerFactory: type[Manager]  # pyright: ignore[reportIncompatibleVariableOverride]
 
     def validate_size(self, size: int):
         max_size = self.settings.max_size
@@ -163,7 +172,6 @@ class Storage(fk.Storage):
             link = tk.url_for("files.temporal_download", token=token, _external=True)
         return link
 
-    @override
     @classmethod
     def declare_config_options(cls, declaration: Declaration, key: Key):
         declaration.declare(key.max_size, 0).append_validators(

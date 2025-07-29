@@ -4,6 +4,7 @@ import base64
 import dataclasses
 
 from file_keeper.default.adapters import s3
+from typing_extensions import override
 
 from ckan.config.declaration import Declaration, Key
 
@@ -21,10 +22,11 @@ class Settings(shared.Settings, s3.Settings):
 
 class S3Storage(shared.Storage, s3.S3Storage):
     hidden: bool = True
-    settings: Settings
-    SettingsFactory: type[shared.Settings] = Settings
-    ReaderFactory: type[shared.Reader] = type("Reader", (shared.Reader, s3.Reader), {})
+    settings: Settings  # pyright: ignore[reportIncompatibleVariableOverride]
+    SettingsFactory = Settings
+    ReaderFactory = type("Reader", (shared.Reader, s3.Reader), {})
 
+    @override
     @classmethod
     def declare_config_options(cls, declaration: Declaration, key: Key):
         super().declare_config_options(declaration, key)

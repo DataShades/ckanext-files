@@ -6,6 +6,7 @@ from typing import Any
 from urllib.parse import urlparse, urlunparse
 
 import requests
+from typing_extensions import override
 
 from ckanext.files import shared
 
@@ -21,6 +22,7 @@ class Reader(shared.Reader):
     capabilities = shared.Capability.PERMANENT_LINK
     storage: LinkStorage
 
+    @override
     def permanent_link(self, data: shared.FileData, extras: dict[str, Any]) -> str:
         return data.location
 
@@ -29,6 +31,7 @@ class Uploader(shared.Uploader):
     capabilities = shared.Capability.CREATE
     storage: LinkStorage
 
+    @override
     def upload(
         self,
         location: shared.Location,
@@ -47,6 +50,7 @@ class Manager(shared.Manager):
     capabilities = shared.Capability.ANALYZE | shared.Capability.REMOVE
     storage: LinkStorage
 
+    @override
     def remove(
         self,
         data: shared.FileData | shared.MultipartData,
@@ -54,6 +58,7 @@ class Manager(shared.Manager):
     ) -> bool:
         return True
 
+    @override
     def analyze(
         self, location: shared.Location, extras: dict[str, Any]
     ) -> shared.FileData:
@@ -74,12 +79,13 @@ class Manager(shared.Manager):
 
 class LinkStorage(shared.Storage):
     hidden = True
-    settings: Settings  # type: ignore
+    settings: Settings  # pyright: ignore[reportIncompatibleVariableOverride]
     SettingsFactory = Settings
     UploaderFactory = Uploader
     ManagerFactory = Manager
     ReaderFactory = Reader
 
+    @override
     @classmethod
     def declare_config_options(
         cls,

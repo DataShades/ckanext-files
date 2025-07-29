@@ -5,6 +5,7 @@ import dataclasses
 import re
 
 from file_keeper.default.adapters import gcs
+from typing_extensions import override
 
 import ckan.plugins.toolkit as tk
 from ckan.config.declaration import Declaration, Key
@@ -27,12 +28,13 @@ class Settings(shared.Settings, gcs.Settings):
 class GoogleCloudStorage(shared.Storage, gcs.GoogleCloudStorage):
     hidden = True
 
-    settings: Settings  # type: ignore
+    settings: Settings  # pyright: ignore[reportIncompatibleVariableOverride]
     SettingsFactory = Settings
-    ReaderFactory: type[shared.Reader] = type(
+    ReaderFactory = type(
         "Reader", (shared.Reader, gcs.GoogleCloudStorage.ReaderFactory), {}
     )
 
+    @override
     @classmethod
     def declare_config_options(cls, declaration: Declaration, key: Key):
         super().declare_config_options(declaration, key)

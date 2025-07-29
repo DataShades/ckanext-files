@@ -64,9 +64,10 @@ class PublicFsReader(Reader):
     capabilities = fs.Reader.capabilities | fk.Capability.PERMANENT_LINK
     storage: PublicFsStorage  # pyright: ignore[reportIncompatibleVariableOverride]
 
+    @override
     def permanent_link(self, data: fk.FileData, extras: dict[str, Any]) -> str:
         """Return public download link."""
-        from ckan.lib.helpers import url_for_static
+        from ckan.lib.helpers import url_for_static  # noqa: PLC0415
 
         return url_for_static(
             os.path.join(
@@ -83,10 +84,11 @@ class PublicFsSettings(Settings):
 
 
 class PublicFsStorage(FsStorage):
-    settings: PublicFsSettings  # type: ignore
+    settings: PublicFsSettings  # pyright: ignore[reportIncompatibleVariableOverride]
     SettingsFactory = PublicFsSettings
     ReaderFactory = PublicFsReader
 
+    @override
     @classmethod
     def declare_config_options(cls, declaration: Declaration, key: Key):
         super().declare_config_options(declaration, key)

@@ -17,6 +17,9 @@ class DbStorage(shared.Storage, sqlalchemy.SqlAlchemyStorage):
 
     settings: Settings  # type: ignore
     SettingsFactory = Settings
+    ReaderFactory: type[shared.Reader] = type(
+        "Reader", (shared.Reader, sqlalchemy.Reader), {}
+    )
 
     @classmethod
     def declare_config_options(

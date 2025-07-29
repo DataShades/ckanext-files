@@ -20,9 +20,10 @@ class Settings(shared.Settings, s3.Settings):
 
 
 class S3Storage(shared.Storage, s3.S3Storage):
-    hidden = True
-    settings: Settings  # type: ignore
-    SettingsFactory = Settings
+    hidden: bool = True
+    settings: Settings
+    SettingsFactory: type[shared.Settings] = Settings
+    ReaderFactory: type[shared.Reader] = type("Reader", (shared.Reader, s3.Reader), {})
 
     @classmethod
     def declare_config_options(cls, declaration: Declaration, key: Key):

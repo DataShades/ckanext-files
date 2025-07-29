@@ -17,7 +17,7 @@ from typing import Any, cast
 
 import file_keeper as fk
 import flask
-from typing_extensions import TypeAlias
+from typing_extensions import TypeAlias, override
 
 import ckan.plugins.toolkit as tk
 from ckan import types
@@ -29,7 +29,6 @@ adapters = fk.adapters
 storages = fk.Registry["fk.Storage"]()
 Uploader: TypeAlias = fk.Uploader
 Manager: TypeAlias = fk.Manager
-Reader: TypeAlias = fk.Reader
 
 FileData: TypeAlias = fk.FileData
 MultipartData: TypeAlias = fk.MultipartData
@@ -74,15 +73,45 @@ def get_storage(name: str | None = None) -> fk.Storage:
 
 @dataclasses.dataclass()
 class Settings(fk.Settings):
-    supported_types: list[str] = cast("list[str]", dataclasses.field(default_factory=list))
+    supported_types: list[str] = cast(
+        "list[str]", dataclasses.field(default_factory=list)
+    )
     max_size: int = 0
+
+
+class Reader(fk.Reader):
+    """Service responsible for reading data from the storage.
+
+    :py:class:`Storage` internally calls methods of this service. For example,
+    ``Storage.stream(data, **kwargs)`` results in ``Reader.stream(data,
+    kwargs)``.
+
+    >>> class MyReader(Reader):
+    >>>     def stream(
+    >>>         self, data: FileData, extras: dict[str, Any]
+    >>>     ) -> Iterable[bytes]:
+    >>>         return open(data.location, "rb")
+
+    """
+
+    def response(self, data: FileData, extras: dict[str, Any]) -> types.Response:
+        if not self.storage.supports(fk.Capability.STREAM):
+            raise fk.exc.UnsupportedOperationError("stream", self)
+
+        return flask.Response(
+            self.stream(data, extras),
+            mimetype=data.content_type or None,
+            headers={"Content-length": str(data.size)},
+        )
 
 
 class Storage(fk.Storage):
     """Base class for storage implementation."""
 
-    settings: Settings  # type: ignore
-    SettingsFactory = Settings
+    settings: Settings
+    reader: Reader
+    SettingsFactory: type[Settings] = Settings  # pyright: ignore[reportIncompatibleVariableOverride]
+    ReaderFactory: type[Reader] = Reader  # pyright: ignore[reportIncompatibleVariableOverride]
 
     def validate_size(self, size: int):
         max_size = self.settings.max_size
@@ -97,6 +126,7 @@ class Storage(fk.Storage):
         ):
             raise fk.exc.WrongUploadTypeError(content_type)
 
+    @override
     def upload(
         self, location: fk.Location, upload: fk.Upload, /, **kwargs: Any
     ) -> FileData:
@@ -105,6 +135,7 @@ class Storage(fk.Storage):
 
         return super().upload(location, upload, **kwargs)
 
+    @override
     def multipart_start(
         self, location: fk.Location, data: MultipartData, /, **kwargs: Any
     ) -> MultipartData:
@@ -113,6 +144,7 @@ class Storage(fk.Storage):
 
         return super().multipart_start(location, data, **kwargs)
 
+    @override
     def temporal_link(self, data: FileData, /, **kwargs: Any) -> str:
         try:
             link = super().temporal_link(data, **kwargs)
@@ -131,6 +163,7 @@ class Storage(fk.Storage):
             link = tk.url_for("files.temporal_download", token=token, _external=True)
         return link
 
+    @override
     @classmethod
     def declare_config_options(cls, declaration: Declaration, key: Key):
         declaration.declare(key.max_size, 0).append_validators(
@@ -191,7 +224,7 @@ class Storage(fk.Storage):
         Returns:
             Flask response with file's content
         """
-        resp = self._base_response(data, kwargs)
+        resp = self.reader.response(data, kwargs)
 
         inline_types = config.inline_types()
         disposition = (
@@ -207,12 +240,3 @@ class Storage(fk.Storage):
         )
 
         return resp
-
-    def _base_response(self, data: FileData, extras: dict[str, Any]) -> types.Response:
-        if not self.supports(fk.Capability.STREAM):
-            raise fk.exc.UnsupportedOperationError("stream", self)
-
-        return flask.Response(
-            self.reader.stream(data, extras),
-            mimetype=data.content_type or None,
-        )

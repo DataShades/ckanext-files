@@ -22,6 +22,7 @@ class Settings(shared.Settings, rd.Settings):
 class RedisStorage(shared.Storage, rd.RedisStorage):
     settings: Settings  # type: ignore
     SettingsFactory = Settings
+    ReaderFactory: type[shared.Reader] = type("Reader", (shared.Reader, rd.Reader), {})
 
     @classmethod
     def declare_config_options(cls, declaration: Declaration, key: Key):

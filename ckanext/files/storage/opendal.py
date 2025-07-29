@@ -17,6 +17,7 @@ class Settings(shared.Settings, od.Settings):
 class OpenDalStorage(shared.Storage, od.OpenDalStorage):
     settings: Settings  # type: ignore
     SettingsFactory = Settings
+    ReaderFactory: type[shared.Reader] = type("Reader", (shared.Reader, od.Reader), {})
 
     @classmethod
     def declare_config_options(cls, declaration: Declaration, key: Key):

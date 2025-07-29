@@ -8,6 +8,7 @@ from typing import Any
 import file_keeper as fk
 import flask
 from file_keeper.default.adapters import fs
+from typing_extensions import override
 
 from ckan import types
 from ckan.config.declaration import Declaration, Key
@@ -23,12 +24,25 @@ class Settings(shared.Settings, fs.Settings):
     pass
 
 
+class Reader(shared.Reader, fs.Reader):
+    @override
+    def response(self, data: shared.FileData, extras: dict[str, Any]) -> types.Response:
+        filepath = os.path.join(self.storage.settings.path, data.location)
+        return flask.send_file(
+            filepath,
+            download_name=data.location,
+            mimetype=data.content_type,
+        )
+
+
 class FsStorage(shared.Storage, fs.FsStorage):
     """Store files in local filesystem."""
 
-    settings: Settings  # type: ignore
-    SettingsFactory = Settings
+    settings: Settings  # pyright: ignore[reportIncompatibleVariableOverride]
+    SettingsFactory: type[shared.Settings] = Settings  # pyright: ignore[reportIncompatibleVariableOverride]
+    ReaderFactory: type[shared.Reader] = Reader  # pyright: ignore[reportIncompatibleVariableOverride]
 
+    @override
     @classmethod
     def declare_config_options(cls, declaration: Declaration, key: Key):
         super().declare_config_options(declaration, key)
@@ -45,20 +59,10 @@ class FsStorage(shared.Storage, fs.FsStorage):
             + " of the main storage path.",
         )
 
-    def _base_response(
-        self, data: fk.FileData, extras: dict[str, Any]
-    ) -> types.Response:
-        filepath = os.path.join(self.settings.path, data.location)
-        return flask.send_file(
-            filepath,
-            download_name=data.location,
-            mimetype=data.content_type,
-        )
 
-
-class PublicFsReader(fs.Reader):
+class PublicFsReader(Reader):
     capabilities = fs.Reader.capabilities | fk.Capability.PERMANENT_LINK
-    storage: PublicFsStorage  # type: ignore
+    storage: PublicFsStorage  # pyright: ignore[reportIncompatibleVariableOverride]
 
     def permanent_link(self, data: fk.FileData, extras: dict[str, Any]) -> str:
         """Return public download link."""

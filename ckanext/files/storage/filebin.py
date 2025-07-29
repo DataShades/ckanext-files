@@ -19,6 +19,9 @@ class FilebinStorage(shared.Storage, filebin.FilebinStorage):
 
     settings: Settings  # type: ignore
     SettingsFactory = Settings
+    ReaderFactory: type[shared.Reader] = type(
+        "Reader", (shared.Reader, filebin.Reader), {}
+    )
 
     @classmethod
     def declare_config_options(cls, declaration: Declaration, key: Key):

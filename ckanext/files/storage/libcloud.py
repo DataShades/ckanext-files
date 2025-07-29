@@ -25,6 +25,7 @@ class Settings(shared.Settings, lc.Settings):
 class LibCloudStorage(shared.Storage, lc.LibCloudStorage):
     settings: Settings  # type: ignore
     SettingsFactory = Settings
+    ReaderFactory: type[shared.Reader] = type("Reader", (shared.Reader, lc.Reader), {})
 
     @classmethod
     def declare_config_options(cls, declaration: Declaration, key: Key):

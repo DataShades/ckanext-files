@@ -29,6 +29,9 @@ class GoogleCloudStorage(shared.Storage, gcs.GoogleCloudStorage):
 
     settings: Settings  # type: ignore
     SettingsFactory = Settings
+    ReaderFactory: type[shared.Reader] = type(
+        "Reader", (shared.Reader, gcs.GoogleCloudStorage.ReaderFactory), {}
+    )
 
     @classmethod
     def declare_config_options(cls, declaration: Declaration, key: Key):

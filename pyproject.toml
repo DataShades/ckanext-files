@@ -213,6 +213,9 @@ reportUnsupportedDunderAll = true
 reportUnusedCoroutine = true
 reportUnnecessaryTypeIgnoreComment = true
 reportMatchNotExhaustive = true
+reportExplicitAny = false
+reportAny = false
+reportUnannotatedClassAttribute = false
 
 [tool.coverage.run]
 branch = true

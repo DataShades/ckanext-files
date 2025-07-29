@@ -44,11 +44,12 @@ class TransferHistory(Base):
         sa.Column("owner_id", sa.Text, nullable=False),
         sa.Column("owner_type", sa.Text, nullable=False),
         sa.Column(
-            "leave_date",
+            "at",
             sa.DateTime(timezone=True),
             default=now,
             nullable=False,
         ),
+        sa.Column("action", sa.Text, nullable=False),
         sa.Column("actor", sa.Text, nullable=False),
         sa.Index("idx_item", "item_id", "item_type"),
         sa.ForeignKeyConstraint(
@@ -61,8 +62,9 @@ class TransferHistory(Base):
     item_type: Mapped[str]
     owner_id: Mapped[str]
     owner_type: Mapped[str]
-    leave_date: Mapped[datetime]
-    actor: Mapped[str | None]
+    at: Mapped[datetime]
+    action: Mapped[str]
+    actor: Mapped[str]
 
     current: Mapped[Owner] = relationship(  # type: ignore
         Owner,

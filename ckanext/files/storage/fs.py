@@ -54,11 +54,6 @@ class FsStorage(shared.Storage, fs.FsStorage):
             "Create storage folder if it does not exist.",
         )
 
-        declaration.declare_bool(key.recursive).set_description(
-            "Use this flag if files can be stored inside subfolders"
-            + " of the main storage path.",
-        )
-
 
 class PublicFsReader(Reader):
     capabilities = fs.Reader.capabilities | fk.Capability.PERMANENT_LINK
@@ -101,5 +96,4 @@ class PublicFsStorage(FsStorage):
 
 class CkanResourceFsStorage(FsStorage):
     def __init__(self, settings: Any):
-        settings["recursive"] = True
         super().__init__(settings)

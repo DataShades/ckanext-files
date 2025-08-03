@@ -313,33 +313,50 @@ namespace ckan {
                     file: File,
                     params: { [key: string]: any },
                 ): Promise<UploadInfo> {
-                    return new Promise((done, fail) =>
-                        this.sandbox.client.call(
-                            "POST",
-                            this.settings.uploadAction,
-                            Object.assign(
-                                {},
-                                {
-                                    storage: this.settings.storage,
-                                    name: file.name,
-                                    size: file.size,
-                                    content_type:
-                                        file.type || "application/octet-stream",
-                                },
-                                params,
-                            ),
-                            (data: any) => {
+                    return new Promise((done, fail) => {
+                        const url = this.sandbox.client.url(
+                            `/api/action/${this.settings.uploadAction}`,
+                        );
+
+                        const data = new FormData();
+                        data.append("storage", this.settings.storage);
+                        data.append("name", file.name);
+                        data.append("size", String(file.size));
+                        data.append(
+                            "content_type",
+                            file.type || "application/octet-stream",
+                        );
+                        data.append("sample", file.slice(0, 2048));
+
+                        var csrf_field = this.sandbox
+                            .jQuery("meta[name=csrf_field_name]")
+                            .attr("content");
+                        var csrf_token = this.sandbox
+                            .jQuery("meta[name=" + csrf_field + "]")
+                            .attr("content");
+
+                        return this.sandbox.jQuery.ajax({
+                            url,
+                            cache: false,
+                            contentType: false,
+                            processData: false,
+                            data: data,
+                            type: "POST",
+                            headers: {
+                                "X-CSRFToken": csrf_token,
+                            },
+                            success: (data: any) => {
                                 done(data.result);
                             },
-                            (resp: any) => {
+                            error: (resp: any) => {
                                 fail(
                                     typeof resp.responseJSON === "string"
                                         ? resp.responseText
                                         : resp.responseJSON.error,
                                 );
                             },
-                        ),
-                    );
+                        });
+                    });
                 }
 
                 _showUpload(id: string): Promise<UploadInfo> {

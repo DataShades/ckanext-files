@@ -548,6 +548,7 @@ def files_multipart_start(
         raise tk.ValidationError({"storage": ["Operation is not supported"]})
 
     filename = secure_filename(data_dict["name"])
+
     content_type = data_dict["content_type"]
     if "sample" in data_dict:
         content_type = cast(shared.Upload, data_dict["sample"]).content_type

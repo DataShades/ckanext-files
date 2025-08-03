@@ -1,6 +1,6 @@
 
-## [v1.0.2](https://github.com/DataShades/ckanext-files/releases/tag/v1.0.2) - 2025-07-29
-[Compare with v1.0.1](https://github.com/DataShades/ckanext-files/compare/v1.0.1..v1.0.2)
+## [unreleased]
+[Compare with v1.0.1](https://github.com/DataShades/ckanext-files/compare/v1.0.1..HEAD)
 
 ### 🚀 Features
 
@@ -10,6 +10,14 @@
 ### 🐛 Bug Fixes
 
 - dispatch_download serves link instead of as_response ([66e5664](https://github.com/DataShades/ckanext-files/commit/66e56647ccb967aa0bc1c0063c2f012441fd2af2))
+
+### 🚜 Refactor
+
+- TransferHistory: `leave_date` -> `at`, +`action` ([0663606](https://github.com/DataShades/ckanext-files/commit/0663606f3f6e70ffcd29e32540c787ac2efe2ce3))
+
+### 📦 Dependencies
+
+- [**breaking**] pin file-keeper to >=0.1.0 ([48754b3](https://github.com/DataShades/ckanext-files/commit/48754b379ca2d896f051066a242f8df95325d953))
 
 ## [v1.0.1](https://github.com/DataShades/ckanext-files/releases/tag/v1.0.1) - 2025-07-13
 [Compare with v1.0.0](https://github.com/DataShades/ckanext-files/compare/v1.0.0..v1.0.1)
@@ -45,7 +53,7 @@
 - add link storage ([73e29bc](https://github.com/DataShades/ckanext-files/commit/73e29bcf7709fdb998e2436269a09738c698b46a))
 - replace public link with permanent link ([dfb4a44](https://github.com/DataShades/ckanext-files/commit/dfb4a443c3f079dfe808bc4a8ad1cdbeb2f0cc24))
 
-### 💼 Other
+### 📦 Dependencies
 
 - set minimal version of file-keeper ([82c2113](https://github.com/DataShades/ckanext-files/commit/82c2113f5957bab91b949ac99e4022e59df51431))
 

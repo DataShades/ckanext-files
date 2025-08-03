@@ -154,9 +154,9 @@ class Storage(fk.Storage):
         return super().multipart_start(location, data, **kwargs)
 
     @override
-    def temporal_link(self, data: FileData, /, **kwargs: Any) -> str:
+    def temporal_link(self, data: FileData, duration: int, /, **kwargs: Any) -> str:
         try:
-            link = super().temporal_link(data, **kwargs)
+            link = super().temporal_link(data, duration, **kwargs)
         except fk.exc.UnsupportedOperationError:
             link = None
 
@@ -164,7 +164,7 @@ class Storage(fk.Storage):
             token = utils.encode_token(
                 {
                     "topic": "download_file",
-                    "exp": str(int(time()) + kwargs.get("ttl", 30)),
+                    "exp": str(int(time()) + duration),
                     "storage": self.settings.name,
                     "location": data.location,
                 },

@@ -75,11 +75,7 @@ def dispatch_download(file_id: str) -> Response:
     if isinstance(storage, shared.Storage):
         return storage.as_response(data)
 
-    link = (
-        storage.permanent_link(data)
-        or storage.temporal_link(data)
-        or storage.one_time_link(data)
-    )
+    link = storage.permanent_link(data)
 
     if link:
         return tk.redirect_to(link)

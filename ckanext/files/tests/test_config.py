@@ -30,7 +30,7 @@ class TestStorages:
             "default": {
                 "type": "files:redis",
                 "path": "ckanext:files:test.ckan.net:file_content",
-                "redis_url": ckan_config["ckan.redis.url"],
+                "url": ckan_config["ckan.redis.url"],
                 "override_existing": False,
                 "name": "default",
                 "supported_types": [],
@@ -57,7 +57,7 @@ class TestStorages:
             "default": {
                 "type": "files:redis",
                 "path": "ckanext:files:test.ckan.net:file_content",
-                "redis_url": ckan_config["ckan.redis.url"],
+                "url": ckan_config["ckan.redis.url"],
                 "override_existing": False,
                 "name": "default",
                 "supported_types": [],
@@ -87,7 +87,7 @@ class TestStorages:
             "default": {
                 "type": "files:redis",
                 "path": "ckanext:files:test.ckan.net:file_content",
-                "redis_url": ckan_config["ckan.redis.url"],
+                "url": ckan_config["ckan.redis.url"],
                 "override_existing": False,
                 "name": "default",
                 "supported_types": [],

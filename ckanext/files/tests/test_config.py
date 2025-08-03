@@ -29,11 +29,12 @@ class TestStorages:
         assert config.storages() == {
             "default": {
                 "type": "files:redis",
-                "path": "ckanext:files:test.ckan.net:file_content",
+                "bucket": "ckanext:files:test.ckan.net:file_content",
                 "url": ckan_config["ckan.redis.url"],
                 "override_existing": False,
                 "name": "default",
                 "supported_types": [],
+                "disabled_capabilities": [],
                 "location_transformers": [],
                 "max_size": 0,
             },
@@ -56,11 +57,12 @@ class TestStorages:
         assert storages == {
             "default": {
                 "type": "files:redis",
-                "path": "ckanext:files:test.ckan.net:file_content",
+                "bucket": "ckanext:files:test.ckan.net:file_content",
                 "url": ckan_config["ckan.redis.url"],
                 "override_existing": False,
                 "name": "default",
                 "supported_types": [],
+                "disabled_capabilities": [],
                 "location_transformers": [],
                 "max_size": 0,
             },
@@ -86,11 +88,12 @@ class TestStorages:
         assert storages == {
             "default": {
                 "type": "files:redis",
-                "path": "ckanext:files:test.ckan.net:file_content",
+                "bucket": "ckanext:files:test.ckan.net:file_content",
                 "url": ckan_config["ckan.redis.url"],
                 "override_existing": False,
                 "name": "default",
                 "supported_types": [],
+                "disabled_capabilities": [],
                 "location_transformers": [],
                 "max_size": 0,
             },

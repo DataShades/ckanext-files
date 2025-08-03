@@ -29,7 +29,7 @@ class RedisStorage(shared.Storage, rd.RedisStorage):
     @classmethod
     def declare_config_options(cls, declaration: Declaration, key: Key):
         super().declare_config_options(declaration, key)
-        declaration.declare(key.path, _default_prefix()).set_description(
+        declaration.declare(key.bucket, _default_prefix()).set_description(
             "Name of the Redis key for HASH with files.",
         )
         declaration.declare(key.url).set_description(

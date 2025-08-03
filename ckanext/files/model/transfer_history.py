@@ -49,7 +49,7 @@ class TransferHistory(Base):
             default=now,
             nullable=False,
         ),
-        sa.Column("action", sa.Text, nullable=False),
+        sa.Column("action", sa.Text, nullable=False, default="transfer"),
         sa.Column("actor", sa.Text, nullable=False),
         sa.Index("idx_item", "item_id", "item_type"),
         sa.ForeignKeyConstraint(

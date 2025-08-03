@@ -130,7 +130,7 @@ def files_file_search(  # noqa: C901, PLR0912, PLR0915
         dictionary with `count` and `results`
     """
     tk.check_access("files_file_search", context, data_dict)
-    sess = context["session"]  # pyright: ignore[reportTypedDictNotRequiredAccess]
+    sess = context["session"]
 
     if data_dict["completed"]:
         stmt = sa.select(File).outerjoin(
@@ -255,7 +255,7 @@ def files_file_create(context: Context, data_dict: dict[str, Any]) -> dict[str, 
             Default: guess using upload field
         storage (str, optional): name of the storage that will handle the upload.
             Default: `default`
-        upload (shared.types.Uploadable): content of the file as bytes,
+        upload (Uploadable): content of the file as bytes,
             file descriptor or uploaded file
 
     Returns:
@@ -288,7 +288,7 @@ def files_file_create(context: Context, data_dict: dict[str, Any]) -> dict[str, 
         storage=data_dict["storage"],
     )
     storage_data.into_object(fileobj)
-    sess = context["session"]  # pyright: ignore[reportTypedDictNotRequiredAccess]
+    sess = context["session"]
     sess.add(fileobj)
 
     _set_user_owner(context, "file", fileobj.id)
@@ -317,7 +317,7 @@ def files_file_replace(context: Context, data_dict: dict[str, Any]) -> dict[str,
 
     Args:
         id (str): ID of the replaced file
-        upload (shared.types.Uploadable): content of the file as bytes,
+        upload (Uploadable): content of the file as bytes,
             file descriptor or uploaded file
 
     Returns:
@@ -363,7 +363,7 @@ def files_file_replace(context: Context, data_dict: dict[str, Any]) -> dict[str,
         shared.add_task(lambda result, idx, prev: storage.remove(old_data))
 
     storage_data.into_object(fileobj)
-    context["session"].commit()  # pyright: ignore[reportTypedDictNotRequiredAccess]
+    context["session"].commit()
 
     utils.ContextCache(context).set("file", fileobj.id, fileobj)
 
@@ -380,7 +380,7 @@ def _set_user_owner(context: Context, item_type: str, item_id: str):
             owner_id=user.id,
             owner_type="user",
         )
-        context["session"].add(owner)  # pyright: ignore[reportTypedDictNotRequiredAccess]
+        context["session"].add(owner)
 
 
 @validate(schema.file_delete)
@@ -428,7 +428,7 @@ def files_file_delete(context: Context, data_dict: dict[str, Any]) -> dict[str, 
     except shared.exc.PermissionError as err:
         raise tk.NotAuthorized(str(err)) from err
 
-    sess = context["session"]  # pyright: ignore[reportTypedDictNotRequiredAccess]
+    sess = context["session"]
     sess.delete(fileobj)
     sess.commit()
 
@@ -502,7 +502,7 @@ def files_file_rename(context: Context, data_dict: dict[str, Any]) -> dict[str, 
 
     fileobj.name = secure_filename(data_dict["name"])
 
-    context["session"].commit()  # pyright: ignore[reportTypedDictNotRequiredAccess]
+    context["session"].commit()
 
     return fileobj.dictize(context)
 
@@ -531,6 +531,7 @@ def files_multipart_start(
         content_type (str): MIMEtype of the uploaded file. Used for validation
         size (oint): Expected size of upload. Used for validation
         hash (str): Expected content hash. If present, used for validation.
+        sample (Uploadable|None): optional sample used to override content type
 
     Returns:
         dictionary with details of initiated upload. Depends on used storage
@@ -547,10 +548,14 @@ def files_multipart_start(
         raise tk.ValidationError({"storage": ["Operation is not supported"]})
 
     filename = secure_filename(data_dict["name"])
+    content_type = data_dict["content_type"]
+    if "sample" in data_dict:
+        content_type = cast(shared.Upload, data_dict["sample"]).content_type
+
     data = shared.MultipartData(
         Location(filename),
         data_dict["size"],
-        data_dict["content_type"],
+        content_type,
         data_dict["hash"],
     )
 
@@ -570,7 +575,7 @@ def files_multipart_start(
     )
     data.into_object(fileobj)
 
-    sess = context["session"]  # pyright: ignore[reportTypedDictNotRequiredAccess]
+    sess = context["session"]
     sess.add(fileobj)
     _set_user_owner(context, "multipart", fileobj.id)
     sess.commit()
@@ -613,7 +618,7 @@ def files_multipart_refresh(
     storage.multipart_refresh(shared.MultipartData.from_object(fileobj)).into_object(
         fileobj,
     )
-    context["session"].commit()  # pyright: ignore[reportTypedDictNotRequiredAccess]
+    context["session"].commit()
 
     return fileobj.dictize(context)
 
@@ -660,7 +665,7 @@ def files_multipart_update(
     except shared.exc.UploadError as err:
         raise tk.ValidationError({"upload": [str(err)]}) from err
 
-    context["session"].commit()  # pyright: ignore[reportTypedDictNotRequiredAccess]
+    context["session"].commit()
 
     return fileobj.dictize(context)
 
@@ -692,7 +697,7 @@ def files_multipart_complete(
 
     """
     tk.check_access("files_multipart_complete", context, data_dict)
-    sess = context["session"]  # pyright: ignore[reportTypedDictNotRequiredAccess]
+    sess = context["session"]
     extras = data_dict.get("__extras", {})
 
     cache = utils.ContextCache(context)
@@ -767,7 +772,7 @@ def files_file_scan(
     if not data_dict["owner_id"] and data_dict["owner_type"] == "user":
         user = context.get("auth_user_obj")
 
-        if isinstance(user, model.User) or (user := model.User.get(context["user"])):  # pyright: ignore[reportTypedDictNotRequiredAccess]
+        if isinstance(user, model.User) or (user := model.User.get(context["user"])):
             data_dict["owner_id"] = user.id
 
     tk.check_access("files_file_scan", context, data_dict)
@@ -798,7 +803,7 @@ def files_transfer_ownership(
         dictionary with details of updated file
     """
     tk.check_access("files_transfer_ownership", context, data_dict)
-    sess = context["session"]  # pyright: ignore[reportTypedDictNotRequiredAccess]
+    sess = context["session"]
 
     cache = utils.ContextCache(context)
 
@@ -816,7 +821,7 @@ def files_transfer_ownership(
             item_id=fileobj.id,
             item_type="file" if data_dict["completed"] else "multipart",
         )
-        context["session"].add(owner)  # pyright: ignore[reportTypedDictNotRequiredAccess]
+        context["session"].add(owner)
 
     elif owner.pinned and not data_dict["force"]:
         raise tk.ValidationError(
@@ -829,7 +834,7 @@ def files_transfer_ownership(
         data_dict["owner_id"],
     ):
         archive = TransferHistory.from_owner(owner)
-        archive.actor = context["user"]  # pyright: ignore[reportTypedDictNotRequiredAccess]
+        archive.actor = context["user"]
         sess.add(archive)
 
     owner.owner_id = data_dict["owner_id"]
@@ -857,7 +862,7 @@ def files_file_pin(context: Context, data_dict: dict[str, Any]) -> dict[str, Any
         dictionary with details of updated file
     """
     tk.check_access("files_file_pin", context, data_dict)
-    sess = context["session"]  # pyright: ignore[reportTypedDictNotRequiredAccess]
+    sess = context["session"]
 
     cache = utils.ContextCache(context)
     fileobj = cache.get_model(
@@ -894,7 +899,7 @@ def files_file_unpin(context: Context, data_dict: dict[str, Any]) -> dict[str, A
         dictionary with details of updated file
     """
     tk.check_access("files_file_unpin", context, data_dict)
-    sess = context["session"]  # pyright: ignore[reportTypedDictNotRequiredAccess]
+    sess = context["session"]
 
     cache = utils.ContextCache(context)
     fileobj = cache.get_model(
@@ -932,7 +937,7 @@ def files_resource_upload(
     Args:
         name (str): human-readable name of the file.
             Default: guess using upload field
-        upload (shared.types.Uploadable): content of the file as bytes,
+        upload (Uploadable): content of the file as bytes,
             file descriptor or uploaded file
 
     Returns:

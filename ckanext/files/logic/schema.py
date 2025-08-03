@@ -110,6 +110,8 @@ def multipart_start(
     unicode_safe: Validator,
     default: ValidatorFactory,
     int_validator: Validator,
+    ignore_missing: Validator,
+    files_into_upload: Validator,
 ) -> Schema:
     return {
         "storage": [default(shared.config.default_storage()), unicode_safe],
@@ -117,6 +119,7 @@ def multipart_start(
         "content_type": [not_empty, unicode_safe],
         "size": [not_empty, int_validator],
         "hash": [default(""), unicode_safe],
+        "sample": [ignore_missing, files_into_upload],
     }
 
 

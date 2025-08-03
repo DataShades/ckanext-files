@@ -72,21 +72,22 @@ protect_breaking_commits = false
 # Optionally sets the commit's scope and can decide to exclude commits from further processing.
 commit_parsers = [
     { message = "^feat", group = "<!-- 0 -->🚀 Features" },
-    { message = "^fix", group = "<!-- 1 -->🐛 Bug Fixes" },
-    { message = "^refactor|^ref", group = "<!-- 2 -->🚜 Refactor" },
-    { message = "^removal", group = "<!-- 3 -->❌ Removal" },
-    { message = "^doc", group = "<!-- 4 -->📚 Documentation" },
-    { message = "^perf", group = "<!-- 5 -->⚡ Performance" },
-    { message = "^style", group = "<!-- 6 -->🎨 Styling" },
-    { message = "^test", group = "<!-- 7 -->🧪 Testing" },
+    { message = "^fix", group = "<!-- 10 -->🐛 Bug Fixes" },
+    { message = "^refactor|^ref", group = "<!-- 20 -->🚜 Refactor" },
+    { message = "^removal", group = "<!-- 30 -->❌ Removal" },
+    { message = "^dependencies|^deps", group = "<!-- 35 -->📦 Dependencies" },
+    { message = "^doc", group = "<!-- 40 -->📚 Documentation" },
+    { message = "^perf", group = "<!-- 50 -->⚡ Performance" },
+    { message = "^style", group = "<!-- 60 -->🎨 Styling" },
+    { message = "^test", group = "<!-- 70 -->🧪 Testing" },
     { message = "^chore\\(release\\): prepare for", skip = true },
     { message = "^chore\\(deps.*\\)", skip = true },
     { message = "^chore\\(pr\\)", skip = true },
     { message = "^chore\\(pull\\)", skip = true },
-    { message = "^chore|^ci", group = "<!-- 8 -->⚙️ Miscellaneous Tasks", skip = true},
-    { body = ".*security", group = "<!-- 9 -->🛡️ Security" },
-    { message = "^revert", group = "<!-- 10 -->◀️ Revert" },
-    { message = ".*", group = "<!-- 11 -->💼 Other" },
+    { message = "^chore|^ci", group = "<!-- 80 -->⚙️ Miscellaneous Tasks", skip = true},
+    { body = ".*security", group = "<!-- 90 -->🛡️ Security" },
+    { message = "^revert", group = "<!-- 100 -->◀️ Revert" },
+    { message = ".*", group = "<!-- 110 -->💼 Other" },
 ]
 # Exclude commits that are not matched by any commit parser.
 filter_commits = false

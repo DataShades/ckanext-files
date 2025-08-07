@@ -31,6 +31,3 @@ class OpenDalStorage(shared.Storage, od.OpenDalStorage):
         declaration.declare(key.params).set_description(
             "JSON object with parameters passed directly to OpenDAL operator.",
         ).set_validators("default({}) convert_to_json_if_string dict_only")
-        declaration.declare(key.path).set_description(
-            "Path inside the container where uploaded data will be stored.",
-        )

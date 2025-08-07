@@ -38,9 +38,6 @@ class GoogleCloudStorage(shared.Storage, gcs.GoogleCloudStorage):
     @classmethod
     def declare_config_options(cls, declaration: Declaration, key: Key):
         super().declare_config_options(declaration, key)
-        declaration.declare(key.path, "").set_description(
-            "Path to the folder where uploaded data will be stored.",
-        )
         declaration.declare(key.bucket).required().set_description(
             "Name of the GCS bucket where uploaded data will be stored.",
         )

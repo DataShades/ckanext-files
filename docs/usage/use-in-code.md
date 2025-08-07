@@ -8,13 +8,13 @@ convenient.
 Let's configure filesystem storage first. Filesystem adapter has a mandatory
 option `path` that controls location, where files are stored. If path does not
 exist, storage will raise an exception by default. But it can also create
-missing path if you enable `create_path` option. Here's the example of
+missing path if you enable `initialize` option. Here's the example of
 settings:
 
 ```ini
 ckanext.files.storage.default.type = files:fs
 ckanext.files.storage.default.path = /tmp/example
-ckanext.files.storage.default.create_path = true
+ckanext.files.storage.default.initialize = true
 ```
 
 Now we are going to connect to CKAN shell via `ckan shell` CLI command and

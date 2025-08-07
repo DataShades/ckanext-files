@@ -45,9 +45,6 @@ class LibCloudStorage(shared.Storage, lc.LibCloudStorage):
             "JSON object with additional parameters"
             + " passed directly to storage constructor.",
         ).set_validators("default({}) convert_to_json_if_string dict_only")
-        declaration.declare(key.path).set_description(
-            "Path inside the container where uploaded data will be stored.",
-        )
 
         declaration.declare(key.public_prefix).set_description(
             "URL prefix to use when builing public file's URL. Usually, this "

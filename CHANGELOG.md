@@ -4,6 +4,7 @@
 
 ### 🚀 Features
 
+- Multipart.upload sends sample to multipart_start ([dbd66ca](https://github.com/DataShades/ckanext-files/commit/dbd66ca771b480367ada3f24d7aff0bbe3e246a2))
 - Reader.response that generates flask response ([26978f2](https://github.com/DataShades/ckanext-files/commit/26978f2a51ac1f1ebdedd255013535b563400fab))
 - adapters CLI commands shows settings ([f187735](https://github.com/DataShades/ckanext-files/commit/f18773531baad3fe7d0159c5ab01f568e86097a7))
 
@@ -13,6 +14,8 @@
 
 ### 🚜 Refactor
 
+- [**breaking**] add duration to temporal link ([4d38281](https://github.com/DataShades/ckanext-files/commit/4d38281c10d215c5647aecab92ea2df4cc320998))
+- redis `path` option renamed to `bucket` ([1a9b917](https://github.com/DataShades/ckanext-files/commit/1a9b91768777c5c0533cc4f0a79c41b04702ce2a))
 - TransferHistory: `leave_date` -> `at`, +`action` ([0663606](https://github.com/DataShades/ckanext-files/commit/0663606f3f6e70ffcd29e32540c787ac2efe2ce3))
 
 ### 📦 Dependencies

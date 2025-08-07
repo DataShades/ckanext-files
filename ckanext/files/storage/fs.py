@@ -39,20 +39,8 @@ class FsStorage(shared.Storage, fs.FsStorage):
     """Store files in local filesystem."""
 
     settings: Settings  # pyright: ignore[reportIncompatibleVariableOverride]
-    SettingsFactory: type[shared.Settings] = Settings  # pyright: ignore[reportIncompatibleVariableOverride]
-    ReaderFactory: type[shared.Reader] = Reader  # pyright: ignore[reportIncompatibleVariableOverride]
-
-    @override
-    @classmethod
-    def declare_config_options(cls, declaration: Declaration, key: Key):
-        super().declare_config_options(declaration, key)
-        declaration.declare(key.path).required().set_description(
-            "Path to the folder where uploaded data will be stored.",
-        )
-
-        declaration.declare_bool(key.create_path).set_description(
-            "Create storage folder if it does not exist.",
-        )
+    SettingsFactory: type[shared.Settings] = Settings
+    ReaderFactory: type[shared.Reader] = Reader
 
 
 class PublicFsReader(Reader):

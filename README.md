@@ -33,7 +33,7 @@ file abstractions in the arbitrary program.
     ```ini
     ckanext.files.storage.default.type = files:fs
     ckanext.files.storage.default.path = /tmp/example
-    ckanext.files.storage.default.create_path = true
+    ckanext.files.storage.default.initialize = true
     ```
 
 1. Upload your first file

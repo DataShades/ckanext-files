@@ -6,7 +6,7 @@ storage options:
 
 * `ckanext.files.storage.default.type`
 * `ckanext.files.storage.default.path`
-* `ckanext.files.storage.default.create_path`
+* `ckanext.files.storage.default.initialize`
 
 All of them have a common prefix `ckanext.files.storage.default.` and it's a
 key for using multiple storages simultaneously.
@@ -22,7 +22,7 @@ configuration of storage:
 ```ini
 ckanext.files.storage.custom.type = files:fs
 ckanext.files.storage.custom.path = /tmp/example
-ckanext.files.storage.custom.create_path = true
+ckanext.files.storage.custom.initialize = true
 ```
 
 And, if you want to use Redis-based storage named `memory` and filesystem-based
@@ -33,7 +33,7 @@ ckanext.files.storage.memory.type = files:redis
 
 ckanext.files.storage.default.type = files:fs
 ckanext.files.storage.default.path = /tmp/example
-ckanext.files.storage.default.create_path = true
+ckanext.files.storage.default.initialize = true
 ```
 
 The `default` storage is special. ckanext-files uses it _by default_, as name

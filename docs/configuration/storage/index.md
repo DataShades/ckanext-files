@@ -60,7 +60,7 @@ ckanext.files.storage.xxx.type = files:fs
 ## Path to the folder where uploaded data will be stored.
 ckanext.files.storage.xxx.path =
 ## Create storage folder if it does not exist.
-ckanext.files.storage.xxx.create_path = false
+ckanext.files.storage.xxx.initialize = false
 ```
 
 There is a number of options that are supported by every storage. You can set

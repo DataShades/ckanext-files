@@ -422,9 +422,8 @@ def files_file_delete(context: Context, data_dict: dict[str, Any]) -> dict[str, 
     if not storage.supports(shared.Capability.REMOVE):
         raise tk.ValidationError({"storage": ["Operation is not supported"]})
 
-    dc = shared.FileData if data_dict["completed"] else shared.MultipartData
     try:
-        storage.remove(dc.from_object(fileobj))
+        storage.remove(shared.FileData .from_object(fileobj))
     except shared.exc.PermissionError as err:
         raise tk.NotAuthorized(str(err)) from err
 
@@ -553,17 +552,19 @@ def files_multipart_start(
     if "sample" in data_dict:
         content_type = cast(shared.Upload, data_dict["sample"]).content_type
 
-    data = shared.MultipartData(
+    data = shared.FileData(
         Location(filename),
         data_dict["size"],
         content_type,
         data_dict["hash"],
     )
 
-    location = storage.prepare_location(filename, data)
+    data = shared.FileData.from_object(
+        data, location=storage.prepare_location(filename, data)
+    )
+
     try:
         data = storage.multipart_start(
-            location,
             data,
             **extras,
         )
@@ -616,7 +617,7 @@ def files_multipart_refresh(
         raise tk.ObjectNotFound("file")
 
     storage = shared.get_storage(fileobj.storage)
-    storage.multipart_refresh(shared.MultipartData.from_object(fileobj)).into_object(
+    storage.multipart_refresh(shared.FileData.from_object(fileobj)).into_object(
         fileobj,
     )
     context["session"].commit()
@@ -660,7 +661,7 @@ def files_multipart_update(
 
     try:
         storage.multipart_update(
-            shared.MultipartData.from_object(fileobj),
+            shared.FileData.from_object(fileobj),
             **extras,
         ).into_object(fileobj)
     except shared.exc.UploadError as err:
@@ -715,7 +716,7 @@ def files_multipart_complete(
 
     try:
         storage.multipart_complete(
-            shared.MultipartData.from_object(multipart),
+            shared.FileData.from_object(multipart),
             **extras,
         ).into_object(fileobj)
     except shared.exc.UploadError as err:

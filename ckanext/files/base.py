@@ -29,7 +29,6 @@ adapters = fk.adapters
 storages = fk.Registry["fk.Storage"]()
 
 FileData: TypeAlias = fk.FileData
-MultipartData: TypeAlias = fk.MultipartData
 
 make_storage = fk.make_storage
 
@@ -145,13 +144,11 @@ class Storage(fk.Storage):
         return super().upload(location, upload, **kwargs)
 
     @override
-    def multipart_start(
-        self, location: fk.Location, data: MultipartData, /, **kwargs: Any
-    ) -> MultipartData:
+    def multipart_start(self, data: FileData, /, **kwargs: Any) -> FileData:
         self.validate_size(data.size)
         self.validate_content_type(data.content_type)
 
-        return super().multipart_start(location, data, **kwargs)
+        return super().multipart_start(data, **kwargs)
 
     @override
     def temporal_link(self, data: FileData, duration: int, /, **kwargs: Any) -> str:
@@ -195,7 +192,7 @@ class Storage(fk.Storage):
             "Prepare storage backend for uploads(create path, bucket, DB). This op",
         )
 
-        declaration.declare(key.path).set_description(
+        declaration.declare(key.path, "").set_description(
             "Prefix for the file's location. The actual meaning of this option"
             + " depends on the adapter. FS adapter uses the path as a root folder for uploads."
             + " Cloud adapters, usually, use path as a prefix for the name of uploaded objects.",

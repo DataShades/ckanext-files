@@ -19,7 +19,6 @@ other than `shared`.
 <!-- ::: files.shared.TransferHistory -->
 
 <!-- ::: files.shared.FileData -->
-<!-- ::: files.shared.MultipartData -->
 
 <!-- ::: files.shared.IFiles -->
 

@@ -53,7 +53,7 @@ class Manager(shared.Manager):
     @override
     def remove(
         self,
-        data: shared.FileData | shared.MultipartData,
+        data: shared.FileData,
         extras: dict[str, Any],
     ) -> bool:
         return True

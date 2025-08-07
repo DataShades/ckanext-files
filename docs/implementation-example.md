@@ -426,7 +426,7 @@ class DbManager(shared.Manager):
 
     def remove(
         self,
-        data: shared.FileData | shared.MultipartData,
+        data: shared.FileData,
         extras: dict[str, Any],
     ) -> bool:
         cfg = self.storage.settings

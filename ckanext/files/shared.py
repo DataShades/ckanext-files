@@ -5,7 +5,6 @@ from . import config, types
 from .base import (
     FileData,
     Manager,
-    MultipartData,
     Reader,
     Settings,
     Storage,
@@ -30,7 +29,6 @@ __all__ = [
     "Owner",
     "TransferHistory",
     "FileData",
-    "MultipartData",
     "IFiles",
     "Storage",
     "Settings",

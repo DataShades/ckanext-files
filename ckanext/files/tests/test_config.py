@@ -37,6 +37,8 @@ class TestStorages:
                 "disabled_capabilities": [],
                 "location_transformers": [],
                 "max_size": 0,
+                "initialize": False,
+                "path": "",
             },
         }
 
@@ -62,6 +64,8 @@ class TestStorages:
                 "override_existing": False,
                 "name": "default",
                 "supported_types": [],
+                "initialize": False,
+                "path": "",
                 "disabled_capabilities": [],
                 "location_transformers": [],
                 "max_size": 0,
@@ -92,6 +96,8 @@ class TestStorages:
                 "url": ckan_config["ckan.redis.url"],
                 "override_existing": False,
                 "name": "default",
+                "initialize": False,
+                "path": "",
                 "supported_types": [],
                 "disabled_capabilities": [],
                 "location_transformers": [],

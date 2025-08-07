@@ -70,9 +70,7 @@ def get_storage(name: str | None = None) -> fk.Storage:
 
 @dataclasses.dataclass()
 class Settings(fk.Settings):
-    supported_types: list[str] = cast(
-        "list[str]", dataclasses.field(default_factory=list)
-    )
+    supported_types: list[str] = cast("list[str]", dataclasses.field(default_factory=list))
     max_size: int = 0
 
 
@@ -135,9 +133,7 @@ class Storage(fk.Storage):
             raise fk.exc.WrongUploadTypeError(content_type)
 
     @override
-    def upload(
-        self, location: fk.Location, upload: fk.Upload, /, **kwargs: Any
-    ) -> FileData:
+    def upload(self, location: fk.Location, upload: fk.Upload, /, **kwargs: Any) -> FileData:
         self.validate_size(upload.size)
         self.validate_content_type(upload.content_type)
 
@@ -249,9 +245,7 @@ class Storage(fk.Storage):
 
         inline_types = config.inline_types()
         disposition = (
-            "inline"
-            if send_inline or utils.is_supported_type(data.content_type, inline_types)
-            else "attachment"
+            "inline" if send_inline or utils.is_supported_type(data.content_type, inline_types) else "attachment"
         )
 
         resp.headers.set(

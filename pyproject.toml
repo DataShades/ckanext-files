@@ -55,7 +55,8 @@ ckan = "ckan.lib.extract:extract_ckan"
 find = {}
 
 [tool.ruff]
-target-version = "py38"
+target-version = "py39"
+line-length = 120
 
 [tool.ruff.lint]
 select = [

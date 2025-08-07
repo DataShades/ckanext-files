@@ -42,9 +42,7 @@ def stream(file_id: str, output: str | None, start: int, end: int | None):
         content_stream = storage.range(shared.FileData.from_object(file), start, end)
 
     elif storage.supports_synthetic(shared.Capability.RANGE, storage):
-        content_stream = storage.range_synthetic(
-            shared.FileData.from_object(file), start, end
-        )
+        content_stream = storage.range_synthetic(shared.FileData.from_object(file), start, end)
 
     else:
         tk.error_shout("File streaming is not supported")

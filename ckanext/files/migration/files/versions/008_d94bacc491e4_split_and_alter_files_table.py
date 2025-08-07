@@ -93,9 +93,7 @@ def upgrade():
                 ),
             )
             bind.execute(
-                sa.update(owner_table)
-                .values(item_type="multipart")
-                .where(owner_table.c.item_id == id),
+                sa.update(owner_table).values(item_type="multipart").where(owner_table.c.item_id == id),
             )
 
         bind.execute(sa.delete(table).where(table.c.completed == sa.false()))
@@ -113,9 +111,7 @@ def upgrade():
     if context.is_offline_mode():
         context.execute("""-- MANUAL MODE: start""")
         context.execute("""-- * extract storage_data.filename into location""")
-        context.execute(
-            """-- * extract content_type, size and hash from storage data to top"""
-        )
+        context.execute("""-- * extract content_type, size and hash from storage data to top""")
         context.execute("""-- MANUAL MODE: end""")
     else:
         for id, data in bind.execute(stmt):
@@ -161,9 +157,7 @@ def downgrade():
             data["content_type"] = content_type
             data["size"] = size
             data["hash"] = hash
-            bind.execute(
-                sa.update(table).values(storage_data=data).where(table.c.id == id)
-            )
+            bind.execute(sa.update(table).values(storage_data=data).where(table.c.id == id))
 
     op.drop_column("files_file", "location")
     op.drop_column("files_file", "content_type")

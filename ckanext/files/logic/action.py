@@ -150,9 +150,7 @@ def files_file_search(  # noqa: C901, PLR0912, PLR0915
     for field in ["owner_type", "owner_id", "pinned"]:
         if field in data_dict:
             value = data_dict[field]
-            if value is not None and not (
-                field == "pinned" and isinstance(value, bool)
-            ):
+            if value is not None and not (field == "pinned" and isinstance(value, bool)):
                 value = str(value)
             stmt = stmt.where(getattr(Owner, field) == value)
 
@@ -411,9 +409,7 @@ def files_file_delete(context: Context, data_dict: dict[str, Any]) -> dict[str, 
 
     cache = utils.ContextCache(context)
 
-    fileobj = cache.get_model(
-        "file", data_dict["id"], File if data_dict["completed"] else Multipart
-    )
+    fileobj = cache.get_model("file", data_dict["id"], File if data_dict["completed"] else Multipart)
 
     if not fileobj:
         raise tk.ObjectNotFound("file")
@@ -423,7 +419,7 @@ def files_file_delete(context: Context, data_dict: dict[str, Any]) -> dict[str, 
         raise tk.ValidationError({"storage": ["Operation is not supported"]})
 
     try:
-        storage.remove(shared.FileData .from_object(fileobj))
+        storage.remove(shared.FileData.from_object(fileobj))
     except shared.exc.PermissionError as err:
         raise tk.NotAuthorized(str(err)) from err
 
@@ -456,9 +452,7 @@ def files_file_show(context: Context, data_dict: dict[str, Any]) -> dict[str, An
     tk.check_access("files_file_show", context, data_dict)
 
     cache = utils.ContextCache(context)
-    fileobj = cache.get_model(
-        "file", data_dict["id"], File if data_dict["completed"] else Multipart
-    )
+    fileobj = cache.get_model("file", data_dict["id"], File if data_dict["completed"] else Multipart)
     if not fileobj:
         raise tk.ObjectNotFound("file")
 
@@ -559,9 +553,7 @@ def files_multipart_start(
         data_dict["hash"],
     )
 
-    data = shared.FileData.from_object(
-        data, location=storage.prepare_location(filename, data)
-    )
+    data = shared.FileData.from_object(data, location=storage.prepare_location(filename, data))
 
     try:
         data = storage.multipart_start(
@@ -923,9 +915,7 @@ def files_file_unpin(context: Context, data_dict: dict[str, Any]) -> dict[str, A
 
 
 @validate(schema.resource_upload)
-def files_resource_upload(
-    context: Context, data_dict: dict[str, Any]
-) -> dict[str, Any]:
+def files_resource_upload(context: Context, data_dict: dict[str, Any]) -> dict[str, Any]:
     """Create a new file inside resource storage.
 
     This action internally calls `files_file_create` with `ignore_auth=True`
@@ -954,9 +944,7 @@ def files_resource_upload(
         )
 
     # TODO: pull cache from the context
-    return tk.get_action(
-        "files_multipart_start" if data_dict["multipart"] else "files_file_create"
-    )(
+    return tk.get_action("files_multipart_start" if data_dict["multipart"] else "files_file_create")(
         Context(context, ignore_auth=True),
         dict(data_dict, storage=storage_name),
     )

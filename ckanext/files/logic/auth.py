@@ -133,8 +133,7 @@ def files_owns_file(context: Context, data_dict: dict[str, Any]) -> AuthResult:
         }
 
     return {
-        "success": file.owner_info.owner_type == "user"
-        and file.owner_info.owner_id == user.id,
+        "success": file.owner_info.owner_type == "user" and file.owner_info.owner_id == user.id,
         "msg": "Not an owner of the file",
     }
 
@@ -168,8 +167,7 @@ def files_file_search(context: Context, data_dict: dict[str, Any]) -> AuthResult
 @tk.auth_allow_anonymous_access
 def files_file_create(context: Context, data_dict: dict[str, Any]) -> AuthResult:
     if context["user"] and (  # pyright: ignore[reportTypedDictNotRequiredAccess]
-        shared.config.authenticated_uploads()
-        and data_dict["storage"] in shared.config.authenticated_storages()
+        shared.config.authenticated_uploads() and data_dict["storage"] in shared.config.authenticated_storages()
     ):
         return {"success": True}
 
@@ -314,9 +312,7 @@ def files_resource_upload(context: Context, data_dict: dict[str, Any]) -> AuthRe
         return {"success": False}
 
     if data_dict.get("resource_id"):
-        return authz.is_authorized(
-            "resource_update", context, {"id": data_dict["resource_id"]}
-        )
+        return authz.is_authorized("resource_update", context, {"id": data_dict["resource_id"]})
 
     return authz.is_authorized("resource_create", context, data_dict)
 

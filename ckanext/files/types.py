@@ -2,7 +2,8 @@
 
 from __future__ import annotations
 
-from typing import Any, Iterator, Literal, Protocol
+from collections.abc import Iterator
+from typing import Any, Literal, Protocol
 
 from ckan.config.declaration import Declaration, Key
 from ckan.types import (

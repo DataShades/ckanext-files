@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from typing import Any, Iterable
+from collections.abc import Iterable
+from typing import Any
 
 import click
 import sqlalchemy as sa
@@ -230,8 +231,7 @@ def migrate_local_resources(storage_name: str):  # noqa: C901, PLR0915, PLR0912
 
                 if res.url_type != "upload":
                     tk.error_shout(
-                        f"Resource {resource_id} has suspicious "
-                        + f"url_type: {res.url_type}",
+                        f"Resource {resource_id} has suspicious " + f"url_type: {res.url_type}",
                     )
                     raise click.Abort
 

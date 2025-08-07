@@ -30,9 +30,7 @@ class GoogleCloudStorage(shared.Storage, gcs.GoogleCloudStorage):
 
     settings: Settings  # pyright: ignore[reportIncompatibleVariableOverride]
     SettingsFactory = Settings
-    ReaderFactory = type(
-        "Reader", (shared.Reader, gcs.GoogleCloudStorage.ReaderFactory), {}
-    )
+    ReaderFactory = type("Reader", (shared.Reader, gcs.GoogleCloudStorage.ReaderFactory), {})
 
     @override
     @classmethod

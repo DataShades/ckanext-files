@@ -1,8 +1,9 @@
 from __future__ import annotations
 
 import os
+from collections.abc import Iterable
 from datetime import datetime
-from typing import Any, Iterable, TypedDict
+from typing import Any, TypedDict
 
 import ckan.plugins.toolkit as tk
 from ckan import model

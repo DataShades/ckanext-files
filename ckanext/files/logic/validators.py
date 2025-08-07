@@ -245,10 +245,7 @@ def files_accept_file_with_type(*supported_types: str):
 
             if not utils.is_supported_type(actual, supported_types):
                 expected = ", ".join(supported_types)
-                msg = (
-                    f"Type {actual} is not supported."
-                    + f" Use one of the following types: {expected}"
-                )
+                msg = f"Type {actual} is not supported." + f" Use one of the following types: {expected}"
                 errors[key].append(msg)
                 raise tk.StopOnError
 
@@ -278,10 +275,7 @@ def files_accept_file_with_storage(*supported_storages: str):
 
             if file.storage not in supported_storages:
                 expected = ", ".join(supported_storages)
-                msg = (
-                    f"Storage {file.storage} is not supported."
-                    + f" Use one of the following storages: {expected}"
-                )
+                msg = f"Storage {file.storage} is not supported." + f" Use one of the following storages: {expected}"
                 errors[key].append(msg)
                 raise tk.StopOnError
 
@@ -304,9 +298,7 @@ def files_transfer_ownership(owner_type: str, id_field: str | list[str] = "id"):
         value = data[key]
         id_field_path = key[:-1]
         for step in id_field:
-            id_field_path = (
-                id_field_path[:-1] if step == ".." else id_field_path + (step,)
-            )
+            id_field_path = id_field_path[:-1] if step == ".." else id_field_path + (step,)
 
         if data.get(id_field_path):
             strategy = "value"
@@ -326,11 +318,7 @@ def files_transfer_ownership(owner_type: str, id_field: str | list[str] = "id"):
             strategy = "path"
             task_destination = key[:-2] + (key[-2] - max_idx - 1,)
             for step in id_field:
-                task_destination = (
-                    task_destination[:-1]
-                    if step == ".."
-                    else task_destination + (step,)
-                )
+                task_destination = task_destination[:-1] if step == ".." else task_destination + (step,)
 
         ids: list[str] = value if isinstance(value, list) else [value]
         user = authz._get_user(context.get("user"))  # type: ignore
@@ -357,9 +345,7 @@ def files_transfer_ownership(owner_type: str, id_field: str | list[str] = "id"):
                 continue
 
             shared.add_task(
-                task.OwnershipTransferTask(
-                    file_id, owner_type, task_destination, strategy
-                ),
+                task.OwnershipTransferTask(file_id, owner_type, task_destination, strategy),
             )
 
     return validator

@@ -121,8 +121,7 @@ class FilesManagerCollection(ApCollection):
                     "type": "button",
                     "attrs": {
                         "onclick": (
-                            "$(this).closest('form').find('input,select')"
-                            ".val('').prevObject[0].requestSubmit()"
+                            "$(this).closest('form').find('input,select').val('').prevObject[0].requestSubmit()"
                         ),
                     },
                 },

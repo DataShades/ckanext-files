@@ -35,14 +35,8 @@ class S3Storage(shared.Storage, s3.S3Storage):
             "Name of the S3 bucket where uploaded data will be stored.",
         )
         declaration.declare(key.key).set_description("The access key for AWS account.")
-        declaration.declare(key.secret).set_description(
-            "The secret key for AWS account."
-        )
+        declaration.declare(key.secret).set_description("The secret key for AWS account.")
 
-        declaration.declare(key.region).set_description(
-            "The AWS Region used in instantiating the client."
-        )
+        declaration.declare(key.region).set_description("The AWS Region used in instantiating the client.")
 
-        declaration.declare(key.endpoint).set_description(
-            "The complete URL to use for the constructed client."
-        )
+        declaration.declare(key.endpoint).set_description("The complete URL to use for the constructed client.")

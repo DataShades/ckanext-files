@@ -187,9 +187,7 @@ def clean(storage_name: str | None, yes: bool):
 
             for item in result["results"]:
                 bar.label = f"Removing {item['id']}"
-                tk.get_action("files_file_delete")(
-                    {"user": user["name"]}, {"id": item["id"]}
-                )
+                tk.get_action("files_file_delete")({"user": user["name"]}, {"id": item["id"]})
                 bar.update(1)
 
     click.secho("Done", fg="green")

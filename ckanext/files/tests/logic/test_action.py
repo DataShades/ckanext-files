@@ -12,7 +12,7 @@ from ckanext.files.model import File
 call_action: Any
 
 
-@pytest.fixture()
+@pytest.fixture
 def random_file(create_with_upload: Any, faker: Any):
     return create_with_upload(
         faker.binary(10),

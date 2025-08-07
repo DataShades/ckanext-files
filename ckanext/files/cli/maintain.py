@@ -78,11 +78,7 @@ def invalid_owner(storage_name: str | None, remove: bool):
         tk.error_shout(f"Storage {storage_name} does not support file removal")
         raise click.Abort
 
-    stmt = (
-        sa.select(shared.File)
-        .join(shared.File.owner_info)
-        .where(shared.File.storage == storage_name)
-    )
+    stmt = sa.select(shared.File).join(shared.File.owner_info).where(shared.File.storage == storage_name)
 
     files = [f for f in model.Session.scalars(stmt) if f.owner is None]
 

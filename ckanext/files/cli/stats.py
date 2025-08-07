@@ -86,8 +86,7 @@ def types(storage_name: str | None):
 
     total = model.Session.scalar(sa.select(sa.func.sum(stmt.c.count)))
     click.secho(
-        f"Storage {click.style(storage_name, bold=True)} contains "
-        + f"{click.style(total, bold=True)} files",
+        f"Storage {click.style(storage_name, bold=True)} contains " + f"{click.style(total, bold=True)} files",
     )
     for content_type, count in model.Session.execute(stmt):
         click.secho(f"\t{content_type}: {click.style(count, bold=True)}")
@@ -128,8 +127,7 @@ def owner(storage_name: str | None, verbose: bool):
 
     total = model.Session.scalar(sa.select(sa.func.sum(stmt.c.count)))
     click.secho(
-        f"Storage {click.style(storage_name, bold=True)} contains "
-        + f"{click.style(total, bold=True)} files",
+        f"Storage {click.style(storage_name, bold=True)} contains " + f"{click.style(total, bold=True)} files",
     )
     for owner, count in model.Session.execute(stmt):
         clean_owner = owner.strip() or click.style(

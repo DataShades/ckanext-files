@@ -17,26 +17,26 @@ from ckan.tests.helpers import call_action
 call_action: Any
 
 
-@pytest.fixture()
+@pytest.fixture
 def mock():
     return _mock
 
 
-@pytest.fixture()
+@pytest.fixture
 def responses(ckan_config: dict[str, Any]):
     with RequestsMock() as rsps:
         rsps.add_passthru(ckan_config["solr_url"])
         yield rsps
 
 
-@pytest.fixture()
+@pytest.fixture
 def files_stopped_time():
     now = datetime.now(pytz.utc)
     with freeze_time(now):
         yield now
 
 
-@pytest.fixture()
+@pytest.fixture
 def clean_db(reset_db: Any, migrate_db_for: Any):
     reset_db()
     migrate_db_for("files")
@@ -49,7 +49,7 @@ class FakeFileStorage(FileStorage):
         super().__init__(stream, filename, "upload")
 
 
-@pytest.fixture()
+@pytest.fixture
 def create_with_upload(ckan_config: dict[str, Any], monkeypatch: Any, tmpdir: Any):
     """Reimplementation of original CKAN fixture with better fake storage.
 
@@ -101,7 +101,7 @@ def reset_redis():
     return cleaner
 
 
-@pytest.fixture()
+@pytest.fixture
 def clean_redis(reset_redis: Any):
     """Remove all keys from Redis.
 

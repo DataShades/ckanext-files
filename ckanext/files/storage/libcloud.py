@@ -10,10 +10,7 @@ from ckan.config.declaration import Declaration, Key
 
 from ckanext.files import shared
 
-PROVIDERS_URL = (
-    "https://libcloud.readthedocs.io/en/stable/storage/"
-    + "supported_providers.html#provider-matrix"
-)
+PROVIDERS_URL = "https://libcloud.readthedocs.io/en/stable/storage/" + "supported_providers.html#provider-matrix"
 
 get_driver: Any
 
@@ -42,8 +39,7 @@ class LibCloudStorage(shared.Storage, lc.LibCloudStorage):
             "Name of the container(bucket)",
         )
         declaration.declare(key.params).set_description(
-            "JSON object with additional parameters"
-            + " passed directly to storage constructor.",
+            "JSON object with additional parameters" + " passed directly to storage constructor.",
         ).set_validators("default({}) convert_to_json_if_string dict_only")
 
         declaration.declare(key.public_prefix).set_description(

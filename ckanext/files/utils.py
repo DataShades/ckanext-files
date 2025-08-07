@@ -9,7 +9,8 @@ are stored here, to avoid import cycles.
 from __future__ import annotations
 
 import logging
-from typing import Any, Callable, Iterable, TypeVar, cast
+from collections.abc import Iterable
+from typing import Any, Callable, TypeVar, cast
 
 import file_keeper as fk
 import jwt
@@ -49,8 +50,7 @@ def get_owner(owner_type: str, owner_id: str):
     else:
         mappers = cast(
             "Iterable[Mapper]",
-            tk.BaseModel._sa_registry.mappers
-            | model.User._sa_class_manager.registry.mappers,  # type: ignore
+            tk.BaseModel._sa_registry.mappers | model.User._sa_class_manager.registry.mappers,  # type: ignore
         )
 
     for mapper in mappers:

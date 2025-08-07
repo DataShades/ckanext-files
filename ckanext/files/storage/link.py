@@ -59,9 +59,7 @@ class Manager(shared.Manager):
         return True
 
     @override
-    def analyze(
-        self, location: shared.Location, extras: dict[str, Any]
-    ) -> shared.FileData:
+    def analyze(self, location: shared.Location, extras: dict[str, Any]) -> shared.FileData:
         resp = requests.head(location, timeout=self.storage.settings.timeout)
         if not resp.ok:
             log.debug("Cannot analyze URL %s: %s", location, resp)

@@ -134,9 +134,7 @@ def multipart_update(not_empty: Validator, unicode_safe: Validator) -> Schema:
 
 
 @validator_args
-def multipart_complete(
-    not_empty: Validator, unicode_safe: Validator, boolean_validator: Validator
-) -> Schema:
+def multipart_complete(not_empty: Validator, unicode_safe: Validator, boolean_validator: Validator) -> Schema:
     return {
         "id": [not_empty, unicode_safe],
         "keep_storage_data": [boolean_validator],

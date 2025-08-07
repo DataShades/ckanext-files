@@ -38,9 +38,7 @@ files.add_command(file.group, "file")
 
 
 @files.command()
-@click.option(
-    "-c", "--with-configuration", is_flag=True, help="Show adapter's configuration"
-)
+@click.option("-c", "--with-configuration", is_flag=True, help="Show adapter's configuration")
 @click.option("-d", "--with-docs", is_flag=True, help="Show adapter's documentation")
 @click.option("-H", "--include-hidden", is_flag=True, help="Show hidden adapters")
 @click.argument("adapter", required=False)
@@ -71,13 +69,9 @@ def adapters(
 
         if with_configuration and issubclass(item, base.Storage):
             decl = Declaration()
-            item.declare_config_options(
-                decl, Key.from_string("ckan.files.storage.NAME")
-            )
+            item.declare_config_options(decl, Key.from_string("ckan.files.storage.NAME"))
             configuration = decl.into_ini(False, True)
-            configuration = (
-                f"{click.style('Configuration:', bold=True)}\n{configuration}"
-            )
+            configuration = f"{click.style('Configuration:', bold=True)}\n{configuration}"
             wrapped = textwrap.indent(configuration, "\t")
             click.secho(wrapped)
             click.echo()

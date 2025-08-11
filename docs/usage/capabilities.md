@@ -18,9 +18,9 @@ operations that can be supported by storage:
 | COMPOSE        | combine multiple files into a new one in the same storage              |
 | RANGE          | return specific range of bytes from the file                           |
 | ANALYZE        | return file details from the storage, as if file was uploaded just now |
-| PERMANENT_LINK | make permanent download link                                           |
-| TEMPORAL_LINK  | make expiring download link                                            |
-| ONE_TIME_LINK  | make one-time download link                                            |
+| LINK_PERMANENT | make permanent download link                                           |
+| LINK_TEMPORAL  | make expiring download link                                            |
+| LINK_ONE_TIME  | make one-time download link                                            |
 
 These capabilities are defined when storage is created and are automatically
 checked by actions that work with storage. For manual checks use

@@ -19,7 +19,7 @@ class Settings(shared.Settings):
 
 
 class Reader(shared.Reader):
-    capabilities = shared.Capability.PERMANENT_LINK
+    capabilities = shared.Capability.LINK_PERMANENT
     storage: LinkStorage
 
     @override

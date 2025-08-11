@@ -44,7 +44,7 @@ class FsStorage(shared.Storage, fs.FsStorage):
 
 
 class PublicFsReader(Reader):
-    capabilities = fs.Reader.capabilities | fk.Capability.PERMANENT_LINK
+    capabilities = fs.Reader.capabilities | fk.Capability.LINK_PERMANENT
     storage: PublicFsStorage  # pyright: ignore[reportIncompatibleVariableOverride]
 
     @override

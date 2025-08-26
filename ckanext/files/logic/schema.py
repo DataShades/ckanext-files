@@ -11,13 +11,12 @@ def file_create(  # noqa: PLR0913
     default: ValidatorFactory,
     files_into_upload: Validator,
     not_missing: Validator,
-    files_ensure_name: ValidatorFactory,
 ) -> Schema:
     # name is checked inside action, using "upload" as source if empty
     return {
         "name": [ignore_empty, unicode_safe],
         "storage": [default(shared.config.default_storage()), unicode_safe],
-        "upload": [not_missing, files_into_upload, files_ensure_name("name")],
+        "upload": [not_missing, files_into_upload],
     }
 
 

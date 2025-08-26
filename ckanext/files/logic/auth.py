@@ -172,6 +172,18 @@ def files_permission_read_file(context: Context, data_dict: dict[str, Any]) -> A
     return {"success": result, "msg": "Not allowed to read file"}
 
 
+@tk.auth_allow_anonymous_access
+def files_permission_download_file(context: Context, data_dict: dict[str, Any]) -> AuthResult:
+    """Check if user is allowed to download a file.
+
+    Owners and global managers can download files. Additionally plugins can extend
+    this permission via ``IFiles.files_file_allows`` hook.
+
+    """
+    result = authz.is_authorized_boolean("permission_read_file", context, data_dict)
+    return {"success": result, "msg": "Not allowed to read file"}
+
+
 # API #########################################################################
 
 
@@ -200,12 +212,6 @@ def files_file_delete(context: Context, data_dict: dict[str, Any]) -> AuthResult
 @tk.auth_allow_anonymous_access
 def files_file_show(context: Context, data_dict: dict[str, Any]) -> AuthResult:
     """Only owner can view files."""
-    return authz.is_authorized("files_permission_read_file", context, data_dict)
-
-
-@tk.auth_allow_anonymous_access
-def files_file_download(context: Context, data_dict: dict[str, Any]) -> AuthResult:
-    """Only owner can download files."""
     return authz.is_authorized("files_permission_read_file", context, data_dict)
 
 

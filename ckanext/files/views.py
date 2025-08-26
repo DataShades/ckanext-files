@@ -64,7 +64,7 @@ def get_blueprints():
 
 @bp.route("/file/download/<file_id>")
 def dispatch_download(file_id: str) -> Response:
-    tk.check_access("files_file_download", {}, {"id": file_id})
+    tk.check_access("files_permission_download_file", {}, {"id": file_id})
     item = model.Session.get(shared.File, file_id)
     if not item:
         raise tk.ObjectNotFound("file")

@@ -270,6 +270,13 @@ def files_file_create(context: Context, data_dict: dict[str, Any]) -> dict[str, 
     if not storage.supports(shared.Capability.CREATE):
         raise tk.ValidationError({"storage": ["Operation is not supported"]})
 
+    if "name" not in data_dict:
+        filename = data_dict["upload"].filename
+        if not filename:
+            msg = "Name is missing and cannot be deduced from upload"
+            raise tk.ValidationError({"upload": [msg]})
+        data_dict["name"] = filename
+
     filename = secure_filename(data_dict["name"])
 
     try:

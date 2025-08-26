@@ -9,11 +9,6 @@ upload object using `ckanext.files.shared.make_upload`
 
 Convert human-readable filesize(1B, 10MiB, 20GB) into an integer
 
-## files_ensure_name(name_field)
-
-If `name_field` is empty, copy into it filename from current field. Current
-field must be processed with `files_into_upload` first
-
 ## files_file_id_exists
 
 Verify that file ID exists

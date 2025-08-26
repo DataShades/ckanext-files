@@ -726,13 +726,13 @@ def files_multipart_complete(
         data.update(fileobj.plugin_data)
         fileobj.plugin_data = data
 
-    if owner_info := multipart.owner_info:
+    if owner := multipart.owner:
         sess.add(
             Owner(
                 item_id=fileobj.id,
                 item_type="file",
-                owner_id=owner_info.owner_id,
-                owner_type=owner_info.owner_type,
+                owner_id=owner.owner_id,
+                owner_type=owner.owner_type,
             )
         )
 

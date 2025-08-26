@@ -27,8 +27,7 @@ class TestMultipart:
 
         model.Session.add_all([multipart, owner])
         model.Session.commit()
-        assert multipart.owner_info is owner
-        assert isinstance(multipart.owner, model.User)
+        assert multipart.owner is owner
 
         model.Session.delete(owner)
         model.Session.commit()
@@ -46,7 +45,7 @@ class TestMultipart:
         model.Session.commit()
         model.Session.refresh(multipart)
 
-        assert multipart.owner_info is owner
+        assert multipart.owner is owner
 
         model.Session.delete(multipart)
         model.Session.commit()

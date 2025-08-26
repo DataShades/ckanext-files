@@ -321,8 +321,8 @@ def files_transfer_ownership(owner_type: str, id_field: str | list[str] = "id"):
                 task_destination = task_destination[:-1] if step == ".." else task_destination + (step,)
 
         ids: list[str] = value if isinstance(value, list) else [value]
-        user = authz._get_user(context.get("user"))  # type: ignore
-        sess = context["session"]  # pyright: ignore[reportTypedDictNotRequiredAccess]
+        user = authz._get_user(context.get("user"))  # pyright: ignore[reportPrivateUsage]
+        sess = context["session"]
 
         for file_id in ids:
             file = sess.get(shared.File, file_id)
@@ -331,7 +331,7 @@ def files_transfer_ownership(owner_type: str, id_field: str | list[str] = "id"):
                 raise tk.StopOnError
 
             owner_id = data.get(id_field_path)
-            actual = file.owner.owner_type, file.owner_info.owner_id
+            actual = file.owner.owner_type, file.owner.owner_id
 
             if actual == (owner_type, owner_id):
                 continue

@@ -91,11 +91,11 @@ class IFiles(Interface):
                     file: shared.File | shared.Multipart,
                     operation: shared.types.FileOperation
             ) -> bool | None:
-                if file.owner_info and file.owner_info.owner_type == "resource":
+                if file.owner and file.owner.owner_type == "resource":
                     return is_authorized_boolean(
                         f"resource_{operation}",
                         context,
-                        {"id": file.owner_info.id}
+                        {"id": file.owner.id}
                     )
 
                 return None

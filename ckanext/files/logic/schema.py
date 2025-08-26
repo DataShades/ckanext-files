@@ -22,19 +22,7 @@ def file_create(  # noqa: PLR0913
 
 
 @validator_args
-def file_replace(  # noqa: PLR0913
-    unicode_safe: Validator,
-    files_into_upload: Validator,
-    not_missing: Validator,
-) -> Schema:
-    return {
-        "id": [not_missing, unicode_safe],
-        "upload": [not_missing, files_into_upload],
-    }
-
-
-@validator_args
-def _base_file_search(  # noqa: PLR0913
+def file_search(
     unicode_safe: Validator,
     default: ValidatorFactory,
     int_validator: Validator,
@@ -58,49 +46,94 @@ def _base_file_search(  # noqa: PLR0913
 
 
 @validator_args
-def file_search(default: ValidatorFactory, boolean_validator: Validator) -> Schema:
-    schema = _base_file_search()
-    schema["completed"] = [default(True), boolean_validator]
+def file_delete(not_empty: Validator, unicode_safe: Validator) -> Schema:
+    return {"id": [not_empty, unicode_safe]}
+
+
+@validator_args
+def file_show(not_empty: Validator, unicode_safe: Validator) -> Schema:
+    return {"id": [not_empty, unicode_safe]}
+
+
+@validator_args
+def file_rename(not_empty: Validator, unicode_safe: Validator) -> Schema:
+    return {"id": [not_empty, unicode_safe], "name": [not_empty, unicode_safe]}
+
+
+@validator_args
+def transfer_ownership(
+    not_empty: Validator,
+    boolean_validator: Validator,
+    default: ValidatorFactory,
+    unicode_safe: Validator,
+) -> Schema:
+    return {
+        "id": [not_empty, unicode_safe],
+        "owner_id": [not_empty, unicode_safe],
+        "owner_type": [not_empty, unicode_safe],
+        "force": [default(False), boolean_validator],
+        "pin": [default(False), boolean_validator],
+    }
+
+
+@validator_args
+def file_scan(default: ValidatorFactory, unicode_safe: Validator) -> Schema:
+    return {"owner_id": [default(""), unicode_safe], "owner_type": [default("user"), unicode_safe]}
+
+
+@validator_args
+def file_pin(not_empty: Validator, unicode_safe: Validator) -> Schema:
+    return {"id": [not_empty, unicode_safe]}
+
+
+@validator_args
+def file_unpin(not_empty: Validator, unicode_safe: Validator) -> Schema:
+    return {"id": [not_empty, unicode_safe]}
+
+
+# not included into CKAN ######################################################
+
+
+@validator_args
+def resource_upload(
+    keep_extras: Validator,
+    unicode_safe: Validator,
+    boolean_validator: Validator,
+    ignore_missing: Validator,
+) -> Schema:
+    return {
+        "multipart": [boolean_validator],
+        "resource_id": [ignore_missing, unicode_safe],
+        "package_id": [ignore_missing, unicode_safe],
+        "__extras": [keep_extras],
+    }
+
+
+@validator_args
+def group_image_upload(ignore: Validator) -> Schema:
+    schema = file_create()
+    schema["storage"] = [ignore]
+    schema["__extras"] = [ignore]
     return schema
 
 
 @validator_args
-def file_delete(
-    default: ValidatorFactory,
-    boolean_validator: Validator,
-    not_empty: Validator,
-    unicode_safe: Validator,
-) -> Schema:
-    return {
-        "id": [not_empty, unicode_safe],
-        "completed": [default(True), boolean_validator],
-    }
+def user_image_upload(ignore: Validator) -> Schema:
+    schema = file_create()
+    schema["storage"] = [ignore]
+    schema["__extras"] = [ignore]
+    return schema
 
 
 @validator_args
-def file_show(
-    default: ValidatorFactory,
-    boolean_validator: Validator,
-    not_empty: Validator,
+def file_replace(  # noqa: PLR0913
     unicode_safe: Validator,
+    files_into_upload: Validator,
+    not_missing: Validator,
 ) -> Schema:
     return {
-        "id": [not_empty, unicode_safe],
-        "completed": [default(True), boolean_validator],
-    }
-
-
-@validator_args
-def file_rename(
-    default: ValidatorFactory,
-    boolean_validator: Validator,
-    not_empty: Validator,
-    unicode_safe: Validator,
-) -> Schema:
-    return {
-        "id": [not_empty, unicode_safe],
-        "name": [not_empty, unicode_safe],
-        "completed": [default(True), boolean_validator],
+        "id": [not_missing, unicode_safe],
+        "upload": [not_missing, files_into_upload],
     }
 
 
@@ -140,88 +173,3 @@ def multipart_complete(not_empty: Validator, unicode_safe: Validator, boolean_va
         "keep_storage_data": [boolean_validator],
         "keep_plugin_data": [boolean_validator],
     }
-
-
-@validator_args
-def transfer_ownership(
-    not_empty: Validator,
-    boolean_validator: Validator,
-    default: ValidatorFactory,
-    unicode_safe: Validator,
-) -> Schema:
-    return {
-        "id": [not_empty, unicode_safe],
-        "completed": [default(True), boolean_validator],
-        "owner_id": [not_empty, unicode_safe],
-        "owner_type": [not_empty, unicode_safe],
-        "force": [default(False), boolean_validator],
-        "pin": [default(False), boolean_validator],
-    }
-
-
-@validator_args
-def file_scan(
-    default: ValidatorFactory,
-    unicode_safe: Validator,
-) -> Schema:
-    return {
-        "owner_id": [default(""), unicode_safe],
-        "owner_type": [default("user"), unicode_safe],
-    }
-
-
-@validator_args
-def file_pin(
-    boolean_validator: Validator,
-    default: ValidatorFactory,
-    not_empty: Validator,
-    unicode_safe: Validator,
-) -> Schema:
-    return {
-        "id": [not_empty, unicode_safe],
-        "completed": [default(True), boolean_validator],
-    }
-
-
-@validator_args
-def file_unpin(
-    boolean_validator: Validator,
-    default: ValidatorFactory,
-    not_empty: Validator,
-    unicode_safe: Validator,
-) -> Schema:
-    return {
-        "id": [not_empty, unicode_safe],
-        "completed": [default(True), boolean_validator],
-    }
-
-
-@validator_args
-def resource_upload(
-    keep_extras: Validator,
-    unicode_safe: Validator,
-    boolean_validator: Validator,
-    ignore_missing: Validator,
-) -> Schema:
-    return {
-        "multipart": [boolean_validator],
-        "resource_id": [ignore_missing, unicode_safe],
-        "package_id": [ignore_missing, unicode_safe],
-        "__extras": [keep_extras],
-    }
-
-
-@validator_args
-def group_image_upload(ignore: Validator) -> Schema:
-    schema = file_create()
-    schema["storage"] = [ignore]
-    schema["__extras"] = [ignore]
-    return schema
-
-
-@validator_args
-def user_image_upload(ignore: Validator) -> Schema:
-    schema = file_create()
-    schema["storage"] = [ignore]
-    schema["__extras"] = [ignore]
-    return schema

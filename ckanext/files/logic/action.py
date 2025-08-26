@@ -543,8 +543,10 @@ def files_multipart_start(
     filename = secure_filename(data_dict["name"])
 
     content_type = data_dict["content_type"]
-    if "sample" in data_dict:
-        content_type = cast(shared.Upload, data_dict["sample"]).content_type
+
+    sample: shared.Upload | None
+    if sample := data_dict.get("sample"):
+        content_type = sample.content_type
 
     data = shared.FileData(
         Location(filename),
@@ -553,7 +555,7 @@ def files_multipart_start(
         data_dict["hash"],
     )
 
-    data = shared.FileData.from_object(data, location=storage.prepare_location(filename, data))
+    data = shared.FileData.from_object(data, location=storage.prepare_location(filename, sample))
 
     try:
         data = storage.multipart_start(
@@ -809,7 +811,7 @@ def files_transfer_ownership(
     if not fileobj:
         raise tk.ObjectNotFound("file")
 
-    owner = fileobj.owner_info
+    owner = fileobj.owner
     if not owner:
         owner = Owner(
             item_id=fileobj.id,
@@ -867,7 +869,7 @@ def files_file_pin(context: Context, data_dict: dict[str, Any]) -> dict[str, Any
     if not fileobj:
         raise tk.ObjectNotFound("file")
 
-    owner = fileobj.owner_info
+    owner = fileobj.owner
     if not owner:
         raise tk.ValidationError({"id": ["File has no owner"]})
 
@@ -904,7 +906,7 @@ def files_file_unpin(context: Context, data_dict: dict[str, Any]) -> dict[str, A
     if not fileobj:
         raise tk.ObjectNotFound("file")
 
-    owner = fileobj.owner_info
+    owner = fileobj.owner
     if not owner:
         raise tk.ValidationError({"id": ["File has no owner"]})
 

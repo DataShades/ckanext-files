@@ -326,12 +326,12 @@ def files_transfer_ownership(owner_type: str, id_field: str | list[str] = "id"):
 
         for file_id in ids:
             file = sess.get(shared.File, file_id)
-            if not file or not file.owner_info:
+            if not file or not file.owner:
                 errors[key].append(msg)
                 raise tk.StopOnError
 
             owner_id = data.get(id_field_path)
-            actual = file.owner_info.owner_type, file.owner_info.owner_id
+            actual = file.owner.owner_type, file.owner_info.owner_id
 
             if actual == (owner_type, owner_id):
                 continue
@@ -340,7 +340,7 @@ def files_transfer_ownership(owner_type: str, id_field: str | list[str] = "id"):
                 errors[key].append(msg)
                 continue
 
-            if file.owner_info.pinned:
+            if file.owner.pinned:
                 errors[key].append("File is pinned")
                 continue
 

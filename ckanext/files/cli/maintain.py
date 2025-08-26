@@ -40,7 +40,7 @@ def empty_owner(storage_name: str | None, remove: bool):
 
     stmt = (
         sa.select(shared.File)
-        .outerjoin(shared.File.owner_info)
+        .outerjoin(shared.File.owner)
         .where(shared.File.storage == storage_name, shared.Owner.owner_id.is_(None))
     )
 
@@ -78,7 +78,7 @@ def invalid_owner(storage_name: str | None, remove: bool):
         tk.error_shout(f"Storage {storage_name} does not support file removal")
         raise click.Abort
 
-    stmt = sa.select(shared.File).join(shared.File.owner_info).where(shared.File.storage == storage_name)
+    stmt = sa.select(shared.File).join(shared.File.owner).where(shared.File.storage == storage_name)
 
     files = [f for f in model.Session.scalars(stmt) if f.owner is None]
 
@@ -91,7 +91,7 @@ def invalid_owner(storage_name: str | None, remove: bool):
     click.echo("Following files have dangling owner reference")
     for file in files:
         size = fk.humanize_filesize(file.size)
-        if owner := file.owner_info:
+        if owner := file.owner:
             click.echo(
                 f"\t{file.id}: {file.name} [{file.content_type}, {size}]. "
                 + f"Owner: {owner.owner_type} {owner.owner_id}",

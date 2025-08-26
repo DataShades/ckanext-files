@@ -30,22 +30,13 @@ def _owner_allows(
     else:
         func_name = f"{owner_type}_{operation}"
 
-    try:
-        tk.check_access(
-            func_name,
-            tk.fresh_context(context),
-            {"id": owner_id},
-        )
-
-    except (tk.NotAuthorized, ValueError):
-        return False
-
-    return True
+    result = authz.is_authorized(func_name, tk.fresh_context(context), {"id": owner_id})
+    return result["success"]
 
 
 def _file_allows(
     context: Context,
-    file: shared.File | shared.Multipart,
+    file: shared.File,
     operation: types.FileOperation,
 ) -> bool:
     """Decide if user is allowed to perform operation on file."""
@@ -54,7 +45,7 @@ def _file_allows(
         if result is not None:
             return result
 
-    info = file.owner_info if file else None
+    info = file.owner if file else None
 
     if not info:
         return False
@@ -68,44 +59,117 @@ def _file_allows(
 
     func_name = f"{info.owner_type}_{operation}"
 
-    try:
-        tk.check_access(
-            func_name,
-            tk.fresh_context(context),
-            {"id": info.owner_id},
-        )
+    result = authz.is_authorized(
+        func_name,
+        tk.fresh_context(context),
+        {"id": info.owner_id},
+    )
 
-    except (tk.NotAuthorized, ValueError):
-        return False
-
-    return True
+    return result["success"]
 
 
 def _get_user(context: Context) -> model.User | None:
-    if "auth_user_obj" in context:
-        return cast(model.User, context["auth_user_obj"])
+    user = context.get("auth_user_obj")
+    if isinstance(user, model.User):
+        return user
 
-    user = tk.current_user if tk.current_user.is_authenticated else None
-    username = context["user"]  # pyright: ignore[reportTypedDictNotRequiredAccess]
-
-    if user and username == user.name:
-        return cast(model.User, user)
+    if tk.current_user.name == context["user"]:
+        return cast(model.User, tk.current_user)
 
     cache = utils.ContextCache(context)
-    return cache.get("user", username, lambda: model.User.get(username))
+    return cache.get("user", context["user"], lambda: model.User.get(context["user"]))
 
 
-def _get_file(
-    context: Context,
-    file_id: str,
-    completed: bool,
-) -> shared.File | shared.Multipart | None:
+def _get_file(context: Context, file_id: str) -> shared.File | None:
     cache = utils.ContextCache(context)
-    return cache.get_model(
-        "file",
-        file_id,
-        shared.File if completed else shared.Multipart,
-    )
+    return cache.get_model("file", file_id, shared.File)
+
+
+# permissions #################################################################
+
+
+@tk.auth_allow_anonymous_access
+def files_permission_manage_files(context: Context, data_dict: dict[str, Any]) -> AuthResult:
+    """Check if user is allowed to manage any file.
+
+    This is a sort of "sysadmin" check in terms of file management. Give this
+    permission to user who needs an access to every owned, unowned, hidden,
+    incomplete and private file
+    """
+    return {"success": False, "msg": "Not allowed to manage files"}
+
+
+@tk.auth_allow_anonymous_access
+def files_permission_owns_file(context: Context, data_dict: dict[str, Any]) -> AuthResult:
+    """Check if user is allowed to manage a file.
+
+    Normally, owner of the file passes this check as well as any user who has
+    ``files_permission_manage_files``.
+    """
+    if authz.is_authorized_boolean("files_permission_manage_files", context, data_dict):
+        return {"success": True}
+
+    not_an_owner = "Not an owner of the file"
+    user = _get_user(context)
+    if not user:
+        return {"success": False, "msg": not_an_owner}
+
+    file = _get_file(context, data_dict["id"])
+    if not file or not file.owner:
+        return {"success": False, "msg": not_an_owner}
+
+    return {
+        "success": file.owner.owner_type == "user" and file.owner.owner_id == user.id,
+        "msg": not_an_owner,
+    }
+
+
+@tk.auth_allow_anonymous_access
+def files_permission_edit_file(context: Context, data_dict: dict[str, Any]) -> AuthResult:
+    """Check if user is allowed to edit a file.
+
+    Owners and global managers can edit files. Additionally plugins can extend
+    this permission via ``IFiles.files_file_allows`` hook.
+
+    """
+    result = authz.is_authorized_boolean("files_permission_owns_file", context, data_dict)
+    if not result:
+        file = _get_file(context, data_dict["id"])
+        result = bool(file and _file_allows(context, file, "update"))
+
+    return {"success": result, "msg": "Not allowed to edit file"}
+
+
+@tk.auth_allow_anonymous_access
+def files_permission_delete_file(context: Context, data_dict: dict[str, Any]) -> AuthResult:
+    """Check if user is allowed to delete the file.
+
+    Owners and global managers can delete files. Additionally plugins can extend
+    this permission via ``IFiles.files_file_allows`` hook.
+
+    """
+    result = authz.is_authorized_boolean("files_permission_owns_file", context, data_dict)
+    if not result:
+        file = _get_file(context, data_dict["id"])
+        result = bool(file and _file_allows(context, file, "delete"))
+
+    return {"success": result, "msg": "Not allowed to delete file"}
+
+
+@tk.auth_allow_anonymous_access
+def files_permission_read_file(context: Context, data_dict: dict[str, Any]) -> AuthResult:
+    """Check if user is allowed to read a file.
+
+    Owners and global managers can read files. Additionally plugins can extend
+    this permission via ``IFiles.files_file_allows`` hook.
+
+    """
+    result = authz.is_authorized_boolean("files_permission_owns_file", context, data_dict)
+    if not result:
+        file = _get_file(context, data_dict["id"])
+        result = bool(file and _file_allows(context, file, "show"))
+
+    return {"success": result, "msg": "Not allowed to read file"}
 
 
 @tk.auth_allow_anonymous_access

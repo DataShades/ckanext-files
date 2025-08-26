@@ -11,8 +11,6 @@ from sqlalchemy.orm import Mapped, foreign, relationship
 from ckan.lib.dictization import table_dictize
 from ckan.model.types import make_uuid
 
-from ckanext.files import utils
-
 from .base import Base, now
 from .owner import Owner
 
@@ -93,7 +91,7 @@ class File(Base):
     storage_data: Mapped[dict[str, Any]]
     plugin_data: Mapped[dict[str, Any]]
 
-    owner_info: Mapped[Owner | None] = relationship(  # type: ignore
+    owner: Mapped[Owner | None] = relationship(  # type: ignore
         Owner,
         primaryjoin=sa.and_(
             Owner.item_id == foreign(__table__.c.id),
@@ -105,14 +103,6 @@ class File(Base):
         lazy="joined",
     )
 
-    @property
-    def owner(self) -> Any | None:
-        owner = self.owner_info
-        if not owner:
-            return None
-
-        return utils.get_owner(owner.owner_type, owner.owner_id)
-
     def __init__(self, **kwargs: Any):
         super().__init__(**kwargs)
         if not self.id:
@@ -122,10 +112,10 @@ class File(Base):
         result = table_dictize(self, context)
         result["storage_data"] = copy.deepcopy(result["storage_data"])
 
-        if self.owner_info:
-            result["owner_type"] = self.owner_info.owner_type
-            result["owner_id"] = self.owner_info.owner_id
-            result["pinned"] = self.owner_info.pinned
+        if self.owner:
+            result["owner_type"] = self.owner.owner_type
+            result["owner_id"] = self.owner.owner_id
+            result["pinned"] = self.owner.pinned
 
         else:
             result["owner_type"] = None

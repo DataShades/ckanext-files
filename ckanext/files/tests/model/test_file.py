@@ -27,7 +27,7 @@ class TestFile:
 
         model.Session.add_all([file, owner])
         model.Session.commit()
-        assert file.owner_info is owner
+        assert file.owner is owner
         assert isinstance(file.owner, model.User)
 
         model.Session.delete(owner)
@@ -45,7 +45,7 @@ class TestFile:
         model.Session.commit()
         model.Session.refresh(file)
 
-        assert file.owner_info is owner
+        assert file.owner is owner
 
         model.Session.delete(file)
         model.Session.commit()

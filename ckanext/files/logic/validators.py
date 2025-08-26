@@ -150,30 +150,6 @@ def files_parse_filesize(
         raise tk.StopOnError from err
 
 
-def files_ensure_name(name_field: str):
-    """Apply to Upload to guess filename where `name_field` is empty."""
-
-    def validator(
-        key: FlattenKey,
-        data: FlattenDataDict,
-        errors: FlattenErrorDict,
-        context: Context,
-    ):
-        name_key = key[:-1] + (name_field,)
-        if data.get(name_key):
-            return
-
-        if name := data[key].filename:
-            data[name_key] = name
-            return
-
-        msg = f"Name is missing and cannot be deduced from {key[-1]}"
-        errors[key].append(msg)
-        raise tk.StopOnError
-
-    return validator
-
-
 def files_file_id_exists(
     key: FlattenKey,
     data: FlattenDataDict,
@@ -185,7 +161,7 @@ def files_file_id_exists(
     use_list = isinstance(value, list)
     ids: str | list[str] = value if use_list else [value]
 
-    sess = context["session"]  # pyright: ignore[reportTypedDictNotRequiredAccess]
+    sess = context["session"]
     for file_id in ids:
         file = sess.get(shared.File, file_id)
         if not file:

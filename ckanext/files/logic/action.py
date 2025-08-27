@@ -124,7 +124,6 @@ def files_file_search(  # noqa: C901, PLR0912, PLR0915
         owner_id (str): show only specific owner id if present. Default: `None`
         owner_type (str): show only specific owner type if present. Default: `None`
         pinned (bool): show only pinned/unpinned items if present. Default: `None`
-        completed (bool): use `False` to search incomplete uploads. Default: `True`
 
     Returns:
         dictionary with `count` and `results`
@@ -132,20 +131,12 @@ def files_file_search(  # noqa: C901, PLR0912, PLR0915
     tk.check_access("files_file_search", context, data_dict)
     sess = context["session"]
 
-    if data_dict["completed"]:
-        stmt = sa.select(File).outerjoin(
-            Owner,
-            sa.and_(File.id == Owner.item_id, Owner.item_type == "file"),
-        )
+    stmt = sa.select(File).outerjoin(
+        Owner,
+        sa.and_(File.id == Owner.item_id, Owner.item_type == "file"),
+    )
 
-        inspector: Any = sa.inspect(File)
-    else:
-        stmt = sa.select(Multipart).outerjoin(
-            Owner,
-            sa.and_(Multipart.id == Owner.item_id, Owner.item_type == "multipart"),
-        )
-
-        inspector: Any = sa.inspect(Multipart)
+    inspector = sa.inspect(File)  # pyright: ignore[reportUnknownVariableType]
 
     for field in ["owner_type", "owner_id", "pinned"]:
         if field in data_dict:
@@ -154,7 +145,7 @@ def files_file_search(  # noqa: C901, PLR0912, PLR0915
                 value = str(value)
             stmt = stmt.where(getattr(Owner, field) == value)
 
-    columns = inspector.columns
+    columns = inspector.columns  # pyright: ignore[reportUnknownVariableType]
 
     for mask in ["storage_data", "plugin_data"]:
         if mask in data_dict:
@@ -279,9 +270,15 @@ def files_file_create(context: Context, data_dict: dict[str, Any]) -> dict[str, 
 
     filename = secure_filename(data_dict["name"])
 
+    sess = context["session"]
+    location = storage.prepare_location(filename, data_dict["upload"])
+    stmt = model.File.by_location(location, data_dict["storage"])
+    if fileobj := sess.scalar(stmt):
+        raise tk.ValidationError({"upload": ["File already exists"]})
+
     try:
         storage_data = storage.upload(
-            storage.prepare_location(filename, data_dict["upload"]),
+            location,
             data_dict["upload"],
             **extras,
         )
@@ -293,7 +290,7 @@ def files_file_create(context: Context, data_dict: dict[str, Any]) -> dict[str, 
         storage=data_dict["storage"],
     )
     storage_data.into_object(fileobj)
-    sess = context["session"]
+
     sess.add(fileobj)
 
     _set_user_owner(context, "file", fileobj.id)
@@ -407,7 +404,6 @@ def files_file_delete(context: Context, data_dict: dict[str, Any]) -> dict[str, 
 
     Args:
         id (str): ID of the file
-        completed (bool): use `False` to remove incomplete uploads. Default: `True`
 
     Returns:
         dictionary with details of the removed file.
@@ -416,7 +412,7 @@ def files_file_delete(context: Context, data_dict: dict[str, Any]) -> dict[str, 
 
     cache = utils.ContextCache(context)
 
-    fileobj = cache.get_model("file", data_dict["id"], File if data_dict["completed"] else Multipart)
+    fileobj = cache.get_model("file", data_dict["id"], File)
 
     if not fileobj:
         raise tk.ObjectNotFound("file")
@@ -451,7 +447,6 @@ def files_file_show(context: Context, data_dict: dict[str, Any]) -> dict[str, An
 
     Args:
         id (str): ID of the file
-        completed (bool): use `False` to show incomplete uploads. Default: `True`
 
     Returns:
         dictionary with file details
@@ -459,7 +454,7 @@ def files_file_show(context: Context, data_dict: dict[str, Any]) -> dict[str, An
     tk.check_access("files_file_show", context, data_dict)
 
     cache = utils.ContextCache(context)
-    fileobj = cache.get_model("file", data_dict["id"], File if data_dict["completed"] else Multipart)
+    fileobj = cache.get_model("file", data_dict["id"], File)
     if not fileobj:
         raise tk.ObjectNotFound("file")
 
@@ -483,7 +478,6 @@ def files_file_rename(context: Context, data_dict: dict[str, Any]) -> dict[str, 
     Args:
         id (str): ID of the file
         name (str): new name of the file
-        completed (bool): use `False` to rename incomplete uploads. Default: `True`
 
     Returns:
         dictionary with file details
@@ -495,7 +489,7 @@ def files_file_rename(context: Context, data_dict: dict[str, Any]) -> dict[str, 
     fileobj = cache.get_model(
         "file",
         data_dict["id"],
-        File if data_dict["completed"] else Multipart,
+        File,
     )
     if not fileobj:
         raise tk.ObjectNotFound("file")
@@ -796,7 +790,6 @@ def files_transfer_ownership(
 
     Args:
         id (str): ID of the file upload
-        completed (bool): use `False` to transfer incomplete uploads. Default: `True`
         owner_id (str): ID of the new owner
         owner_type (str): type of the new owner
         force (bool): move file even if it's pinned. Default: `False`
@@ -813,7 +806,7 @@ def files_transfer_ownership(
     fileobj = cache.get_model(
         "file",
         data_dict["id"],
-        File if data_dict["completed"] else Multipart,
+        File,
     )
     if not fileobj:
         raise tk.ObjectNotFound("file")
@@ -822,7 +815,7 @@ def files_transfer_ownership(
     if not owner:
         owner = Owner(
             item_id=fileobj.id,
-            item_type="file" if data_dict["completed"] else "multipart",
+            item_type="file",
         )
         context["session"].add(owner)
 
@@ -859,7 +852,6 @@ def files_file_pin(context: Context, data_dict: dict[str, Any]) -> dict[str, Any
 
     Args:
         id (str): ID of the file
-        completed (bool): use `False` to pin incomplete uploads. Default: `True`
 
     Returns:
         dictionary with details of updated file
@@ -871,7 +863,7 @@ def files_file_pin(context: Context, data_dict: dict[str, Any]) -> dict[str, Any
     fileobj = cache.get_model(
         "file",
         data_dict["id"],
-        File if data_dict["completed"] else Multipart,
+        File,
     )
     if not fileobj:
         raise tk.ObjectNotFound("file")
@@ -896,7 +888,6 @@ def files_file_unpin(context: Context, data_dict: dict[str, Any]) -> dict[str, A
 
     Args:
         id (str): ID of the file
-        completed (bool): use `False` to unpin incomplete uploads. Default: `True`
 
     Returns:
         dictionary with details of updated file
@@ -908,7 +899,7 @@ def files_file_unpin(context: Context, data_dict: dict[str, Any]) -> dict[str, A
     fileobj = cache.get_model(
         "file",
         data_dict["id"],
-        File if data_dict["completed"] else Multipart,
+        File,
     )
     if not fileobj:
         raise tk.ObjectNotFound("file")

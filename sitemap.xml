@@ -2,182 +2,146 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
          <loc>https://datashades.github.io/ckanext-files/</loc>
-         <lastmod>2025-01-27</lastmod>
-         <changefreq>daily</changefreq>
+         <lastmod>2025-08-29</lastmod>
     </url>
     <url>
          <loc>https://datashades.github.io/ckanext-files/api/</loc>
-         <lastmod>2025-01-27</lastmod>
-         <changefreq>daily</changefreq>
+         <lastmod>2025-08-29</lastmod>
     </url>
     <url>
          <loc>https://datashades.github.io/ckanext-files/changelog/</loc>
-         <lastmod>2025-01-27</lastmod>
-         <changefreq>daily</changefreq>
+         <lastmod>2025-08-29</lastmod>
     </url>
     <url>
          <loc>https://datashades.github.io/ckanext-files/cli/</loc>
-         <lastmod>2025-01-27</lastmod>
-         <changefreq>daily</changefreq>
+         <lastmod>2025-08-29</lastmod>
     </url>
     <url>
          <loc>https://datashades.github.io/ckanext-files/implementation-example/</loc>
-         <lastmod>2025-01-27</lastmod>
-         <changefreq>daily</changefreq>
+         <lastmod>2025-08-29</lastmod>
     </url>
     <url>
          <loc>https://datashades.github.io/ckanext-files/installation/</loc>
-         <lastmod>2025-01-27</lastmod>
-         <changefreq>daily</changefreq>
+         <lastmod>2025-08-29</lastmod>
     </url>
     <url>
          <loc>https://datashades.github.io/ckanext-files/interfaces/</loc>
-         <lastmod>2025-01-27</lastmod>
-         <changefreq>daily</changefreq>
+         <lastmod>2025-08-29</lastmod>
     </url>
     <url>
          <loc>https://datashades.github.io/ckanext-files/upload-strategies/</loc>
-         <lastmod>2025-01-27</lastmod>
-         <changefreq>daily</changefreq>
+         <lastmod>2025-08-29</lastmod>
     </url>
     <url>
          <loc>https://datashades.github.io/ckanext-files/validators/</loc>
-         <lastmod>2025-01-27</lastmod>
-         <changefreq>daily</changefreq>
+         <lastmod>2025-08-29</lastmod>
     </url>
     <url>
          <loc>https://datashades.github.io/ckanext-files/configuration/</loc>
-         <lastmod>2025-01-27</lastmod>
-         <changefreq>daily</changefreq>
+         <lastmod>2025-08-29</lastmod>
     </url>
     <url>
          <loc>https://datashades.github.io/ckanext-files/configuration/fs/</loc>
-         <lastmod>2025-01-27</lastmod>
-         <changefreq>daily</changefreq>
+         <lastmod>2025-08-29</lastmod>
     </url>
     <url>
          <loc>https://datashades.github.io/ckanext-files/configuration/global/</loc>
-         <lastmod>2025-01-27</lastmod>
-         <changefreq>daily</changefreq>
+         <lastmod>2025-08-29</lastmod>
     </url>
     <url>
          <loc>https://datashades.github.io/ckanext-files/configuration/libcloud/</loc>
-         <lastmod>2025-01-27</lastmod>
-         <changefreq>daily</changefreq>
+         <lastmod>2025-08-29</lastmod>
     </url>
     <url>
          <loc>https://datashades.github.io/ckanext-files/configuration/opendal/</loc>
-         <lastmod>2025-01-27</lastmod>
-         <changefreq>daily</changefreq>
+         <lastmod>2025-08-29</lastmod>
     </url>
     <url>
          <loc>https://datashades.github.io/ckanext-files/configuration/redis/</loc>
-         <lastmod>2025-01-27</lastmod>
-         <changefreq>daily</changefreq>
+         <lastmod>2025-08-29</lastmod>
     </url>
     <url>
          <loc>https://datashades.github.io/ckanext-files/configuration/storage/</loc>
-         <lastmod>2025-01-27</lastmod>
-         <changefreq>daily</changefreq>
+         <lastmod>2025-08-29</lastmod>
     </url>
     <url>
          <loc>https://datashades.github.io/ckanext-files/migration/</loc>
-         <lastmod>2025-01-27</lastmod>
-         <changefreq>daily</changefreq>
+         <lastmod>2025-08-29</lastmod>
     </url>
     <url>
          <loc>https://datashades.github.io/ckanext-files/migration/group/</loc>
-         <lastmod>2025-01-27</lastmod>
-         <changefreq>daily</changefreq>
+         <lastmod>2025-08-29</lastmod>
     </url>
     <url>
          <loc>https://datashades.github.io/ckanext-files/migration/resource/</loc>
-         <lastmod>2025-01-27</lastmod>
-         <changefreq>daily</changefreq>
+         <lastmod>2025-08-29</lastmod>
     </url>
     <url>
          <loc>https://datashades.github.io/ckanext-files/migration/user/</loc>
-         <lastmod>2025-01-27</lastmod>
-         <changefreq>daily</changefreq>
+         <lastmod>2025-08-29</lastmod>
     </url>
     <url>
          <loc>https://datashades.github.io/ckanext-files/shared/</loc>
-         <lastmod>2025-01-27</lastmod>
-         <changefreq>daily</changefreq>
+         <lastmod>2025-08-29</lastmod>
     </url>
     <url>
          <loc>https://datashades.github.io/ckanext-files/shared/config/</loc>
-         <lastmod>2025-01-27</lastmod>
-         <changefreq>daily</changefreq>
+         <lastmod>2025-08-29</lastmod>
     </url>
     <url>
          <loc>https://datashades.github.io/ckanext-files/shared/exceptions/</loc>
-         <lastmod>2025-01-27</lastmod>
-         <changefreq>daily</changefreq>
+         <lastmod>2025-08-29</lastmod>
     </url>
     <url>
          <loc>https://datashades.github.io/ckanext-files/shared/types/</loc>
-         <lastmod>2025-01-27</lastmod>
-         <changefreq>daily</changefreq>
+         <lastmod>2025-08-29</lastmod>
     </url>
     <url>
          <loc>https://datashades.github.io/ckanext-files/usage/capabilities/</loc>
-         <lastmod>2025-01-27</lastmod>
-         <changefreq>daily</changefreq>
+         <lastmod>2025-08-29</lastmod>
     </url>
     <url>
          <loc>https://datashades.github.io/ckanext-files/usage/configure/</loc>
-         <lastmod>2025-01-27</lastmod>
-         <changefreq>daily</changefreq>
+         <lastmod>2025-08-29</lastmod>
     </url>
     <url>
          <loc>https://datashades.github.io/ckanext-files/usage/js/</loc>
-         <lastmod>2025-01-27</lastmod>
-         <changefreq>daily</changefreq>
+         <lastmod>2025-08-29</lastmod>
     </url>
     <url>
          <loc>https://datashades.github.io/ckanext-files/usage/multi-storage/</loc>
-         <lastmod>2025-01-27</lastmod>
-         <changefreq>daily</changefreq>
+         <lastmod>2025-08-29</lastmod>
     </url>
     <url>
          <loc>https://datashades.github.io/ckanext-files/usage/multipart/</loc>
-         <lastmod>2025-01-27</lastmod>
-         <changefreq>daily</changefreq>
+         <lastmod>2025-08-29</lastmod>
     </url>
     <url>
          <loc>https://datashades.github.io/ckanext-files/usage/ownership/</loc>
-         <lastmod>2025-01-27</lastmod>
-         <changefreq>daily</changefreq>
+         <lastmod>2025-08-29</lastmod>
     </url>
     <url>
          <loc>https://datashades.github.io/ckanext-files/usage/permissions/</loc>
-         <lastmod>2025-01-27</lastmod>
-         <changefreq>daily</changefreq>
+         <lastmod>2025-08-29</lastmod>
     </url>
     <url>
          <loc>https://datashades.github.io/ckanext-files/usage/task-queue/</loc>
-         <lastmod>2025-01-27</lastmod>
-         <changefreq>daily</changefreq>
+         <lastmod>2025-08-29</lastmod>
     </url>
     <url>
          <loc>https://datashades.github.io/ckanext-files/usage/tracked-files/</loc>
-         <lastmod>2025-01-27</lastmod>
-         <changefreq>daily</changefreq>
+         <lastmod>2025-08-29</lastmod>
     </url>
     <url>
          <loc>https://datashades.github.io/ckanext-files/usage/transfer/</loc>
-         <lastmod>2025-01-27</lastmod>
-         <changefreq>daily</changefreq>
+         <lastmod>2025-08-29</lastmod>
     </url>
     <url>
          <loc>https://datashades.github.io/ckanext-files/usage/use-in-browser/</loc>
-         <lastmod>2025-01-27</lastmod>
-         <changefreq>daily</changefreq>
+         <lastmod>2025-08-29</lastmod>
     </url>
     <url>
          <loc>https://datashades.github.io/ckanext-files/usage/use-in-code/</loc>
-         <lastmod>2025-01-27</lastmod>
-         <changefreq>daily</changefreq>
+         <lastmod>2025-08-29</lastmod>
     </url>
 </urlset>

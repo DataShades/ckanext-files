@@ -1,6 +1,6 @@
 
-## [unreleased]
-[Compare with v1.0.1](https://github.com/DataShades/ckanext-files/compare/v1.0.1..HEAD)
+## [v1.1.0a0](https://github.com/DataShades/ckanext-files/releases/tag/v1.1.0a0) - 2025-08-29
+[Compare with v1.0.1](https://github.com/DataShades/ckanext-files/compare/v1.0.1..v1.1.0a0)
 
 ### 🚀 Features
 
@@ -10,10 +10,20 @@
 
 ### 🐛 Bug Fixes
 
+- file_create allows duplicates ([c217179](https://github.com/DataShades/ckanext-files/commit/c217179d8b4ae13ea721d2276f5e0bc067c4bde9))
 - dispatch_download serves link instead of as_response ([66e5664](https://github.com/DataShades/ckanext-files/commit/66e56647ccb967aa0bc1c0063c2f012441fd2af2))
 
 ### 🚜 Refactor
 
+- [**breaking**] drop multipart table ([ae8ac8e](https://github.com/DataShades/ckanext-files/commit/ae8ac8e57a1e2915cd7d3f7097e218a79b749ce7))
+- [**breaking**] rewrite files_file_search ([ab270ee](https://github.com/DataShades/ckanext-files/commit/ab270eec4c66e5f5669ce3dbbbfc40c036efd1a4))
+- [**breaking**] files_file_download auth renamed to files_permission_download_file ([03a200f](https://github.com/DataShades/ckanext-files/commit/03a200f2c30cf6ee78e125fcac2d9555635b1e97))
+- [**breaking**] remove files_ensure_name validator ([1a0d9bd](https://github.com/DataShades/ckanext-files/commit/1a0d9bd0e7857ba41785b235766be98c6bbbf316))
+- [**breaking**] `files_*_file` auth functions renamed to `files_permission_*_file` ([af28e04](https://github.com/DataShades/ckanext-files/commit/af28e047ff6a5e0e83315324a5a946041b8fc13f))
+- [**breaking**] File.owner now contains relationship with Owner model ([41ae342](https://github.com/DataShades/ckanext-files/commit/41ae34283a68c087386cecfd0fee77574ae96507))
+- [**breaking**] rename link capability ([48a796d](https://github.com/DataShades/ckanext-files/commit/48a796de5fa18d040d6c83490a1b811fa8589ef7))
+- [**breaking**] remove MultipartData ([f4de2db](https://github.com/DataShades/ckanext-files/commit/f4de2db0dc96abb64452f46c557e3066c154bd32))
+- [**breaking**] FS `create_path` option renamed to `initialize` ([f5dc4b4](https://github.com/DataShades/ckanext-files/commit/f5dc4b490a2bc70938a74b622609e8411b071a05))
 - [**breaking**] add duration to temporal link ([4d38281](https://github.com/DataShades/ckanext-files/commit/4d38281c10d215c5647aecab92ea2df4cc320998))
 - redis `path` option renamed to `bucket` ([1a9b917](https://github.com/DataShades/ckanext-files/commit/1a9b91768777c5c0533cc4f0a79c41b04702ce2a))
 - TransferHistory: `leave_date` -> `at`, +`action` ([0663606](https://github.com/DataShades/ckanext-files/commit/0663606f3f6e70ffcd29e32540c787ac2efe2ce3))

@@ -11,6 +11,7 @@ Compatibility with core CKAN versions:
 | 2.11         | yes         |
 | master       | yes         |
 
+Requires Pythong v3.10 or newer
 
 !!! note
 

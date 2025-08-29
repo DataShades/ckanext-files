@@ -1,9 +1,11 @@
 from __future__ import annotations
 
-import copy
-from typing import Any, cast
+import logging
+from collections.abc import Mapping
+from typing import TYPE_CHECKING, Any
 
 import sqlalchemy as sa
+from sqlalchemy.exc import ProgrammingError
 from werkzeug.utils import secure_filename
 
 import ckan.plugins.toolkit as tk
@@ -12,9 +14,14 @@ from ckan.logic import validate
 from ckan.types import Action, Context
 
 from ckanext.files import shared, utils
-from ckanext.files.shared import File, Location, Multipart, Owner, TransferHistory
+from ckanext.files.shared import File, Location, Owner, TransferHistory
 
 from . import schema
+
+if TYPE_CHECKING:
+    from sqlalchemy.sql.elements import ColumnElement
+    from sqlalchemy.sql.schema import Column
+log = logging.getLogger(__name__)
 
 
 @tk.chained_action
@@ -50,16 +57,160 @@ user_create = shared.with_task_queue(_chained_action, "user_create")
 user_update = shared.with_task_queue(_chained_action, "user_update")
 
 
-def _flat_mask(data: dict[str, Any]) -> dict[tuple[Any, ...], Any]:
-    result: dict[tuple[Any, ...], Any] = {}
+def _set_user_owner(context: Context, item_type: str, item_id: str):
+    """Add user from context as file owner."""
+    user = model.User.get(context.get("user", ""))
+    if user:
+        owner = Owner(
+            item_id=item_id,
+            item_type=item_type,
+            owner_id=user.id,
+            owner_type="user",
+        )
+        context["session"].add(owner)
 
-    for k, v in data.items():
-        if isinstance(v, dict):
-            result.update({(k,) + sk: sv for sk, sv in _flat_mask(v).items()})
+
+def _process_filters(  # noqa: C901
+    filters: dict[str, Any], columns: Mapping[str, Column[Any]]
+) -> ColumnElement[bool]:
+    """Transform `{"$and":[{"field":{"$eq":"value"}}]}` filters into SQL filters."""
+    items = []
+
+    for k, v in filters.items():
+        if k in ["$and", "$or"]:
+            if not isinstance(v, list):
+                raise tk.ValidationError({"filters": [f"Only lists are allowed inside {k}"]})
+            nested_items = [
+                _process_filters(sub_filters, columns)
+                for sub_filters in v  # pyright: ignore[reportUnknownVariableType]
+                if isinstance(sub_filters, dict)
+            ]
+            if len(nested_items) > 1:
+                wrapper = sa.and_ if k == "$and" else sa.or_
+                items.append(wrapper(*nested_items).self_group())
+            else:
+                items.extend(nested_items)
+
+        elif k in ["storage_data", "plugin_data"]:
+            items.extend(_process_data(columns[k], v))
+
+        elif k in columns:
+            items.extend(_process_field(columns[k], v))
+
         else:
-            result[(k,)] = v
+            raise tk.ValidationError({"filters": [f"Unknown filter: {k}"]})
 
-    return result
+    if len(items) == 1:
+        return items[0]  # pyright: ignore[reportUnknownVariableType]
+
+    return sa.and_(*items).self_group()
+
+
+_op_map = {
+    "$eq": "=",
+    "$ne": "!=",
+    "$lt": "<",
+    "$lte": "<=",
+    "$gt": ">",
+    "$gte": ">=",
+    "$in": "IN",
+    "$is": "IS",
+    "$isnot": "IS NOT",
+    "$like": "LIKE",
+    "$ilike": "ILIKE",
+}
+
+
+def _process_field(col: Column[Any], value: Any):  # noqa: C901
+    """Transform `{"field":{"$eq":"value"}}` into SQL filters."""
+    if isinstance(value, list):
+        value = {"$in": value}  # pyright: ignore[reportUnknownVariableType]
+
+    elif value is None:
+        value = {"$eq": None}
+
+    elif not isinstance(value, dict):
+        value = {"$eq": value}
+
+    for operator, filter in value.items():  # pyright: ignore[reportUnknownVariableType]
+        column = col
+        if operator not in _op_map:
+            raise tk.ValidationError({"filters": [f"Operator {operator} is not supported"]})
+        op = _op_map[operator]
+        if filter is None:
+            if op == "=":
+                op = "is"
+            elif op == "!=":
+                op = "IS NOT"
+
+        elif operator == "$in" and isinstance(filter, list):
+            filter = tuple(filter)  # pyright: ignore[reportUnknownVariableType]  # noqa: PLW2901
+        elif not isinstance(filter, col.type.python_type):
+            filter = str(filter)  # noqa: PLW2901
+            column = sa.func.cast(column, sa.Text)
+
+        func = column.bool_op(op)
+        yield func(filter)
+
+
+def _process_data(col: ColumnElement[Any], value: Any):  # pyright: ignore[reportUnknownParameterType]
+    """Transform file/plugin data filters into SQL JSONB filters."""
+    if not isinstance(value, dict):
+        value = {"$eq": value}
+
+    for k, v in value.items():  # pyright: ignore[reportUnknownVariableType]
+        if k in _op_map:
+            op = _op_map[k]
+            if v is None:
+                if op == "=":
+                    op = "is"
+                elif op == "!=":
+                    op = "IS NOT"
+
+            if isinstance(v, bool):
+                col = sa.cast(col, sa.Boolean)
+
+            elif isinstance(v, int):
+                col = sa.cast(col, sa.Integer)
+
+            elif isinstance(v, float):
+                col = sa.cast(col, sa.Float)
+
+            else:
+                col = col.astext
+
+            yield col.bool_op(op)(v)
+
+        else:
+            yield from _process_data(col[k], v)
+
+
+def _process_sort(
+    sort: str | list[str] | list[list[str]] | Any,
+    columns: Mapping[str, Column[Any]],
+):
+    """Transform sort field into SQL ordering statements."""
+    if isinstance(sort, str):
+        sort = [sort]
+
+    for part in sort:
+        if isinstance(part, str):
+            field: str = part
+            direction = "asc"
+
+        elif isinstance(part, list) and len(part) == 2:  # noqa: PLR2004
+            field, direction = part  # pyright: ignore[reportUnknownVariableType]
+
+        else:
+            raise tk.ValidationError({"sort": [f"Invalid sort value: {part}"]})
+
+        if direction not in ["asc", "desc"]:
+            raise tk.ValidationError({"sort": [f"Invalid sort direction: {direction}"]})
+
+        if field not in columns:
+            raise tk.ValidationError({"sort": [f"Invalid sort field: {field}"]})
+
+        yield getattr(columns[field], direction)()
 
 
 @tk.side_effect_free
@@ -74,9 +225,8 @@ def files_file_search(  # noqa: C901, PLR0912, PLR0915
     This action is not stabilized yet and will change in future.
     ///
 
-    Provides an ability to search files using exact filter by name,
-    content_type, size, owner, etc. Results are paginated and returned in
-    package_search manner, as dict with `count` and `results` items.
+    Provides an ability to search files according to [the future CKAN's search
+    spec](https://github.com/ckan/ckan/discussions/8444).
 
     All columns of File model can be used as filters. Before the search, type
     of column and type of filter value are compared. If they are the same,
@@ -84,13 +234,15 @@ def files_file_search(  # noqa: C901, PLR0912, PLR0915
     filter value are casted to string.
 
     This request produces `size = 10` SQL expression:
+
     ```sh
-    ckanapi action files_file_search size:10
+    $ ckanapi action file_search filters:'{"size": 10}'
     ```
 
     This request produces `size::text = '10'` SQL expression:
+
     ```sh
-    ckanapi action files_file_search size=10
+    $ ckanapi action file_search filters:'{"size": "10"}'
     ```
 
     Even though results are usually not changed, using correct types leads to
@@ -99,114 +251,43 @@ def files_file_search(  # noqa: C901, PLR0912, PLR0915
     Apart from File columns, the following Owner properties can be used for
     searching: `owner_id`, `owner_type`, `pinned`.
 
-    `storage_data` and `plugin_data` are dictionaries. Filter's value for these
-    fields used as a mask. For example, `storage_data={"a": {"b": 1}}` matches
-    any File with `storage_data` *containing* item `a` with value that contains
-    `b=1`. This works only with data represented by nested dictionaries,
-    without other structures, like list or sets.
-
-    Experimental feature: File columns can be passed as a pair of operator and
-    value. This feature will be replaced by strictly defined query language at
-    some point:
-
-    ```sh
-    ckanapi action files_file_search size:'["<", 100]' content_type:'["like", "text/%"]'
-    ```
-    Fillowing operators are accepted: `=`, `<`, `>`, `!=`, `like`
-
     Args:
         start (int): index of first row in result/number of rows to skip. Default: `0`
         rows (int): number of rows to return. Default: `10`
         sort (str): name of File column used for sorting. Default: `name`
-        reverse (bool): sort results in descending order. Default: `False`
-        storage_data (dict[str, Any]): mask for `storage_data` column. Default: `{}`
-        plugin_data (dict[str, Any]): mask for `plugin_data` column. Default: `{}`
-        owner_id (str): show only specific owner id if present. Default: `None`
-        owner_type (str): show only specific owner type if present. Default: `None`
-        pinned (bool): show only pinned/unpinned items if present. Default: `None`
+        filters (dict[str, Any]): search filters
 
     Returns:
         dictionary with `count` and `results`
     """
     tk.check_access("files_file_search", context, data_dict)
     sess = context["session"]
+    columns = dict(**File.__table__.c, **Owner.__table__.c)
 
-    stmt = sa.select(File).outerjoin(
-        Owner,
-        sa.and_(File.id == Owner.item_id, Owner.item_type == "file"),
+    stmt = (
+        sa.select(File)
+        .outerjoin(
+            Owner,
+            sa.and_(File.id == Owner.item_id, Owner.item_type == "file"),
+        )
+        .where(_process_filters(data_dict["filters"], columns))
     )
 
-    inspector = sa.inspect(File)  # pyright: ignore[reportUnknownVariableType]
+    try:
+        total: int = sess.scalar(stmt.with_only_columns(sa.func.count()))  # pyright: ignore[reportAssignmentType]
+    except ProgrammingError as err:
+        sess.rollback()
+        msg = "Invalid file search request"
+        log.exception(msg)
+        raise tk.ValidationError({"filters": [msg]}) from err
 
-    for field in ["owner_type", "owner_id", "pinned"]:
-        if field in data_dict:
-            value = data_dict[field]
-            if value is not None and not (field == "pinned" and isinstance(value, bool)):
-                value = str(value)
-            stmt = stmt.where(getattr(Owner, field) == value)
-
-    columns = inspector.columns  # pyright: ignore[reportUnknownVariableType]
-
-    for mask in ["storage_data", "plugin_data"]:
-        if mask in data_dict:
-            for k, v in _flat_mask(data_dict[mask]).items():
-                field = columns[mask]
-                for segment in k:
-                    field = field[segment]
-
-                stmt = stmt.where(field.astext == v)
-
-    for k, v in data_dict.get("__extras", {}).items():
-        if k not in columns:
-            continue
-
-        if (
-            isinstance(v, list)
-            and len(v) == 2  # noqa: PLR2004
-            and v[0] in ["=", "<", ">", "!=", "like"]
-        ):
-            op, v = cast("list[Any]", v)  # noqa: PLW2901
-        else:
-            op = "="
-
-        col = columns[k]
-        column_type = col.type.python_type
-        if not isinstance(v, column_type) and v is not None:
-            v = str(v)  # noqa: PLW2901
-            col = sa.func.cast(col, sa.Text)
-
-        if v is None:
-            if op == "=":
-                op = "is"
-            elif op == "!=":
-                op = "is not"
-
-        stmt = stmt.where(col.bool_op(op)(v))
-
-    total = sess.scalar(stmt.with_only_columns(sa.func.count()))
-
-    parts = data_dict["sort"].split(".")
-    sort = parts[0]
-    sort_path = parts[1:]
-
-    if sort not in columns:
-        raise tk.ValidationError({"sort": ["Unknown sort column"]})
-
-    column = columns[sort]
-
-    if sort_path and sort == "storage_data":
-        for part in sort_path:
-            column = column[part]
-
-    if data_dict["reverse"]:
-        column = column.desc()
-
-    stmt = stmt.order_by(column)
+    for clause in _process_sort(data_dict["sort"], columns):
+        stmt = stmt.order_by(clause)
 
     stmt = stmt.limit(data_dict["rows"]).offset(data_dict["start"])
 
     cache = utils.ContextCache(context)
-    results: list[File] = [cache.set("file", f.id, f) for f in sess.scalars(stmt)]
+    results: list[model.File] = [cache.set("file", f.id, f) for f in sess.scalars(stmt)]
     return {"count": total, "results": [f.dictize(context) for f in results]}
 
 
@@ -294,7 +375,64 @@ def files_file_create(context: Context, data_dict: dict[str, Any]) -> dict[str, 
     sess.add(fileobj)
 
     _set_user_owner(context, "file", fileobj.id)
+
+    # TODO: add hook to set plugin_data using extras
+    if not context.get("defer_commit"):
+        sess.commit()
+
     sess.commit()
+
+    utils.ContextCache(context).set("file", fileobj.id, fileobj)
+
+    return fileobj.dictize(context)
+
+
+@validate(schema.file_register)
+def files_file_register(context: Context, data_dict: dict[str, Any]):
+    """Register untracked file from storage in DB.
+
+    .. note:: Requires storage with `ANALYZE` capability.
+
+    :param location: location of the file in the storage
+    :type location: str, optional
+    :param storage: name of the storage that will handle the upload.
+        Defaults to the configured ``default`` storage.
+    :type storage: str, optional
+
+    :returns: file details.
+
+    """
+    tk.check_access("file_register", context, data_dict)
+
+    try:
+        storage = shared.get_storage(data_dict["storage"])
+    except shared.exc.UnknownStorageError as err:
+        raise tk.ValidationError({"storage": [str(err)]}) from err
+
+    if not storage.supports(shared.Capability.ANALYZE):
+        raise tk.ValidationError({"storage": ["Operation is not supported"]})
+
+    sess = context["session"]
+    stmt = model.File.by_location(data_dict["location"], data_dict["storage"])
+    if fileobj := sess.scalar(stmt):
+        raise tk.ValidationError({"location": ["File is already registered"]})
+
+    try:
+        storage_data = storage.analyze(data_dict["location"])
+    except shared.exc.MissingFileError as err:
+        raise tk.ObjectNotFound("file") from err
+
+    fileobj = model.File(
+        name=secure_filename(storage_data.location),
+        storage=data_dict["storage"],
+        **storage_data.as_dict(),
+    )
+    sess.add(fileobj)
+
+    _set_user_owner(context, "file", fileobj.id)
+
+    if not context.get("defer_commit"):
+        sess.commit()
 
     utils.ContextCache(context).set("file", fileobj.id, fileobj)
 
@@ -365,24 +503,13 @@ def files_file_replace(context: Context, data_dict: dict[str, Any]) -> dict[str,
         shared.add_task(lambda result, idx, prev: storage.remove(old_data))
 
     storage_data.into_object(fileobj)
-    context["session"].commit()
+    sess = context["session"]
+    if not context.get("defer_commit"):
+        sess.commit()
 
     utils.ContextCache(context).set("file", fileobj.id, fileobj)
 
     return fileobj.dictize(context)
-
-
-def _set_user_owner(context: Context, item_type: str, item_id: str):
-    """Add user from context as file owner."""
-    user = model.User.get(context.get("user", ""))
-    if user:
-        owner = Owner(
-            item_id=item_id,
-            item_type=item_type,
-            owner_id=user.id,
-            owner_type="user",
-        )
-        context["session"].add(owner)
 
 
 @validate(schema.file_delete)
@@ -428,6 +555,9 @@ def files_file_delete(context: Context, data_dict: dict[str, Any]) -> dict[str, 
 
     sess = context["session"]
     sess.delete(fileobj)
+    if not context.get("defer_commit"):
+        sess.commit()
+
     sess.commit()
 
     return fileobj.dictize(context)
@@ -458,7 +588,6 @@ def files_file_show(context: Context, data_dict: dict[str, Any]) -> dict[str, An
     if not fileobj:
         raise tk.ObjectNotFound("file")
 
-    utils.ContextCache(context).set("file", fileobj.id, fileobj)
     return fileobj.dictize(context)
 
 
@@ -496,7 +625,8 @@ def files_file_rename(context: Context, data_dict: dict[str, Any]) -> dict[str, 
 
     fileobj.name = secure_filename(data_dict["name"])
 
-    context["session"].commit()
+    if not context.get("defer_commit"):
+        context["session"].commit()
 
     return fileobj.dictize(context)
 
@@ -566,7 +696,7 @@ def files_multipart_start(
     except shared.exc.UploadError as err:
         raise tk.ValidationError({"upload": [str(err)]}) from err
 
-    fileobj = Multipart(
+    fileobj = File(
         name=filename,
         storage=data_dict["storage"],
     )
@@ -606,7 +736,7 @@ def files_multipart_refresh(
     fileobj = cache.get_model(
         "file",
         data_dict["id"],
-        Multipart,
+        File,
     )
     if not fileobj:
         raise tk.ObjectNotFound("file")
@@ -647,7 +777,7 @@ def files_multipart_update(
     fileobj = cache.get_model(
         "file",
         data_dict["id"],
-        Multipart,
+        File,
     )
     if not fileobj:
         raise tk.ObjectNotFound("upload")
@@ -698,51 +828,23 @@ def files_multipart_complete(
     extras = data_dict.get("__extras", {})
 
     cache = utils.ContextCache(context)
-    multipart = cache.get_model("file", data_dict["id"], Multipart)
+    multipart = cache.get_model("file", data_dict["id"], File)
     if not multipart:
         raise tk.ObjectNotFound("upload")
 
     storage = shared.get_storage(multipart.storage)
 
-    fileobj = File(
-        name=multipart.name,
-        storage=multipart.storage,
-    )
-
     try:
         storage.multipart_complete(
             shared.FileData.from_object(multipart),
             **extras,
-        ).into_object(fileobj)
+        ).into_object(multipart)
     except shared.exc.UploadError as err:
         raise tk.ValidationError({"upload": [str(err)]}) from err
 
-    if data_dict["keep_storage_data"]:
-        data: Any = copy.deepcopy(multipart.storage_data)
-        data.update(fileobj.storage_data)
-        fileobj.storage_data = data
-
-    if data_dict["keep_plugin_data"]:
-        data: Any = copy.deepcopy(multipart.plugin_data)
-        data.update(fileobj.plugin_data)
-        fileobj.plugin_data = data
-
-    if owner := multipart.owner:
-        sess.add(
-            Owner(
-                item_id=fileobj.id,
-                item_type="file",
-                owner_id=owner.owner_id,
-                owner_type=owner.owner_type,
-            )
-        )
-
-    sess.add(fileobj)
-    sess.delete(multipart)
     sess.commit()
 
-    cache.set("file", fileobj.id, fileobj)
-    return fileobj.dictize(context)
+    return multipart.dictize(context)
 
 
 @tk.side_effect_free
@@ -774,11 +876,11 @@ def files_file_scan(
 
     tk.check_access("files_file_scan", context, data_dict)
 
-    params = data_dict.pop("__extras", {})
-    params.update(data_dict)
-
-    # TODO: pull cache from search context
-    return tk.get_action("files_file_search")({"ignore_auth": True}, params)
+    data_dict["filters"] = {
+        "owner_id": data_dict.pop("owner_id"),
+        "owner_type": data_dict.pop("owner_type"),
+    }
+    return tk.get_action("files_file_search")({"ignore_auth": True}, data_dict)
 
 
 @validate(schema.transfer_ownership)
@@ -803,41 +905,45 @@ def files_transfer_ownership(
 
     cache = utils.ContextCache(context)
 
-    fileobj = cache.get_model(
-        "file",
-        data_dict["id"],
-        File,
-    )
+    fileobj = cache.get_model("file", data_dict["id"], File)
     if not fileobj:
         raise tk.ObjectNotFound("file")
 
-    owner = fileobj.owner
-    if not owner:
+    if owner := fileobj.owner:
+        if owner.pinned and not data_dict["force"]:
+            raise tk.ValidationError(
+                {
+                    "force": ["Must be enabled to transfer pinned files"],
+                },
+            )
+
+        if (owner.owner_type, owner.owner_id) != (
+            data_dict["owner_type"],
+            data_dict["owner_id"],
+        ):
+            archive = TransferHistory.from_owner(owner, context["user"])
+            sess.add(archive)
+
+        owner.owner_id = data_dict["owner_id"]
+        owner.owner_type = data_dict["owner_type"]
+        owner.pinned = data_dict["pin"]
+
+    else:
         owner = Owner(
             item_id=fileobj.id,
             item_type="file",
+            owner_id=data_dict["owner_id"],
+            owner_type=data_dict["owner_type"],
         )
-        context["session"].add(owner)
+        sess.add(owner)
 
-    elif owner.pinned and not data_dict["force"]:
-        raise tk.ValidationError(
-            {
-                "force": ["Must be enabled to transfer pinned files"],
-            },
-        )
-    elif (owner.owner_type, owner.owner_id) != (
-        data_dict["owner_type"],
-        data_dict["owner_id"],
-    ):
-        archive = TransferHistory.from_owner(owner)
-        archive.actor = context["user"]
-        sess.add(archive)
-
-    owner.owner_id = data_dict["owner_id"]
-    owner.owner_type = data_dict["owner_type"]
     owner.pinned = data_dict["pin"]
-    sess.expire(fileobj)
-    sess.commit()
+
+    # without expiration SQLAlchemy fails to synchronize owner value during
+    # transfer of unowned files
+    sess.expire(fileobj, ["owner"])
+    if not context.get("defer_commit"):
+        sess.commit()
 
     return fileobj.dictize(context)
 
@@ -860,11 +966,7 @@ def files_file_pin(context: Context, data_dict: dict[str, Any]) -> dict[str, Any
     sess = context["session"]
 
     cache = utils.ContextCache(context)
-    fileobj = cache.get_model(
-        "file",
-        data_dict["id"],
-        File,
-    )
+    fileobj = cache.get_model("file", data_dict["id"], File)
     if not fileobj:
         raise tk.ObjectNotFound("file")
 
@@ -873,7 +975,9 @@ def files_file_pin(context: Context, data_dict: dict[str, Any]) -> dict[str, Any
         raise tk.ValidationError({"id": ["File has no owner"]})
 
     owner.pinned = True
-    sess.commit()
+
+    if not context.get("defer_commit"):
+        sess.commit()
 
     return fileobj.dictize(context)
 
@@ -896,20 +1000,15 @@ def files_file_unpin(context: Context, data_dict: dict[str, Any]) -> dict[str, A
     sess = context["session"]
 
     cache = utils.ContextCache(context)
-    fileobj = cache.get_model(
-        "file",
-        data_dict["id"],
-        File,
-    )
+    fileobj = cache.get_model("file", data_dict["id"], File)
     if not fileobj:
         raise tk.ObjectNotFound("file")
 
-    owner = fileobj.owner
-    if not owner:
-        raise tk.ValidationError({"id": ["File has no owner"]})
+    if owner := fileobj.owner:
+        owner.pinned = False
 
-    owner.pinned = False
-    sess.commit()
+    if not context.get("defer_commit"):
+        sess.commit()
 
     return fileobj.dictize(context)
 

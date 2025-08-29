@@ -8,7 +8,7 @@ from ckan.plugins import Interface
 
 from ckanext.files import types
 
-File = Multipart = Any
+File = Any
 
 
 # --8<-- [start:interface]
@@ -61,7 +61,7 @@ class IFiles(Interface):
     def files_file_allows(
         self,
         context: types.Context,
-        file: File | Multipart,
+        file: File,
         operation: types.FileOperation,
     ) -> bool | None:
         """Decide if user is allowed to perform specified operation on the file.
@@ -88,7 +88,7 @@ class IFiles(Interface):
             ```python
             def files_file_allows(
                     self, context,
-                    file: shared.File | shared.Multipart,
+                    file: shared.File,
                     operation: shared.types.FileOperation
             ) -> bool | None:
                 if file.owner and file.owner.owner_type == "resource":

@@ -9,7 +9,7 @@ from ckan.types import Context
 from .base import Base
 
 
-class Owner(Base):
+class FilesOwner(Base):
     """Model with details about current owner of an item.
 
     Keyword Args:

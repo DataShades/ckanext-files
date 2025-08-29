@@ -16,7 +16,7 @@ methods.
 def files_file_allows(
     self,
     context: Context,
-    file: File | Multipart,
+    file: File,
     operation: types.FileOperation,
 ) -> bool | None:
     ...

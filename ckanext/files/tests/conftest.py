@@ -5,6 +5,7 @@ from io import BytesIO
 from typing import Any, cast
 from unittest import mock as _mock
 
+import factory
 import pytest
 import pytz
 from freezegun import freeze_time
@@ -12,7 +13,10 @@ from responses import RequestsMock
 from werkzeug.datastructures import FileStorage
 
 from ckan.lib.redis import connect_to_redis
+from ckan.tests import factories
 from ckan.tests.helpers import call_action
+
+from ckanext.files import shared
 
 call_action: Any
 
@@ -128,3 +132,12 @@ def clean_redis(reset_redis: Any):
         ```
     """
     reset_redis()
+
+
+class File(factories.CKANFactory):
+    class Meta:
+        model = shared.File
+        action = "file_create"
+
+    name = factory.LazyFunction(factories.fake.unique.file_name)
+    upload = factory.Faker("binary", length=100)

@@ -10,7 +10,7 @@ from ckan.model.types import make_uuid
 from ckan.types import Context
 
 from .base import Base, now
-from .owner import Owner
+from .owner import FilesOwner
 
 
 class TransferHistory(Base):
@@ -66,8 +66,8 @@ class TransferHistory(Base):
     action: Mapped[str]
     actor: Mapped[str]
 
-    current: Mapped[Owner] = relationship(  # type: ignore
-        Owner,
+    current: Mapped[FilesOwner] = relationship(  # type: ignore
+        FilesOwner,
         backref=backref("history", cascade="delete, delete-orphan"),
     )
 
@@ -75,10 +75,11 @@ class TransferHistory(Base):
         return table_dictize(self, context)
 
     @classmethod
-    def from_owner(cls, owner: Owner):
+    def from_owner(cls, owner: FilesOwner, actor: str = ""):
         return cls(
             item_id=owner.item_id,
             item_type=owner.item_type,
             owner_id=owner.owner_id,
             owner_type=owner.owner_type,
+            actor=actor,
         )

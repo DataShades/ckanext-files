@@ -12,12 +12,12 @@ from ckan.lib.dictization import table_dictize
 from ckan.model.types import make_uuid
 
 from .base import Base, now
-from .owner import Owner
+from .owner import FilesOwner
 
 foreign: Any
 
 
-class File(Base):
+class FilesFile(Base):
     """Model with file details.
 
     Keyword Args:
@@ -91,11 +91,11 @@ class File(Base):
     storage_data: Mapped[dict[str, Any]]
     plugin_data: Mapped[dict[str, Any]]
 
-    owner: Mapped[Owner | None] = relationship(  # type: ignore
-        Owner,
+    owner: Mapped[FilesOwner | None] = relationship(  # type: ignore
+        FilesOwner,
         primaryjoin=sa.and_(
-            Owner.item_id == foreign(__table__.c.id),
-            Owner.item_type == "file",
+            FilesOwner.item_id == foreign(__table__.c.id),
+            FilesOwner.item_type == "file",
         ),
         single_parent=True,
         uselist=False,
@@ -154,7 +154,7 @@ class File(Base):
         target: Any = data
         if dict_path:
             for part in dict_path:
-                target = target.setdefault(part, {})
+                target = target.setdefault(part, {})  # pyright: ignore[reportUnknownVariableType]
                 if not isinstance(target, dict):
                     raise TypeError(part)
 
@@ -164,12 +164,10 @@ class File(Base):
         return data
 
     @classmethod
-    def by_location(cls, location: str, storage: str | None = None):
+    def by_location(cls, location: str, storage: str):
         stmt = sa.select(cls).where(
             cls.location == location,
+            cls.storage == storage,
         )
-
-        if storage:
-            stmt = stmt.where(cls.storage == storage)
 
         return stmt

@@ -21,26 +21,33 @@ def file_create(  # noqa: PLR0913
 
 
 @validator_args
+def file_register(
+    default: ValidatorFactory,
+    unicode_only: Validator,
+    not_missing: Validator,
+) -> Schema:
+    return {
+        "location": [not_missing, unicode_only],
+        "storage": [
+            default(shared.config.default_storage()),
+            unicode_only,
+        ],
+    }
+
+
+@validator_args
 def file_search(
     unicode_safe: Validator,
     default: ValidatorFactory,
     int_validator: Validator,
-    boolean_validator: Validator,
-    ignore_empty: Validator,
     dict_only: Validator,
-    ignore_missing: Validator,
     convert_to_json_if_string: Validator,
 ) -> Schema:
     return {
         "start": [default(0), int_validator],
         "rows": [default(10), int_validator],
         "sort": [default("name"), unicode_safe],
-        "reverse": [boolean_validator],
-        "storage_data": [ignore_empty, convert_to_json_if_string, dict_only],
-        "plugin_data": [ignore_empty, convert_to_json_if_string, dict_only],
-        "owner_type": [ignore_empty],
-        "owner_id": [ignore_empty],
-        "pinned": [ignore_missing, boolean_validator],
+        "filters": [default("{}"), convert_to_json_if_string, dict_only],
     }
 
 
@@ -76,8 +83,14 @@ def transfer_ownership(
 
 
 @validator_args
-def file_scan(default: ValidatorFactory, unicode_safe: Validator) -> Schema:
-    return {"owner_id": [default(""), unicode_safe], "owner_type": [default("user"), unicode_safe]}
+def file_scan(default: ValidatorFactory, unicode_only: Validator, ignore_missing: Validator) -> Schema:
+    return {
+        "owner_id": [default(""), unicode_only],
+        "owner_type": [default("user"), unicode_only],
+        "start": [ignore_missing],
+        "rows": [ignore_missing],
+        "sort": [ignore_missing],
+    }
 
 
 @validator_args

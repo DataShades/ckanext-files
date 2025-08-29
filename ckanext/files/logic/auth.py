@@ -204,6 +204,15 @@ def files_file_create(context: Context, data_dict: dict[str, Any]) -> AuthResult
 
 
 @tk.auth_allow_anonymous_access
+def file_register(context: Context, data_dict: dict[str, Any]) -> AuthResult:
+    """Check if user can register files from storage in DB.
+
+    Only file manager can register files.
+    """
+    return authz.is_authorized("files_permission_manage_files", context, data_dict)
+
+
+@tk.auth_allow_anonymous_access
 def files_file_delete(context: Context, data_dict: dict[str, Any]) -> AuthResult:
     """Only owner can remove files."""
     return authz.is_authorized("permission_delete_file", context, data_dict)

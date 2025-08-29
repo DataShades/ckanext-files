@@ -14,7 +14,6 @@ other than `shared`.
 <!-- ::: files.shared.Capability -->
 
 <!-- ::: files.shared.File -->
-<!-- ::: files.shared.Multipart -->
 <!-- ::: files.shared.Owner -->
 <!-- ::: files.shared.TransferHistory -->
 

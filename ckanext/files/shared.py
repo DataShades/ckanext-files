@@ -13,7 +13,7 @@ from .base import (
     make_storage,
 )
 from .interfaces import IFiles
-from .model import File, Multipart, Owner, TransferHistory
+from .model import File, Owner, TransferHistory
 from .task import Task, TaskQueue, add_task, with_task_queue
 
 __all__ = [
@@ -25,7 +25,6 @@ __all__ = [
     "Capability",
     "File",
     "Location",
-    "Multipart",
     "Owner",
     "TransferHistory",
     "FileData",

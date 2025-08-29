@@ -19,7 +19,7 @@ from ckan.types import (
 FileOperation = Literal["show", "update", "delete"]
 """Operation that performed on file."""
 
-OwnerOperation = Literal["show", "update", "delete", "file_transfer", "file_scan"]
+OwnerOperation = Literal["file_transfer", "file_scan"]
 """Operation that performed on owner."""
 
 

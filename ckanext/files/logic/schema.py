@@ -37,7 +37,6 @@ def file_register(
 
 @validator_args
 def file_search(
-    unicode_safe: Validator,
     default: ValidatorFactory,
     int_validator: Validator,
     dict_only: Validator,
@@ -46,7 +45,7 @@ def file_search(
     return {
         "start": [default(0), int_validator],
         "rows": [default(10), int_validator],
-        "sort": [default("name"), unicode_safe],
+        "sort": [default("name")],
         "filters": [default("{}"), convert_to_json_if_string, dict_only],
     }
 

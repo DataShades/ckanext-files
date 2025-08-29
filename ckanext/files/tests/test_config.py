@@ -15,7 +15,7 @@ class TestDefault:
         If you are modifying this test, don't forget to add changelog entry!
 
         """
-        assert config.default_storage() == "default"
+        assert config.default_storage() == "test"
 
     @pytest.mark.ckan_config(config.DEFAULT_STORAGE, "test")
     def test_customized(self):
@@ -27,12 +27,12 @@ class TestStorages:
     def test_empty(self, ckan_config: dict[str, Any]):
         """With no customization we have only storage defined by test.ini."""
         assert config.storages() == {
-            "default": {
+            "test": {
                 "type": "files:redis",
                 "bucket": "ckanext:files:test.ckan.net:file_content",
                 "url": ckan_config["ckan.redis.url"],
                 "override_existing": False,
-                "name": "default",
+                "name": "test",
                 "supported_types": [],
                 "disabled_capabilities": [],
                 "location_transformers": [],
@@ -45,9 +45,9 @@ class TestStorages:
     def test_customized(self, monkeypatch: MonkeyPatch, ckan_config: dict[str, Any]):
         """Storage configuration grouped by the storage name."""
         patches: list[tuple[str, Any]] = [
-            ("default.type", "files:redis"),
-            ("test.type", "test"),
-            ("test.path", "somepath"),
+            ("test.type", "files:redis"),
+            ("hehe.type", "hehe"),
+            ("hehe.path", "somepath"),
             ("another.type", "fancy"),
             ("another.location_transformers", ["hello"]),
         ]
@@ -57,12 +57,12 @@ class TestStorages:
         storages = config.storages()
 
         assert storages == {
-            "default": {
+            "test": {
                 "type": "files:redis",
                 "bucket": "ckanext:files:test.ckan.net:file_content",
                 "url": ckan_config["ckan.redis.url"],
                 "override_existing": False,
-                "name": "default",
+                "name": "test",
                 "supported_types": [],
                 "initialize": False,
                 "path": "",
@@ -70,8 +70,8 @@ class TestStorages:
                 "location_transformers": [],
                 "max_size": 0,
             },
-            "test": {
-                "type": "test",
+            "hehe": {
+                "type": "hehe",
                 "path": "somepath",
             },
             "another": {
@@ -90,12 +90,12 @@ class TestStorages:
         storages = config.storages()
 
         assert storages == {
-            "default": {
+            "test": {
                 "type": "files:redis",
                 "bucket": "ckanext:files:test.ckan.net:file_content",
                 "url": ckan_config["ckan.redis.url"],
                 "override_existing": False,
-                "name": "default",
+                "name": "test",
                 "initialize": False,
                 "path": "",
                 "supported_types": [],

@@ -47,3 +47,16 @@ class FilesOwner(Base):
 
     def dictize(self, context: Context):
         return table_dictize(self, context)
+
+    def select_history(self):
+        """Returns a select statement to fetch ownership history."""
+        from .transfer_history import TransferHistory  # noqa: PLC0415
+
+        return (
+            sa.select(TransferHistory)
+            .join(FilesOwner)
+            .where(
+                TransferHistory.item_id == self.item_id,
+                TransferHistory.item_type == self.item_type,
+            )
+        )

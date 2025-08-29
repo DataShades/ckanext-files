@@ -20,11 +20,16 @@ class Settings(shared.Settings, s3.Settings):
     pass
 
 
+class Uploader(shared.Uploader, s3.Uploader):
+    capabilities = s3.Uploader.capabilities | shared.Capability.MULTIPART
+
+
 class S3Storage(shared.Storage, s3.S3Storage):
     hidden: bool = True
     settings: Settings  # pyright: ignore[reportIncompatibleVariableOverride]
     SettingsFactory = Settings
     ReaderFactory = type("Reader", (shared.Reader, s3.Reader), {})
+    UploaderFactory = Uploader
 
     @override
     @classmethod

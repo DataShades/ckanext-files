@@ -73,7 +73,7 @@ def _get_user(context: Context) -> model.User | None:
     if isinstance(user, model.User):
         return user
 
-    if tk.current_user.name == context["user"]:
+    if tk.current_user and tk.current_user.name == context["user"]:
         return cast(model.User, tk.current_user)
 
     cache = utils.ContextCache(context)
@@ -180,7 +180,7 @@ def files_permission_download_file(context: Context, data_dict: dict[str, Any]) 
     this permission via ``IFiles.files_file_allows`` hook.
 
     """
-    result = authz.is_authorized_boolean("permission_read_file", context, data_dict)
+    result = authz.is_authorized_boolean("files_permission_read_file", context, data_dict)
     return {"success": result, "msg": "Not allowed to read file"}
 
 
@@ -204,7 +204,7 @@ def files_file_create(context: Context, data_dict: dict[str, Any]) -> AuthResult
 
 
 @tk.auth_allow_anonymous_access
-def file_register(context: Context, data_dict: dict[str, Any]) -> AuthResult:
+def files_file_register(context: Context, data_dict: dict[str, Any]) -> AuthResult:
     """Check if user can register files from storage in DB.
 
     Only file manager can register files.
@@ -215,7 +215,7 @@ def file_register(context: Context, data_dict: dict[str, Any]) -> AuthResult:
 @tk.auth_allow_anonymous_access
 def files_file_delete(context: Context, data_dict: dict[str, Any]) -> AuthResult:
     """Only owner can remove files."""
-    return authz.is_authorized("permission_delete_file", context, data_dict)
+    return authz.is_authorized("files_permission_delete_file", context, data_dict)
 
 
 @tk.auth_allow_anonymous_access
@@ -250,7 +250,7 @@ def files_transfer_ownership(context: Context, data_dict: dict[str, Any]) -> Aut
     result = authz.is_authorized_boolean("files_permission_manage_files", context, data_dict)
     if not result:
         result = bool(
-            authz.is_authorized_boolean("permission_edit_file", context, data_dict)
+            authz.is_authorized_boolean("files_permission_edit_file", context, data_dict)
             and _owner_allows(
                 context,
                 data_dict["owner_type"],

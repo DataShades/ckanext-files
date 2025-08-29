@@ -12,21 +12,27 @@ from werkzeug.datastructures import FileStorage
 import ckan.model as model
 import ckan.plugins.toolkit as tk
 from ckan import types
-from ckan.lib import files
 from ckan.tests.factories import fake
 from ckan.tests.helpers import call_action
+
+from ckanext.files import shared
 
 call_action: Any
 
 
-@pytest.mark.usefixtures("with_plugins", "non_clean_db")
+@pytest.fixture(autouse=True)
+def prepare(reset_redis: Any):
+    reset_redis()
+
+
+@pytest.mark.usefixtures("with_plugins", "clean_db")
 class TestFileCreate:
     def test_unknown_storage(self, file_factory: types.TestFactory, faker: Faker):
         """Unknown storage produces an error."""
         with pytest.raises(tk.ValidationError):
             file_factory(storage=faker.word())
 
-    @pytest.mark.ckan_config("ckan.files.storage.test.disabled_capabilities", ["CREATE"])
+    @pytest.mark.ckan_config("ckanext.files.storage.test.disabled_capabilities", ["CREATE"])
     def test_missing_create_capability(self, file_factory: types.TestFactory):
         """Missing CREATE capability is reported via validation error."""
         with pytest.raises(tk.ValidationError):
@@ -60,7 +66,7 @@ class TestFileCreate:
         result = file_factory(name=bad_name)
         assert result["location"] == good_name
 
-    @pytest.mark.ckan_config("ckan.files.storage.test.location_transformers", ["uuid_prefix"])
+    @pytest.mark.ckan_config("ckanext.files.storage.test.location_transformers", ["uuid_prefix"])
     def test_location_transformed(self, file_factory: types.TestFactory):
         """Location transformers are applied to the location."""
         name = fake.unique.file_name()
@@ -77,7 +83,7 @@ class TestFileCreate:
         with pytest.raises(tk.ValidationError):
             file_factory(name=file["location"])
 
-    @pytest.mark.ckan_config("ckan.files.storage.test.override_existing", True)
+    @pytest.mark.ckan_config("ckanext.files.storage.test.override_existing", True)
     def test_override_does_not_allow_rewriting_file(self, file: dict[str, Any], file_factory: types.TestFactory):
         """Even with enabled overrides, file is not replaced during creation."""
         with pytest.raises(tk.ValidationError):
@@ -94,14 +100,14 @@ class TestFileCreate:
         assert file["owner_type"] == "user"
 
 
-@pytest.mark.usefixtures("with_plugins", "non_clean_db")
+@pytest.mark.usefixtures("with_plugins", "clean_db")
 class TestFileRegister:
     def test_unknown_storage(self, faker: Faker):
         """Unknown storage produces an error."""
         with pytest.raises(tk.ValidationError):
             call_action("files_file_register", storage=faker.file_name())
 
-    @pytest.mark.ckan_config("ckan.files.storage.test.disabled_capabilities", ["ANALYZE"])
+    @pytest.mark.ckan_config("ckanext.files.storage.test.disabled_capabilities", ["ANALYZE"])
     def test_missing_analyze_capability(self, faker: Faker):
         """Missing ANALYZE capability is reported via validation error."""
         with pytest.raises(tk.ValidationError):
@@ -114,10 +120,10 @@ class TestFileRegister:
 
     def test_normal_file(self, faker: Faker):
         """Existing file reported via validation error."""
-        storage = files.get_storage()
+        storage = shared.get_storage()
         info = storage.upload(
             storage.prepare_location(faker.file_name()),
-            files.make_upload(faker.binary(100)),
+            shared.make_upload(faker.binary(100)),
         )
 
         result = call_action("files_file_register", location=info.location)
@@ -215,14 +221,14 @@ class TestFileSearch:
         assert result["results"] == [big]
 
 
-@pytest.mark.usefixtures("with_plugins", "non_clean_db")
+@pytest.mark.usefixtures("with_plugins", "clean_db")
 class TestFileDelete:
     def test_delete_missing(self, faker: Faker):
         """Attempt to remove non-existing file causes an error."""
         with pytest.raises(tk.NotFound):
             call_action("files_file_delete", id=faker.uuid4())
 
-    @pytest.mark.ckan_config("ckan.files.storage.test.disabled_capabilities", ["REMOVE"])
+    @pytest.mark.ckan_config("ckanext.files.storage.test.disabled_capabilities", ["REMOVE"])
     def test_missing_remove_capability(
         self,
         file: dict[str, Any],
@@ -234,11 +240,11 @@ class TestFileDelete:
     def test_delete_real(self, file: dict[str, Any]):
         """File can be removed."""
         call_action("files_file_delete", id=file["id"])
-        existing = model.Session.get(model.File, file["id"])
+        existing = model.Session.get(shared.File, file["id"])
         assert not existing
 
 
-@pytest.mark.usefixtures("with_plugins", "non_clean_db")
+@pytest.mark.usefixtures("with_plugins", "clean_db")
 class TestFileShow:
     def test_show_missing(self, faker: Faker):
         """Attempt to show non-existing file causes an error."""
@@ -251,7 +257,7 @@ class TestFileShow:
         assert result == file
 
 
-@pytest.mark.usefixtures("with_plugins", "non_clean_db")
+@pytest.mark.usefixtures("with_plugins", "clean_db")
 class TestFileRename:
     def test_rename_missing(self, faker: Faker):
         """Attempt to rename non-existing file causes an error."""
@@ -277,7 +283,7 @@ class TestFileRename:
         assert result["name"] == good_name
 
 
-@pytest.mark.usefixtures("with_plugins", "non_clean_db")
+@pytest.mark.usefixtures("with_plugins", "clean_db")
 class TestFilePin:
     def test_pin_missing(self, faker: Faker):
         """Attempt to pin non-existing file causes an error."""
@@ -296,7 +302,7 @@ class TestFilePin:
         assert result["pinned"]
 
 
-@pytest.mark.usefixtures("with_plugins", "non_clean_db")
+@pytest.mark.usefixtures("with_plugins", "clean_db")
 class TestFileUnpin:
     def test_unpin_missing(self, faker: Faker):
         """Attempt to unpin non-existing file causes an error."""
@@ -315,7 +321,7 @@ class TestFileUnpin:
         assert not result["pinned"]
 
 
-@pytest.mark.usefixtures("with_plugins", "non_clean_db")
+@pytest.mark.usefixtures("with_plugins", "clean_db")
 class TestFileOwnershipTransfer:
     def test_transfer_missing(self, faker: Faker):
         """Attempt to transfer non-existing file causes an error."""
@@ -348,7 +354,7 @@ class TestFileOwnershipTransfer:
         )
         assert result["owner_id"] == new_owner
 
-    def test_transfer_history(self, faker: Faker, file_factory: types.TestFactory[model.File]):
+    def test_transfer_history(self, faker: Faker, file_factory: types.TestFactory[shared.File]):
         """Transfer history is recorded when owner changes."""
         fileobj = file_factory.model()
 
@@ -376,7 +382,7 @@ class TestFileOwnershipTransfer:
         size = model.Session.scalar(stmt)
         assert size == 1
 
-    def test_transfer_unowned(self, faker: Faker, file_factory: types.TestFactory[model.File]):
+    def test_transfer_unowned(self, faker: Faker, file_factory: types.TestFactory[shared.File]):
         """Unowned file can be transfered without additional conditions."""
         file = file_factory.model(user="")
         assert not file.owner
@@ -386,7 +392,7 @@ class TestFileOwnershipTransfer:
 
         result = call_action(
             "files_transfer_ownership",
-            ifiles_d=file.id,
+            id=file.id,
             owner_id=owner_id,
             owner_type=owner_type,
         )
@@ -398,7 +404,7 @@ class TestFileOwnershipTransfer:
         """File can be pinned during transfer."""
         result = call_action(
             "files_transfer_ownership",
-            ifiles_d=file["id"],
+            id=file["id"],
             owner_id=fake.unique.uuid4(),
             owner_type=faker.word(),
         )
@@ -406,7 +412,7 @@ class TestFileOwnershipTransfer:
 
         result = call_action(
             "files_transfer_ownership",
-            ifiles_d=file["id"],
+            id=file["id"],
             owner_id=fake.unique.uuid4(),
             owner_type=faker.word(),
             pin=True,
@@ -420,14 +426,14 @@ class TestFileOwnershipTransfer:
 
         call_action(
             "files_transfer_ownership",
-            ifiles_d=file.id,
+            id=file.id,
             owner_id=faker.uuid4(),
             owner_type="user",
         )
         assert file.owner
 
 
-@pytest.mark.usefixtures("with_plugins", "non_clean_db")
+@pytest.mark.usefixtures("with_plugins", "clean_db")
 class TestFileOwnerScan:
     def test_filter_by_owner(self, file_factory: types.TestFactory, faker: Faker, user: dict[str, Any]):
         """Files are filtered by owner."""

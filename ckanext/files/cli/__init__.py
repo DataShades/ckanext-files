@@ -69,7 +69,7 @@ def adapters(
 
         if with_configuration and issubclass(item, base.Storage):
             decl = Declaration()
-            item.declare_config_options(decl, Key.from_string("ckan.files.storage.NAME"))
+            item.declare_config_options(decl, Key.from_string("ckanext.files.storage.NAME"))
             configuration = decl.into_ini(False, True)
             configuration = f"{click.style('Configuration:', bold=True)}\n{configuration}"
             wrapped = textwrap.indent(configuration, "\t")

@@ -9,6 +9,7 @@ import factory
 import pytest
 import pytz
 from freezegun import freeze_time
+from pytest_factoryboy import register
 from responses import RequestsMock
 from werkzeug.datastructures import FileStorage
 
@@ -134,10 +135,11 @@ def clean_redis(reset_redis: Any):
     reset_redis()
 
 
-class File(factories.CKANFactory):
+@register(_name="file")
+class FileFactory(factories.CKANFactory):
     class Meta:
         model = shared.File
-        action = "file_create"
+        action = "files_file_create"
 
     name = factory.LazyFunction(factories.fake.unique.file_name)
     upload = factory.Faker("binary", length=100)

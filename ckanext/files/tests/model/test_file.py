@@ -7,17 +7,19 @@ from faker import Faker
 
 from ckan import model
 
+from ckanext.files.model import File, Owner
 
-@pytest.mark.usefixtures("clean_db")
+
+@pytest.mark.usefixtures("with_plugins", "clean_db")
 class TestFile:
     def test_cascade_owner(self, user: dict[str, Any], faker: Faker):
-        file = model.File(
+        file = File(
             name=faker.file_name(),
             storage="default",
             location=faker.file_name(),
         )
 
-        owner = model.Owner(
+        owner = Owner(
             item_id=file.id,
             item_type="file",
             owner_id=user["id"],
@@ -32,9 +34,9 @@ class TestFile:
         model.Session.delete(owner)
         model.Session.commit()
 
-        assert model.Session.get(model.File, file.id)
+        assert model.Session.get(File, file.id)
 
-        owner = model.Owner(
+        owner = Owner(
             item_id=file.id,
             item_type="file",
             owner_id=user["id"],
@@ -48,4 +50,4 @@ class TestFile:
 
         model.Session.delete(file)
         model.Session.commit()
-        assert not model.Session.get(model.Owner, (owner.item_id, owner.item_type))
+        assert not model.Session.get(Owner, (owner.item_id, owner.item_type))

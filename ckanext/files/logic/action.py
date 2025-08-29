@@ -287,7 +287,7 @@ def files_file_search(  # noqa: C901, PLR0912, PLR0915
     stmt = stmt.limit(data_dict["rows"]).offset(data_dict["start"])
 
     cache = utils.ContextCache(context)
-    results: list[model.File] = [cache.set("file", f.id, f) for f in sess.scalars(stmt)]
+    results: list[shared.File] = [cache.set("file", f.id, f) for f in sess.scalars(stmt)]
     return {"count": total, "results": [f.dictize(context) for f in results]}
 
 
@@ -353,7 +353,7 @@ def files_file_create(context: Context, data_dict: dict[str, Any]) -> dict[str, 
 
     sess = context["session"]
     location = storage.prepare_location(filename, data_dict["upload"])
-    stmt = model.File.by_location(location, data_dict["storage"])
+    stmt = shared.File.by_location(location, data_dict["storage"])
     if fileobj := sess.scalar(stmt):
         raise tk.ValidationError({"upload": ["File already exists"]})
 
@@ -402,7 +402,7 @@ def files_file_register(context: Context, data_dict: dict[str, Any]):
     :returns: file details.
 
     """
-    tk.check_access("file_register", context, data_dict)
+    tk.check_access("files_file_register", context, data_dict)
 
     try:
         storage = shared.get_storage(data_dict["storage"])
@@ -413,7 +413,7 @@ def files_file_register(context: Context, data_dict: dict[str, Any]):
         raise tk.ValidationError({"storage": ["Operation is not supported"]})
 
     sess = context["session"]
-    stmt = model.File.by_location(data_dict["location"], data_dict["storage"])
+    stmt = shared.File.by_location(data_dict["location"], data_dict["storage"])
     if fileobj := sess.scalar(stmt):
         raise tk.ValidationError({"location": ["File is already registered"]})
 
@@ -422,7 +422,7 @@ def files_file_register(context: Context, data_dict: dict[str, Any]):
     except shared.exc.MissingFileError as err:
         raise tk.ObjectNotFound("file") from err
 
-    fileobj = model.File(
+    fileobj = shared.File(
         name=secure_filename(storage_data.location),
         storage=data_dict["storage"],
         **storage_data.as_dict(),

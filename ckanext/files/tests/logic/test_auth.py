@@ -8,42 +8,44 @@ import ckan.plugins.toolkit as tk
 from ckan import types
 from ckan.tests.helpers import call_action
 
-# operation == "file_transfer" and config["ckan.files.owner.transfer_as_update"]
-# operation == "file_scan" and config["ckan.files.owner.scan_as_update"]
+
+@pytest.fixture(autouse=True)
+def prepare(reset_redis: Any):
+    reset_redis()
 
 
-@pytest.mark.usefixtures("with_plugins", "non_clean_db")
+@pytest.mark.usefixtures("with_plugins", "clean_db")
 class TestPermissionManage:
     def test_anonymous_is_not_allowed(self):
         """Anonymous users are not allowed to manage files."""
         with pytest.raises(tk.NotAuthorized):
-            tk.check_access("permission_manage_files", {"user": ""}, {})
+            tk.check_access("files_permission_manage_files", {"user": ""}, {})
 
     def test_authenticated_is_not_allowed(self, user: dict[str, Any]):
         """Authenticated users are not allowed to manage files."""
         with pytest.raises(tk.NotAuthorized):
-            tk.check_access("permission_manage_files", {"user": user["name"]}, {})
+            tk.check_access("files_permission_manage_files", {"user": user["name"]}, {})
 
 
-@pytest.mark.usefixtures("with_plugins", "non_clean_db")
+@pytest.mark.usefixtures("with_plugins", "clean_db")
 class TestPermissionOwns:
     def test_anonymous_is_not_allowed(self, file: dict[str, Any]):
         """Anonymous users is not an owner."""
         with pytest.raises(tk.NotAuthorized):
-            tk.check_access("permission_owns_file", {"user": ""}, {"id": file["id"]})
+            tk.check_access("files_permission_owns_file", {"user": ""}, {"id": file["id"]})
 
     def test_authenticated_is_not_allowed(self, user: dict[str, Any], file: dict[str, Any]):
         """Authenticated users is not an owner."""
         with pytest.raises(tk.NotAuthorized):
-            tk.check_access("permission_owns_file", {"user": user["name"]}, {"id": file["id"]})
+            tk.check_access("files_permission_owns_file", {"user": user["name"]}, {"id": file["id"]})
 
     def test_owner_is_allowed(self, user: dict[str, Any], file_factory: types.TestFactory):
         """Owners users is identified."""
         file = file_factory(user=user)
-        tk.check_access("permission_owns_file", {"user": user["name"]}, {"id": file["id"]})
+        tk.check_access("files_permission_owns_file", {"user": user["name"]}, {"id": file["id"]})
 
 
-@pytest.mark.usefixtures("with_plugins", "non_clean_db")
+@pytest.mark.usefixtures("with_plugins", "clean_db")
 class BasePermission:
     action: str
 
@@ -62,7 +64,7 @@ class BasePermission:
         file = file_factory(user=user)
         tk.check_access(self.action, {"user": user["name"]}, {"id": file["id"]})
 
-    @pytest.mark.ckan_config("ckan.files.owner.cascade_access", {})
+    @pytest.mark.ckan_config("ckanext.files.owner.cascade_access", {})
     def test_owner_without_cascade_is_not_allowed(
         self,
         user: dict[str, Any],
@@ -100,67 +102,67 @@ class BasePermission:
 
 
 class TestPermissionEdit(BasePermission):
-    action = "permission_edit_file"
+    action = "files_permission_edit_file"
 
 
 class TestPermissionDelete(BasePermission):
-    action = "permission_delete_file"
+    action = "files_permission_delete_file"
 
 
 class TestPermissionRead(BasePermission):
-    action = "permission_read_file"
+    action = "files_permission_read_file"
 
 
 class TestPermissionDownload(BasePermission):
-    action = "permission_download_file"
+    action = "files_permission_download_file"
 
 
-@pytest.mark.usefixtures("with_plugins", "non_clean_db")
+@pytest.mark.usefixtures("with_plugins", "clean_db")
 class TestFileCreate:
     def test_anonymous_uploads_are_not_allowed(self):
         """Anonymous users are not allowed to upload files."""
         with pytest.raises(tk.NotAuthorized):
-            tk.check_access("file_create", {"user": ""}, {"storage": "test"})
+            tk.check_access("files_file_create", {"user": ""}, {"storage": "test"})
 
     def test_authenticated_uploads_are_not_allowed_by_default(self, user: dict[str, Any]):
         """Authenticated users are not allowed to upload files with default settings."""
         with pytest.raises(tk.NotAuthorized):
-            tk.check_access("file_create", {"user": user["name"]}, {"storage": "test"})
+            tk.check_access("files_file_create", {"user": user["name"]}, {"storage": "test"})
 
-    @pytest.mark.ckan_config("ckan.files.authenticated_uploads.allow", True)
-    @pytest.mark.ckan_config("ckan.files.authenticated_uploads.storages", ["test"])
+    @pytest.mark.ckan_config("ckanext.files.authenticated_uploads.allow", True)
+    @pytest.mark.ckan_config("ckanext.files.authenticated_uploads.storages", ["test"])
     def test_authenticated_uploads_can_be_enabled(self, user: dict[str, Any]):
         """Authenticated users can upload files if corresponding option is enabled."""
-        tk.check_access("file_create", {"user": user["name"]}, {"storage": "test"})
+        tk.check_access("files_file_create", {"user": user["name"]}, {"storage": "test"})
 
 
-@pytest.mark.usefixtures("with_plugins", "non_clean_db")
+@pytest.mark.usefixtures("with_plugins", "clean_db")
 class TestFileTrack:
     def test_anonymous_are_not_allowed(self):
         """Anonymous users are not allowed to register files."""
         with pytest.raises(tk.NotAuthorized):
-            tk.check_access("file_register", {"user": ""}, {"storage": "test"})
+            tk.check_access("files_file_register", {"user": ""}, {"storage": "test"})
 
     def test_authenticated_are_not_allowed(self, user: dict[str, Any]):
         """Authenticated users are not allowed to register files."""
         with pytest.raises(tk.NotAuthorized):
-            tk.check_access("file_register", {"user": user["name"]}, {"storage": "test"})
+            tk.check_access("files_file_register", {"user": user["name"]}, {"storage": "test"})
 
 
-@pytest.mark.usefixtures("with_plugins", "non_clean_db")
+@pytest.mark.usefixtures("with_plugins", "clean_db")
 class TestFileSearch:
     def test_anonymous_search_is_not_allowed(self):
         """Anonymous users are not allowed to search files."""
         with pytest.raises(tk.NotAuthorized):
-            tk.check_access("file_create", {"user": ""}, {"storage": "test"})
+            tk.check_access("files_file_create", {"user": ""}, {"storage": "test"})
 
     def test_authenticated_search_is_not_allowed(self, user: dict[str, Any]):
         """Authenticated users are not allowed to search files."""
         with pytest.raises(tk.NotAuthorized):
-            tk.check_access("file_create", {"user": user["name"]}, {"storage": "test"})
+            tk.check_access("files_file_create", {"user": user["name"]}, {"storage": "test"})
 
 
-@pytest.mark.usefixtures("with_plugins", "non_clean_db")
+@pytest.mark.usefixtures("with_plugins", "clean_db")
 class BaseOperation:
     action: str
 
@@ -181,26 +183,26 @@ class BaseOperation:
 
 
 class TestFileDelete(BaseOperation):
-    action = "file_delete"
+    action = "files_file_delete"
 
 
 class TestFileShow(BaseOperation):
-    action = "file_show"
+    action = "files_file_show"
 
 
 class TestFileRename(BaseOperation):
-    action = "file_rename"
+    action = "files_file_rename"
 
 
 class TestFilePin(BaseOperation):
-    action = "file_pin"
+    action = "files_file_pin"
 
 
 class TestFileUnpin(BaseOperation):
-    action = "file_unpin"
+    action = "files_file_unpin"
 
 
-@pytest.mark.usefixtures("with_plugins", "non_clean_db")
+@pytest.mark.usefixtures("with_plugins", "clean_db")
 class TestOwnershipTransfer:
     def test_anonymous_transfer_is_not_allowed(self, file: dict[str, Any]):
         """Anonymous users are not allowed to transfer files."""
@@ -243,7 +245,7 @@ class TestOwnershipTransfer:
             },
         )
 
-        call_action("file_pin", id=file["id"])
+        call_action("files_file_pin", id=file["id"])
         with pytest.raises(tk.NotAuthorized):
             tk.check_access(
                 "files_transfer_ownership",
@@ -267,7 +269,7 @@ class TestOwnershipTransfer:
             },
         )
 
-    @pytest.mark.ckan_config("ckan.files.owner.transfer_as_update", False)
+    @pytest.mark.ckan_config("ckanext.files.owner.transfer_as_update", False)
     def test_owner_transparent_transfer(
         self,
         user: dict[str, Any],
@@ -277,7 +279,7 @@ class TestOwnershipTransfer:
         """Transfer does not work without transfer-as-update because of missing auth function."""
         package = package_factory(user=user)
         file = file_factory(user=user)
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError):  # noqa: PT011
             tk.check_access(
                 "files_transfer_ownership",
                 {"user": user["name"]},
@@ -338,7 +340,7 @@ class TestOwnerScan:
                 },
             )
 
-    @pytest.mark.ckan_config("ckan.files.owner.scan_as_update", False)
+    @pytest.mark.ckan_config("ckanext.files.owner.scan_as_update", False)
     def test_owner_transparent_scan(
         self,
         user: dict[str, Any],
@@ -346,7 +348,7 @@ class TestOwnerScan:
     ):
         """Scan does not work without scan-as-update because of missing auth function."""
         package = package_factory(user=user)
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError):  # noqa: PT011
             tk.check_access(
                 "files_file_scan",
                 {"user": user["name"]},

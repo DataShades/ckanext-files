@@ -118,8 +118,7 @@ class FilesPlugin(p.SingletonPlugin):
 
 def _register_adapters():
     """Register all storage types provided by extensions."""
-    base.adapters.reset()
-    fk.ext.register()
+    fk.ext.setup()
 
     for plugin in p.PluginImplementations(interfaces.IFiles):
         for name, adapter in plugin.files_get_storage_adapters().items():

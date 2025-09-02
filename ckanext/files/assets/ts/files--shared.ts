@@ -264,6 +264,8 @@ namespace ckan {
 
                 async _doUpload(file: File, info: UploadInfo) {
                     let start = info.storage_data["uploaded"] || 0;
+                    const keys = Object.keys(info.storage_data["parts"] || {}).map(k => Number(k))
+                    const partNumber = Math.max(-1, ...keys) + 1;
 
                     while (start < file.size) {
                         if (!this._active.has(file)) {
@@ -274,7 +276,7 @@ namespace ckan {
                         info = await this._uploadChunk(
                             info,
                             file.slice(start, start + this.settings.chunkSize),
-                            start,
+                            partNumber,
                             {
                                 progressData: {
                                     file,
@@ -381,11 +383,11 @@ namespace ckan {
 
                 _uploadChunk(
                     info: UploadInfo,
-                    part: Blob,
-                    start: number,
+                    upload: Blob,
+                    part: number,
                     extras: any = {},
                 ): Promise<UploadInfo> {
-                    if (!part.size) {
+                    if (!upload.size) {
                         throw new Error("0-length chunks are not allowed");
                     }
                     const request = new XMLHttpRequest();
@@ -431,20 +433,20 @@ namespace ckan {
                         request.setRequestHeader("X-CSRFToken", this.csrfToken);
                     }
 
-                    this._sendRequest(request, part, start, info.id);
+                    this._sendRequest(request, upload, part, info.id);
 
                     return result;
                 }
 
                 _sendRequest(
                     request: XMLHttpRequest,
-                    part: Blob,
-                    position: number,
+                    upload: Blob,
+                    part: number,
                     id: string,
                 ) {
                     const form = new FormData();
-                    form.append("upload", part);
-                    form.append("position", String(position));
+                    form.append("upload", upload);
+                    form.append("part", String(part)); // form-data expect all values to be strings
                     form.append("id", id);
                     request.send(form);
                 }

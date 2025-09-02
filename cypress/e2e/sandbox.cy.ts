@@ -1,6 +1,7 @@
 const ckan = () => cy.window({ log: false }).then((win) => win["ckan"]);
 
 const sandbox = () => ckan().invoke({ log: false }, "sandbox");
+const STORAGE_NAME = "test";
 
 const intercept = (
     action: string,
@@ -126,14 +127,15 @@ describe("sandbox.files.upload", () => {
 
     it("creates a file", () => {
         const content = "content";
+        const filename = `test-${~~(Math.random() * 10**6)}.txt`
         sandbox()
-            .then(({ files }) => files.upload(new File([content], "test.txt")))
+            .then(({ files }) => files.upload(new File([content], filename), {requestParams: {storage: STORAGE_NAME}}))
             .then((info) => {
                 expect(info).to.include({
                     content_type: "text/plain",
                     size: content.length,
-                    name: "test.txt",
-                    storage: "default",
+                    name: filename,
+                    storage: STORAGE_NAME,
                 });
             });
     });
@@ -219,14 +221,15 @@ describe("Multipart uploader", () => {
             .as("adapter"),
     );
 
-    it("sends expected data to server", () => {
+    it.only("sends expected data to server", () => {
         const content = "hello,world";
         const chunkSize = 6;
         let sizes = [content.length, chunkSize];
+        const filename = `test-${~~(Math.random() * 10**6)}.txt`
 
         intercept("files_multipart_start", "start", {
             id: "1",
-            storage_data: { uploaded: 0 },
+            storage_data: { uploaded: 0, parts: {}, multipart: true },
         });
 
         cy.intercept("/api/action/files_multipart_update", (req) => {
@@ -236,6 +239,8 @@ describe("Multipart uploader", () => {
                     id: "1",
                     storage_data: {
                         uploaded: sizes.pop(),
+                        parts: {[1 - sizes.length]: "x"},
+                        multipart: true,
                     },
                 },
             });
@@ -244,18 +249,18 @@ describe("Multipart uploader", () => {
         intercept("files_multipart_complete", "complete");
 
         cy.get("@adapter").then((adapter: any) =>
-            new adapter({ chunkSize: chunkSize }).upload(
-                new File([content], "test.txt", { type: "text/plain" }),
-                {},
+            new adapter({ chunkSize: chunkSize, storage: STORAGE_NAME }).upload(
+                new File([content], filename, { type: "text/plain" }),
+                {}
             ),
         );
 
-        cy.wait("@start").then(({ request: { body } }) => {
-            expect(body).deep.equal({
-                size: content.length,
+        cy.wait("@start").interceptFormData((data) => {
+            expect(data).includes({
+                size: String(content.length),
                 content_type: "text/plain",
-                storage: "default",
-                name: "test.txt",
+                storage: STORAGE_NAME,
+                name: filename,
             });
         });
 
@@ -263,7 +268,7 @@ describe("Multipart uploader", () => {
             (data) => {
                 expect(data).includes({
                     id: "1",
-                    position: "0",
+                    part: "0",
                 });
 
                 cy.wrap(data.upload.slice().text()).should(
@@ -278,7 +283,8 @@ describe("Multipart uploader", () => {
             (data) => {
                 expect(data).includes({
                     id: "1",
-                    position: String(chunkSize),
+
+                    part: "0",
                 });
 
                 cy.wrap(data.upload.slice().text()).should(

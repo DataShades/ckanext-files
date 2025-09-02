@@ -38,6 +38,8 @@ htmlcov/
 nosetests.xml
 coverage.xml
 
+cypress/downloads/
+
 # Sphinx documentation
 docs/_build/
 site/

@@ -173,8 +173,18 @@ def multipart_refresh(not_empty: Validator, unicode_safe: Validator) -> Schema:
 
 
 @validator_args
-def multipart_update(not_empty: Validator, unicode_safe: Validator) -> Schema:
-    return {"id": [not_empty, unicode_safe]}
+def multipart_update(
+    not_missing: Validator,
+    int_validator: Validator,
+    not_empty: Validator,
+    unicode_safe: Validator,
+    files_into_upload: Validator,
+) -> Schema:
+    return {
+        "id": [not_empty, unicode_safe],
+        "part": [not_missing, int_validator],
+        "upload": [not_missing, files_into_upload],
+    }
 
 
 @validator_args

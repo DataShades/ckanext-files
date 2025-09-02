@@ -13,7 +13,7 @@ from __future__ import annotations
 
 import dataclasses
 from time import time
-from typing import Any, cast
+from typing import Any, ClassVar, cast
 
 import file_keeper as fk
 import flask
@@ -113,11 +113,13 @@ class Storage(fk.Storage):
 
     settings: Settings
     reader: Reader
+    uploader: Uploader
+    manager: Manager
 
-    SettingsFactory: type[Settings] = Settings  # pyright: ignore[reportIncompatibleVariableOverride]
-    ReaderFactory: type[Reader] = Reader  # pyright: ignore[reportIncompatibleVariableOverride]
-    UploaderFactory: type[Uploader]  # pyright: ignore[reportIncompatibleVariableOverride]
-    ManagerFactory: type[Manager]  # pyright: ignore[reportIncompatibleVariableOverride]
+    SettingsFactory: ClassVar[type[Settings]] = Settings  # pyright: ignore[reportIncompatibleVariableOverride]
+    UploaderFactory: ClassVar[type[Uploader]] = Uploader  # pyright: ignore[reportIncompatibleVariableOverride]
+    ReaderFactory: ClassVar[type[Reader]] = Reader  # pyright: ignore[reportIncompatibleVariableOverride]
+    ManagerFactory: ClassVar[type[Manager]] = Manager  # pyright: ignore[reportIncompatibleVariableOverride]
 
     def validate_size(self, size: int):
         max_size = self.settings.max_size
@@ -140,11 +142,11 @@ class Storage(fk.Storage):
         return super().upload(location, upload, **kwargs)
 
     @override
-    def multipart_start(self, data: FileData, /, **kwargs: Any) -> FileData:
-        self.validate_size(data.size)
-        self.validate_content_type(data.content_type)
+    def multipart_start(self, location: fk.Location, size: int, /, **kwargs: Any) -> FileData:
+        self.validate_size(size)
+        self.validate_content_type(kwargs.get("content_type", ""))
 
-        return super().multipart_start(data, **kwargs)
+        return super().multipart_start(location, size, **kwargs)
 
     @override
     def temporal_link(self, data: FileData, duration: int, /, **kwargs: Any) -> str:

@@ -11,7 +11,7 @@ from flask import Blueprint, jsonify
 import ckan.plugins.toolkit as tk
 from ckan import model
 from ckan.common import streaming_response
-from ckan.lib.helpers import Page
+from ckan.lib.pagination import Page
 from ckan.logic import parse_params
 from ckan.types import Response
 from ckan.views.resource import download
@@ -122,10 +122,8 @@ def temporal_download(token: str) -> Response:
 
     if "id" in data:
         item = model.Session.get(shared.File, data["sub"])
-    elif "location" in data:
-        item = model.Session.scalar(
-            shared.File.by_location(data["location"], data.get("storage")),
-        )
+    elif "location" in data and "storage" in data:
+        item = model.Session.scalar(shared.File.by_location(data["location"], data["storage"]))
     else:
         item = None
 
@@ -240,7 +238,7 @@ def delete_file(
 def autocomplete_own_files() -> Any:
     tk.check_access("files_autocomplete_available_resource_files", {}, {})
 
-    params = parse_params(tk.request.args)
+    params: dict[str, Any] = parse_params(tk.request.args)
 
     q = params.pop("q", "")
 

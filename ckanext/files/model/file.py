@@ -165,9 +165,7 @@ class FilesFile(Base):
 
     @classmethod
     def by_location(cls, location: str, storage: str):
-        stmt = sa.select(cls).where(
+        return sa.select(cls).where(
             cls.location == location,
             cls.storage == storage,
         )
-
-        return stmt

@@ -20,10 +20,12 @@ class Settings(shared.Settings, lc.Settings):
     pass
 
 
-class LibCloudStorage(shared.Storage, lc.LibCloudStorage):
+class LibCloudStorage(shared.Storage, lc.LibCloudStorage):  # pyright: ignore[reportIncompatibleVariableOverride]
     settings: Settings  # pyright: ignore[reportIncompatibleVariableOverride]
     SettingsFactory = Settings
     ReaderFactory = type("Reader", (shared.Reader, lc.Reader), {})
+    ManagerFactory = type("Manager", (shared.Manager, lc.Manager), {})
+    UploaderFactory = type("Uploader", (shared.Uploader, lc.Uploader), {})
 
     @override
     @classmethod

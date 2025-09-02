@@ -15,7 +15,7 @@ class Settings(shared.Settings, filebin.Settings):
     pass
 
 
-class FilebinStorage(shared.Storage, filebin.FilebinStorage):
+class FilebinStorage(shared.Storage, filebin.FilebinStorage):  # pyright: ignore[reportIncompatibleVariableOverride]
     hidden = True
 
     settings: Settings  # pyright: ignore[reportIncompatibleVariableOverride]

@@ -13,7 +13,7 @@ import ckan.model as model
 import ckan.plugins.toolkit as tk
 from ckan import types
 from ckan.tests.factories import fake
-from ckan.tests.helpers import call_action
+from ckan.tests.helpers import call_action  # pyright: ignore[reportUnknownVariableType]
 
 from ckanext.files import shared
 
@@ -189,7 +189,7 @@ class TestFileSearch:
         result = call_action("files_file_search", filters={"location": {"$ne": small["name"]}})
         assert result["results"] == [big]
 
-    def test_filter_by_data(self, faker: Faker, file_factory: types.TestFactory):
+    def test_filter_by_data(self, file_factory: types.TestFactory):
         """File can be found by storage/plugin data."""
         big_obj = file_factory.model()
         small_obj = file_factory.model()
@@ -354,7 +354,7 @@ class TestFileOwnershipTransfer:
         )
         assert result["owner_id"] == new_owner
 
-    def test_transfer_history(self, faker: Faker, file_factory: types.TestFactory[shared.File]):
+    def test_transfer_history(self, file_factory: types.TestFactory[shared.File]):
         """Transfer history is recorded when owner changes."""
         fileobj = file_factory.model()
 
@@ -435,7 +435,7 @@ class TestFileOwnershipTransfer:
 
 @pytest.mark.usefixtures("with_plugins", "clean_db")
 class TestFileOwnerScan:
-    def test_filter_by_owner(self, file_factory: types.TestFactory, faker: Faker, user: dict[str, Any]):
+    def test_filter_by_owner(self, file_factory: types.TestFactory, user: dict[str, Any]):
         """Files are filtered by owner."""
         owned = file_factory(user=user["name"])
         file_factory(user="")

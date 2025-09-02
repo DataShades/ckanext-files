@@ -25,12 +25,14 @@ class Settings(shared.Settings, gcs.Settings):
     pass
 
 
-class GoogleCloudStorage(shared.Storage, gcs.GoogleCloudStorage):
+class GoogleCloudStorage(shared.Storage, gcs.GoogleCloudStorage):  # pyright: ignore[reportIncompatibleVariableOverride]
     hidden = True
 
     settings: Settings  # pyright: ignore[reportIncompatibleVariableOverride]
     SettingsFactory = Settings
     ReaderFactory = type("Reader", (shared.Reader, gcs.GoogleCloudStorage.ReaderFactory), {})
+    ManagerFactory = type("Manager", (shared.Manager, gcs.GoogleCloudStorage.ManagerFactory), {})
+    UploaderFactory = type("Uploader", (shared.Uploader, gcs.GoogleCloudStorage.UploaderFactory), {})
 
     @override
     @classmethod

@@ -90,7 +90,7 @@ def files_file_into_public_url(
     use_list = isinstance(value, list)
     ids = value if use_list else [value]
     result = []
-    sess = context["session"]  # pyright: ignore[reportTypedDictNotRequiredAccess]
+    sess = context["session"]
     for file_id in ids:
         file = sess.get(shared.File, file_id)
         if not file:
@@ -188,7 +188,7 @@ def files_content_type_from_file(file_field: str, if_empty: bool = False):
         if not file_id:
             return
         file_id = file_id.rsplit("/", 1)[-1]
-        sess = context["session"]  # pyright: ignore[reportTypedDictNotRequiredAccess]
+        sess = context["session"]
         file = sess.get(shared.File, file_id)
 
         if file:
@@ -209,7 +209,7 @@ def files_accept_file_with_type(*supported_types: str):
         value: str | list[str] = data[key]
 
         ids = value if isinstance(value, list) else [value]
-        sess = context["session"]  # pyright: ignore[reportTypedDictNotRequiredAccess]
+        sess = context["session"]
         for file_id in ids:
             file = sess.get(shared.File, file_id)
             if not file:
@@ -240,7 +240,7 @@ def files_accept_file_with_storage(*supported_storages: str):
         value: str | list[str] = data[key]
 
         ids = value if isinstance(value, list) else [value]
-        sess = context["session"]  # pyright: ignore[reportTypedDictNotRequiredAccess]
+        sess = context["session"]
 
         for file_id in ids:
             file = sess.get(shared.File, file_id)
@@ -368,7 +368,7 @@ def files_copy_attribute(attribute: str, destination: str):
         context: Context,
     ):
         value = data[key]
-        sess = context["session"]  # pyright: ignore[reportTypedDictNotRequiredAccess]
+        sess = context["session"]
 
         file = sess.get(shared.File, value)
         if not file or not hasattr(file, attribute):

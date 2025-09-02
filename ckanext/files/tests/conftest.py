@@ -15,7 +15,7 @@ from werkzeug.datastructures import FileStorage
 
 from ckan.lib.redis import connect_to_redis
 from ckan.tests import factories
-from ckan.tests.helpers import call_action
+from ckan.tests.helpers import call_action  # pyright: ignore[reportUnknownVariableType]
 
 from ckanext.files import shared
 
@@ -137,9 +137,9 @@ def clean_redis(reset_redis: Any):
 
 @register(_name="file")
 class FileFactory(factories.CKANFactory):
-    class Meta:
+    class Meta:  # pyright: ignore[reportIncompatibleVariableOverride]
         model = shared.File
         action = "files_file_create"
 
-    name = factory.LazyFunction(factories.fake.unique.file_name)
-    upload = factory.Faker("binary", length=100)
+    name = factory.LazyFunction(factories.fake.unique.file_name)  # pyright: ignore[reportPrivateImportUsage]
+    upload = factory.Faker("binary", length=100)  # pyright: ignore[reportPrivateImportUsage]

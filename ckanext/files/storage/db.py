@@ -13,12 +13,14 @@ class Settings(shared.Settings, sqlalchemy.Settings):
     pass
 
 
-class DbStorage(shared.Storage, sqlalchemy.SqlAlchemyStorage):
+class DbStorage(shared.Storage, sqlalchemy.SqlAlchemyStorage):  # pyright: ignore[reportIncompatibleVariableOverride]
     hidden = True
 
     settings: Settings  # pyright: ignore[reportIncompatibleVariableOverride]
     SettingsFactory = Settings
     ReaderFactory = type("Reader", (shared.Reader, sqlalchemy.Reader), {})
+    ManagerFactory = type("Manager", (shared.Manager, sqlalchemy.Manager), {})
+    UploaderFactory = type("Uploader", (shared.Uploader, sqlalchemy.Uploader), {})
 
     @override
     @classmethod

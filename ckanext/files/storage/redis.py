@@ -20,10 +20,12 @@ class Settings(shared.Settings, rd.Settings):
     pass
 
 
-class RedisStorage(shared.Storage, rd.RedisStorage):
+class RedisStorage(shared.Storage, rd.RedisStorage):  # pyright: ignore[reportIncompatibleVariableOverride]
     settings: Settings  # pyright: ignore[reportIncompatibleVariableOverride]
     SettingsFactory = Settings
     ReaderFactory = type("Reader", (shared.Reader, rd.Reader), {})
+    ManagerFactory = type("Manager", (shared.Manager, rd.Manager), {})
+    UploaderFactory = type("Uploader", (shared.Uploader, rd.Uploader), {})
 
     @override
     @classmethod

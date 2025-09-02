@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import base64
 import dataclasses
 
 from file_keeper.default.adapters import s3
@@ -11,25 +10,19 @@ from ckan.config.declaration import Declaration, Key
 from ckanext.files import shared
 
 
-def decode(value: str) -> str:
-    return base64.decodebytes(value.encode()).hex()
-
-
 @dataclasses.dataclass()
 class Settings(shared.Settings, s3.Settings):
     pass
 
 
-class Uploader(shared.Uploader, s3.Uploader):
-    capabilities = s3.Uploader.capabilities | shared.Capability.MULTIPART
+class S3Storage(shared.Storage, s3.S3Storage):  # pyright: ignore[reportIncompatibleVariableOverride]
+    """AWS S3 adapter."""
 
-
-class S3Storage(shared.Storage, s3.S3Storage):
-    hidden: bool = True
     settings: Settings  # pyright: ignore[reportIncompatibleVariableOverride]
     SettingsFactory = Settings
     ReaderFactory = type("Reader", (shared.Reader, s3.Reader), {})
-    UploaderFactory = Uploader
+    UploaderFactory = type("Reader", (shared.Uploader, s3.Uploader), {})
+    ManagerFactory = type("Reader", (shared.Manager, s3.Manager), {})
 
     @override
     @classmethod
@@ -41,7 +34,6 @@ class S3Storage(shared.Storage, s3.S3Storage):
         )
         declaration.declare(key.key).set_description("The access key for AWS account.")
         declaration.declare(key.secret).set_description("The secret key for AWS account.")
+        declaration.declare(key.endpoint).set_description("Custom AWS endpoint.")
 
         declaration.declare(key.region).set_description("The AWS Region used in instantiating the client.")
-
-        declaration.declare(key.endpoint).set_description("The complete URL to use for the constructed client.")

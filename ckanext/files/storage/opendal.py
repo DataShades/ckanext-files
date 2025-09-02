@@ -15,10 +15,12 @@ class Settings(shared.Settings, od.Settings):
     pass
 
 
-class OpenDalStorage(shared.Storage, od.OpenDalStorage):
+class OpenDalStorage(shared.Storage, od.OpenDalStorage):  # pyright: ignore[reportIncompatibleVariableOverride]
     settings: Settings  # pyright: ignore[reportIncompatibleVariableOverride]
     SettingsFactory = Settings
     ReaderFactory = type("Reader", (shared.Reader, od.Reader), {})
+    ManagerFactory = type("Manager", (shared.Manager, od.Manager), {})
+    UploaderFactory = type("Uploader", (shared.Uploader, od.Uploader), {})
 
     @override
     @classmethod

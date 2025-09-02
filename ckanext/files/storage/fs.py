@@ -35,12 +35,14 @@ class Reader(shared.Reader, fs.Reader):
         )
 
 
-class FsStorage(shared.Storage, fs.FsStorage):
+class FsStorage(shared.Storage, fs.FsStorage):  # pyright: ignore[reportIncompatibleVariableOverride]
     """Store files in local filesystem."""
 
     settings: Settings  # pyright: ignore[reportIncompatibleVariableOverride]
-    SettingsFactory: type[shared.Settings] = Settings
-    ReaderFactory: type[shared.Reader] = Reader
+    SettingsFactory: type[shared.Settings] = Settings  # pyright: ignore[reportIncompatibleVariableOverride]
+    ReaderFactory: type[shared.Reader] = Reader  # pyright: ignore[reportIncompatibleVariableOverride]
+    UploaderFactory = type("Uploader", (shared.Uploader, fs.Uploader), {})
+    ManagerFactory = type("Manager", (shared.Manager, fs.Manager), {})
 
 
 class PublicFsReader(Reader):
@@ -82,5 +84,4 @@ class PublicFsStorage(FsStorage):
 
 
 class CkanResourceFsStorage(FsStorage):
-    def __init__(self, settings: Any):
-        super().__init__(settings)
+    pass

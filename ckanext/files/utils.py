@@ -18,7 +18,7 @@ from sqlalchemy.orm import Mapper
 
 import ckan.plugins.toolkit as tk
 from ckan import model
-from ckan.lib.api_token import _get_algorithm, _get_secret  # type: ignore
+from ckan.lib.api_token import _get_algorithm, _get_secret  # pyright: ignore[reportPrivateUsage]
 
 from ckanext.files import types
 
@@ -44,13 +44,13 @@ def get_owner(owner_type: str, owner_id: str):
         return getter(owner_id)
 
     owner_model = "group" if owner_type == "organization" else owner_type
-    mappers: Iterable[Mapper]
+    mappers: Iterable[Mapper[Any]]
     if tk.check_ckan_version("2.11"):
         mappers = model.registry.mappers
     else:
         mappers = cast(
-            "Iterable[Mapper]",
-            tk.BaseModel._sa_registry.mappers | model.User._sa_class_manager.registry.mappers,  # type: ignore
+            "Iterable[Mapper[Any]]",
+            tk.BaseModel._sa_registry.mappers | model.User._sa_class_manager.registry.mappers,  # pyright: ignore[reportAttributeAccessIssue]
         )
 
     for mapper in mappers:

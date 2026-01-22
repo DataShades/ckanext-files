@@ -1,4 +1,11 @@
 
+## [1.1.0a4](https://github.com/DataShades/ckanext-files/releases/tag/1.1.0a4) - 2026-01-22
+[Compare with v1.1.0a3](https://github.com/DataShades/ckanext-files/compare/v1.1.0a3..1.1.0a4)
+
+### 🐛 Bug Fixes
+
+- public_fs fail on empty public path ([26dcd9b](https://github.com/DataShades/ckanext-files/commit/26dcd9bb2e3d35109b7a9dbd19b51274e306a82f))
+
 ## [v1.1.0a0](https://github.com/DataShades/ckanext-files/releases/tag/v1.1.0a0) - 2025-08-29
 [Compare with v1.0.1](https://github.com/DataShades/ckanext-files/compare/v1.0.1..v1.1.0a0)
 

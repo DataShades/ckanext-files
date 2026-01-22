@@ -38,8 +38,11 @@ test = [ "pytest-ckan", "pytest-cov", "pytest-faker", "freezegun", "responses",]
 docs = [ "mkdocs", "mkdocs-material", "pymdown-extensions", "mkdocstrings[python]",]
 dev = [ "pytest-ckan", "pytest-cov", "pytest-faker", "freezegun", "responses", "mkdocs", "mkdocs-material", "pymdown-extensions", "mkdocstrings[python]",]
 
+azure = [ "file-keeper[azure]", ]
 s3 = [ "file-keeper[s3]", ]
 gcs = [ "file-keeper[gcs]", ]
+cloud = [ "file-keeper[cloud]", ]
+
 opendal = [ "file-keeper[opendal]", ]
 libcloud = [ "file-keeper[libcloud]", ]
 

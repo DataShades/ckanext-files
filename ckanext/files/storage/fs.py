@@ -52,9 +52,9 @@ class PublicFsReader(Reader):
     @override
     def permanent_link(self, data: fk.FileData, extras: dict[str, Any]) -> str:
         """Return public download link."""
-        from ckan.lib.helpers import url_for_static  # noqa: PLC0415
+        from ckan.lib.helpers import url_for_static_or_external  # noqa: PLC0415
 
-        return url_for_static(
+        return url_for_static_or_external(
             os.path.join(
                 self.storage.settings.public_prefix,
                 data.location,

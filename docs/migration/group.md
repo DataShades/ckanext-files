@@ -42,20 +42,17 @@ group/organization images are stored inside local filesystem, you can use
 ??? info "Public URL"
 
     `ckanext.files.storage.group_images.public_prefix` option specifies base URL from
-    which every group image can be accessed. In most cases it's CKAN URL plus
+    which every group image can be accessed. In most cases it's
     `uploads/group`. If you are serving CKAN application from the `ckan.site_url`,
     leave this option unchanged. If you are using `ckan.root_path`, like `/data/`,
-    insert this root path into the value of the option. Example below uses
-    `%(ckan.site_url)s` wildcard, which will be automatically replaced with the
-    value of `ckan.site_url` config option. You can specify site URL explicitely if
-    you don't like this wildcard syntax.
+    insert this root path into the value of the option.
 
 ```ini
 ckanext.files.storage.group_images.type = files:public_fs
 ckanext.files.storage.group_images.max_size = 10MiB
 ckanext.files.storage.group_images.supported_types = image
 ckanext.files.storage.group_images.path = /var/storage/ckan/storage/uploads/group
-ckanext.files.storage.group_images.public_prefix = %(ckan.site_url)s/uploads/group
+ckanext.files.storage.group_images.public_prefix = uploads/group
 ```
 
 Now let's run a command that show us the list of files available under newly

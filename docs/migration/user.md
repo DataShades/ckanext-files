@@ -30,7 +30,7 @@ links(`files:public_fs`) for user images.
 
 ??? info "Public URL"
 
-    `ckanext.files.storage.user_images.public_prefix` resebles this option for
+    `ckanext.files.storage.user_images.public_prefix` resembles this option for
     group/organization images storage. But user images are available at CKAN URL
     plus `uploads/user`.
 
@@ -39,7 +39,7 @@ ckanext.files.storage.user_images.type = files:public_fs
 ckanext.files.storage.user_images.max_size = 10MiB
 ckanext.files.storage.user_images.supported_types = image
 ckanext.files.storage.user_images.path = /var/storage/ckan/storage/uploads/user
-ckanext.files.storage.user_images.public_prefix = %(ckan.site_url)s/uploads/user
+ckanext.files.storage.user_images.public_prefix = uploads/user
 ```
 
 Check the list of untracked files available inside newly configured storage:

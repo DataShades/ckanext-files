@@ -401,7 +401,7 @@ def files_upload_as(  # noqa: PLR0913
     storage: str,
     owner_type: str,
     id_field: str,
-    attach_as: Literal["id", "permanent_url"] | None,
+    attach_as: Literal["id", "public_url"] | None,
     using_action: str | None = None,
     destination_field: str | None = None,
 ):

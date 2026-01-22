@@ -237,7 +237,7 @@ class UploadAndAttachTask(Task):
 
     # property of the file that will be added to owner data. Currently
     # supported only id and public_url.
-    attach_as: Literal["id", "permanent_url"] | None
+    attach_as: Literal["id", "public_url"] | None
     # action to use for patching owner's data
     action: str | None = None
     # field in owner's data that will hold property of the current file
@@ -273,7 +273,7 @@ class UploadAndAttachTask(Task):
         )
 
         if self.attach_as and self.action and self.destination_field:
-            if self.attach_as == "permanent_url":
+            if self.attach_as == "public_url":
                 storage = base.get_storage(self.storage)
                 value = storage.permanent_link(base.FileData.from_dict(info))
             else:

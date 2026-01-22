@@ -78,7 +78,7 @@ class PublicFsStorage(FsStorage):
     def declare_config_options(cls, declaration: Declaration, key: Key):
         super().declare_config_options(declaration, key)
 
-        declaration.declare(key.public_prefix).set_description(
+        declaration.declare(key.public_prefix, "/").set_description(
             "URL of the storage folder." + " `public_prefix + location` must produce a public URL",
         )
 

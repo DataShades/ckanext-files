@@ -6,6 +6,7 @@ from ckan.common import CKANConfig
 
 
 @tk.blanket.helpers
+@tk.blanket.actions
 class FileUploadWidgetPlugin(p.SingletonPlugin):
     p.implements(p.IConfigurer)
 

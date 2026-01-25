@@ -92,6 +92,7 @@ nav:
         - usage/capabilities.md
         - usage/multipart.md
         - usage/js.md
+        - usage/upload-widget.md
 
     - upload-strategies.md
     - implementation-example.md

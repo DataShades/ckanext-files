@@ -82,6 +82,8 @@ ckan.module("file-upload-widget", function ($, _) {
             maxFiles: 0,
             disableUrl: false,
             disableMedia: false,
+            uploadAction: "file_widget_file_create",
+            uploadLinkAction: "file_widget_link_create",
         },
         initialize: function () {
             $.proxyAll(this, /_/);
@@ -99,9 +101,12 @@ ckan.module("file-upload-widget", function ($, _) {
             window.fuwProgressBars = window.fuwProgressBars || {};
             window.fuwProgressBars[this.options.instanceId] = {};
 
-            this.fileAdapter = new ckan.CKANEXT_FILES.adapters.Standard();
+            this.fileAdapter = new ckan.CKANEXT_FILES.adapters.Standard({
+                uploadAction: this.options.uploadAction,
+            });
+
             this.urlAdapter = new ckan.CKANEXT_FILES.adapters.Standard({
-                storage: "link",
+                uploadAction: this.options.uploadLinkAction,
             });
 
             this.lsSelectedFilesKey =

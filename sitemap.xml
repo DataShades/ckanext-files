@@ -41,6 +41,10 @@
          <lastmod>2026-01-26</lastmod>
     </url>
     <url>
+         <loc>https://datashades.github.io/ckanext-files/configuration/azure/</loc>
+         <lastmod>2026-01-26</lastmod>
+    </url>
+    <url>
          <loc>https://datashades.github.io/ckanext-files/configuration/fs/</loc>
          <lastmod>2026-01-26</lastmod>
     </url>
@@ -62,6 +66,10 @@
     </url>
     <url>
          <loc>https://datashades.github.io/ckanext-files/configuration/redis/</loc>
+         <lastmod>2026-01-26</lastmod>
+    </url>
+    <url>
+         <loc>https://datashades.github.io/ckanext-files/configuration/s3/</loc>
          <lastmod>2026-01-26</lastmod>
     </url>
     <url>

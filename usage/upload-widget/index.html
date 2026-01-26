@@ -8,13 +8,13 @@
       
       
       
-        <link rel="canonical" href="https://datashades.github.io/ckanext-files/usage/configure/">
+        <link rel="canonical" href="https://datashades.github.io/ckanext-files/usage/upload-widget/">
       
       
-        <link rel="prev" href="../../installation/">
+        <link rel="prev" href="../js/">
       
       
-        <link rel="next" href="../use-in-code/">
+        <link rel="next" href="../../upload-strategies/">
       
       
       <link rel="icon" href="../../img/favicon.ico">
@@ -22,7 +22,7 @@
     
     
       
-        <title>Configure the storage - ckanext-files</title>
+        <title>File Upload Widget - ckanext-files</title>
       
     
     
@@ -76,7 +76,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#configure-the-storage" class="md-skip">
+        <a href="#file-upload-widget" class="md-skip">
           Skip to content
         </a>
       
@@ -111,7 +111,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Configure the storage
+              File Upload Widget
             
           </span>
         </div>
@@ -375,19 +375,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../configure/" class="md-nav__link">
         
   
   
@@ -398,7 +389,6 @@
   
 
       </a>
-      
     </li>
   
 
@@ -661,10 +651,32 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../upload-widget/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    File Upload Widget
+    
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   
@@ -675,6 +687,77 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#capabilities" class="md-nav__link">
+    <span class="md-ellipsis">
+      Capabilities
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#usage" class="md-nav__link">
+    <span class="md-ellipsis">
+      Usage
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#options" class="md-nav__link">
+    <span class="md-ellipsis">
+      Options
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Options">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#accept" class="md-nav__link">
+    <span class="md-ellipsis">
+      accept
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#javascript-options-file-upload-widgetjs" class="md-nav__link">
+    <span class="md-ellipsis">
+      JavaScript Options (file-upload-widget.js)
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -1379,6 +1462,65 @@
     
   
   
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#capabilities" class="md-nav__link">
+    <span class="md-ellipsis">
+      Capabilities
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#usage" class="md-nav__link">
+    <span class="md-ellipsis">
+      Usage
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#options" class="md-nav__link">
+    <span class="md-ellipsis">
+      Options
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Options">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#accept" class="md-nav__link">
+    <span class="md-ellipsis">
+      accept
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#javascript-options-file-upload-widgetjs" class="md-nav__link">
+    <span class="md-ellipsis">
+      JavaScript Options (file-upload-widget.js)
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
 </nav>
                   </div>
                 </div>
@@ -1396,95 +1538,90 @@
   
 
 
-<h1 id="configure-the-storage">Configure the storage</h1>
-<p>Before uploading files, you have to configure a <strong>storage</strong>: place where all
-uploaded files are stored. Storage relies on <strong>adapter</strong> that describes where
-and how data is be stored: filesystem, cloud, DB, etc. And, depending on the
-adapter, storage may have a couple of addition specific options. For example,
-filesystem adapter likely requires a path to the folder where uploads are
-stored. DB adapter may need DB connection parameters. Cloud adapter most likely
-will not work without an API key. These additional options are specific to
-adapter and you have to check its documentation to find out what are the
-possible options.</p>
-<p>Let's start from the Redis adapter, because it has minimal requirements in terms
-of configuration.</p>
-<p>Add the following line to the CKAN config file:</p>
-<div class="highlight"><pre><span></span><code><span class="na">ckanext.files.storage.default.type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">files:redis</span>
-</code></pre></div>
-<p>The name of adapter is <code>files:redis</code>. It follows recommended naming convention
-for adapters:<code>&lt;EXTENSION&gt;:&lt;TYPE&gt;</code>. You can tell from the name above that we are
-using adapter defined in the <code>files</code> extension with <code>redis</code> type. But this
-naming convention is not enforced and its only purpose is avoiding name
-conflicts. Technically, adapter name can use any character, including spaces,
-newlines and emoji.</p>
-<details class="question">
-<summary>See an error?</summary>
-<p>If you make a typo in the adapter's name, any CKAN CLI command will produce an
-error message with the list of available adapters:</p>
-<div class="highlight"><pre><span></span><code>Invalid<span class="w"> </span>configuration<span class="w"> </span>values<span class="w"> </span>provided:
-ckanext.files.storage.default.type:<span class="w"> </span>Value<span class="w"> </span>must<span class="w"> </span>be<span class="w"> </span>one<span class="w"> </span>of<span class="w"> </span><span class="o">[</span><span class="s1">&#39;files:fs&#39;</span>,<span class="w"> </span><span class="s1">&#39;files:redis&#39;</span><span class="o">]</span>
-Aborted!
-</code></pre></div>
-</details>
-<p>Storage is configured, so we can actually upload the file. Let's use
-<a href="https://github.com/ckan/ckanapi">ckanapi</a> for this task. Files are created via
-<code>files_file_create</code> API action and this time we have to pass 2 parameters into
-it:</p>
+<h1 id="file-upload-widget">File Upload Widget</h1>
+<h2 id="capabilities">Capabilities</h2>
+<p>The File Upload Widget enables users to:</p>
 <ul>
-<li><code>name</code>: the name of uploaded file</li>
-<li><code>upload</code>: content of the file</li>
+<li>Upload files from a local device.</li>
+<li>Import files via external URLs.</li>
+<li>Select previously uploaded files from a Media Gallery.</li>
+<li>Drag and drop files into the upload zone.</li>
+<li>Manage multiple file uploads with progress tracking.</li>
 </ul>
-<p>The final command is here:</p>
-<div class="highlight"><pre><span></span><code><span class="nb">echo</span><span class="w"> </span>-n<span class="w"> </span><span class="s1">&#39;hello world&#39;</span><span class="w"> </span>&gt;<span class="w"> </span>/tmp/myfile.txt
-ckanapi<span class="w"> </span>action<span class="w"> </span>files_file_create<span class="w"> </span><span class="nv">name</span><span class="o">=</span>hello.txt<span class="w"> </span>upload@/tmp/myfile.txt
+<h2 id="usage">Usage</h2>
+<p>Enable the <code>file_upload_widget</code> plugin in your CKAN config:</p>
+<div class="highlight"><pre><span></span><code><span class="na">ckan.plugins</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">... files file_upload_widget</span>
 </code></pre></div>
-<p>And that's what you see as result:</p>
-<div class="highlight"><pre><span></span><code><span class="p">{</span>
-<span class="w">  </span><span class="nt">&quot;atime&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">null</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;content_type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;text/plain&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;ctime&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2024-06-02T15:02:14.819117+00:00&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;hash&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;5eb63bbbe01eeed093cb22bb8f5acdc3&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;e21162ab-abfb-476c-b8c5-5fe7cb89eca0&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;location&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;hello.txt&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;mtime&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">null</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;hello.txt&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;size&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">11</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;storage&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;default&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;storage_data&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{}</span>
-<span class="p">}</span>
+<p>Then reference the snippet in your scheming schema:</p>
+<div class="highlight"><pre><span></span><code><span class="nt">form_snippet</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">files_upload_widget.html</span>
 </code></pre></div>
-<p>Content of the file can be checked via CKAN CLI. Use <code>id</code> from the last API
-call's output in the command <code>ckan files stream ID</code>:</p>
-<div class="highlight"><pre><span></span><code>ckan<span class="w"> </span>files<span class="w"> </span>stream<span class="w"> </span>e21162ab-abfb-476c-b8c5-5fe7cb89eca0
-</code></pre></div>
-<p>Alternatively, we can use Redis CLI to get the content of the file.</p>
-<div class="admonition">
-<p class="admonition-title">Note</p>
-<p>File cannot be streamed via CKAN API, because it's JSON-based and streaming
-files doesn't suit its principles.</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>You need to implement the API actions <code>uploadAction</code> and <code>uploadLinkAction</code> to make the widget work properly. By default, it uses the <code>default</code> and <code>link</code> storages and does not include proper auth checks.</p>
+<p>Read about why separate API actions are required in the <a href="../permissions/">permissions</a> section.</p>
 </div>
-<p>By default, Redis adapter puts the content into hash
-<code>ckanext:files:default:file_content</code>. Inside it, file stored under the key that
-matches <code>location</code> in the API response(i.e, <code>hello.txt</code> in our case). It's
-different from the <code>id</code>(used to connect a file from the storage to its metadata
-stored in CKAN DB) and <code>name</code>(human readable name of the file). In our
-scenario, <code>location</code> matches filename because of the internal details of Redis
-adapter implementation. But different adapters can use more path-like
-value(<code>path/to/folder/hello.txt</code>), or even
-UUID(<code>24d27fb9-a5f0-42f6-aaa3-7dcb599a0d46</code>)</p>
-<p>The name of the Redis hash(<code>ckanext:files:default:file_content</code>) is
-configurable, but we skipped this step and got the default value:
-<code>ckanext:files:default:file_content</code>.</p>
-<div class="highlight"><pre><span></span><code>$<span class="w"> </span>redis-cli
-
-<span class="m">127</span>.0.0.1:6379&gt;<span class="w"> </span>HGET<span class="w"> </span>ckanext:files:default:file_content<span class="w"> </span>hello.txt
-<span class="s2">&quot;hello world&quot;</span>
-</code></pre></div>
-<div class="admonition tip">
-<p class="admonition-title">Don't forget to remove the file</p>
-<div class="highlight"><pre><span></span><code>ckanapi<span class="w"> </span>action<span class="w"> </span>files_file_delete<span class="w"> </span><span class="nv">id</span><span class="o">=</span>e21162ab-abfb-476c-b8c5-5fe7cb89eca0
-</code></pre></div>
-</div>
+<h2 id="options">Options</h2>
+<p>The widget supports the following configuration options within the schema field definition.</p>
+<h3 id="accept">accept</h3>
+<p>Defines the file types the file input should accept. This maps to the HTML5 <code>accept</code> attribute.</p>
+<p><strong>Example:</strong>
+<div class="highlight"><pre><span></span><code><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">field_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">image</span>
+<span class="w">  </span><span class="nt">label</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Image</span>
+<span class="w">  </span><span class="nt">form_snippet</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">files_upload_widget.html</span>
+<span class="w">  </span><span class="nt">accept</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">image/*</span>
+</code></pre></div></p>
+<h2 id="javascript-options-file-upload-widgetjs">JavaScript Options (file-upload-widget.js)</h2>
+<p>You can configure the JavaScript behavior by passing options via <code>form_attrs</code> in the schema. These are converted to <code>data-module-*</code> attributes.</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Option</th>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Default</th>
+<th style="text-align: left;">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>maxFiles</strong></td>
+<td style="text-align: left;"><code>data-module-max-files</code></td>
+<td style="text-align: left;"><code>0</code></td>
+<td style="text-align: left;">Maximum number of files allowed. Set to <code>0</code> for unlimited.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>disableUrl</strong></td>
+<td style="text-align: left;"><code>data-module-disable-url</code></td>
+<td style="text-align: left;"><code>false</code></td>
+<td style="text-align: left;">If <code>true</code>, hides the URL import button and window.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>disableMedia</strong></td>
+<td style="text-align: left;"><code>data-module-disable-media</code></td>
+<td style="text-align: left;"><code>false</code></td>
+<td style="text-align: left;">If <code>true</code>, hides the Media Gallery button and window.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>uploadAction</strong></td>
+<td style="text-align: left;"><code>data-module-upload-action</code></td>
+<td style="text-align: left;"><code>file_widget_file_create</code></td>
+<td style="text-align: left;">API action used for uploading local files.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>uploadLinkAction</strong></td>
+<td style="text-align: left;"><code>data-module-upload-link-action</code></td>
+<td style="text-align: left;"><code>file_widget_link_create</code></td>
+<td style="text-align: left;">API action used for importing files via URL.</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Configuration Example:</strong>
+<div class="highlight"><pre><span></span><code><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">field_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">resources</span>
+<span class="w">  </span><span class="nt">form_snippet</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">files_upload_widget.html</span>
+<span class="w">  </span><span class="nt">form_attrs</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">data-module-max-files</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">5</span>
+<span class="w">    </span><span class="nt">data-module-disable-media</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<span class="w">    </span><span class="nt">data-module-upload-action</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">my_custom_upload_action</span>
+</code></pre></div></p>
 
 
 
@@ -1520,7 +1657,7 @@ configurable, but we skipped this step and got the default value:
       <nav class="md-footer__inner md-grid" aria-label="Footer" >
         
           
-          <a href="../../installation/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Installation">
+          <a href="../js/" class="md-footer__link md-footer__link--prev" aria-label="Previous: JavaScript utilities">
             <div class="md-footer__button md-icon">
               
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
@@ -1530,20 +1667,20 @@ configurable, but we skipped this step and got the default value:
                 Previous
               </span>
               <div class="md-ellipsis">
-                Installation
+                JavaScript utilities
               </div>
             </div>
           </a>
         
         
           
-          <a href="../use-in-code/" class="md-footer__link md-footer__link--next" aria-label="Next: Usage in code">
+          <a href="../../upload-strategies/" class="md-footer__link md-footer__link--next" aria-label="Next: File upload strategies">
             <div class="md-footer__title">
               <span class="md-footer__direction">
                 Next
               </span>
               <div class="md-ellipsis">
-                Usage in code
+                File upload strategies
               </div>
             </div>
             <div class="md-footer__button md-icon">

@@ -97,6 +97,9 @@ class FilesPlugin(p.SingletonPlugin):
         if hasattr(storage, "LibCloudStorage"):
             adapters.update({"files:libcloud": storage.LibCloudStorage})
 
+        if hasattr(storage, "AzureBlobStorage"):
+            adapters.update({"files:azure_blob": storage.AzureBlobStorage})
+
         return adapters
 
     # IConfigurable

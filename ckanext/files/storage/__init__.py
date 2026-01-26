@@ -16,6 +16,9 @@ with contextlib.suppress(ImportError):
     from .opendal import OpenDalStorage
 
 with contextlib.suppress(ImportError):
+    from .azure import AzureBlobStorage
+
+with contextlib.suppress(ImportError):
     from .libcloud import LibCloudStorage
 
 
@@ -31,4 +34,5 @@ __all__ = [
     "LibCloudStorage",
     "DbStorage",
     "LinkStorage",
+    "AzureBlobStorage",
 ]

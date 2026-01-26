@@ -99,6 +99,7 @@ ignore = [
        "RET503", # don't enforce return-None
        "E712", # comparison to bool: violated by SQLAlchemy filters
        "PLC1901", # simplify comparison to empty string: violated by SQLAlchemy filters
+       "N999",
 ]
 
 [tool.ruff.lint.per-file-ignores]

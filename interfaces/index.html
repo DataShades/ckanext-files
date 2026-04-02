@@ -1464,6 +1464,23 @@ is actively developed, this interface may change in future. Always use
 <span class="sd">        ```</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
+    <span class="k">def</span><span class="w"> </span><span class="nf">files_get_location_transformers</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">types</span><span class="o">.</span><span class="n">LocationTransformer</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return additional location transformers.</span>
+
+<span class="sd">        Example::</span>
+
+<span class="sd">            def files_get_location_transformers(self):</span>
+<span class="sd">                def lower_transformer(location, upload, extras):</span>
+<span class="sd">                    returnlocation.lower()</span>
+
+<span class="sd">                return {</span>
+<span class="sd">                    &quot;my_ext:lowercase&quot;: lower_transformer,</span>
+<span class="sd">                }</span>
+
+<span class="sd">        :returns: location transformers provided by the implementation</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">{}</span>
+
     <span class="k">def</span><span class="w"> </span><span class="nf">files_get_storage_adapters</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Return mapping of storage type to adapter class.</span>
 

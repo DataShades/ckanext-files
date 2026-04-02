@@ -1,6 +1,24 @@
 
-## [1.1.0a4](https://github.com/DataShades/ckanext-files/releases/tag/1.1.0a4) - 2026-01-22
-[Compare with v1.1.0a3](https://github.com/DataShades/ckanext-files/compare/v1.1.0a3..1.1.0a4)
+## [v1.1.0](https://github.com/DataShades/ckanext-files/releases/tag/v1.1.0) - 2026-04-02
+[Compare with v1.1.0a4](https://github.com/DataShades/ckanext-files/compare/v1.1.0a4..v1.1.0)
+
+### 🚀 Features
+
+- add location_transformers registration to interface ([21e5ddd](https://github.com/DataShades/ckanext-files/commit/21e5ddd264747447c7f3f0c773dd276d65c044b4))
+- add azure_blob storage ([0dd4e2c](https://github.com/DataShades/ckanext-files/commit/0dd4e2c42d61a8a8368692114d8171d02c639978))
+- add accept option for file upload widget, switch from configuring storages to actions, add doc ([23b9084](https://github.com/DataShades/ckanext-files/commit/23b908408c8b75a7b63f6d470479303ea21fd7d2))
+
+### 🐛 Bug Fixes
+
+- files_upload_as validator does not save public_url ([9a5be32](https://github.com/DataShades/ckanext-files/commit/9a5be3212f6861aca831f6e3f1061948f0753de0))
+- fs fails if public_prefix contains site_url ([c48e79a](https://github.com/DataShades/ckanext-files/commit/c48e79ae5626777a70ee926c05d82aec82b7a937))
+
+### 🚜 Refactor
+
+- link storage keeps url inside storage_data ([7f994d8](https://github.com/DataShades/ckanext-files/commit/7f994d8533e3ddc9ee23001ad07b1f32fe8f18e8))
+
+## [v1.1.0a4](https://github.com/DataShades/ckanext-files/releases/tag/v1.1.0a4) - 2026-01-22
+[Compare with v1.1.0a3](https://github.com/DataShades/ckanext-files/compare/v1.1.0a3..v1.1.0a4)
 
 ### 🐛 Bug Fixes
 

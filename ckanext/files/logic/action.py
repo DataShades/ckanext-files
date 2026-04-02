@@ -367,7 +367,7 @@ def files_file_create(context: Context, data_dict: dict[str, Any]) -> dict[str, 
         raise tk.ValidationError({"upload": [str(err)]}) from err
 
     fileobj = File(
-        name=filename,
+        name=location,
         storage=data_dict["storage"],
     )
     storage_data.into_object(fileobj)
@@ -898,7 +898,7 @@ def files_multipart_start(
         raise tk.ValidationError({"upload": [str(err)]}) from err
 
     fileobj = File(
-        name=filename,
+        name=location,
         storage=data_dict["storage"],
     )
     data.into_object(fileobj)

@@ -5,6 +5,8 @@ from __future__ import annotations
 from collections.abc import Iterator
 from typing import Any, Literal, Protocol
 
+from file_keeper.core.types import LocationTransformer
+
 from ckan.config.declaration import Declaration, Key
 from ckan.types import (
     Context,
@@ -46,4 +48,5 @@ __all__ = [
     "Key",
     "PTask",
     "Response",
+    "LocationTransformer",
 ]

@@ -71,7 +71,7 @@ def get_storage(name: str | None = None) -> fk.Storage:
 @dataclasses.dataclass()
 class Settings(fk.Settings):
     supported_types: list[str] = cast("list[str]", dataclasses.field(default_factory=list))
-    max_size: int = 0
+    max_size: int = -1
 
 
 class Uploader(fk.Uploader):
@@ -123,7 +123,7 @@ class Storage(fk.Storage):
 
     def validate_size(self, size: int):
         max_size = self.settings.max_size
-        if max_size and size > max_size:
+        if max_size >= 0 and size > max_size:
             raise fk.exc.LargeUploadError(size, max_size)
 
     def validate_content_type(self, content_type: str):
@@ -169,7 +169,7 @@ class Storage(fk.Storage):
 
     @classmethod
     def declare_config_options(cls, declaration: Declaration, key: Key):
-        declaration.declare(key.max_size, 0).append_validators(
+        declaration.declare(key.max_size, -1).append_validators(
             "files_parse_filesize",
         ).set_description(
             "The maximum size of a single upload."
@@ -182,7 +182,7 @@ class Storage(fk.Storage):
             + "\nExample: text/csv pdf application video jpeg",
         )
 
-        declaration.declare_bool(key.override_existing).set_description(
+        declaration.declare_bool(key.override_existing, True).set_description(
             "If file already exists, replace it with new content.",
         )
 

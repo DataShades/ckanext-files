@@ -24,6 +24,23 @@ class IFiles(Interface):
         ```
     """
 
+    def files_get_location_transformers(self) -> dict[str, types.LocationTransformer]:
+        """Return additional location transformers.
+
+        Example::
+
+            def files_get_location_transformers(self):
+                def lower_transformer(location, upload, extras):
+                    returnlocation.lower()
+
+                return {
+                    "my_ext:lowercase": lower_transformer,
+                }
+
+        :returns: location transformers provided by the implementation
+        """
+        return {}
+
     def files_get_storage_adapters(self) -> dict[str, Any]:
         """Return mapping of storage type to adapter class.
 

@@ -6,6 +6,7 @@ from typing import Any
 
 import file_keeper as fk
 import yaml
+from file_keeper.core.storage import location_transformers
 
 import ckan.plugins as p
 import ckan.plugins.toolkit as tk
@@ -117,6 +118,10 @@ class FilesPlugin(p.SingletonPlugin):
         # resource migration workflow described in README
         if config.override_resource_form():
             tk.add_template_directory(config_, "resource_form_templates")
+
+        for plugin in p.PluginImplementations(interfaces.IFiles):
+            for name, transformer in plugin.files_get_location_transformers().items():
+                location_transformers.register(name, transformer)
 
 
 def _register_adapters():

@@ -4,13 +4,13 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "ckanext-files"
-version = "1.1.0a5"
+version = "1.1.0"
 description = ""
 classifiers = [ "Development Status :: 4 - Beta", "License :: OSI Approved :: GNU Affero General Public License v3 or later (AGPLv3+)", "Programming Language :: Python :: 3.8", "Programming Language :: Python :: 3.9", "Programming Language :: Python :: 3.10", "Programming Language :: Python :: 3.11", "Programming Language :: Python :: 3.12",]
 keywords = [ "CKAN", "file-management", "cloud", "filesystem"]
 requires-python = ">= 3.10"
 dependencies = [
-             "file-keeper>=0.1.0a7, <0.2.0",
+             "file-keeper>=0.1.2, <0.2.0",
              "typing_extensions",
              "pyyaml",
 ]
@@ -145,7 +145,8 @@ filterwarnings = [
 
 [tool.pyright]
 extraPaths = [
-           "../ckan"
+           "../ckan",
+           "../file-keeper/src",
 ]
 pythonVersion = "3.8"
 include = ["ckanext"]

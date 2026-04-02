@@ -36,7 +36,7 @@ class TestStorages:
                 "supported_types": [],
                 "disabled_capabilities": [],
                 "location_transformers": [],
-                "max_size": 0,
+                "max_size": -1,
                 "initialize": False,
                 "path": "",
             },
@@ -68,7 +68,7 @@ class TestStorages:
                 "path": "",
                 "disabled_capabilities": [],
                 "location_transformers": [],
-                "max_size": 0,
+                "max_size": -1,
             },
             "hehe": {
                 "type": "hehe",
@@ -101,6 +101,6 @@ class TestStorages:
                 "supported_types": [],
                 "disabled_capabilities": [],
                 "location_transformers": [],
-                "max_size": 0,
+                "max_size": -1,
             },
         }

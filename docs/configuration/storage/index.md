@@ -71,8 +71,8 @@ in the same way:
 ## Storage adapter used by the storage
 ckanext.files.storage.NAME.type = ADAPTER
 ## The maximum size of a single upload.
-## Supports size suffixes: 42B, 2M, 24KiB, 1GB. `0` means no restrictions.
-ckanext.files.storage.NAME.max_size = 0
+## Supports size suffixes: 42B, 2M, 24KiB, 1GB. `-1` means no restrictions.
+ckanext.files.storage.NAME.max_size = -1
 ## Space-separated list of MIME types or just type or subtype part.
 ## Example: text/csv pdf application video jpeg
 ckanext.files.storage.NAME.supported_types =

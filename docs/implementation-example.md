@@ -319,13 +319,11 @@ Now you can upload file into your new `db` storage:
 ckanapi action files_file_create storage=db name=hello.txt upload@<(echo -n 'hello world')
 
 ...{
-...  "atime": null,
 ...  "content_type": "text/plain",
-...  "ctime": "2024-06-17T13:48:52.121755+00:00",
+...  "created": "2024-06-17T13:48:52.121755+00:00",
 ...  "hash": "5eb63bbbe01eeed093cb22bb8f5acdc3",
 ...  "id": "bdfc0268-d36d-4f1b-8a03-2f2aaa21de24",
 ...  "location": "5a4472b3-cf38-4c58-81a6-4d4acb7b170e",
-...  "mtime": null,
 ...  "name": "hello.txt",
 ...  "owner_id": "59ea0f6c-5c2f-438d-9d2e-e045be9a2beb",
 ...  "owner_type": "user",

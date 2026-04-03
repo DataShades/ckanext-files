@@ -20,8 +20,7 @@ class TestFile:
         )
 
         owner = Owner(
-            item_id=file.id,
-            item_type="file",
+            file_id=file.id,
             owner_id=user["id"],
             owner_type="user",
         )
@@ -37,8 +36,7 @@ class TestFile:
         assert model.Session.get(File, file.id)
 
         owner = Owner(
-            item_id=file.id,
-            item_type="file",
+            file_id=file.id,
             owner_id=user["id"],
             owner_type="user",
         )
@@ -50,4 +48,4 @@ class TestFile:
 
         model.Session.delete(file)
         model.Session.commit()
-        assert not model.Session.get(Owner, (owner.item_id, owner.item_type))
+        assert not model.Session.get(Owner, owner.file_id)

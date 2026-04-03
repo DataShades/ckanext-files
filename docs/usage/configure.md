@@ -57,13 +57,11 @@ And that's what you see as result:
 
 ```json
 {
-  "atime": null,
   "content_type": "text/plain",
-  "ctime": "2024-06-02T15:02:14.819117+00:00",
+  "created": "2024-06-02T15:02:14.819117+00:00",
   "hash": "5eb63bbbe01eeed093cb22bb8f5acdc3",
   "id": "e21162ab-abfb-476c-b8c5-5fe7cb89eca0",
   "location": "hello.txt",
-  "mtime": null,
   "name": "hello.txt",
   "size": 11,
   "storage": "default",

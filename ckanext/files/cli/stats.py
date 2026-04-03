@@ -43,8 +43,8 @@ def overview(storage_name: str | None):
     stmt = sa.select(
         sa.func.sum(shared.File.size),
         sa.func.count(shared.File.id),
-        sa.func.max(shared.File.ctime),
-        sa.func.min(shared.File.ctime),
+        sa.func.max(shared.File.created),
+        sa.func.min(shared.File.created),
     ).where(shared.File.storage == storage_name)
     row = model.Session.execute(stmt).fetchone()
     size, count, newest, oldest = row if row else (0, 0, _now(), _now())
@@ -118,8 +118,7 @@ def owner(storage_name: str | None, verbose: bool):
         .outerjoin(
             shared.Owner,
             sa.and_(
-                shared.Owner.item_id == shared.File.id,
-                shared.Owner.item_type == "file",
+                shared.Owner.file_id == shared.File.id,
             ),
         )
         .group_by(owner_col)

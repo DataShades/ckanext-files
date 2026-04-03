@@ -57,13 +57,12 @@ user_create = shared.with_task_queue(_chained_action, "user_create")
 user_update = shared.with_task_queue(_chained_action, "user_update")
 
 
-def _set_user_owner(context: Context, item_type: str, item_id: str):
+def _set_user_owner(context: Context, file_id: str):
     """Add user from context as file owner."""
     user = model.User.get(context.get("user", ""))
     if user:
         owner = Owner(
-            item_id=item_id,
-            item_type=item_type,
+            file_id=file_id,
             owner_id=user.id,
             owner_type="user",
         )
@@ -268,7 +267,7 @@ def files_file_search(  # noqa: C901, PLR0912, PLR0915
         sa.select(File)
         .outerjoin(
             Owner,
-            sa.and_(File.id == Owner.item_id, Owner.item_type == "file"),
+            sa.and_(File.id == Owner.file_id),
         )
         .where(_process_filters(data_dict["filters"], columns))
     )
@@ -367,14 +366,14 @@ def files_file_create(context: Context, data_dict: dict[str, Any]) -> dict[str, 
         raise tk.ValidationError({"upload": [str(err)]}) from err
 
     fileobj = File(
-        name=location,
+        name=filename,
         storage=data_dict["storage"],
     )
     storage_data.into_object(fileobj)
 
     sess.add(fileobj)
 
-    _set_user_owner(context, "file", fileobj.id)
+    _set_user_owner(context, fileobj.id)
 
     # TODO: add hook to set plugin_data using extras
     if not context.get("defer_commit"):
@@ -429,7 +428,7 @@ def files_file_register(context: Context, data_dict: dict[str, Any]):
     )
     sess.add(fileobj)
 
-    _set_user_owner(context, "file", fileobj.id)
+    _set_user_owner(context, fileobj.id)
 
     if not context.get("defer_commit"):
         sess.commit()
@@ -641,8 +640,7 @@ def files_transfer_ownership(
 
     else:
         owner = Owner(
-            item_id=fileobj.id,
-            item_type="file",
+            file_id=fileobj.id,
             owner_id=data_dict["owner_id"],
             owner_type=data_dict["owner_type"],
         )
@@ -898,14 +896,14 @@ def files_multipart_start(
         raise tk.ValidationError({"upload": [str(err)]}) from err
 
     fileobj = File(
-        name=location,
+        name=filename,
         storage=data_dict["storage"],
     )
     data.into_object(fileobj)
 
     sess = context["session"]
     sess.add(fileobj)
-    _set_user_owner(context, "multipart", fileobj.id)
+    _set_user_owner(context, fileobj.id)
     sess.commit()
 
     utils.ContextCache(context).set("file", fileobj.id, fileobj)

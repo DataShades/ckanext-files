@@ -96,8 +96,7 @@ def scan(
 
             if stepfather:
                 owner = Owner(
-                    item_id=fileobj.id,
-                    item_type="file",
+                    file_id=fileobj.id,
                     owner_id=stepfather.id,
                     owner_type="user",
                 )

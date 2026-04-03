@@ -46,13 +46,11 @@ etc:
     ...   "count": 123,
     ...   "results": [
     ...     {
-    ...       "atime": null,
     ...       "content_type": "text/plain",
-    ...       "ctime": "2024-06-02T14:53:12.345358+00:00",
+    ...       "created": "2024-06-02T14:53:12.345358+00:00",
     ...       "hash": "5eb63bbbe01eeed093cb22bb8f5acdc3",
     ...       "id": "67a0dc8f-be91-48cd-bc8a-9934e12a48d0",
     ...       "location": "hello.txt",
-    ...       "mtime": null,
     ...       "name": "hello.txt",
     ...       "size": 11,
     ...       "storage": "default",
@@ -71,13 +69,11 @@ etc:
     ...   "count": 2,
     ...   "results": [
     ...     {
-    ...       "atime": null,
     ...       "content_type": "text/plain",
-    ...       "ctime": "2024-06-02T14:53:12.345358+00:00",
+    ...       "created": "2024-06-02T14:53:12.345358+00:00",
     ...       "hash": "5eb63bbbe01eeed093cb22bb8f5acdc3",
     ...       "id": "67a0dc8f-be91-48cd-bc8a-9934e12a48d0",
     ...       "location": "hello.txt",
-    ...       "mtime": null,
     ...       "name": "hello.txt",
     ...       "size": 5,
     ...       "storage": "default",

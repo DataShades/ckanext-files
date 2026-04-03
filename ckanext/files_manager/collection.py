@@ -41,11 +41,11 @@ class FilesManagerCollection(ApCollection):
             "size",
             "content_type",
             "storage",
-            "ctime",
+            "created",
             "storage_data",
             "row_actions",
         ],
-        sortable={"name", "storage", "content_type", "size", "ctime"},
+        sortable={"name", "storage", "content_type", "size", "created"},
         searchable={"name"},
         labels={
             "bulk-action": tk.literal(
@@ -60,13 +60,12 @@ class FilesManagerCollection(ApCollection):
             "name": "Name",
             "location": "Location",
             "storage": "Storage",
-            "ctime": "Uploaded At",
+            "created": "Uploaded At",
             "storage_data": "Extras",
             "row_actions": "Actions",
         },
         width={"name": "20%", "location": "20%"},
         serializers={
-            # "ctime": [("date", {})],
             "storage_data": [("json_display", {})],
         },
     )

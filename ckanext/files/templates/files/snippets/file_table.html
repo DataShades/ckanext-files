@@ -12,7 +12,7 @@
     #}
 {% set columns = [
     {"name": "name", "label": "Name"},
-    {"name": "ctime", "label": "Created"},
+    {"name": "created", "label": "Created"},
     {"name": "storage_data.content_type", "label": "Type"},
     {"name": "storage_data.size", "label": "Size"},
     ] %}
@@ -52,9 +52,9 @@
                             {{ file.name }}
                         </td>
                         <td>
-                            {% with ctime = h.files_parse_tz_date(file.ctime) %}
+                            {% with created = h.files_parse_tz_date(file.created) %}
                                 <div class="file-item__creation-time">
-                                    {{ h.render_datetime(ctime, with_hours=True) }}
+                                    {{ h.render_datetime(created, with_hours=True) }}
                                 </div>
 
                             {% endwith %}

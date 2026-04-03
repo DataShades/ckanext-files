@@ -6,7 +6,7 @@ from typing import Any, Literal
 
 import sqlalchemy as sa
 from sqlalchemy.dialects.postgresql import JSONB
-from sqlalchemy.orm import Mapped, foreign, relationship
+from sqlalchemy.orm import Mapped, relationship
 
 from ckan.lib.dictization import table_dictize
 from ckan.model.types import make_uuid
@@ -27,9 +27,7 @@ class FilesFile(Base):
         size (int): size in bytes
         hash (str): checksum
         storage (str): storage that contains the file
-        ctime (datetime): date of creation
-        mtime (datetime | None): date of the last update
-        atime (datetime | None): date of last access(unstable)
+        created (datetime): date of creation
         storage_data (dict[str, Any]): additional data set by storage
         plugin_data (dict[str, Any]): additional data set by plugins
 
@@ -58,20 +56,20 @@ class FilesFile(Base):
             nullable=False,
             default="application/octet-stream",
         ),
-        sa.Column("size", sa.Integer, nullable=False, default=0),
+        sa.Column("size", sa.BIGINT(), nullable=False, default=0),
         sa.Column("hash", sa.Text, nullable=False, default=""),
+        sa.Column("algorithm", sa.Text, nullable=False, default=""),
         sa.Column("storage", sa.Text, nullable=False),
         sa.Column(
-            "ctime",
+            "created",
             sa.DateTime(timezone=True),
             nullable=False,
             default=now,
             server_default=sa.func.now(),
         ),
-        sa.Column("mtime", sa.DateTime(timezone=True)),
-        sa.Column("atime", sa.DateTime(timezone=True)),
         sa.Column("storage_data", JSONB, default=dict, server_default="{}"),
         sa.Column("plugin_data", JSONB, default=dict, server_default="{}"),
+        sa.Index("idx_files_file_location_in_storage", "storage", "location", unique=True),
     )
 
     id: Mapped[str]
@@ -81,22 +79,18 @@ class FilesFile(Base):
     content_type: Mapped[str]
     size: Mapped[int]
     hash: Mapped[str]
+    algorithm: Mapped[str]
 
     storage: Mapped[str]
 
-    ctime: Mapped[datetime]
-    mtime: Mapped[datetime | None]
-    atime: Mapped[datetime | None]
+    created: Mapped[datetime]
 
     storage_data: Mapped[dict[str, Any]]
     plugin_data: Mapped[dict[str, Any]]
 
     owner: Mapped[FilesOwner | None] = relationship(  # type: ignore
         FilesOwner,
-        primaryjoin=sa.and_(
-            FilesOwner.item_id == foreign(__table__.c.id),
-            FilesOwner.item_type == "file",
-        ),
+        back_populates="files",
         single_parent=True,
         uselist=False,
         cascade="delete, delete-orphan",
@@ -127,21 +121,6 @@ class FilesFile(Base):
             result["plugin_data"] = copy.deepcopy(plugin_data)
 
         return result
-
-    def touch(
-        self,
-        access: bool = True,
-        modification: bool = False,
-        moment: datetime | None = None,
-    ):
-        if not moment:
-            moment = now()
-
-        if access:
-            self.atime = moment
-
-        if modification:
-            self.mtime = moment
 
     def patch_data(
         self,

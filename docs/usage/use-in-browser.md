@@ -22,9 +22,7 @@ await sandbox.files.upload(
 ...     "size": 7,
 ...     "hash": "9a0364b9e99bb480dd25e1f0284c8555",
 ...     "storage": "default",
-...     "ctime": "2024-06-02T16:12:27.902055+00:00",
-...     "mtime": null,
-...     "atime": null,
+...     "created": "2024-06-02T16:12:27.902055+00:00",
 ...     "storage_data": {}
 ... }
 ```

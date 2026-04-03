@@ -98,7 +98,6 @@ def _streaming_file(
         else:
             resp.headers["content-disposition"] = f"attachment; filename={item.name}"
 
-        item.touch()
         model.Session.commit()
 
         return resp
@@ -173,7 +172,7 @@ def list_files(owner_type: str, owner_id: str) -> str:
         "start": start,
         "owner_type": owner_type,
         "owner_id": owner_id,
-        "sort": params.get("sort", "ctime"),
+        "sort": params.get("sort", "created"),
         "reverse": params.get("reverse", True),
     }
 

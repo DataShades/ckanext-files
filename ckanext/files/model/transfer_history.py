@@ -17,8 +17,7 @@ class TransferHistory(Base):
     """Model for tracking ownership history of the file.
 
     Keyword Args:
-        item_id (str): ID of the owned object
-        item_type (str): type of the owned object
+        file_id (str): ID of the owned object
         owner_id (str): ID of the owner
         owner_type (str): Type of the owner
         leave_date (datetime): date of ownership transfer to a different owner
@@ -27,8 +26,7 @@ class TransferHistory(Base):
     Example:
         ```python
         record = TransferHistory(
-            item_id=file.id,
-            item_type="file",
+            file_id=file.id,
             owner_id=prev_owner.owner_id,
             owner_type=prev_owner.owner_type,
         )
@@ -39,8 +37,7 @@ class TransferHistory(Base):
         "files_transfer_history",
         Base.metadata,
         sa.Column("id", sa.Text, primary_key=True, default=make_uuid),
-        sa.Column("item_id", sa.Text, nullable=False),
-        sa.Column("item_type", sa.Text, nullable=False),
+        sa.Column("file_id", sa.Text, nullable=False),
         sa.Column("owner_id", sa.Text, nullable=False),
         sa.Column("owner_type", sa.Text, nullable=False),
         sa.Column(
@@ -51,15 +48,15 @@ class TransferHistory(Base):
         ),
         sa.Column("action", sa.Text, nullable=False, default="transfer"),
         sa.Column("actor", sa.Text, nullable=False),
-        sa.Index("idx_item", "item_id", "item_type"),
         sa.ForeignKeyConstraint(
-            ["item_id", "item_type"],
-            ["files_owner.item_id", "files_owner.item_type"],
+            ["file_id"],
+            ["files_owner.file_id"],
+            "files_transfer_history_owner_file_id_fkey",
+            ondelete="CASCADE",
         ),
     )
     id: Mapped[str]
-    item_id: Mapped[str]
-    item_type: Mapped[str]
+    file_id: Mapped[str]
     owner_id: Mapped[str]
     owner_type: Mapped[str]
     at: Mapped[datetime]
@@ -77,8 +74,7 @@ class TransferHistory(Base):
     @classmethod
     def from_owner(cls, owner: FilesOwner, actor: str = ""):
         return cls(
-            item_id=owner.item_id,
-            item_type=owner.item_type,
+            file_id=owner.file_id,
             owner_id=owner.owner_id,
             owner_type=owner.owner_type,
             actor=actor,

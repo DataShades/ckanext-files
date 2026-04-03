@@ -66,7 +66,7 @@ class TestFileCreate:
         result = file_factory(name=bad_name)
         assert result["location"] == good_name
 
-    @pytest.mark.ckan_config("ckanext.files.storage.test.location_transformers", ["uuid_prefix"])
+    @pytest.mark.ckan_config("ckanext.files.storage.test.location_transformers", ["uuid4_prefix"])
     def test_location_transformed(self, file_factory: types.TestFactory):
         """Location transformers are applied to the location."""
         name = fake.unique.file_name()
@@ -83,7 +83,7 @@ class TestFileCreate:
         with pytest.raises(tk.ValidationError):
             file_factory(name=file["location"])
 
-    @pytest.mark.ckan_config("ckanext.files.storage.test.override_existing", True)
+    @pytest.mark.ckan_config("ckanext.files.storage.test.overwrite_existing", True)
     def test_override_does_not_allow_rewriting_file(self, file: dict[str, Any], file_factory: types.TestFactory):
         """Even with enabled overrides, file is not replaced during creation."""
         with pytest.raises(tk.ValidationError):

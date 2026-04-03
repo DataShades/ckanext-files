@@ -3,11 +3,13 @@ from __future__ import annotations
 import base64
 import dataclasses
 import re
+from typing import Any
 
 from file_keeper.default.adapters import gcs
 from typing_extensions import override
 
 import ckan.plugins.toolkit as tk
+from ckan import types
 from ckan.config.declaration import Declaration, Key
 
 from ckanext.files import shared
@@ -18,6 +20,12 @@ HTTP_RESUME = 308
 
 def decode(value: str) -> str:
     return base64.decodebytes(value.encode()).hex()
+
+
+class Reader(shared.Reader, gcs.Reader):
+    @override
+    def response(self, data: shared.FileData, extras: dict[str, Any]) -> types.Response:
+        return tk.redirect_to(self.temporary_link(data, 60, extras))
 
 
 @dataclasses.dataclass()

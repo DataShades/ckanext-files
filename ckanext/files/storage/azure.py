@@ -1,13 +1,22 @@
 from __future__ import annotations
 
 import dataclasses
+from typing import Any
 
 from file_keeper.default.adapters import azure_blob
 from typing_extensions import override
 
+import ckan.plugins.toolkit as tk
+from ckan import types
 from ckan.config.declaration import Declaration, Key
 
 from ckanext.files import shared
+
+
+class Reader(shared.Reader, azure_blob.Reader):
+    @override
+    def response(self, data: shared.FileData, extras: dict[str, Any]) -> types.Response:
+        return tk.redirect_to(self.temporary_link(data, 60, extras))
 
 
 @dataclasses.dataclass()

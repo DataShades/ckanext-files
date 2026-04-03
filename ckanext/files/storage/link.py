@@ -68,7 +68,7 @@ class Uploader(shared.Uploader):
 
         hash = resp.headers.get("etag") or ""
 
-        return shared.FileData(location, size, content_type, hash, storage_data={"url": url})
+        return shared.FileData(location, size=size, content_type=content_type, hash=hash, storage_data={"url": url})
 
 
 @dataclasses.dataclass()

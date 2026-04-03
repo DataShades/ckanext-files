@@ -10,7 +10,7 @@ classifiers = [ "Development Status :: 4 - Beta", "License :: OSI Approved :: GN
 keywords = [ "CKAN", "file-management", "cloud", "filesystem"]
 requires-python = ">= 3.10"
 dependencies = [
-             "file-keeper>=0.1.2, <0.2.0",
+             "file-keeper>=0.2.2, <0.3.0",
              "typing_extensions",
              "pyyaml",
 ]
@@ -147,6 +147,7 @@ filterwarnings = [
 extraPaths = [
            "../ckan",
            "../file-keeper/src",
+           "../ckanext-collection",
 ]
 pythonVersion = "3.8"
 include = ["ckanext"]

@@ -35,7 +35,7 @@ class TestStorage:
 
         url = faker.url()
         data = shared.FileData(
-            location=shared.Location(faker.file_name()),
+            shared.Location(faker.file_name()),
             storage_data={"url": url},
         )
 
@@ -55,9 +55,7 @@ class TestStorage:
 
         url = faker.url(["http"])
         with pytest.raises(shared.exc.ContentError):  # noqa: PT012, SIM117
-            with RequestsMock() as rsps:
-                rsps.add("HEAD", url)
-                storage.upload(location, shared.make_upload(url.encode()))
+            storage.upload(location, shared.make_upload(url.encode()))
 
         url = faker.url(["https"])
         with RequestsMock() as rsps:
@@ -80,9 +78,7 @@ class TestStorage:
 
         url = f"https://notallowed.com/{faker.file_name()}"
         with pytest.raises(shared.exc.ContentError):  # noqa: PT012, SIM117
-            with RequestsMock() as rsps:
-                rsps.add("HEAD", url)
-                storage.upload(location, shared.make_upload(url.encode()))
+            storage.upload(location, shared.make_upload(url.encode()))
 
         url = f"https://{allowed_domain}/{faker.file_name()}"
         with RequestsMock() as rsps:

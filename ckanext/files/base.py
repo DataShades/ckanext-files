@@ -72,6 +72,8 @@ def get_storage(name: str | None = None) -> fk.Storage:
 class Settings(fk.Settings):
     supported_types: list[str] = cast("list[str]", dataclasses.field(default_factory=list))
     max_size: int = -1
+    public: bool = False
+    """Whether storage is public and allows unauthenticated access."""
 
 
 class Uploader(fk.Uploader):
@@ -148,25 +150,6 @@ class Storage(fk.Storage):
 
         return super().multipart_start(location, size, **kwargs)
 
-    @override
-    def temporal_link(self, data: FileData, duration: int, /, **kwargs: Any) -> str:
-        try:
-            link = super().temporal_link(data, duration, **kwargs)
-        except fk.exc.UnsupportedOperationError:
-            link = None
-
-        if not link:
-            token = utils.encode_token(
-                {
-                    "topic": "download_file",
-                    "exp": str(int(time()) + duration),
-                    "storage": self.settings.name,
-                    "location": data.location,
-                },
-            )
-            link = tk.url_for("files.temporal_download", token=token, _external=True)
-        return link
-
     @classmethod
     def declare_config_options(cls, declaration: Declaration, key: Key):
         declaration.declare(key.max_size, -1).append_validators(
@@ -182,12 +165,19 @@ class Storage(fk.Storage):
             + "\nExample: text/csv pdf application video jpeg",
         )
 
-        declaration.declare_bool(key.override_existing, True).set_description(
+        declaration.declare_bool(key.public).set_description(
+            "Whether storage is public and allows unauthenticated access."
+        )
+
+        declaration.declare_bool(key.overwrite_existing, True).set_description(
             "If file already exists, replace it with new content.",
         )
 
         declaration.declare_bool(key.initialize).set_description(
-            "Prepare storage backend for uploads(create path, bucket, DB). This op",
+            "Prepare storage backend for uploads(create path, bucket, DB)."
+            + " This option depends on\nthe adapter and can be ignored if an adapter"
+            + " cannot safely initialize the storage path.\nAlways prefer manual"
+            + " creation of location specified in the ``path`` option.",
         )
 
         declaration.declare(key.path, "").set_description(
@@ -200,6 +190,16 @@ class Storage(fk.Storage):
             "Descriptive name of the storage used for debugging. When empty,"
             + " name from the config option is used,"
             + " i.e: `ckanext.files.storage.DEFAULT_NAME...`",
+        )
+
+        declaration.declare(key.hashing_algorithm, "md5").set_description(
+            "Hashing algorithm used to calculate file's hash. This option is used by"
+            " uploaders to calculate\nfile's hash and store it in FileData. Supported"
+            " values depend on the implementation\nof the uploader, but common"
+            " algorithms are: `md5`, `sha1`, `sha256`.\nIf storage adapter does not"
+            " support customization of algorithm, it will ignore this option.\nFileData"
+            " object produced by storage's ``upload`` method should contain the actual"
+            " algorithm\nused to compute the hash."
         )
 
         declaration.declare_list(key.location_transformers, None).set_description(
@@ -243,17 +243,63 @@ class Storage(fk.Storage):
         Returns:
             Flask response with file's content
         """
-        resp = self.reader.response(data, kwargs)
+        try:
+            resp = self.reader.response(data, kwargs)
+        except fk.exc.MissingFileError:
+            return flask.Response(status=404)
 
-        inline_types = config.inline_types()
-        disposition = (
-            "inline" if send_inline or utils.is_supported_type(data.content_type, inline_types) else "attachment"
-        )
+        if "location" in resp.headers:
+            return resp
 
-        resp.headers.set(
-            "content-disposition",
-            disposition,
-            filename=filename or data.location,
-        )
+        if "content-type" not in resp.headers:
+            resp.headers["content-type"] = data.content_type
+
+        if "content-length" not in resp.headers:
+            resp.headers["content-length"] = data.size
+
+        if "content-disposition" not in resp.headers:
+            inline_types = config.inline_types()
+            disposition = (
+                "inline" if send_inline or utils.is_supported_type(data.content_type, inline_types) else "attachment"
+            )
+
+            resp.headers.set(
+                "content-disposition",
+                disposition,
+                filename=filename or data.location,
+            )
 
         return resp
+
+    @override
+    def temporary_link(self, data: FileData, duration: int, /, **kwargs: Any) -> str:
+        try:
+            link = super().temporary_link(data, duration, **kwargs)
+        except fk.exc.UnsupportedOperationError:
+            link = None
+
+        if not link:
+            token = utils.encode_token(
+                {
+                    "topic": "download_file",
+                    "exp": str(int(time()) + duration),
+                    "storage": self.settings.name,
+                    "location": data.location,
+                },
+            )
+            link = tk.url_for("files.temporal_download", token=token, _external=True)
+        return link
+
+    @override
+    def permanent_link(self, data: FileData, /, **extras: dict[str, Any]) -> str | None:
+        """Generate permanent link for the file."""
+        if link := super().permanent_link(data, **extras):
+            return link
+
+        if self.settings.public:
+            return tk.url_for(
+                "files.public_download",
+                storage_name=self.settings.name,
+                location=data.location,
+                _external=True,
+            )

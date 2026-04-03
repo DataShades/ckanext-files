@@ -77,7 +77,7 @@ ckanext.files.storage.NAME.max_size = -1
 ## Example: text/csv pdf application video jpeg
 ckanext.files.storage.NAME.supported_types =
 ## If file already exists, replace it with new content.
-ckanext.files.storage.NAME.override_existing = false
+ckanext.files.storage.NAME.overwrite_existing = false
 ## Descriptive name of the storage used for debugging. When empty, name from
 ## the config option is used, i.e: `ckanext.files.storage.DEFAULT_NAME...`
 ckanext.files.storage.NAME.name = NAME

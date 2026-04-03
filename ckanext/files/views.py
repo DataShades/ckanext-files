@@ -62,28 +62,70 @@ def get_blueprints():
     return [bp]
 
 
-@bp.route("/file/download/<file_id>")
-def dispatch_download(file_id: str) -> Response:
-    tk.check_access("files_permission_download_file", {}, {"id": file_id})
-    item = model.Session.get(shared.File, file_id)
-    if not item:
-        raise tk.ObjectNotFound("file")
+def _as_response(storage_name: str, data: shared.FileData):
+    """Return a response for a file stored in the given location.
 
-    storage = shared.get_storage(item.storage)
-    data = shared.FileData.from_object(item)
+    The storage is looked up by name, and the file data is created from the
+    location string. This is a helper function for the all kind of download
+    routes.
+    """
+    try:
+        storage = shared.get_storage(storage_name)
+    except shared.exc.UnknownStorageError:
+        return tk.abort(404)
 
     if isinstance(storage, shared.Storage):
-        return storage.as_response(data)
-
-    link = storage.permanent_link(data)
-
-    if link:
-        return tk.redirect_to(link)
-
-    if resp := _streaming_file(item, storage, data):
+        resp = storage.as_response(data)
+        if resp.status_code >= 400:
+            return tk.abort(resp.status_code)
         return resp
 
     return tk.abort(422, "File is not downloadable")
+
+
+@bp.route("/files/download/<file_id>")
+def dispatch_download(file_id: str) -> Response:
+    tk.check_access("files_permission_download_file", {}, {"id": file_id})
+    item: dict[str, Any] = tk.get_action("file_show")({}, {"id": file_id})
+
+    return _as_response(item["storage"], shared.FileData.from_dict(item))
+
+
+@bp.route("/files/public-download/<storage_name>/<path:location>")
+def public_download(storage_name: str, location: str) -> Response:
+    """Download a public file by its storage name and location.
+
+    The file is looked up by its storage name and location, and the content is
+    returned if the storage is public. This route is intended for files that
+    are not tracked in DB, but are stored in a public storage. The user does
+    not need any permissions to access the file, but the storage must be
+    explicitly marked as public to prevent unauthorized access to private
+    files. The file content is returned as a response, using the same mechanism
+    as the normal download route.
+
+    If the storage is not found or not public, a 404 or 403 error is returned
+    respectively. If the file is not found in the storage, a 404 error is
+    returned.
+    """
+    try:
+        storage = shared.get_storage(storage_name)
+    except shared.exc.UnknownStorageError:
+        return tk.abort(404)
+
+    if not isinstance(storage, shared.Storage) or not storage.settings.public:
+        return tk.abort(403, "Storage is not public")
+
+    location = shared.Location(location)
+    try:
+        data = shared.FileData(
+            location,
+            size=storage.size(location),
+            content_type=storage.content_type(location),
+        )
+    except shared.exc.MissingFileError:
+        return tk.abort(404)
+
+    return _as_response(storage_name, data)
 
 
 def _streaming_file(
@@ -103,7 +145,7 @@ def _streaming_file(
         return resp
 
 
-@bp.route("/file/token-download/<token>")
+@bp.route("/files/token-download/<token>")
 def temporal_download(token: str) -> Response:
     try:
         data = utils.decode_token(token)

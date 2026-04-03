@@ -1,4 +1,12 @@
 
+## [v1.2.0](https://github.com/DataShades/ckanext-files/releases/tag/v1.2.0) - 2026-04-03
+[Compare with v1.1.0](https://github.com/DataShades/ckanext-files/compare/v1.1.0..v1.2.0)
+
+### 🚜 Refactor
+
+- [**breaking**] sync with CKAN ([ea9c68b](https://github.com/DataShades/ckanext-files/commit/ea9c68bd43737080a4ca1f49e3ecbe4d2a3aed23))
+- [**breaking**] remove atime,mtime from file; ctime->created; rename item_id to file_id; remove item_type ([7e6e842](https://github.com/DataShades/ckanext-files/commit/7e6e8425074d04cfbdeb87971c1e2ba80698f23c))
+
 ## [v1.1.0](https://github.com/DataShades/ckanext-files/releases/tag/v1.1.0) - 2026-04-02
 [Compare with v1.1.0a4](https://github.com/DataShades/ckanext-files/compare/v1.1.0a4..v1.1.0)
 

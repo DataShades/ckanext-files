@@ -53,7 +53,7 @@ class FilesOwner(Base):
     owner_type: Mapped[str]
     pinned: Mapped[bool]
 
-    files: Mapped[list[FilesFile]] = relationship(back_populates="owner")
+    files: Mapped[list[FilesFile]] = relationship("FilesFile", back_populates="owner")
 
     def dictize(self, context: Context):
         return table_dictize(self, context)

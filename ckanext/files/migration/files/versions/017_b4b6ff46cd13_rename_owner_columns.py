@@ -23,11 +23,6 @@ def upgrade():
     op.drop_column("files_owner", "item_type")
     op.alter_column("files_owner", "item_id", new_column_name="file_id")
     op.create_primary_key("files_owner_pkey", "files_owner", ["file_id"])
-
-    op.create_foreign_key(
-        "files_owner_file_id_fkey", "files_owner", "files_file", ["file_id"], ["id"], ondelete="CASCADE"
-    )
-
     op.create_foreign_key(
         "files_transfer_history_owner_file_id_fkey",
         "files_transfer_history",
@@ -35,6 +30,21 @@ def upgrade():
         ["file_id"],
         ["file_id"],
         ondelete="CASCADE",
+    )
+
+    with op.get_bind().connect() as conn:
+        owner_id_column = sa.column("file_id")
+        file_id_column = sa.column("id")
+        orphans = conn.scalars(
+            sa.select(owner_id_column)
+            .select_from(sa.table("files_owner"))
+            .outerjoin(sa.table("files_file", file_id_column), file_id_column == owner_id_column)
+            .where(file_id_column.is_(None))
+        ).fetchall()
+        conn.execute(sa.delete(sa.table("files_owner")).where(owner_id_column.in_(orphans)))
+
+    op.create_foreign_key(
+        "files_owner_file_id_fkey", "files_owner", "files_file", ["file_id"], ["id"], ondelete="CASCADE"
     )
 
 

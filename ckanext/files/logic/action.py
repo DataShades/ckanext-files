@@ -755,6 +755,7 @@ def files_resource_upload(context: Context, data_dict: dict[str, Any]) -> dict[s
         )
 
     # TODO: pull cache from the context
+
     return tk.get_action("files_multipart_start" if data_dict["multipart"] else "files_file_create")(
         Context(context, ignore_auth=True),
         dict(data_dict, storage=storage_name),

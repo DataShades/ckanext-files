@@ -86,7 +86,7 @@ def _as_response(storage_name: str, data: shared.FileData):
 @bp.route("/files/download/<file_id>")
 def dispatch_download(file_id: str) -> Response:
     tk.check_access("files_permission_download_file", {}, {"id": file_id})
-    item: dict[str, Any] = tk.get_action("file_show")({}, {"id": file_id})
+    item: dict[str, Any] = tk.get_action("files_file_show")({}, {"id": file_id})
 
     return _as_response(item["storage"], shared.FileData.from_dict(item))
 

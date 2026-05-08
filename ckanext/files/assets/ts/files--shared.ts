@@ -265,7 +265,7 @@ namespace ckan {
                 async _doUpload(file: File, info: UploadInfo) {
                     let start = info.storage_data["uploaded"] || 0;
                     const keys = Object.keys(info.storage_data["parts"] || {}).map(k => Number(k))
-                    const partNumber = Math.max(-1, ...keys) + 1;
+                    let partNumber = Math.max(-1, ...keys) + 1;
 
                     while (start < file.size) {
                         if (!this._active.has(file)) {
@@ -276,7 +276,7 @@ namespace ckan {
                         info = await this._uploadChunk(
                             info,
                             file.slice(start, start + this.settings.chunkSize),
-                            partNumber,
+                            partNumber++,
                             {
                                 progressData: {
                                     file,
@@ -329,7 +329,9 @@ namespace ckan {
                             file.type || "application/octet-stream",
                         );
                         data.append("sample", file.slice(0, 2048));
-
+                        for (let [k,v] of Object.entries(params)) {
+                            data.append(k, v)
+                        }
                         var csrf_field = this.sandbox
                             .jQuery("meta[name=csrf_field_name]")
                             .attr("content");

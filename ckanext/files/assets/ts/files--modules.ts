@@ -111,7 +111,6 @@ ckan.module("files--auto-upload", function ($) {
                     uploader: this.uploader,
                     requestParams: {...this.options.requestParams, multipart: this.uploader instanceof ckan.CKANEXT_FILES.adapters.Multipart},
                 };
-
                 this.sandbox.files
                     .upload(file, options)
                     .then(

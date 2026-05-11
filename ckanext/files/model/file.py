@@ -102,8 +102,8 @@ class FilesFile(Base):
         if not self.id:
             self.id = make_uuid()
 
-    def dictize(self, context: Any) -> dict[str, Any]:
-        result = table_dictize(self, context)
+    def dictize(self, include_plugin_data: bool = False) -> dict[str, Any]:
+        result = table_dictize(self, {})
         result["storage_data"] = copy.deepcopy(result["storage_data"])
 
         if self.owner:
@@ -117,7 +117,7 @@ class FilesFile(Base):
             result["pinned"] = False
 
         plugin_data = result.pop("plugin_data")
-        if context.get("include_plugin_data"):
+        if include_plugin_data:
             result["plugin_data"] = copy.deepcopy(plugin_data)
 
         return result

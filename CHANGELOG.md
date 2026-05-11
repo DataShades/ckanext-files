@@ -1,4 +1,19 @@
 
+## [v1.2.2](https://github.com/DataShades/ckanext-files/releases/tag/v1.2.2) - 2026-05-08
+[Compare with v1.2.1](https://github.com/DataShades/ckanext-files/compare/v1.2.1..v1.2.2)
+
+### 🐛 Bug Fixes
+
+- clean invalid data during migration ([4fa87a5](https://github.com/DataShades/ckanext-files/commit/4fa87a5db3ef8e76b0fa6cda3015d17d03097f38))
+- fix JS multipart uploader ([d59b555](https://github.com/DataShades/ckanext-files/commit/d59b5554650cd0bf104ee6d940717e1316a93fcc))
+
+## [v1.2.1](https://github.com/DataShades/ckanext-files/releases/tag/v1.2.1) - 2026-04-05
+[Compare with v1.2.0](https://github.com/DataShades/ckanext-files/compare/v1.2.0..v1.2.1)
+
+### 🐛 Bug Fixes
+
+- fix sqlalchemy 1.4+ compatibility ([c270e01](https://github.com/DataShades/ckanext-files/commit/c270e01357849e0f85f1f8f8c4e42fdbd03ddd94))
+
 ## [v1.2.0](https://github.com/DataShades/ckanext-files/releases/tag/v1.2.0) - 2026-04-03
 [Compare with v1.1.0](https://github.com/DataShades/ckanext-files/compare/v1.1.0..v1.2.0)
 

@@ -287,7 +287,7 @@ def files_file_search(  # noqa: C901, PLR0912, PLR0915
 
     cache = utils.ContextCache(context)
     results: list[shared.File] = [cache.set("file", f.id, f) for f in sess.scalars(stmt)]
-    return {"count": total, "results": [f.dictize(context) for f in results]}
+    return {"count": total, "results": [f.dictize(context.get("include_plugin_data", False)) for f in results]}
 
 
 @validate(schema.file_create)
@@ -366,6 +366,7 @@ def files_file_create(context: Context, data_dict: dict[str, Any]) -> dict[str, 
         raise tk.ValidationError({"upload": [str(err)]}) from err
 
     fileobj = File(
+        location="",
         name=filename,
         storage=data_dict["storage"],
     )
@@ -383,7 +384,7 @@ def files_file_create(context: Context, data_dict: dict[str, Any]) -> dict[str, 
 
     utils.ContextCache(context).set("file", fileobj.id, fileobj)
 
-    return fileobj.dictize(context)
+    return fileobj.dictize(context.get("include_plugin_data", False))
 
 
 @validate(schema.file_register)
@@ -435,7 +436,7 @@ def files_file_register(context: Context, data_dict: dict[str, Any]):
 
     utils.ContextCache(context).set("file", fileobj.id, fileobj)
 
-    return fileobj.dictize(context)
+    return fileobj.dictize(context.get("include_plugin_data", False))
 
 
 @validate(schema.file_delete)
@@ -486,7 +487,7 @@ def files_file_delete(context: Context, data_dict: dict[str, Any]) -> dict[str, 
 
     sess.commit()
 
-    return fileobj.dictize(context)
+    return fileobj.dictize(context.get("include_plugin_data", False))
 
 
 @tk.side_effect_free
@@ -514,7 +515,7 @@ def files_file_show(context: Context, data_dict: dict[str, Any]) -> dict[str, An
     if not fileobj:
         raise tk.ObjectNotFound("file")
 
-    return fileobj.dictize(context)
+    return fileobj.dictize(context.get("include_plugin_data", False))
 
 
 @validate(schema.file_rename)
@@ -554,7 +555,7 @@ def files_file_rename(context: Context, data_dict: dict[str, Any]) -> dict[str, 
     if not context.get("defer_commit"):
         context["session"].commit()
 
-    return fileobj.dictize(context)
+    return fileobj.dictize(context.get("include_plugin_data", False))
 
 
 @tk.side_effect_free
@@ -654,7 +655,7 @@ def files_transfer_ownership(
     if not context.get("defer_commit"):
         sess.commit()
 
-    return fileobj.dictize(context)
+    return fileobj.dictize(context.get("include_plugin_data", False))
 
 
 @validate(schema.file_pin)
@@ -688,7 +689,7 @@ def files_file_pin(context: Context, data_dict: dict[str, Any]) -> dict[str, Any
     if not context.get("defer_commit"):
         sess.commit()
 
-    return fileobj.dictize(context)
+    return fileobj.dictize(context.get("include_plugin_data", False))
 
 
 @validate(schema.file_unpin)
@@ -719,7 +720,7 @@ def files_file_unpin(context: Context, data_dict: dict[str, Any]) -> dict[str, A
     if not context.get("defer_commit"):
         sess.commit()
 
-    return fileobj.dictize(context)
+    return fileobj.dictize(context.get("include_plugin_data", False))
 
 
 # not included into CKAN ######################################################
@@ -832,7 +833,7 @@ def files_file_replace(context: Context, data_dict: dict[str, Any]) -> dict[str,
 
     utils.ContextCache(context).set("file", fileobj.id, fileobj)
 
-    return fileobj.dictize(context)
+    return fileobj.dictize(context.get("include_plugin_data", False))
 
 
 @validate(schema.multipart_start)
@@ -908,7 +909,7 @@ def files_multipart_start(
     sess.commit()
 
     utils.ContextCache(context).set("file", fileobj.id, fileobj)
-    return fileobj.dictize(context)
+    return fileobj.dictize(context.get("include_plugin_data", False))
 
 
 @validate(schema.multipart_refresh)
@@ -947,7 +948,7 @@ def files_multipart_refresh(
     )
     context["session"].commit()
 
-    return fileobj.dictize(context)
+    return fileobj.dictize(context.get("include_plugin_data", False))
 
 
 @validate(schema.multipart_update)
@@ -997,7 +998,7 @@ def files_multipart_update(
 
     context["session"].commit()
 
-    return fileobj.dictize(context)
+    return fileobj.dictize(context.get("include_plugin_data", False))
 
 
 @validate(schema.multipart_complete)
@@ -1047,4 +1048,4 @@ def files_multipart_complete(
 
     sess.commit()
 
-    return multipart.dictize(context)
+    return multipart.dictize(context.get("include_plugin_data", False))

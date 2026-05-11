@@ -23,15 +23,16 @@ location_column = sa.column("location")
 ctime_column = sa.column("ctime")
 table = sa.table("files_file", id_column, storage_column, location_column, ctime_column)
 
+
 def upgrade():
-    with op.get_bind().connect() as conn:
-        stmt = (
-            sa.select(sa.func.array_agg(id_column))
-            .group_by(storage_column, location_column)
-            .having(sa.func.count(id_column) > 1)
-        )
-        for group in conn.scalars(stmt):
-            conn.execute(sa.delete(table).where(id_column.in_(group[:-1])))
+    bind = op.get_bind()
+    stmt = (
+        sa.select(sa.func.array_agg(id_column))
+        .group_by(storage_column, location_column)
+        .having(sa.func.count(id_column) > 1)
+    )
+    for group in bind.scalars(stmt):
+        bind.execute(sa.delete(table).where(id_column.in_(group[:-1])))
 
     op.create_index("idx_files_file_location_in_storage", "files_file", ["storage", "location"], unique=True)
 

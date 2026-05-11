@@ -21,7 +21,7 @@ from ckanext.files.model import File
 
 
 def file_row_dictizer(serializer: ApHtmxTableSerializer[Any], row: File):
-    data = row.dictize({})
+    data = row.dictize()
     data["bulk-action"] = data["id"]
 
     return data

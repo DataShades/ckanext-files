@@ -10,7 +10,6 @@ files-js:
   extra:
     preload:
       - base/main
-      - base/ckan
 
 files-css:
   output: ckanext-files/%(version)s-files.css

@@ -16,18 +16,33 @@ from typing import Any
 
 import ckan.plugins.toolkit as tk
 
-STORAGE_PREFIX = "ckanext.files.storage."
-DEFAULT_STORAGE = "ckanext.files.default_storage"
-CASCADE_ACCESS = "ckanext.files.owner.cascade_access"
-TRANSFER_AS_UPDATE = "ckanext.files.owner.transfer_as_update"
-SCAN_AS_UPDATE = "ckanext.files.owner.scan_as_update"
-AUTHENTICATED_UPLOADS = "ckanext.files.authenticated_uploads.allow"
-AUTHENTICATED_STORAGES = "ckanext.files.authenticated_uploads.storages"
-USER_IMAGES_STORAGE = "ckanext.files.user_images_storage"
-GROUP_IMAGES_STORAGE = "ckanext.files.group_images_storage"
-RESOURCE_STORAGE = "ckanext.files.resources_storage"
+if tk.check_ckan_version("2.12"):
+    STORAGE_PREFIX = "ckan.files.storage."
+    DEFAULT_STORAGE = "ckan.files.default_storages.default"
+    CASCADE_ACCESS = "ckan.files.owner.cascade_access"
+    TRANSFER_AS_UPDATE = "ckan.files.owner.transfer_as_update"
+    SCAN_AS_UPDATE = "ckan.files.owner.scan_as_update"
+    AUTHENTICATED_UPLOADS = "ckan.files.authenticated_uploads.allow"
+    AUTHENTICATED_STORAGES = "ckan.files.authenticated_uploads.storages"
+    USER_IMAGES_STORAGE = "ckan.files.default_storages.user"
+    GROUP_IMAGES_STORAGE = "ckan.files.default_storages.group"
+    RESOURCE_STORAGE = "ckan.files.default_storages.resource"
+    INLINE_TYPES = "ckan.files.inline_content_types"
+
+else:
+    STORAGE_PREFIX = "ckanext.files.storage."
+    DEFAULT_STORAGE = "ckanext.files.default_storage"
+    CASCADE_ACCESS = "ckanext.files.owner.cascade_access"
+    TRANSFER_AS_UPDATE = "ckanext.files.owner.transfer_as_update"
+    SCAN_AS_UPDATE = "ckanext.files.owner.scan_as_update"
+    AUTHENTICATED_UPLOADS = "ckanext.files.authenticated_uploads.allow"
+    AUTHENTICATED_STORAGES = "ckanext.files.authenticated_uploads.storages"
+    USER_IMAGES_STORAGE = "ckanext.files.user_images_storage"
+    GROUP_IMAGES_STORAGE = "ckanext.files.group_images_storage"
+    RESOURCE_STORAGE = "ckanext.files.resources_storage"
+    INLINE_TYPES = "ckanext.files.inline_content_types"
+
 ENABLE_RESOURCE_HACK = "ckanext.files.enable_resource_migration_template_patch"
-INLINE_TYPES = "ckanext.files.inline_content_types"
 
 
 def default_storage() -> str:

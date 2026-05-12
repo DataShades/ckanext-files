@@ -32,7 +32,7 @@ class TestFileCreate:
         with pytest.raises(tk.ValidationError):
             file_factory(storage=faker.word())
 
-    @pytest.mark.ckan_config("ckanext.files.storage.test.disabled_capabilities", ["CREATE"])
+    @pytest.mark.ckan_config(f"{shared.config.STORAGE_PREFIX}test.disabled_capabilities", ["CREATE"])
     def test_missing_create_capability(self, file_factory: types.TestFactory):
         """Missing CREATE capability is reported via validation error."""
         with pytest.raises(tk.ValidationError):
@@ -66,7 +66,7 @@ class TestFileCreate:
         result = file_factory(name=bad_name)
         assert result["location"] == good_name
 
-    @pytest.mark.ckan_config("ckanext.files.storage.test.location_transformers", ["uuid4_prefix"])
+    @pytest.mark.ckan_config(f"{shared.config.STORAGE_PREFIX}test.location_transformers", ["uuid4_prefix"])
     def test_location_transformed(self, file_factory: types.TestFactory):
         """Location transformers are applied to the location."""
         name = fake.unique.file_name()
@@ -83,7 +83,7 @@ class TestFileCreate:
         with pytest.raises(tk.ValidationError):
             file_factory(name=file["location"])
 
-    @pytest.mark.ckan_config("ckanext.files.storage.test.overwrite_existing", True)
+    @pytest.mark.ckan_config(f"{shared.config.STORAGE_PREFIX}test.overwrite_existing", True)
     def test_override_does_not_allow_rewriting_file(self, file: dict[str, Any], file_factory: types.TestFactory):
         """Even with enabled overrides, file is not replaced during creation."""
         with pytest.raises(tk.ValidationError):
@@ -107,7 +107,7 @@ class TestFileRegister:
         with pytest.raises(tk.ValidationError):
             call_action("files_file_register", storage=faker.file_name())
 
-    @pytest.mark.ckan_config("ckanext.files.storage.test.disabled_capabilities", ["ANALYZE"])
+    @pytest.mark.ckan_config(f"{shared.config.STORAGE_PREFIX}test.disabled_capabilities", ["ANALYZE"])
     def test_missing_analyze_capability(self, faker: Faker):
         """Missing ANALYZE capability is reported via validation error."""
         with pytest.raises(tk.ValidationError):
@@ -228,7 +228,7 @@ class TestFileDelete:
         with pytest.raises(tk.NotFound):
             call_action("files_file_delete", id=faker.uuid4())
 
-    @pytest.mark.ckan_config("ckanext.files.storage.test.disabled_capabilities", ["REMOVE"])
+    @pytest.mark.ckan_config(f"{shared.config.STORAGE_PREFIX}test.disabled_capabilities", ["REMOVE"])
     def test_missing_remove_capability(
         self,
         file: dict[str, Any],

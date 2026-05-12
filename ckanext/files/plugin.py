@@ -13,8 +13,7 @@ import ckan.plugins.toolkit as tk
 from ckan import model
 from ckan.exceptions import CkanConfigurationException
 from ckan.logic import clear_validators_cache
-
-from . import base, config, interfaces, shared, storage, types, utils
+from . import shared, config, base, storage, utils
 
 
 @tk.blanket.helpers
@@ -26,11 +25,15 @@ from . import base, config, interfaces, shared, storage, types, utils
 class FilesPlugin(p.SingletonPlugin):
     p.implements(p.IConfigurable)
     p.implements(p.IConfigurer, inherit=True)
-    p.implements(interfaces.IFiles, inherit=True)
+    p.implements(shared.IFiles, inherit=True)
 
     p.implements(p.IConfigDeclaration)
 
-    def declare_config_options(self, declaration: types.Declaration, key: types.Key):
+    def declare_config_options(self, declaration: shared.types.Declaration, key: shared.types.Key):
+        if tk.check_ckan_version("2.12"):
+            declaration.declare_bool("ckanext.files.enable_resource_migration_template_patch")
+            return
+
         # this call allows using custom validators in config declarations
         clear_validators_cache()
 
@@ -75,8 +78,8 @@ class FilesPlugin(p.SingletonPlugin):
                 func(declaration, storage_key)
 
     # IFiles
-    def files_get_storage_adapters(self) -> dict[str, type[base.Storage]]:
-        adapters: dict[str, type[base.Storage]] = {
+    def files_get_storage_adapters(self) -> dict[str, type[shared.Storage]]:
+        adapters: dict[str, type[shared.Storage]] = {
             "files:fs": storage.FsStorage,
             "files:public_fs": storage.PublicFsStorage,
             "files:ckan_resource_fs": storage.CkanResourceFsStorage,
@@ -105,8 +108,9 @@ class FilesPlugin(p.SingletonPlugin):
 
     # IConfigurable
     def configure(self, config_: Any):
-        _initialize_storages()
-        _register_owner_getters()
+        if not tk.check_ckan_version("2.12"):
+            _initialize_storages()
+            _register_owner_getters()
 
     # IConfigurer
     def update_config(self, config_: Any):
@@ -119,18 +123,20 @@ class FilesPlugin(p.SingletonPlugin):
         if config.override_resource_form():
             tk.add_template_directory(config_, "resource_form_templates")
 
-        for plugin in p.PluginImplementations(interfaces.IFiles):
-            for name, transformer in plugin.files_get_location_transformers().items():
-                location_transformers.register(name, transformer)
+        if not tk.check_ckan_version("2.12"):
+            for plugin in p.PluginImplementations(shared.IFiles):
+                for name, transformer in plugin.files_get_location_transformers().items():
+                    location_transformers.register(name, transformer)
 
 
 def _register_adapters():
     """Register all storage types provided by extensions."""
-    fk.ext.setup()
+    if not tk.check_ckan_version("2.12"):
+        fk.ext.setup()
 
-    for plugin in p.PluginImplementations(interfaces.IFiles):
-        for name, adapter in plugin.files_get_storage_adapters().items():
-            base.adapters.register(name, adapter)
+        for plugin in p.PluginImplementations(shared.IFiles):
+            for name, adapter in plugin.files_get_storage_adapters().items():
+                base.adapters.register(name, adapter)
 
 
 def _initialize_storages():
@@ -141,7 +147,7 @@ def _initialize_storages():
     base.storages.reset()
     for name, settings in config.storages().items():
         try:
-            storage = base.make_storage(name, settings)
+            storage = shared.make_storage(name, settings)
         except (
             shared.exc.UnknownAdapterError,
             shared.exc.InvalidStorageConfigurationError,
@@ -161,6 +167,6 @@ def _register_owner_getters():
     utils.owner_getters.register("group", model.Group.get)
     utils.owner_getters.register("organization", model.Group.get)
 
-    for plugin in p.PluginImplementations(interfaces.IFiles):
+    for plugin in p.PluginImplementations(shared.IFiles):
         for name, getter in plugin.files_register_owner_getters().items():
             utils.owner_getters.register(name, getter)

@@ -1,18 +1,14 @@
-from file_keeper import Capability, HashingReader, Location, Upload, make_upload
-from file_keeper.core import exceptions as exc
+from file_keeper import Capability, FileData, HashingReader, Location, Upload, exc, make_storage, make_upload
+
+try:
+    from ckan.lib.files import Manager, Reader, Settings, Storage, Uploader, get_storage
+    from ckan.plugins.interfaces import IFiles
+
+except ImportError:
+    from .base import Manager, Reader, Settings, Storage, Uploader, get_storage
+    from .interfaces import IFiles
 
 from . import config, types
-from .base import (
-    FileData,
-    Manager,
-    Reader,
-    Settings,
-    Storage,
-    Uploader,
-    get_storage,
-    make_storage,
-)
-from .interfaces import IFiles
 from .model import File, Owner, TransferHistory
 from .task import Task, TaskQueue, add_task, with_task_queue
 

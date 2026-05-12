@@ -898,6 +898,7 @@ def files_multipart_start(
         raise tk.ValidationError({"upload": [str(err)]}) from err
 
     fileobj = File(
+        location="",
         name=filename,
         storage=data_dict["storage"],
     )

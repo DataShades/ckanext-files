@@ -5,6 +5,8 @@ from typing import Any
 import pytest
 from _pytest.monkeypatch import MonkeyPatch
 
+import ckan.plugins.toolkit as tk
+
 from ckanext.files import config
 
 
@@ -23,6 +25,7 @@ class TestDefault:
         assert config.default_storage() == "test"
 
 
+@pytest.mark.skipif(tk.check_ckan_version("2.12"), reason="Do not test CKAN config")
 class TestStorages:
     def test_empty(self, ckan_config: dict[str, Any]):
         """With no customization we have only storage defined by test.ini."""

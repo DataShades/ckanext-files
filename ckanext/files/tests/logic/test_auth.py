@@ -7,6 +7,7 @@ import pytest
 import ckan.plugins.toolkit as tk
 from ckan import types
 from ckan.tests.helpers import call_action
+from ckanext.files import shared
 
 
 @pytest.fixture(autouse=True)
@@ -64,7 +65,7 @@ class BasePermission:
         file = file_factory(user=user)
         tk.check_access(self.action, {"user": user["name"]}, {"id": file["id"]})
 
-    @pytest.mark.ckan_config("ckanext.files.owner.cascade_access", {})
+    @pytest.mark.ckan_config(shared.config.CASCADE_ACCESS, {})
     def test_owner_without_cascade_is_not_allowed(
         self,
         user: dict[str, Any],
@@ -129,8 +130,8 @@ class TestFileCreate:
         with pytest.raises(tk.NotAuthorized):
             tk.check_access("files_file_create", {"user": user["name"]}, {"storage": "test"})
 
-    @pytest.mark.ckan_config("ckanext.files.authenticated_uploads.allow", True)
-    @pytest.mark.ckan_config("ckanext.files.authenticated_uploads.storages", ["test"])
+    @pytest.mark.ckan_config(shared.config.AUTHENTICATED_UPLOADS, True)
+    @pytest.mark.ckan_config(shared.config.AUTHENTICATED_STORAGES, ["test"])
     def test_authenticated_uploads_can_be_enabled(self, user: dict[str, Any]):
         """Authenticated users can upload files if corresponding option is enabled."""
         tk.check_access("files_file_create", {"user": user["name"]}, {"storage": "test"})
@@ -269,7 +270,7 @@ class TestOwnershipTransfer:
             },
         )
 
-    @pytest.mark.ckan_config("ckanext.files.owner.transfer_as_update", False)
+    @pytest.mark.ckan_config(shared.config.TRANSFER_AS_UPDATE, False)
     def test_owner_transparent_transfer(
         self,
         user: dict[str, Any],
@@ -340,7 +341,7 @@ class TestOwnerScan:
                 },
             )
 
-    @pytest.mark.ckan_config("ckanext.files.owner.scan_as_update", False)
+    @pytest.mark.ckan_config(shared.config.SCAN_AS_UPDATE, False)
     def test_owner_transparent_scan(
         self,
         user: dict[str, Any],

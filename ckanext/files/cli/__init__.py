@@ -7,7 +7,7 @@ import click
 
 from ckan.config.declaration import Declaration, Key
 
-from ckanext.files import base
+from ckanext.files import base, config
 
 from . import dev, file, maintain, migrate, stats, storage
 
@@ -69,7 +69,7 @@ def adapters(
 
         if with_configuration and issubclass(item, base.Storage):
             decl = Declaration()
-            item.declare_config_options(decl, Key.from_string("ckanext.files.storage.NAME"))
+            item.declare_config_options(decl, Key.from_string(f"{config.STORAGE_PREFIX}NAME"))
             configuration = decl.into_ini(False, True)
             configuration = f"{click.style('Configuration:', bold=True)}\n{configuration}"
             wrapped = textwrap.indent(configuration, "\t")

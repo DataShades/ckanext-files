@@ -64,6 +64,7 @@ ckan.module("files--auto-upload", function ($) {
             adapter: "Standard",
             spinner: null,
             action: null,
+            selector: null,
             successEvent: "files-file-created",
             errorEvent: "files-file-failed",
             eventTarget: null,
@@ -83,12 +84,17 @@ ckan.module("files--auto-upload", function ($) {
 
             this.queue = new Set();
 
-            this.el.on("change", (event: Event) =>
+            let field: any = this.el;
+            if (this.options.selector) {
+                field = field.find(this.options.selector)
+            }
+
+            field.on("change", (event: Event) =>
                 this.upload(...(event.target as HTMLInputElement).files!),
             );
             this.spinner = $(this.options.spinner);
             this.field = $(this.options.field);
-            this.submits = this.el
+            this.submits = field
                 .closest("form")
                 .find("input[type=submit],button[type=submit]");
             this.idTarget = $(this.options.copyIdInto);
@@ -100,7 +106,6 @@ ckan.module("files--auto-upload", function ($) {
                 },
             );
 
-            this.uploader.addEventListener("progress", console.log);
         },
 
         upload(...files: File[]) {
@@ -115,6 +120,7 @@ ckan.module("files--auto-upload", function ($) {
                     .upload(file, options)
                     .then(
                         (result: any) => {
+
                             this.idTarget.val(result.id);
                             this.dispatchResult(
                                 this.options.successEvent,
@@ -453,11 +459,11 @@ ckan.module("files--queue", function ($) {
             }
         },
 
-        setWidgetName(widget: JQuery, name: string) {
+        setWidgetName(widget: any, name: string) {
             widget.find("[data-item-name]").text(name);
         },
 
-        setWidgetCompletion(widget: JQuery, uploaded: number, total: number) {
+        setWidgetCompletion(widget: any, uploaded: number, total: number) {
             const value = (uploaded * 100) / total;
             const info = this.widgets.get(widget[0]);
             info.uploaded = uploaded;
@@ -469,13 +475,13 @@ ckan.module("files--queue", function ($) {
                 .css("width", completion);
         },
 
-        toggleAnimation(widget: JQuery, state: boolean) {
+        toggleAnimation(widget: any, state: boolean) {
             widget
                 .find("[data-upload-progress]")
                 .toggleClass("progress-bar-animated active", state);
         },
 
-        _onWidgetResume(event: JQuery.TriggeredEvent) {
+        _onWidgetResume(event: any) {
             const info = this.widgets.get(event.delegateTarget);
             if (info.uploaded >= info.total) return;
 
@@ -494,7 +500,7 @@ ckan.module("files--queue", function ($) {
             this.toggleAnimation(widget, true);
         },
 
-        _onWidgetPause(event: JQuery.TriggeredEvent) {
+        _onWidgetPause(event: any) {
             const info = this.widgets.get(event.delegateTarget);
             if (info.uploaded >= info.total) return;
 

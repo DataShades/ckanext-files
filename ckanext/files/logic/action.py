@@ -368,7 +368,7 @@ def files_file_create(context: Context, data_dict: dict[str, Any]) -> dict[str, 
 
     fileobj = File(
         location="",
-        name=filename,
+        name=data_dict["name"],
         storage=data_dict["storage"],
     )
     storage_data.into_object(fileobj)
@@ -424,7 +424,7 @@ def files_file_register(context: Context, data_dict: dict[str, Any]):
         raise tk.ObjectNotFound("file") from err
 
     fileobj = shared.File(
-        name=secure_filename(storage_data.location),
+        name=storage_data.location,
         storage=data_dict["storage"],
         **storage_data.as_dict(),
     )
@@ -551,7 +551,7 @@ def files_file_rename(context: Context, data_dict: dict[str, Any]) -> dict[str, 
     if not fileobj:
         raise tk.ObjectNotFound("file")
 
-    fileobj.name = secure_filename(data_dict["name"])
+    fileobj.name = data_dict["name"]
 
     if not context.get("defer_commit"):
         context["session"].commit()
@@ -900,7 +900,7 @@ def files_multipart_start(
 
     fileobj = File(
         location="",
-        name=filename,
+        name=data_dict["name"],
         storage=data_dict["storage"],
     )
     data.into_object(fileobj)

@@ -251,8 +251,19 @@ namespace ckan {
                         return;
                     }
                     this._active.add(file);
+                    let info;
 
-                    let info = await this._showUpload(id);
+                    try {
+                        info = await this._showUpload(id);
+                    } catch (err) {
+                        if (typeof err === "string") {
+                            this.dispatchError(file, err);
+                        } else {
+                            this.dispatchFail(file, err as any);
+                        }
+                        return;
+                    }
+
                     this.dispatchStart(file);
 
                     this._doUpload(file, info);
@@ -264,7 +275,9 @@ namespace ckan {
 
                 async _doUpload(file: File, info: UploadInfo) {
                     let start = info.storage_data["uploaded"] || 0;
-                    const keys = Object.keys(info.storage_data["parts"] || {}).map(k => Number(k))
+                    const keys = Object.keys(
+                        info.storage_data["parts"] || {},
+                    ).map((k) => Number(k));
                     let partNumber = Math.max(-1, ...keys) + 1;
 
                     while (start < file.size) {
@@ -329,8 +342,8 @@ namespace ckan {
                             file.type || "application/octet-stream",
                         );
                         data.append("sample", file.slice(0, 2048));
-                        for (let [k,v] of Object.entries(params)) {
-                            data.append(k, v)
+                        for (let [k, v] of Object.entries(params)) {
+                            data.append(k, v);
                         }
                         var csrf_field = this.sandbox
                             .jQuery("meta[name=csrf_field_name]")
@@ -366,9 +379,9 @@ namespace ckan {
                 _showUpload(id: string): Promise<UploadInfo> {
                     return new Promise((done, fail) =>
                         this.sandbox.client.call(
-                            "GET",
+                            "POST",
                             "files_multipart_refresh",
-                            `?id=${id}`,
+                            { id },
                             (data: any) => {
                                 done(data.result);
                             },

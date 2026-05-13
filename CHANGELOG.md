@@ -1,4 +1,19 @@
 
+## [v1.3.0](https://github.com/DataShades/ckanext-files/releases/tag/v1.3.0) - 2026-05-13
+[Compare with v1.2.3](https://github.com/DataShades/ckanext-files/compare/v1.2.3..v1.3.0)
+
+### 🚀 Features
+
+- keep original filename ([a21e238](https://github.com/DataShades/ckanext-files/commit/a21e238330a116d0c5c9d5479335c4dd6bef299f))
+- files--auto-upload accepts selector option ([d7eb5a7](https://github.com/DataShades/ckanext-files/commit/d7eb5a7fece178c7687f494996f39907103b9d70))
+- compatibility with CKAN v2.12 files ([97b49a8](https://github.com/DataShades/ckanext-files/commit/97b49a81bb473cd8ca89bf07e3a1ebca5f2b9f94))
+
+### 🐛 Bug Fixes
+
+- 500 error on missing multipart refresh ([8bc2555](https://github.com/DataShades/ckanext-files/commit/8bc255544803914046f3babac54e304afa8e0d7d))
+- resume method of multipart uploader is not working ([7241306](https://github.com/DataShades/ckanext-files/commit/7241306a57d67b835faa073aeb8a52c617d3900e))
+- files extension is not compatible with theming extension ([e2f1230](https://github.com/DataShades/ckanext-files/commit/e2f12303c346b786b604e12fb8fbc12dc476164e))
+
 ## [v1.2.2](https://github.com/DataShades/ckanext-files/releases/tag/v1.2.2) - 2026-05-08
 [Compare with v1.2.1](https://github.com/DataShades/ckanext-files/compare/v1.2.1..v1.2.2)
 

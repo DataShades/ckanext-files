@@ -104,3 +104,7 @@ topo_order_commits = true
 sort_commits = "oldest"
 # Process submodules commits
 recurse_submodules = false
+
+[remote.github]
+owner = 'DataShades'
+repo = 'ckanext-files'

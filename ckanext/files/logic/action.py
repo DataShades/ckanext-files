@@ -4,6 +4,7 @@ import logging
 from collections.abc import Mapping
 from typing import TYPE_CHECKING, Any
 
+from file_keeper.core.exceptions import MissingFileError
 import sqlalchemy as sa
 from sqlalchemy.exc import ProgrammingError
 from werkzeug.utils import secure_filename
@@ -944,9 +945,13 @@ def files_multipart_refresh(
         raise tk.ObjectNotFound("file")
 
     storage = shared.get_storage(fileobj.storage)
-    storage.multipart_refresh(shared.FileData.from_object(fileobj)).into_object(
-        fileobj,
-    )
+    try:
+        storage.multipart_refresh(shared.FileData.from_object(fileobj)).into_object(
+            fileobj,
+        )
+    except shared.exc.MissingFileError as err:
+        raise tk.ObjectNotFound("file") from err
+
     context["session"].commit()
 
     return fileobj.dictize(context.get("include_plugin_data", False))

@@ -110,7 +110,6 @@ class FilesPlugin(p.SingletonPlugin):
     def configure(self, config_: Any):
         if not tk.check_ckan_version("2.12"):
             _initialize_storages()
-            _register_owner_getters()
 
     # IConfigurer
     def update_config(self, config_: Any):
@@ -155,18 +154,3 @@ def _initialize_storages():
             raise CkanConfigurationException(str(err)) from err
 
         base.storages.register(name, storage)
-
-
-def _register_owner_getters():
-    """Register functions used by Owner model to locate owner entity."""
-    utils.owner_getters.reset()
-
-    utils.owner_getters.register("user", model.User.get)
-    utils.owner_getters.register("package", model.Package.get)
-    utils.owner_getters.register("resource", model.Resource.get)
-    utils.owner_getters.register("group", model.Group.get)
-    utils.owner_getters.register("organization", model.Group.get)
-
-    for plugin in p.PluginImplementations(shared.IFiles):
-        for name, getter in plugin.files_register_owner_getters().items():
-            utils.owner_getters.register(name, getter)

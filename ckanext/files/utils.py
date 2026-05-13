@@ -30,6 +30,11 @@ SAMPLE_SIZE = 1024 * 2
 
 
 owner_getters = fk.Registry[Callable[[str], Any]]({})
+owner_getters.register("user", model.User.get)
+owner_getters.register("package", model.Package.get)
+owner_getters.register("resource", model.Resource.get)
+owner_getters.register("group", model.Group.get)
+owner_getters.register("organization", model.Group.get)
 
 
 def is_supported_type(content_type: str, supported: Iterable[str]) -> bool:

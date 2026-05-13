@@ -57,24 +57,6 @@ class IFiles(Interface):
         """
         return {}
 
-    def files_register_owner_getters(self) -> dict[str, Callable[[str], Any]]:
-        """Return mapping with lookup functions for owner types.
-
-        Name of the getter is the name used as `Owner.owner_type`. The getter
-        itself is a function that accepts owner ID and returns optional owner
-        entity.
-
-        Returns:
-            getters for specific owner types
-
-        Example:
-            ```python
-            def files_register_owner_getters(self):
-                return {"resource": model.Resource.get}
-            ```
-        """
-        return {}
-
     def files_file_allows(
         self,
         context: types.Context,

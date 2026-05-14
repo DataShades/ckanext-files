@@ -54,6 +54,7 @@ class TestStorages:
             ("hehe.type", "hehe"),
             ("hehe.path", "somepath"),
             ("another.type", "fancy"),
+            ("another.nested.type", "nested_fancy"),
             ("another.location_transformers", ["hello"]),
         ]
         for key, value in patches:
@@ -81,10 +82,7 @@ class TestStorages:
                 "type": "hehe",
                 "path": "somepath",
             },
-            "another": {
-                "type": "fancy",
-                "location_transformers": ["hello"],
-            },
+            "another": {"type": "fancy", "location_transformers": ["hello"], "nested": {"type": "nested_fancy"}},
         }
 
     @pytest.mark.ckan_config(config.STORAGE_PREFIX + "another", "test")

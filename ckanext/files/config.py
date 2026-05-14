@@ -11,10 +11,13 @@ the extension.
 
 from __future__ import annotations
 
+import logging
 from collections import defaultdict
 from typing import Any
 
 import ckan.plugins.toolkit as tk
+
+log = logging.getLogger(__name__)
 
 if tk.check_ckan_version("2.12"):
     STORAGE_PREFIX = "ckan.files.storage."
@@ -52,6 +55,11 @@ def default_storage() -> str:
 
 def storages() -> dict[str, dict[str, Any]]:
     """Mapping of storage names to their settings."""
+    if tk.check_ckan_version("2.12"):
+        from ckan.config.declaration.load import config_tree  # noqa: PLC0415
+
+        return config_tree(tk.config, STORAGE_PREFIX, depth=-1)
+
     storages = defaultdict(dict)  # type: dict[str, dict[str, Any]]
     prefix_len = len(STORAGE_PREFIX)
     for k, v in tk.config.items():
@@ -59,11 +67,23 @@ def storages() -> dict[str, dict[str, Any]]:
             continue
 
         try:
-            name, option = k[prefix_len:].split(".", 1)
+            name, *path = k[prefix_len:].split(".")
         except ValueError:
             continue
 
-        storages[name][option] = v
+        here: dict[str, Any] = storages[name]
+        for segment in path[:-1]:
+            here = here.setdefault(segment, {})
+            if not isinstance(here, dict):  # pyright: ignore[reportUnnecessaryIsInstance]
+                log.warning(
+                    "Cannot build tree for %s at branch %s",
+                    path,
+                    segment,
+                )
+                break
+        else:
+            here[path[-1]] = v
+
     return storages
 
 

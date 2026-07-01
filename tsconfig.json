@@ -2,15 +2,17 @@
     "$schema": "https://json.schemastore.org/tsconfig",
     "compilerOptions": {
         "target": "es2020",
+        "module": "preserve",
         "outDir": "ckanext/files/assets/scripts/",
-        // "declaration": true,
-        "alwaysStrict": false,
+        "types": ["jquery"],
         "strict": true,
-        "esModuleInterop": true,
-        "skipLibCheck": true,
-        "forceConsistentCasingInFileNames": true,
+        "verbatimModuleSyntax": true,
+        "isolatedModules": true,
+        "moduleDetection": "force",
+
         "inlineSources": true,
         "inlineSourceMap": true,
     },
-    "include": ["ckanext/files/assets/ts/"]
+    "include": ["ckanext/files/assets/ts/*.ts"],
+    "exclude": ["ckanext/files/assets/ts/types.d.ts"]
 }

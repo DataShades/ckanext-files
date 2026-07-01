@@ -109,31 +109,3 @@ to do it.
   const uploader = sandbox.files.makeUploader("Multipart")
   await sandbox.files.upload(new File(...), {uploader})
   ```
-
-The second group of ckanext-files utilities is available as
-`ckan.CKANEXT_FILES` object. This object mainly serves as extension and
-configuration point for `sandbox.files`.
-
-`ckan.CKANEXT_FILES.adapters` is a collection of all classes that can be used
-to initialize uploader. It contains `Standard`, `Multipart` and `Base`
-classes. `Standard` and `Multipart` can be used as is, while `Base` must be
-extended by your custom uploader class. Add your custom uploader classes to
-`adapters`, to make them available application-wide:
-
-```js
-
-class MyUploader extends Base { ... }
-
-ckan.CKANEXT_FILES.adapters["My"] = MyUploader;
-
-await sandbox.files.upload(new File(...), {adapter: "My"})
-```
-
-`ckan.CKANEXT_FILES.defaultSettings` contain the object with default settings
-available as `this.settings` inside any uploader. You can change the name of
-the storage used by all uploaders using this object. Note, changes will apply
-only to uploaders initialized after modification.
-
-```js
-ckan.CKANEXT_FILES.defaultSettings.storage = "memory"
-```

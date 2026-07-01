@@ -10,10 +10,10 @@ from file_keeper.core.storage import location_transformers
 
 import ckan.plugins as p
 import ckan.plugins.toolkit as tk
-from ckan import model
 from ckan.exceptions import CkanConfigurationException
 from ckan.logic import clear_validators_cache
-from . import shared, config, base, storage, utils
+
+from . import base, config, shared, storage
 
 
 @tk.blanket.helpers

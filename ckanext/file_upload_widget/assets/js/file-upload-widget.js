@@ -101,11 +101,11 @@ ckan.module("file-upload-widget", function ($, _) {
             window.fuwProgressBars = window.fuwProgressBars || {};
             window.fuwProgressBars[this.options.instanceId] = {};
 
-            this.fileAdapter = new ckan.CKANEXT_FILES.adapters.Standard({
+            this.fileAdapter = new this.sadnbox.files.adapters.Standard({
                 uploadAction: this.options.uploadAction,
             });
 
-            this.urlAdapter = new ckan.CKANEXT_FILES.adapters.Standard({
+            this.urlAdapter = new this.sandobx.files.adapters.Standard({
                 uploadAction: this.options.uploadLinkAction,
             });
 

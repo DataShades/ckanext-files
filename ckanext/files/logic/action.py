@@ -4,7 +4,6 @@ import logging
 from collections.abc import Mapping
 from typing import TYPE_CHECKING, Any
 
-from file_keeper.core.exceptions import MissingFileError
 import sqlalchemy as sa
 from sqlalchemy.exc import ProgrammingError
 from werkzeug.utils import secure_filename
@@ -755,8 +754,6 @@ def files_resource_upload(context: Context, data_dict: dict[str, Any]) -> dict[s
         raise tk.ValidationError(
             {"upload": ["Resource uploads are not supported"]},
         )
-
-    # TODO: pull cache from the context
 
     return tk.get_action("files_multipart_start" if data_dict["multipart"] else "files_file_create")(
         Context(context, ignore_auth=True),

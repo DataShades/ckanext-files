@@ -164,11 +164,20 @@ window.ckan.module("files--file-id-field", function ($) {
             ) {
                 this.uploader.resume(file, incomplete.id);
             } else {
-                this.uploader.upload(file, {
-                    resource_id: this.options.resourceId,
+                const payload: any = {
                     package_id: this.options.packageId,
                     multipart: true,
-                });
+                };
+                // empty resource id will be set as `data-module-resource-id=""` HTML
+                // attribute, which parses into `true` due to internal logic of CKAN JS
+                // modules.
+                if (
+                    this.options.resourceId &&
+                    this.options.resourceId !== true
+                ) {
+                    payload["resource_id"] = this.options.resourceId;
+                }
+                this.uploader.upload(file, payload);
             }
         },
 

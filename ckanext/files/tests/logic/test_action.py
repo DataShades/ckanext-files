@@ -8,6 +8,7 @@ import pytest
 import sqlalchemy as sa
 from faker import Faker
 from werkzeug.datastructures import FileStorage
+from werkzeug.http import parse_options_header
 
 import ckan.model as model
 import ckan.plugins.toolkit as tk
@@ -255,6 +256,30 @@ class TestFileShow:
         """Real file can be shown."""
         result = call_action("files_file_show", id=file["id"])
         assert result == file
+
+
+@pytest.mark.usefixtures("with_plugins", "clean_db")
+class TestFileDownload:
+    @pytest.mark.ckan_config(f"{shared.config.STORAGE_PREFIX}test.location_transformers", ["uuid4"])
+    def test_original_name(
+        self,
+        app: Any,
+        faker: Faker,
+        file_factory: types.TestFactory,
+        sysadmin: dict[str, Any],
+    ):
+        """File is downloaded using its original name."""
+        name = faker.file_name()
+        file = file_factory(name=name, user=sysadmin)
+        assert file["location"] != name
+
+        response = app.get(
+            f"/files/download/{file['id']}",
+            environ_overrides={"REMOTE_USER": sysadmin["name"]},
+        )
+        _, options = parse_options_header(response.headers["content-disposition"])
+
+        assert options["filename"] == name
 
 
 @pytest.mark.usefixtures("with_plugins", "clean_db")

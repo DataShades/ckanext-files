@@ -62,7 +62,11 @@ def get_blueprints():
     return [bp]
 
 
-def _as_response(storage_name: str, data: shared.FileData):
+def _as_response(
+    storage_name: str,
+    data: shared.FileData,
+    filename: str | None = None,
+):
     """Return a response for a file stored in the given location.
 
     The storage is looked up by name, and the file data is created from the
@@ -75,7 +79,7 @@ def _as_response(storage_name: str, data: shared.FileData):
         return tk.abort(404)
 
     if isinstance(storage, shared.Storage):
-        resp = storage.as_response(data)
+        resp = storage.as_response(data, filename)
         if resp.status_code >= 400:
             return tk.abort(resp.status_code)
         return resp
@@ -88,7 +92,11 @@ def dispatch_download(file_id: str) -> Response:
     tk.check_access("files_permission_download_file", {}, {"id": file_id})
     item: dict[str, Any] = tk.get_action("files_file_show")({}, {"id": file_id})
 
-    return _as_response(item["storage"], shared.FileData.from_dict(item))
+    return _as_response(
+        item["storage"],
+        shared.FileData.from_dict(item),
+        item["name"],
+    )
 
 
 @bp.route("/files/public-download/<storage_name>/<path:location>")

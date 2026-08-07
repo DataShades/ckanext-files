@@ -257,7 +257,7 @@ class Storage(fk.Storage):
         if "content-length" not in resp.headers:
             resp.headers["content-length"] = data.size
 
-        if "content-disposition" not in resp.headers:
+        if filename or "content-disposition" not in resp.headers:
             inline_types = config.inline_types()
             disposition = (
                 "inline" if send_inline or utils.is_supported_type(data.content_type, inline_types) else "attachment"

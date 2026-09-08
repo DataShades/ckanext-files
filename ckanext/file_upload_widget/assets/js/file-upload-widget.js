@@ -101,11 +101,11 @@ ckan.module("file-upload-widget", function ($, _) {
             window.fuwProgressBars = window.fuwProgressBars || {};
             window.fuwProgressBars[this.options.instanceId] = {};
 
-            this.fileAdapter = new this.sadnbox.files.adapters.Standard({
+            this.fileAdapter = new this.sandbox.files.adapters.Standard({
                 uploadAction: this.options.uploadAction,
             });
 
-            this.urlAdapter = new this.sandobx.files.adapters.Standard({
+            this.urlAdapter = new this.sandbox.files.adapters.Standard({
                 uploadAction: this.options.uploadLinkAction,
             });
 
@@ -124,10 +124,8 @@ ckan.module("file-upload-widget", function ($, _) {
             this.mediaWindowFooter = this.el.find(this.const.mediaWindowFooter);
             this.selectionWindow = this.el.find(this.const.selectedBlock);
 
-            this.fileIdsInput = this.el.find(
-                `[name="${this.options.instanceId}"]`
-            );
-            this.fileSearchInput = this.el.find("#fuw-media-input--search");
+            this.fileIdsInput = this.el.find(".fuw-value-input");
+            this.fileSearchInput = this.el.find(".fuw-media-input--search");
             this.mediaSelectBtn = this.el.find(this.const.mediaSelectBtn);
             this.cancelFileSelectBtn = this.el.find(".btn-cancel-file-select");
             this.dropZoneArea = this.el.find(this.const.dropZone);
@@ -213,9 +211,21 @@ ckan.module("file-upload-widget", function ($, _) {
             ["dragenter", "dragover", "dragleave", "drop"].forEach(
                 (eventName) => {
                     this.dropZoneArea.on(eventName, this._preventDropDefaults);
-                    $(document.body).on(eventName, this._preventDropDefaults);
                 }
             );
+            // Bind the body-level guard only once, no matter how many widgets
+            // are present on the page.
+            if (!window.fuwBodyDropDefaultsBound) {
+                window.fuwBodyDropDefaultsBound = true;
+                ["dragenter", "dragover", "dragleave", "drop"].forEach(
+                    (eventName) => {
+                        $(document.body).on(
+                            eventName,
+                            this._preventDropDefaults
+                        );
+                    }
+                );
+            }
             ["dragenter", "dragover"].forEach((eventName) => {
                 this.dropZoneArea.on(eventName, this._highlightDropZone);
             });

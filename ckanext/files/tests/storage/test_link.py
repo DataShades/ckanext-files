@@ -1,3 +1,5 @@
+from typing import cast
+
 import pytest
 from faker import Faker
 from responses import RequestsMock
@@ -42,6 +44,25 @@ class TestStorage:
         permanent_link = storage.permanent_link(data)
 
         assert permanent_link == url
+
+    def test_response_redirects_to_url(self, faker: Faker):
+        """Test that as_response redirects to the linked URL.
+
+        Given a link file, when building an HTTP response for it,
+        then a redirect to the stored URL is returned instead of a stream.
+        """
+        storage = cast(shared.Storage, shared.make_storage("test", {"type": "files:link"}))
+
+        url = faker.url()
+        data = shared.FileData(
+            shared.Location(faker.file_name()),
+            storage_data={"url": url},
+        )
+
+        resp = storage.as_response(data)
+
+        assert resp.status_code == 302
+        assert resp.headers["location"] == url
 
     def test_protocols_setting(self, faker: Faker):
         """Test that protocols setting is respected.

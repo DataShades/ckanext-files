@@ -15,6 +15,8 @@ from urllib.parse import urlparse, urlunparse
 import requests
 from typing_extensions import override
 
+from ckan import types
+
 from ckanext.files import shared
 
 log = logging.getLogger(__name__)
@@ -27,6 +29,14 @@ class Reader(shared.Reader):
     @override
     def permanent_link(self, data: shared.FileData, extras: dict[str, Any]) -> str:
         return data.storage_data.get("url", data.location)
+
+    @override
+    def response(self, data: shared.FileData, extras: dict[str, Any]) -> shared.types.Response:
+        """Redirect to the linked URL."""
+        return types.Response(
+            status=302,
+            headers={"Location": self.permanent_link(data, extras)},
+        )
 
 
 class Uploader(shared.Uploader):

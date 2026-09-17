@@ -11,11 +11,40 @@ from ckan import model
 from ckan.lib.search import rebuild
 
 from ckanext.files import shared
+from ckanext.files.model.file import FilesOwner, FilesFile
+from ckan import model
 
 
 @click.group()
 def group():
     """Migrate from original CKAN implementation."""
+
+
+@group.command()
+def to_core_files():
+    """Move files from extension tables into v2.12 core tables."""
+
+    # 1. Get a list of column names, excluding the auto-incrementing primary key
+    column_names = [c.name for c in model.File.__table__.c]
+
+    # 2. Map columns explicitly by name to guarantee identical ordering
+    target_columns = [model.File.__table__.c[name] for name in column_names]
+    source_columns = [FilesFile.__table__.c[name] for name in column_names]
+
+    stmt = sa.insert(model.File.__table__).from_select(target_columns, sa.select(*source_columns))
+    model.Session.execute(stmt)
+
+    # 1. Get a list of column names, excluding the auto-incrementing primary key
+    column_names = [c.name for c in model.FileOwner.__table__.c]
+
+    # 2. Map columns explicitly by name to guarantee identical ordering
+    target_columns = [model.FileOwner.__table__.c[name] for name in column_names]
+    source_columns = [FilesOwner.__table__.c[name] for name in column_names]
+
+    stmt = sa.insert(model.FileOwner.__table__).from_select(target_columns, sa.select(*source_columns))
+    model.Session.execute(stmt)
+
+    model.Session.commit()
 
 
 @group.command("groups")

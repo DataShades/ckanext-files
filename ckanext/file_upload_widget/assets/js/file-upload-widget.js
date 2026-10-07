@@ -79,6 +79,8 @@ ckan.module("file-upload-widget", function ($, _) {
         },
         options: {
             instanceId: null,
+            // Set from template via h.check_ckan_version; fallback for older snippets
+            fileDownloadPath: "/files/download",
             maxFiles: 0,
             disableUrl: false,
             disableMedia: false,
@@ -907,7 +909,7 @@ ckan.module("file-upload-widget", function ($, _) {
          */
         _createUrlForImagePreview: function (fileId, isUploaded) {
             if (isUploaded) {
-                return `/files/download/${fileId}`;
+                return `${this.options.fileDownloadPath}/${fileId}`;
             }
 
             let file = this._getFileObjectById(fileId);
@@ -1321,7 +1323,7 @@ ckan.module("file-upload-widget", function ($, _) {
                     <label for="${inputId}">
                         ${
                             isImageFile
-                                ? `<object data="/files/download/${fileId}" type="${fileContentType}"></object>`
+                                ? `<object data="${this.options.fileDownloadPath}/${fileId}" type="${fileContentType}"></object>`
                                 : ""
                         }
                         ${isImageFile ? "" : `<i class="${fileIconType}"></i>`}

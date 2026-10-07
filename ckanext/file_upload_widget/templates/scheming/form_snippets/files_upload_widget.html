@@ -7,11 +7,14 @@
 {% set attrs = field.get('form_attrs', {}) %}
 {% set accept = field.get('accept', '*') %}
 {% set widget_id = h.fuw_generate_uuid() %}
+{# CKAN >= 2.12: core file.download; older: ckanext-files dispatch_download #}
+{% set file_download_path = '/file/download' if h.check_ckan_version(min_version='2.12') else '/files/download' %}
 
 <div
     class="form-group control-medium file-upload-widget"
     data-module="file-upload-widget"
     data-module-instance-id="{{ widget_id }}"
+    data-module-file-download-path="{{ file_download_path }}"
     {{ form.attributes(attrs) }}>
     <label class="form-label" for="fuw-file-{{ widget_id }}">
         {% if field.required %}<span title="{{ _("This field is required") }}" class="control-required">*</span> {% endif %}

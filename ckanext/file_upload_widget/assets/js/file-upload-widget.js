@@ -907,7 +907,7 @@ ckan.module("file-upload-widget", function ($, _) {
          */
         _createUrlForImagePreview: function (fileId, isUploaded) {
             if (isUploaded) {
-                return `/file/download/${fileId}`;
+                return `/files/download/${fileId}`;
             }
 
             let file = this._getFileObjectById(fileId);
@@ -1321,7 +1321,7 @@ ckan.module("file-upload-widget", function ($, _) {
                     <label for="${inputId}">
                         ${
                             isImageFile
-                                ? `<object data="/file/download/${fileId}" type="${fileContentType}"></object>`
+                                ? `<object data="/files/download/${fileId}" type="${fileContentType}"></object>`
                                 : ""
                         }
                         ${isImageFile ? "" : `<i class="${fileIconType}"></i>`}

@@ -6,13 +6,16 @@ from typing import Any
 import click
 import sqlalchemy as sa
 
+from sqlalchemy.dialects.postgresql import insert
+
 import ckan.plugins.toolkit as tk
 from ckan import model
 from ckan.lib.search import rebuild
 
 from ckanext.files import shared
-from ckanext.files.model.file import FilesOwner, FilesFile
-from ckan import model
+from ckanext.files.model.file import FilesFile
+from ckanext.files.model.owner import FilesOwner
+from ckanext.files.model.transfer_history import TransferHistory as FilesTransferHistory
 
 
 @click.group()
@@ -20,31 +23,43 @@ def group():
     """Migrate from original CKAN implementation."""
 
 
+def _copy_rows(source: sa.Table, target: sa.Table, where: Any = None) -> int:
+    """Copy rows by column name. Rows that already exist in the target are skipped."""
+    names = [c.name for c in target.c]
+    select = sa.select(*[source.c[name] for name in names])
+    if where is not None:
+        select = select.where(where)
+    stmt = insert(target).from_select([target.c[name] for name in names], select).on_conflict_do_nothing()
+    return model.Session.execute(stmt).rowcount
+
+
 @group.command()
 def to_core_files():
-    """Move files from extension tables into v2.12 core tables."""
+    """Move files, owners and ownership history from extension tables into v2.12 core tables.
 
-    # 1. Get a list of column names, excluding the auto-incrementing primary key
-    column_names = [c.name for c in model.File.__table__.c]
+    Rows already present in core tables are skipped, so the command can be run again,
+    for example after files were uploaded on CKAN v2.12 before migrating.
+    """
+    if not hasattr(model, "File"):
+        tk.error_shout("Core file tables are available from CKAN v2.12.")
+        raise click.Abort
 
-    # 2. Map columns explicitly by name to guarantee identical ordering
-    target_columns = [model.File.__table__.c[name] for name in column_names]
-    source_columns = [FilesFile.__table__.c[name] for name in column_names]
-
-    stmt = sa.insert(model.File.__table__).from_select(target_columns, sa.select(*source_columns))
-    model.Session.execute(stmt)
-
-    # 1. Get a list of column names, excluding the auto-incrementing primary key
-    column_names = [c.name for c in model.FileOwner.__table__.c]
-
-    # 2. Map columns explicitly by name to guarantee identical ordering
-    target_columns = [model.FileOwner.__table__.c[name] for name in column_names]
-    source_columns = [FilesOwner.__table__.c[name] for name in column_names]
-
-    stmt = sa.insert(model.FileOwner.__table__).from_select(target_columns, sa.select(*source_columns))
-    model.Session.execute(stmt)
-
+    core_file, core_owner = model.File.__table__, model.FileOwner.__table__
+    files = _copy_rows(FilesFile.__table__, core_file)
+    # owners and history only for files that are in core, so a skipped file can't break a foreign key
+    owners = _copy_rows(
+        FilesOwner.__table__,
+        core_owner,
+        FilesOwner.__table__.c.file_id.in_(sa.select(core_file.c.id)),
+    )
+    history = _copy_rows(
+        FilesTransferHistory.__table__,
+        model.FileOwnerTransferHistory.__table__,
+        FilesTransferHistory.__table__.c.file_id.in_(sa.select(core_owner.c.file_id)),
+    )
     model.Session.commit()
+
+    click.secho(f"Copied {files} files, {owners} owners, {history} transfer history records", fg="green")
 
 
 @group.command("groups")

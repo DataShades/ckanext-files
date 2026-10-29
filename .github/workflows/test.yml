@@ -11,7 +11,15 @@ jobs:
   test:
     strategy:
       matrix:
-        ckan-version: ["2.11", "2.10"]
+        # ckan/ckan-dev publishes one Python build per CKAN release: 2.12
+        # ships on Python 3.14, earlier releases on 3.10.
+        include:
+          - ckan-version: "2.12"
+            python-version: "3.14"
+          - ckan-version: "2.11"
+            python-version: "3.10"
+          - ckan-version: "2.10"
+            python-version: "3.10"
       fail-fast: false
 
     runs-on: ubuntu-latest
@@ -19,7 +27,8 @@ jobs:
       # The CKAN version tag of the Solr and Postgres containers should match
       # the one of the container the tests run on.
       # You can switch this base image with a custom image tailored to your project
-      image: ckan/ckan-dev:${{ matrix.ckan-version }}
+      image: ckan/ckan-dev:${{ matrix.ckan-version }}-py${{ matrix.python-version }}
+      options: --user root
     services:
       solr:
         image: ckan/ckan-solr:${{ matrix.ckan-version }}-solr9
@@ -51,6 +60,9 @@ jobs:
       run: |
         # Replace default path to CKAN core config file with the one on the container
         sed -i -e 's/use = config:.*/use = config:\/srv\/app\/src\/ckan\/test-core.ini/' test.ini
+        # test.ini builds the test storage URL from ckan.redis.url when the file is read, so it
+        # stays on localhost even though CKAN_REDIS_URL points at the redis service
+        sed -i -e 's#%(ckan.redis.url)s#redis://redis:6379/1#' test.ini
     - name: Setup extension
       run: |
         ckan -c test.ini db init
